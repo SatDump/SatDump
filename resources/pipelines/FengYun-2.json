@@ -48,12 +48,6 @@
                 "value": false,
                 "name": "Apply rudimentary correction",
                 "description": "This applies correction on the basis of a sequential order check. While making imagery more presentable at low SNRs, it can lead to several issues:\n- Missed image starts\n- Earth being deformed (because of dropped frames)"
-            },
-            "pn_sync": {
-                "type": "bool",
-                "value": true,
-                "name": "Use PN Synchronization",
-                "description": "This uses a more intensive synchronization method, but greatly helps at low SNR"
             }
         },
         "work": {
@@ -68,9 +62,7 @@
                 }
             },
             "svissr": {
-                "fengyun_svissr_decoder": {
-                    "pn_sync": true
-                }
+                "fengyun_svissr_decoder": {}
             },
             "products": {
                 "fengyun_svissr_image_decoder": {
