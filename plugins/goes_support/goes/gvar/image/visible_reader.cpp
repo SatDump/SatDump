@@ -10,7 +10,7 @@ namespace goes
         VisibleReader::VisibleReader()
         {
             imageBuffer = new unsigned short[HEIGHT * WIDTH];
-            imageLineBuffer = new unsigned short[WIDTH + 10];
+            imageLineBuffer = new unsigned short[WIDTH + 10 + 4];
             goodLines = new bool[HEIGHT];
         }
 
@@ -79,5 +79,5 @@ namespace goes
 
             return image::Image(&imageBuffer[0], 16, WIDTH, HEIGHT, 1);
         }
-    }
-}
+    } // namespace gvar
+} // namespace goes

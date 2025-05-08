@@ -20,7 +20,7 @@ namespace goes
 
         private:
             // Main shifter
-            uint64_t shifter;
+            uint64_t shifter = 0;
             // Small function to push a bit into the frame
             void pushBit(uint8_t bit);
             // Framing variables
@@ -30,7 +30,7 @@ namespace goes
             std::vector<uint8_t> frameBuffer;
 
             // PN Stuff
-            uint64_t pn_shifter;
+            uint64_t pn_shifter = 0;
             int pn_right_bit_counter = 0;
 
         public:

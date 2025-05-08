@@ -12,7 +12,7 @@ namespace goes
     {
         PNDerandomizer::PNDerandomizer()
         {
-            derandTable = new uint8_t[26150];
+            derandTable = new uint8_t[32786];
 
             // Generate derandomization table
             int oo = 0;
@@ -21,7 +21,7 @@ namespace goes
 
             uint16_t shifter = 0b101001110110101;
 
-            for (int i = 0; i < 10032 + 209200; i++)
+            for (int i = 0; i < /*10032 + 209200*/ 262288; i++)
             {
                 bool xor1 = getBit<uint16_t>(shifter, 14);
                 bool xor2 = getBit<uint16_t>(shifter, 7);
@@ -43,10 +43,7 @@ namespace goes
             }
         }
 
-        PNDerandomizer::~PNDerandomizer()
-        {
-            delete[] derandTable;
-        }
+        PNDerandomizer::~PNDerandomizer() { delete[] derandTable; }
 
         void PNDerandomizer::derandData(uint8_t *frame, int length)
         {
@@ -59,5 +56,5 @@ namespace goes
                     frame[8 + byten] = derandTable[byten] ^ frame[8 + byten];
             }
         }
-    }
-}
+    } // namespace gvar
+} // namespace goes

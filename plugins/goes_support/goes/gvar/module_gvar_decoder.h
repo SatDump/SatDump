@@ -1,9 +1,9 @@
 #pragma once
 
+#include "common/dsp/utils/random.h"
 #include "core/module.h"
 #include <complex>
 #include <fstream>
-#include "common/dsp/utils/random.h"
 
 namespace goes
 {
@@ -17,8 +17,8 @@ namespace goes
 
             std::ifstream data_in;
             std::ofstream data_out;
-            std::atomic<uint64_t> filesize;
-            std::atomic<uint64_t> progress;
+            std::atomic<uint64_t> filesize = 0;
+            std::atomic<uint64_t> progress = 0;
 
             // UI Stuff
             dsp::Random rng;
@@ -37,5 +37,5 @@ namespace goes
             static std::vector<std::string> getParameters();
             static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         };
-    } // namespace elektro_arktika
-}
+    } // namespace gvar
+} // namespace goes
