@@ -1,9 +1,9 @@
 #include "module_gvar_decoder.h"
-#include "logger.h"
 #include "common/codings/differential/nrzs.h"
-#include "imgui/imgui.h"
 #include "gvar_deframer.h"
 #include "gvar_derand.h"
+#include "imgui/imgui.h"
+#include "logger.h"
 
 #define BUFFER_SIZE 8192
 
@@ -19,20 +19,11 @@ namespace goes
             buffer = new int8_t[BUFFER_SIZE];
         }
 
-        std::vector<ModuleDataType> GVARDecoderModule::getInputTypes()
-        {
-            return {DATA_FILE, DATA_STREAM};
-        }
+        std::vector<ModuleDataType> GVARDecoderModule::getInputTypes() { return {DATA_FILE, DATA_STREAM}; }
 
-        std::vector<ModuleDataType> GVARDecoderModule::getOutputTypes()
-        {
-            return {DATA_FILE, DATA_STREAM};
-        }
+        std::vector<ModuleDataType> GVARDecoderModule::getOutputTypes() { return {DATA_FILE, DATA_STREAM}; }
 
-        GVARDecoderModule::~GVARDecoderModule()
-        {
-            delete[] buffer;
-        }
+        GVARDecoderModule::~GVARDecoderModule() { delete[] buffer; }
 
         void GVARDecoderModule::process()
         {
@@ -56,13 +47,13 @@ namespace goes
             diff::NRZSDiff diff;
 
             // The deframer
-            GVARDeframer<uint64_t, 64, 262288, 0b0001101111100111110100000001111110111111100000001111111111111110> deframer;
+            GVARDeframer deframer;
 
             // Derand
             PNDerandomizer derand;
 
             // Final buffer after decoding
-            uint8_t finalBuffer[BUFFER_SIZE];
+            uint8_t finalBuffer[BUFFER_SIZE * 2];
 
             // Bits => Bytes stuff
             uint8_t byteShifter = 0;
@@ -139,7 +130,7 @@ namespace goes
                 {
                     ImDrawList *draw_list = ImGui::GetWindowDrawList();
                     ImVec2 rect_min = ImGui::GetCursorScreenPos();
-                    ImVec2 rect_max = { rect_min.x + 200 * ui_scale, rect_min.y + 200 * ui_scale };
+                    ImVec2 rect_max = {rect_min.x + 200 * ui_scale, rect_min.y + 200 * ui_scale};
                     draw_list->AddRectFilled(rect_min, rect_max, style::theme.widget_bg);
                     draw_list->PushClipRect(rect_min, rect_max);
 
@@ -147,8 +138,7 @@ namespace goes
                     {
                         draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (buffer[i] / 127.0) * 130 * ui_scale) % int(200 * ui_scale),
                                                           ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + rng.gasdev() * 14 * ui_scale) % int(200 * ui_scale)),
-                                                   2 * ui_scale,
-                                                   style::theme.constellation);
+                                                   2 * ui_scale, style::theme.constellation);
                     }
 
                     draw_list->PopClipRect();
@@ -163,19 +153,13 @@ namespace goes
             ImGui::End();
         }
 
-        std::string GVARDecoderModule::getID()
-        {
-            return "goes_gvar_decoder";
-        }
+        std::string GVARDecoderModule::getID() { return "goes_gvar_decoder"; }
 
-        std::vector<std::string> GVARDecoderModule::getParameters()
-        {
-            return {};
-        }
+        std::vector<std::string> GVARDecoderModule::getParameters() { return {}; }
 
         std::shared_ptr<ProcessingModule> GVARDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<GVARDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace elektro
-}
+    } // namespace gvar
+} // namespace goes

@@ -67,46 +67,34 @@ namespace fengyun_svissr
             {
                 // Get a bit, push it
                 uint8_t bit = getBit<uint8_t>(byte, i);
-
                 shifter = shifter << 1 | bit;
+
+                // Get a PN bit, push it
+                uint8_t pn_bit = ((pn_shifter >> 14) & 1) ^ ((pn_shifter >> 13) & 1);
+                pn_shifter = (pn_shifter << 1) | pn_bit;
+
+                // Continuously check pn_bit vs bit
+                if (bit == pn_bit)
+                {
+                    if (pn_right_bit_counter < 5000)
+                        pn_right_bit_counter++;
+
+                    // if (pn_right_bit_counter == 1000)
+                    //     printf("LOCK\n");
+                }
+                else
+                {
+                    pn_right_bit_counter -= 2;
+                    if (pn_right_bit_counter <= 0)
+                    {
+                        pn_right_bit_counter = 1;
+                        pn_shifter = shifter;
+                    }
+                }
 
                 // Writing a frame!
                 if (writeFrame)
                 {
-                    // First run : push header
-                    if (outputBits == 0)
-                    {
-                        /*SYNC_T syncAsm = ASM_SYNC;
-                    for (int y = SYNC_SIZE - 1; y >= 0; y--)
-                    {
-                        pushBit(getBit<SYNC_T>(syncAsm, y));
-                        outputBits++;
-                    }*/
-                        // pushBit(0);
-                        // outputBits++;
-                    }
-
-#if 0
-                    // New ASM, ABORT! and process the new one
-                    if (outputBits > 10000)
-                        if (checkSyncMarker(0b0100101110111011101110011001100110010101010101010111111111111111, shifter) < MAX_ERROR)
-                        {
-                            // Fill up what we're missing
-                            for (int b = 0; b < 354848 - outputBits; b++)
-                                pushBit(0);
-
-                            writeFrame = false;
-                            wroteBits = 0;
-                            outputBits = 0;
-                            framesOut.push_back(frameBuffer);
-                            frameBuffer.clear();
-
-                            writeFrame = true;
-
-                            continue;
-                        }
-#endif
-
                     // Push current bit
                     pushBit(bit);
                     outputBits++;
@@ -125,12 +113,15 @@ namespace fengyun_svissr
                 }
 
                 // Otherwise search for markers
-                if (checkSyncMarker(0b0100101110111011101110011001100110010101010101010111111111111111, shifter) < MAX_ERROR)
+                if (checkSyncMarker(0b0100101110111011101110011001100110010101010101010111111111111111, pn_shifter) == 0 && pn_right_bit_counter > 1000)
+                {
                     writeFrame = true;
+                    pn_right_bit_counter = 0;
+                }
             }
         }
 
         // Output what we found if anything
         return framesOut;
     }
-}
+} // namespace fengyun_svissr

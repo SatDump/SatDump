@@ -17,8 +17,6 @@ namespace fengyun_svissr
     SVISSRDecoderModule::SVISSRDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
         buffer = new int8_t[BUFFER_SIZE];
-
-        pn_sync = parameters["pn_sync"];
     }
 
     std::vector<ModuleDataType> SVISSRDecoderModule::getInputTypes() { return {DATA_FILE, DATA_STREAM}; }
@@ -54,12 +52,8 @@ namespace fengyun_svissr
         // Derand
         PNDerandomizer derand;
 
-        // PN Sync
-        PNSync sync(BUFFER_SIZE);
-        int8_t *buffer2 = buffer;
-
         // Final buffer after decoding
-        uint8_t *finalBuffer = new uint8_t[sync.TARGET_WROTE_BITS / 8];
+        uint8_t *finalBuffer = new uint8_t[BUFFER_SIZE];
 
         // Bits => Bytes stuff
         uint8_t byteShifter = 0;
@@ -74,15 +68,13 @@ namespace fengyun_svissr
             else
                 input_fifo->read((uint8_t *)buffer, BUFFER_SIZE);
 
-            int ret = pn_sync ? sync.process((const uint8_t *)buffer, BUFFER_SIZE, (uint8_t **)&buffer2) : BUFFER_SIZE;
-
             // Group symbols into bytes now, I channel
             inByteShifter = 0;
             byteShifted = 0;
 
-            for (int i = 0; i < ret; i++)
+            for (int i = 0; i < BUFFER_SIZE; i++)
             {
-                byteShifter = byteShifter << 1 | (buffer2[i] > 0);
+                byteShifter = byteShifter << 1 | (buffer[i] > 0);
                 inByteShifter++;
 
                 if (inByteShifter == 8)
@@ -93,10 +85,10 @@ namespace fengyun_svissr
             }
 
             // Differential decoding for both of them
-            diff.decode(finalBuffer, ret / 8);
+            diff.decode(finalBuffer, BUFFER_SIZE / 8);
 
             // Deframe
-            std::vector<std::vector<uint8_t>> frameBuffer = deframer.work(finalBuffer, ret / 8);
+            std::vector<std::vector<uint8_t>> frameBuffer = deframer.work(finalBuffer, BUFFER_SIZE / 8);
 
             // If we found frames, write them out
             if (frameBuffer.size() > 0)

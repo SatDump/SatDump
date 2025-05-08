@@ -2,7 +2,6 @@
 
 #include "common/dsp/utils/random.h"
 #include "core/module.h"
-#include "svissr_pn_sync.h"
 #include <complex>
 #include <fstream>
 
@@ -21,8 +20,6 @@ namespace fengyun_svissr
 
         // UI Stuff
         dsp::Random rng;
-
-        bool pn_sync;
 
     public:
         SVISSRDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
