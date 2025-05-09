@@ -1,10 +1,10 @@
 #pragma once
 
-#include "products2/image/image_calibrator.h"
-#include "nlohmann/json.hpp"
-#include "nlohmann/json_utils.h"
 #include "common/calibration.h"
 #include "common/utils.h"
+#include "nlohmann/json.hpp"
+#include "nlohmann/json_utils.h"
+#include "products2/image/image_calibrator.h"
 
 namespace meteor
 {
@@ -23,6 +23,9 @@ namespace meteor
         bool can_ir_calib = false;
         double vis_coeffs[3][2];
 
+        int vis_min_point = 47;
+        int vis_max_point = 573;
+
     public:
         MeteorMsuMrCalibrator(satdump::products::ImageProduct *p, nlohmann::json c) : satdump::products::ImageCalibrator(p, c)
         {
@@ -33,6 +36,8 @@ namespace meteor
                     vis_coeffs[c][0] = d_cfg["vars"]["vis"][c][0];
                     vis_coeffs[c][1] = d_cfg["vars"]["vis"][c][1];
                 }
+                vis_min_point = d_cfg["vars"]["vis"][3][0];
+                vis_max_point = d_cfg["vars"]["vis"][3][1];
                 can_vis_calib = true;
             }
 
@@ -63,12 +68,10 @@ namespace meteor
                     {
                         if (!d_cfg["vars"]["temps"][next_x_calib].is_null())
                         {
-                            coldt = (d_cfg["vars"]["temps"][next_x_calib]["analog_tlm"]["cold_temp1"].get<double>() +
-                                     d_cfg["vars"]["temps"][next_x_calib]["analog_tlm"]["cold_temp2"].get<double>()) /
-                                    2.0;
-                            hott = (d_cfg["vars"]["temps"][next_x_calib]["analog_tlm"]["hot_temp1"].get<double>() +
-                                    d_cfg["vars"]["temps"][next_x_calib]["analog_tlm"]["hot_temp2"].get<double>()) /
-                                   2.0;
+                            coldt =
+                                (d_cfg["vars"]["temps"][next_x_calib]["analog_tlm"]["cold_temp1"].get<double>() + d_cfg["vars"]["temps"][next_x_calib]["analog_tlm"]["cold_temp2"].get<double>()) / 2.0;
+                            hott =
+                                (d_cfg["vars"]["temps"][next_x_calib]["analog_tlm"]["hot_temp1"].get<double>() + d_cfg["vars"]["temps"][next_x_calib]["analog_tlm"]["hot_temp2"].get<double>()) / 2.0;
                             break;
                         }
                         next_x_calib++;
@@ -81,11 +84,10 @@ namespace meteor
                         {
                             if (!d_cfg["vars"]["temps"][next_x_calib].is_null())
                             {
-                                coldt = (d_cfg["vars"]["temps"][next_x_calib]["analog_tlm"]["cold_temp1"].get<double>() +
-                                         d_cfg["vars"]["temps"][next_x_calib]["analog_tlm"]["cold_temp2"].get<double>()) /
-                                        2.0;
-                                hott = (d_cfg["vars"]["temps"][next_x_calib]["analog_tlm"]["hot_temp1"].get<double>() +
-                                        d_cfg["vars"]["temps"][next_x_calib]["analog_tlm"]["hot_temp2"].get<double>()) /
+                                coldt =
+                                    (d_cfg["vars"]["temps"][next_x_calib]["analog_tlm"]["cold_temp1"].get<double>() + d_cfg["vars"]["temps"][next_x_calib]["analog_tlm"]["cold_temp2"].get<double>()) /
+                                    2.0;
+                                hott = (d_cfg["vars"]["temps"][next_x_calib]["analog_tlm"]["hot_temp1"].get<double>() + d_cfg["vars"]["temps"][next_x_calib]["analog_tlm"]["hot_temp2"].get<double>()) /
                                        2.0;
                                 break;
                             }
@@ -128,7 +130,7 @@ namespace meteor
                 double rad = 0;
 
                 // Each time taken from point 573 / 47 (-1 since starts from 0)
-                rad = ((px_val - 47.0) / (572.0 - 47.0)) * (vis_coeffs[channel][1] - vis_coeffs[channel][0]);
+                rad = ((px_val - (double)vis_min_point) / (double(vis_max_point - 1) - double(vis_min_point))) * (vis_coeffs[channel][1] - vis_coeffs[channel][0]);
 
                 if (rad < 0)
                     rad = 0;
@@ -161,7 +163,7 @@ namespace meteor
             }
         }
     };
-}
+} // namespace meteor
 
 /*
 
@@ -356,6 +358,95 @@ int main(int argc, char *argv[])
             "pos_y": 421.0
         }
     ]
+}
+
+*/
+
+/*
+Full C code
+
+#include "common/image/image.h"
+#include "common/image/io.h"
+#include "common/image/meta.h"
+#include "logger.h"
+#include <fstream>
+
+#include "common/image/processing.h"
+#include "common/utils.h"
+#include "products2/image/product_expression.h"
+#include "products2/image_product.h"
+#include "projection/projection.h"
+#include "projection/reprojector.h"
+
+int main(int argc, char *argv[])
+{
+    initLogger();
+
+#if 0
+    satdump::products::ImageProduct p;
+    p.load("/nvme_data/METEOR_CALIB/M2-3/MSU-MR/product.cbor");
+
+    auto img_target = satdump::products::generate_expression_product_composite(&p, "ch1");
+
+    image::Image img_src;
+    image::load_img(img_src, "/nvme_data/METEOR_CALIB/M2-3/BBP-74710231-20250130-1/MM23_MSUMR_20250124T081417_14211200/MM23_MSUMR_20250124T081417_14211200_N5021E02918_20250124_1D_TOAL3.tif");
+
+    {
+        satdump::proj::Projection proj = image::get_metadata_proj_cfg(img_target);
+
+        // TODOREWORK!!!!
+        satdump::proj::ReprojectionOperation op;
+        op.img = &img_src;
+        op.output_width = proj.width;
+        op.output_height = proj.height;
+        op.target_prj_info = proj;
+        //            op.target_prj_info["width"] = proj->width;
+        //            op.target_prj_info["height"] = proj->height;
+        auto cfg = image::get_metadata_proj_cfg(*op.img);
+        cfg["width"] = img_src.width();
+        cfg["height"] = img_src.height();
+        image::set_metadata_proj_cfg(*op.img, cfg);
+        auto img_out = satdump::proj::reproject(op); // &progress);
+
+        image::save_img(img_out, "/nvme_data/METEOR_CALIB/M2-3/TOAL_PROJ_3.tif");
+    }
+#else
+    image::Image imgCAL, imgRAW;
+    image::load_img(imgCAL, "/nvme_data/METEOR_CALIB/M2-3/TOAL_PROJ_3.tif"); //"/nvme_data/METEOR_CALIB/TOAL1_RAW.tif");
+    image::load_img(imgRAW, "/nvme_data/METEOR_CALIB/M2-3/MSU-MR/MSU-MR-3.png");
+
+    // image::normalize(imgCAL);
+    // image::save_img(imgCAL, "/nvme_data/METEOR_CALIB/BBP-74687949-20250128-3/MM24_MSUMR_20241221T132243_14216300/MM24_MSUMR_20241221T132243_14216300_N5139E01903_20241222_1D_TOAL1.png");
+
+    std::vector<float> calLut[1024];
+
+    for (size_t i = 0; i < imgCAL.width() * imgCAL.height(); i++)
+    {
+        uint16_t val = imgCAL.get(0, i);
+
+        if (val != 0)
+        {
+            uint16_t rawVal = imgRAW.get(i) >> 6;
+            // float calV = val * 0.0271 - 0.0271; // Ch1
+            //  float calV = val * 0.0224 - 0.0224; // Ch2
+            float calV = val * 0.0028 - 0.0028; // Ch3
+
+            calLut[rawVal].push_back(calV);
+
+            // printf("%d => %f \n", rawVal, calV);
+        }
+    }
+
+    for (int i = 0; i < 1024; i++)
+    {
+        double rad = ((i - 47.0) / (572.0 - 47.0)) * (1.511627 - 0.003260);
+        if (rad < 0)
+            rad = 0;
+        printf("%f,", rad); // avg_overflowless(calLut[i]));
+        printf("%f,\n", avg_overflowless(calLut[i]));
+    }
+    printf("\n");
+#endif
 }
 
 */

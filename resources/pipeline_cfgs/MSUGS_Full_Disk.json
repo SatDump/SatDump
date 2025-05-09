@@ -14,5 +14,148 @@
             "name": "L3 Longitude",
             "description": "Longitude to use for projection"
         }
+    },
+    "flowgraph": {
+        "links": [
+            {
+                "end": 7,
+                "id": 2,
+                "start": 3
+            },
+            {
+                "end": 9,
+                "id": 4,
+                "start": 6
+            },
+            {
+                "end": 5,
+                "id": 1,
+                "start": 2
+            },
+            {
+                "end": 1,
+                "id": 0,
+                "start": 8
+            },
+            {
+                "end": 4,
+                "id": 3,
+                "start": 0
+            }
+        ],
+        "nodes": [
+            {
+                "id": 0,
+                "int_cfg": {
+                    "path": "/nvme_data/METEOR_CALIB/BBP-74687949-20250128-3/MM24_MSUMR_20241221T132243_14216300/MM24_MSUMR_20241221T132243_14216300_N5139E01903_20241222_1D_TOAL1.tif"
+                },
+                "int_id": "image_source",
+                "io": [
+                    {
+                        "id": 0,
+                        "is_out": true,
+                        "name": "Image"
+                    }
+                ],
+                "pos_x": 158.0,
+                "pos_y": 278.0
+            },
+            {
+                "id": 1,
+                "int_cfg": null,
+                "int_id": "image_get_proj",
+                "io": [
+                    {
+                        "id": 1,
+                        "is_out": false,
+                        "name": "Image"
+                    },
+                    {
+                        "id": 2,
+                        "is_out": true,
+                        "name": "Projection"
+                    }
+                ],
+                "pos_x": 634.0,
+                "pos_y": 510.0
+            },
+            {
+                "id": 2,
+                "int_cfg": {
+                    "path": "/nvme_data/METEOR_CALIB/MSU-MR/product.cbor"
+                },
+                "int_id": "image_product_source",
+                "io": [
+                    {
+                        "id": 3,
+                        "is_out": true,
+                        "name": "Product"
+                    }
+                ],
+                "pos_x": 30.0,
+                "pos_y": 546.0
+            },
+            {
+                "id": 3,
+                "int_cfg": null,
+                "int_id": "image_reproj",
+                "io": [
+                    {
+                        "id": 4,
+                        "is_out": false,
+                        "name": "Image"
+                    },
+                    {
+                        "id": 5,
+                        "is_out": false,
+                        "name": "Projection"
+                    },
+                    {
+                        "id": 6,
+                        "is_out": true,
+                        "name": "Image"
+                    }
+                ],
+                "pos_x": 849.0,
+                "pos_y": 402.0
+            },
+            {
+                "id": 4,
+                "int_cfg": {
+                    "expression": "ch1"
+                },
+                "int_id": "image_product_expression",
+                "io": [
+                    {
+                        "id": 7,
+                        "is_out": false,
+                        "name": "Product"
+                    },
+                    {
+                        "id": 8,
+                        "is_out": true,
+                        "name": "Image"
+                    }
+                ],
+                "pos_x": 321.0,
+                "pos_y": 436.0
+            },
+            {
+                "id": 5,
+                "int_cfg": {
+                    "path": "/nvme_data/METEOR_CALIB/TOAL1_RAW.tif"
+                },
+                "int_id": "image_sink",
+                "io": [
+                    {
+                        "id": 9,
+                        "is_out": false,
+                        "name": "Image"
+                    }
+                ],
+                "pos_x": 1013.0,
+                "pos_y": 421.0
+            }
+        ]
     }
 }
