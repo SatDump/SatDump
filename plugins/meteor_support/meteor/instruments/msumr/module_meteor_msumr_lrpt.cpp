@@ -1,22 +1,22 @@
 #include "module_meteor_msumr_lrpt.h"
-#include <fstream>
-#include "common/ccsds/ccsds_time.h"
+#include "../../meteor.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
 #include "common/ccsds/ccsds_aos/vcdu.h"
-#include "logger.h"
-#include <filesystem>
-#include <cstring>
-#include "lrpt_msumr_reader.h"
-#include "imgui/imgui.h"
-#include "../../meteor.h"
-#include "products2/image_product.h"
-#include <ctime>
-#include "products2/dataset.h"
-#include "resources.h"
-#include "common/utils.h"
-#include "nlohmann/json_utils.h"
-#include "msumr_tlm.h"
+#include "common/ccsds/ccsds_time.h"
 #include "common/tracking/tle.h"
+#include "common/utils.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include "lrpt_msumr_reader.h"
+#include "msumr_tlm.h"
+#include "nlohmann/json_utils.h"
+#include "products2/dataset.h"
+#include "products2/image_product.h"
+#include "resources.h"
+#include <cstring>
+#include <ctime>
+#include <filesystem>
+#include <fstream>
 
 #define BUFFER_SIZE 8192
 
@@ -24,8 +24,8 @@ namespace meteor
 {
     namespace msumr
     {
-        void createMSUMRProduct(satdump::products::ImageProduct &product, double timestamp, int norad, int msumr_serial_number,
-                                nlohmann::json &calib_cfg, uint8_t lrpt_channels, std::vector<double> &timestamps, std::string sat_name)
+        void createMSUMRProduct(satdump::products::ImageProduct &product, double timestamp, int norad, int msumr_serial_number, nlohmann::json &calib_cfg, uint8_t lrpt_channels,
+                                std::vector<double> &timestamps, std::string sat_name)
         {
             auto msu_cfg = loadJsonFile(resources::getResourcePath("calibration/MSU-MR.json"));
 
@@ -103,7 +103,8 @@ namespace meteor
                 logger->warn("Analog telemetry missing from transmission. Calibration is disabled!");
         }
 
-        METEORMSUMRLRPTDecoderModule::METEORMSUMRLRPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        METEORMSUMRLRPTDecoderModule::METEORMSUMRLRPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+            : ProcessingModule(input_file, output_file_hint, parameters)
         {
         }
 
@@ -207,11 +208,11 @@ namespace meteor
             if (d_parameters.contains("satellite_number") && d_parameters["satellite_number"].is_string())
             {
                 std::string override_sat = d_parameters["satellite_number"];
-                std::transform(override_sat.begin(), override_sat.end(), override_sat.begin(),
-                               [](unsigned char c)
-                               { return std::toupper(c); });
+                std::transform(override_sat.begin(), override_sat.end(), override_sat.begin(), [](unsigned char c) { return std::toupper(c); });
 
-                if (override_sat == "M2")
+                if (override_sat == "M1")
+                    msumr_serial_number = -1;
+                else if (override_sat == "M2")
                     msumr_serial_number = 0;
                 else if (override_sat == "M2-1")
                     msumr_serial_number = 1;
@@ -222,12 +223,13 @@ namespace meteor
                 else if (override_sat == "M2-4")
                     msumr_serial_number = 4;
                 else if (override_sat != "AUTO")
-                    logger->warn("Invalid METEOR satellite \"%s\" provided. Using transmitted ID!",
-                                 d_parameters["satellite_number"].get<std::string>().c_str());
+                    logger->warn("Invalid METEOR satellite \"%s\" provided. Using transmitted ID!", d_parameters["satellite_number"].get<std::string>().c_str());
             }
 
             std::string sat_name = "Unknown Meteor";
-            if (msumr_serial_number == 0)
+            if (msumr_serial_number == -1)
+                sat_name = "METEOR-M1";
+            else if (msumr_serial_number == 0)
                 sat_name = "METEOR-M2";
             else if (msumr_serial_number == 1)
                 sat_name = "METEOR-M2-1";
@@ -239,7 +241,9 @@ namespace meteor
                 sat_name = "METEOR-M2-4";
 
             int norad = 0;
-            if (msumr_serial_number == 0)
+            if (msumr_serial_number == -1)
+                norad = 35865; // M2
+            else if (msumr_serial_number == 0)
                 norad = 40069; // M2
             else if (msumr_serial_number == 1)
                 norad = 0; // M2-1, failed launch
@@ -341,14 +345,14 @@ namespace meteor
                                 {
                                     for (size_t j = 1; j < i - last_good_view; j++)
                                     {
-                                        calib_cfg["vars"]["views"][channel][0][last_good_view + j] = (int)((int)calib_cfg["vars"]["views"][channel][0][last_good_view] +
-                                                                                                           ((int)calib_cfg["vars"]["views"][channel][0][i] -
-                                                                                                            (int)calib_cfg["vars"]["views"][channel][0][last_good_view]) *
-                                                                                                               ((double)j / double(i - last_good_view)));
-                                        calib_cfg["vars"]["views"][channel][1][last_good_view + j] = (int)((int)calib_cfg["vars"]["views"][channel][1][last_good_view] +
-                                                                                                           ((int)calib_cfg["vars"]["views"][channel][1][i] -
-                                                                                                            (int)calib_cfg["vars"]["views"][channel][1][last_good_view]) *
-                                                                                                               ((double)j / double(i - last_good_view)));
+                                        calib_cfg["vars"]["views"][channel][0][last_good_view + j] =
+                                            (int)((int)calib_cfg["vars"]["views"][channel][0][last_good_view] +
+                                                  ((int)calib_cfg["vars"]["views"][channel][0][i] - (int)calib_cfg["vars"]["views"][channel][0][last_good_view]) *
+                                                      ((double)j / double(i - last_good_view)));
+                                        calib_cfg["vars"]["views"][channel][1][last_good_view + j] =
+                                            (int)((int)calib_cfg["vars"]["views"][channel][1][last_good_view] +
+                                                  ((int)calib_cfg["vars"]["views"][channel][1][i] - (int)calib_cfg["vars"]["views"][channel][1][last_good_view]) *
+                                                      ((double)j / double(i - last_good_view)));
                                     }
                                 }
                                 last_good_view = i;
@@ -387,15 +391,9 @@ namespace meteor
             ImGui::End();
         }
 
-        std::string METEORMSUMRLRPTDecoderModule::getID()
-        {
-            return "meteor_msumr_lrpt";
-        }
+        std::string METEORMSUMRLRPTDecoderModule::getID() { return "meteor_msumr_lrpt"; }
 
-        std::vector<std::string> METEORMSUMRLRPTDecoderModule::getParameters()
-        {
-            return {};
-        }
+        std::vector<std::string> METEORMSUMRLRPTDecoderModule::getParameters() { return {}; }
 
         std::shared_ptr<ProcessingModule> METEORMSUMRLRPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
