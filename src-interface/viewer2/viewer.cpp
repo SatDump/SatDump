@@ -105,7 +105,7 @@ namespace satdump
             {
                 if (ImGui::BeginMenu("File"))
                 {
-                    if (ImGui::MenuItem("Open File") && !file_open_dialog)                      // TODOREWORK switch to general thing
+                    if (ImGui::MenuItem("Open File") && !file_open_dialog)                     // TODOREWORK switch to general thing
                         file_open_dialog = new fileutils::FileSelTh({{"All Files", "*"}}, ""); // TODOREWORK remember path?
 
                     if (ImGui::BeginMenu("Hardcoded"))
@@ -259,6 +259,8 @@ namespace satdump
                     // TODOREWORK Load more than just image products
                     if (std::filesystem::path(path).extension().string() == ".cbor")
                     {
+                        logger->trace("Viewer loading product " + path);
+
                         try
                         {
                             std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct(path));
@@ -271,6 +273,8 @@ namespace satdump
                     }
                     else if (std::filesystem::path(path).extension().string() == ".json")
                     {
+                        logger->trace("Viewer loading dataset " + path);
+
                         try
                         {
                             products::DataSet dataset;
@@ -285,10 +289,14 @@ namespace satdump
                     }
                     else if (std::filesystem::path(path).extension().string() == ".shp")
                     {
+                        logger->trace("Viewer loading shapefile " + path);
+
                         master_handler->addSubHandler(std::make_shared<ShapefileHandler>(path));
                     }
                     else
                     {
+                        logger->trace("Viewer loading image " + path);
+
                         image::Image img;
                         image::load_img(img, path);
                         if (img.size() > 0)

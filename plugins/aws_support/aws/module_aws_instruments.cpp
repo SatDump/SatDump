@@ -170,7 +170,7 @@ namespace aws
             }
 
             mwr_products.save(directory);
-            dataset.products_list.push_back("STERNA");
+            dataset.products_list.push_back("MWR");
 
             mwr_status = DONE;
         }

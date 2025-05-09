@@ -7,19 +7,19 @@
 #include "dsp/block_simple.h"
 #include <cstdint>
 
-/**
- * @brief Simple Correct IQ block (removes a DC spike).
- *
- * This is the simplest implementation I thought of.
- * A DC component will be a constant offset in the raw samples,
- * so correcting for it is as simple as getting the average value
- * (which in a normal situation should be close to 0), and substract it.
- */
-
 namespace satdump
 {
     namespace ndsp
     {
+        /**
+         * @brief Simple Correct IQ block (removes a DC spike).
+         *
+         * This is the simplest implementation I thought of.
+         * A DC component will be a constant offset in the raw samples,
+         * so correcting for it is as simple as getting the average value
+         * (which in a normal situation should be close to 0), and substract it.
+         */
+
         /** @brief It just removes a DC spike using
          * the a moving average,
          * respecting each stream type.
@@ -43,10 +43,7 @@ namespace satdump
 
             void init() {}
 
-            nlohmann::json get_cfg(std::string key)
-            {
-                throw satdump_exception(key);
-            }
+            nlohmann::json get_cfg(std::string key) { throw satdump_exception(key); }
 
             Block::cfg_res_t set_cfg(std::string key, nlohmann::json v)
             {

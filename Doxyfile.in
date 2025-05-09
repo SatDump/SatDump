@@ -1,5 +1,6 @@
 PROJECT_NAME           = SatDump
 OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@/documentation/
+PROJECT_NUMBER         = @SATDUMP_VERSION@
 INPUT                  = src-core/common/ccsds \
                          src-core/products2 \
                          src-core/handler \
@@ -7,5 +8,15 @@ INPUT                  = src-core/common/ccsds \
                          src-core/projection \
                          src-core/dsp \
                          src-core/common/image \
-EXCLUDE                = src-core/common/image/font_lib src-core/common/image/font
+                         docs/pages
+EXCLUDE                = src-core/common/image/font_lib src-core/common/image/font 
 RECURSIVE              = YES
+
+PROJECT_LOGO           = docs/favicon.ico
+IMAGE_PATH             = docs/images
+
+GENERATE_TREEVIEW      = YES
+DISABLE_INDEX = NO
+FULL_SIDEBAR = NO
+HTML_EXTRA_STYLESHEET  = docs/doxygen-awesome-css/doxygen-awesome.css
+HTML_COLORSTYLE        = DARK

@@ -10,6 +10,7 @@
 #include "nlohmann/json.hpp"
 #include "products2/product.h"
 #include <functional>
+#include <vector>
 
 namespace satdump
 {
@@ -33,6 +34,7 @@ namespace satdump
             std::string handler_name;
 
             std::string preset_search_str;
+            std::vector<nlohmann::json> all_presets;
             std::vector<std::string> preset_selection_box_str;
             int preset_selection_curr_id = -1;
 

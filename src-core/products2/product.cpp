@@ -1,10 +1,10 @@
 #include "product.h"
-#include <fstream>
-#include "logger.h"
-#include <filesystem>
-#include "core/plugin.h"
 #include "common/utils.h"
 #include "core/exception.h"
+#include "core/plugin.h"
+#include "logger.h"
+#include <filesystem>
+#include <fstream>
 
 #include "image_product.h"
 #include "punctiform_product.h"
@@ -39,6 +39,8 @@ namespace satdump
             }
             else
             {
+                if (!std::filesystem::exists(file))
+                    throw satdump_exception("Bad file : " + file);
                 std::ifstream in_file(file, std::ios::binary);
                 while (!in_file.eof())
                 {
@@ -60,8 +62,7 @@ namespace satdump
             std::shared_ptr<Product> final_products;
             Product raw_products;
 
-            if (std::filesystem::is_directory(path) ||
-                (path.find("http") == 0 && path.find(".cbor") == std::string::npos))
+            if (std::filesystem::is_directory(path) || (path.find("http") == 0 && path.find(".cbor") == std::string::npos))
                 path = path + "/product.cbor";
 
             raw_products.load(path);
@@ -81,15 +82,15 @@ namespace satdump
         void registerProducts()
         {
             product_loaders.clear(); /*TODOREWORK*/
-            product_loaders.emplace("image", RegisteredProduct{PRODUCT_LOADER_FUN(ImageProduct), /*process_image_products*/ [](satdump::products::Product *, std::string)
-                                                               { logger->error("NO PROCESSOR!"); }});
-            product_loaders.emplace("punctiform", RegisteredProduct{PRODUCT_LOADER_FUN(PunctiformProduct), /*process_image_products*/ [](satdump::products::Product *, std::string)
-                                                                    { logger->error("NO PROCESSOR!"); }});
+            product_loaders.emplace("image",
+                                    RegisteredProduct{PRODUCT_LOADER_FUN(ImageProduct), /*process_image_products*/ [](satdump::products::Product *, std::string) { logger->error("NO PROCESSOR!"); }});
+            product_loaders.emplace(
+                "punctiform", RegisteredProduct{PRODUCT_LOADER_FUN(PunctiformProduct), /*process_image_products*/ [](satdump::products::Product *, std::string) { logger->error("NO PROCESSOR!"); }});
             //  products_loaders.emplace("radiation", RegisteredProducts{PRODUCTS_LOADER_FUN(RadiationProducts), process_radiation_products});
             //  products_loaders.emplace("scatterometer", RegisteredProducts{PRODUCTS_LOADER_FUN(ScatterometerProducts), process_scatterometer_products});
 
             // Plugins!
             eventBus->fire_event<RegisterProductsEvent>({product_loaders});
         }
-    }
-}
+    } // namespace products
+} // namespace satdump

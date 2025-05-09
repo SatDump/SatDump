@@ -51,6 +51,7 @@ namespace satdump
                         if (filterPreset(cfg))
                         {
                             preset_selection_box_str.push_back(cfg["name"].get<std::string>());
+                            all_presets.push_back(cfg);
                         }
                         else
                         {
@@ -89,7 +90,7 @@ namespace satdump
                         {
                             preset_selection_curr_id = i;
 
-                            auto preset = instrument_cfg["presets"][preset_selection_curr_id];
+                            auto preset = all_presets[preset_selection_curr_id];
                             setConfig(preset);
                             was_changed = true;
                             preset_selection_curr_id = -1;
