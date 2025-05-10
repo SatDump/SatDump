@@ -1,7 +1,9 @@
 #include "newrec.h"
 #include "common/widgets/stepped_slider.h"
+#include "core/style.h"
 #include "dsp/block.h"
 #include "dsp/device/dev.h"
+#include "imgui/imgui.h"
 #include "logger.h"
 
 namespace satdump
@@ -10,18 +12,18 @@ namespace satdump
     {
         NewRecHandler::NewRecHandler()
         {
-            auto devs = ndsp::getDeviceList(ndsp::DeviceBlock::MODE_SINGLE_RX);
+            auto devs = foundDevices = ndsp::getDeviceList(ndsp::DeviceBlock::MODE_SINGLE_RX);
 
-            for (auto &d : devs)
-            {
-                if (d.type == "rtlsdr")
-                {
-                    dev = ndsp::getDeviceInstanceFromInfo(d, ndsp::DeviceBlock::MODE_SINGLE_RX);
-                    options_displayer_test.add_options(dev->get_cfg_list());
-                    options_displayer_test.set_values(dev->get_cfg());
-                    break;
-                }
-            }
+            // for (auto &d : devs)
+            // {
+            //     if (d.type == "rtlsdr")
+            //     {
+            //         dev = ndsp::getDeviceInstanceFromInfo(d, ndsp::DeviceBlock::MODE_SINGLE_RX);
+            //         options_displayer_test.add_options(dev->get_cfg_list());
+            //         options_displayer_test.set_values(dev->get_cfg());
+            //         break;
+            //     }
+            // }
 
             fftp = std::make_shared<ndsp::FFTPanBlock>();
             fftp->avg_num = 1;
@@ -43,6 +45,29 @@ namespace satdump
         {
             if (ImGui::CollapsingHeader("Device", ImGuiTreeNodeFlags_DefaultOpen))
             {
+                if (deviceRunning)
+                    style::beginDisabled();
+                if (ImGui::BeginCombo("Device##devicebox", curDeviceI.name.c_str()))
+                {
+                    for (auto &d : foundDevices)
+                    {
+                        if (ImGui::Selectable(d.name.c_str(), d == curDeviceI))
+                        {
+                            curDeviceI = d;
+
+                            dev = ndsp::getDeviceInstanceFromInfo(curDeviceI, ndsp::DeviceBlock::MODE_SINGLE_RX);
+                            options_displayer_test.clear();
+                            options_displayer_test.add_options(dev->get_cfg_list());
+                            options_displayer_test.set_values(dev->get_cfg());
+                            break;
+                        }
+                    }
+
+                    ImGui::EndCombo();
+                }
+                if (deviceRunning)
+                    style::endDisabled();
+
                 nlohmann::json changed = options_displayer_test.draw();
 
                 if (changed.size() > 0)
@@ -63,28 +88,38 @@ namespace satdump
 
             ImGui::Separator();
 
-            if (ImGui::Button("Start"))
+            if (!deviceRunning)
             {
-                fftp->set_fft_settings(65536, 10e6, 30);
+                if (ImGui::Button("Start"))
+                {
+                    fftp->set_fft_settings(65536, 10e6, 30);
 
-                fftp->link(dev.get(), 0, 0, 16); //        fftp->inputs[0] = dev->outputs[0];
+                    fftp->link(dev.get(), 0, 0, 16); //        fftp->inputs[0] = dev->outputs[0];
 
-                dev->start();
-                fftp->start();
+                    dev->start();
+                    fftp->start();
 
-                options_displayer_test.clear();
-                options_displayer_test.add_options(dev->get_cfg_list());
-                options_displayer_test.set_values(dev->get_cfg());
+                    options_displayer_test.clear();
+                    options_displayer_test.add_options(dev->get_cfg_list());
+                    options_displayer_test.set_values(dev->get_cfg());
+
+                    deviceRunning = true;
+                }
             }
-
-            if (ImGui::Button("Stop"))
+            else
             {
-                dev->stop(true);
-                fftp->stop();
 
-                options_displayer_test.clear();
-                options_displayer_test.add_options(dev->get_cfg_list());
-                options_displayer_test.set_values(dev->get_cfg());
+                if (ImGui::Button("Stop"))
+                {
+                    dev->stop(true);
+                    fftp->stop();
+
+                    options_displayer_test.clear();
+                    options_displayer_test.add_options(dev->get_cfg_list());
+                    options_displayer_test.set_values(dev->get_cfg());
+
+                    deviceRunning = false;
+                }
             }
 
             ImGui::Separator();

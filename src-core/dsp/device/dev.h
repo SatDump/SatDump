@@ -15,6 +15,8 @@ namespace satdump
             nlohmann::json cfg;    // Default parameters for the block to use THIS device (eg, Serial). Applied with set_cfg
             nlohmann::json params; // List of additional parameters that may be device-specific (eg, Airspy Mini vs Airspy R2)
 
+            bool operator==(const DeviceInfo &b) { return ((type == b.type) && (name == b.type) && (cfg == b.cfg) && (params == b.params)); }
+
             NLOHMANN_DEFINE_TYPE_INTRUSIVE(DeviceInfo, type, name, cfg, params)
         };
 

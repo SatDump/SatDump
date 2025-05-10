@@ -48,9 +48,9 @@ namespace satdump
             {
                 nlohmann::ordered_json p;
 
-                p["frequency"]["type"] = "freq";
-
                 p = devInfo.params;
+
+                p["frequency"]["type"] = "freq";
 
                 p["serial"]["type"] = "string";
                 p["serial"]["hide"] = devInfo.cfg.contains("serial");

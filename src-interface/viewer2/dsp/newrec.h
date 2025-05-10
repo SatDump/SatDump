@@ -19,6 +19,10 @@ namespace satdump
             NewRecHandler();
             ~NewRecHandler();
 
+            bool deviceRunning = false;
+            ndsp::DeviceInfo curDeviceI;
+            std::vector<ndsp::DeviceInfo> foundDevices;
+
             std::shared_ptr<ndsp::DeviceBlock> dev;
             ndsp::OptionsDisplayer options_displayer_test;
 

@@ -1,4 +1,5 @@
 #include "bind_json.h"
+#include "nlohmann/json_utils.h"
 
 namespace satdump
 {
@@ -7,7 +8,8 @@ namespace satdump
         namespace json
         {
             CScriptJson *parse(std::string str) { return new CScriptJson(nlohmann::json::parse(str)); }
-        }
+            CScriptJson *loadJsonFile(std::string str) { return new CScriptJson(::loadJsonFile(str)); }
+        } // namespace json
 
         void registerJson(asIScriptEngine *engine)
         {
@@ -42,6 +44,9 @@ namespace satdump
             // Dump
             engine->RegisterObjectMethod("json", "string dump(int)", asMETHOD(CScriptJson, dump), asCALL_THISCALL);
             engine->RegisterGlobalFunction("json@ parse(string)", asFUNCTION(json::parse), asCALL_CDECL);
+
+            // Load
+            engine->RegisterGlobalFunction("json@ loadJsonFile(string)", asFUNCTION(json::loadJsonFile), asCALL_CDECL);
         }
-    }
-}
+    } // namespace script
+} // namespace satdump
