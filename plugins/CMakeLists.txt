@@ -440,3 +440,9 @@ option(PLUGIN_BITVIEW_APP "Enable BitView Application (Very WIP)" OFF)
 if(PLUGIN_BITVIEW_APP)
   add_subdirectory(bitview_app)
 endif()
+
+option(PLUGIN_WIPTRACKING_APP "Enable WIP Tracking Application" OFF)
+
+if(PLUGIN_WIPTRACKING_APP)
+  add_subdirectory(wip_tracking_app)
+endif()

@@ -167,8 +167,10 @@ namespace satdump
                         {
                             std::vector<std::shared_ptr<Handler>> e;
                             eventBus->fire_event<RequestHandlersEvent>({e});
-                            if (e.size() > 0)
-                                master_handler->addSubHandler(e[0]);
+                            // if (e.size() > 0)
+                            //     master_handler->addSubHandler(e[0]);
+                            for (auto &h : e)
+                                master_handler->addSubHandler(h);
                         }
                         if (ImGui::MenuItem("Waterfall TEST"))
                             master_handler->addSubHandler(std::make_shared<WaterfallTestHandler>());
