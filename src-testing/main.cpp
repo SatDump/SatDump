@@ -10,215 +10,298 @@
  * Don't judge the code you might see in there! :)
  **********************************************************************/
 
+#include "common/geodetic/calc_azel.h"
+#include "common/geodetic/geodetic_coordinates.h"
+#include "common/geodetic/wgs84.h"
 #include "logger.h"
-
-#if 1
-
-#include "dsp/device/dev.h"
-#include "init.h"
-
-int main(int argc, char *argv[])
-{
-    initLogger();
-
-    logger->set_level(slog::LOG_ERROR);
-    satdump::initSatdump();
-    completeLoggerInit();
-    logger->set_level(slog::LOG_TRACE);
-
-    auto devs = satdump::ndsp::getDeviceList(satdump::ndsp::DeviceBlock::MODE_NORMAL);
-
-    for (auto &d : devs)
-    {
-        if (d.type == "bladerf")
-            continue;
-
-        auto i = satdump::ndsp::getDeviceInstanceFromInfo(d, satdump::ndsp::DeviceBlock::MODE_SINGLE_TX);
-        d.params = i->get_cfg_list();
-        logger->debug("\n" + nlohmann::json(d).dump(4) + "\n");
-    }
-}
-
-#else
-#include <nng/nng.h>
-#include <nng/protocol/bus0/bus.h>
-#include <nng/protocol/pair0/pair.h>
-#include <nng/supplemental/http/http.h>
-#include <nng/supplemental/util/platform.h>
-
-#include "common/dsp/fft/fft_pan.h"
-#include "common/dsp_source_sink/dsp_sample_source.h"
-#include "init.h"
-
+#include <calceph.h>
+#include <sstream>
 #include <unistd.h>
 
-// HTTP Handler for stats
-void http_handle(nng_aio *aio)
+extern "C"
 {
-    std::string jsonstr = "{\"api\": true}";
-
-    nng_http_res *res;
-    nng_http_res_alloc(&res);
-    nng_http_res_copy_data(res, jsonstr.c_str(), jsonstr.size());
-    nng_http_res_set_header(res, "Content-Type", "application/json; charset=utf-8");
-    nng_aio_set_output(aio, 0, res);
-    nng_aio_finish(aio, 0);
+#include <novas.h>
+}
+extern "C"
+{
+#include <novas-calceph.h>
 }
 
-// HTTP Handler for commands
-void http_handleP(nng_aio *aio)
+// Below are some Earth orientation values. Here we define them as constants, but they may
+// of course be variables. They should be set to the appropriate values for the time
+// of observation based on the IERS Bulletins...
+
+#define LEAP_SECONDS 37            ///< [s] current leap seconds from IERS Bulletin C
+#define DUT1 0.114                 ///< [s] current UT1 - UTC time difference from IERS Bulletin A
+#define POLAR_DX (0.0863 / 1000.0) // 230.0 ///< [mas] Earth polar offset x, e.g. from IERS Bulletin A.
+#define POLAR_DY (0.4178 / 1000.0) // -62.0             ///< [mas] Earth polar offset y, e.g. from IERS Bulletin A.
+
+#if 1
+namespace t
 {
-    std::string jsonstr = "{\"api\": true}";
+    struct vector
+    {
+        double x;
+        double y;
+        double z;
+    };
 
-    nng_http_req *msg = (nng_http_req *)nng_aio_get_input(aio, 0);
+    // Must already be in radians!
+    void lla2xyz(geodetic::geodetic_coords_t lla, vector &position)
+    {
+        // double asq = geodetic::WGS84::a * geodetic::WGS84::a;
+        double esq = geodetic::WGS84::e * geodetic::WGS84::e;
+        double N = geodetic::WGS84::a / sqrt(1 - esq * pow(sin(lla.lat), 2));
+        position.x = (N + lla.alt) * cos(lla.lat) * cos(lla.lon);
+        position.y = (N + lla.alt) * cos(lla.lat) * sin(lla.lon);
+        position.z = ((1 - esq) * N + lla.alt) * sin(lla.lat);
+    }
 
-    void *ptr;
-    size_t ptrl;
-    nng_http_req_get_data(msg, &ptr, &ptrl);
-    logger->info("Got : %s", (char *)ptr);
+    // Output in radians!
+    void xyz2lla(vector position, geodetic::geodetic_coords_t &lla)
+    {
+        double asq = geodetic::WGS84::a * geodetic::WGS84::a;
+        double esq = geodetic::WGS84::e * geodetic::WGS84::e;
 
-    nng_http_res *res;
-    nng_http_res_alloc(&res);
-    nng_http_res_copy_data(res, jsonstr.c_str(), jsonstr.size());
-    nng_http_res_set_header(res, "Content-Type", "application/json; charset=utf-8");
-    nng_aio_set_output(aio, 0, res);
-    nng_aio_finish(aio, 0);
-}
+        double b = sqrt(asq * (1 - esq));
+        double bsq = b * b;
+        double ep = sqrt((asq - bsq) / bsq);
+        double p = sqrt(position.x * position.x + position.y * position.y);
+        double th = atan2(geodetic::WGS84::a * position.z, b * p);
+        double lon = atan2(position.y, position.x);
+        double lat = atan2((position.z + ep * ep * b * pow(sin(th), 3)), (p - esq * geodetic::WGS84::a * pow(cos(th), 3)));
+        // double N = geodetic::WGS84::a / (sqrt(1 - esq * pow(sin(lat), 2)));
+
+        vector g;
+        lla2xyz(geodetic::geodetic_coords_t(lat, lon, 0, true), g);
+
+        double gm = sqrt(g.x * g.x + g.y * g.y + g.z * g.z);
+        double am = sqrt(position.x * position.x + position.y * position.y + position.z * position.z);
+        double alt = am - gm;
+
+        lla = geodetic::geodetic_coords_t(lat, lon, alt, true);
+    }
+} // namespace t
+#endif
 
 int main(int argc, char *argv[])
 {
-    initLogger();
+    //   initLogger();
+    printf("NOVAS_TEST\n");
 
-    logger->set_level(slog::LOG_OFF);
-    satdump::initSatdump();
-    completeLoggerInit();
-    logger->set_level(slog::LOG_TRACE);
+    // SuperNOVAS variables used for the calculations ------------------------->
+    novas_orbital orbit = NOVAS_ORBIT_INIT; // Orbital parameters
+    object source;                          // a celestial object: sidereal, planet, ephemeris or orbital source
+    observer obs;                           // observer location
+    novas_timespec obs_time;                // astrometric time of observation
+    novas_frame obs_frame;                  // observing frame defined for observing time and location
+    enum novas_accuracy accuracy;           // NOVAS_FULL_ACCURACY or NOVAS_REDUCED_ACCURACY
+    sky_pos apparent;                       // calculated precise observed (apparent) position of source
 
-    dsp::registerAllSources();
+    // Calculated quantities ------------------------------------------------->
+    double az, el; // calculated azimuth and elevation at observing site
 
-    ///////////////////////
+    // Intermediate variables we'll use -------------------------------------->
+    struct timespec unix_time; // Standard precision UNIX time structure
 
-    std::shared_ptr<dsp::DSPSampleSource> dsp_source;
+    // We'll print debugging messages and error traces...
+    novas_debug(NOVAS_DEBUG_ON);
+
+#if 1
+    // -------------------------------------------------------------------------
+    // We'll use the CALCEPH library to provide ephemeris data
+
+    // First open one or more ephemeris files with CALCEPH to use
+    // E.g. the DE440 (short-term) ephemeris data from JPL.
+    const char *arrr[2] = {"/home/alan/Downloads/de440s.bsp", "/home/alan/Downloads/jwst_pred.bsp"};
+    t_calcephbin *de440 = calceph_open_array(2, arrr); // calceph_open("/home/alan/Downloads/de440s.bsp");
+    if (!de440)
     {
-        auto all_sources = dsp::getAllAvailableSources();
-        for (auto &s : all_sources)
-        {
-            logger->trace(s.name);
-            if (s.source_type == "rtlsdr")
-                dsp_source = dsp::getSourceFromDescriptor(s);
-        }
+        fprintf(stderr, "ERROR! could not open ephemeris data\n");
+        return 1;
     }
 
-    dsp_source->open();
-    dsp_source->set_samplerate(2.4e6);
-    dsp_source->set_frequency(431.8e6);
-    dsp_source->start();
+    // Make de440 provide ephemeris data for the major planets.
+    novas_use_calceph(de440);
+#endif
 
-    std::shared_ptr<dsp::FFTPanBlock> fftPan = std::make_shared<dsp::FFTPanBlock>(dsp_source->output_stream);
-    fftPan->set_fft_settings(65536, dsp_source->get_samplerate(), 30);
-    fftPan->avg_num = 1;
+    // Orbitals assume Keplerian motion, and are never going to be accurate much below the
+    // tens of arcsec level even for the most current MPC orbits. Orbitals for planetary
+    // satellites are even less precise. So, with orbitals, there is no point on pressing
+    // for ultra-high (sub-uas level) accuracy...
+    accuracy = NOVAS_FULL_ACCURACY; // NOVAS_REDUCED_ACCURACY; // mas-level precision, typically
 
-    ////////////////////////
+    // -------------------------------------------------------------------------
+    // Define a sidereal source
 
-    std::string http_server_url = "http://0.0.0.0:8080";
+#if 0
+                                    // Orbital Parameters for the asteroid Ceres from the Minor Planet Center
+    // (MPC) at JD 2460600.5
+    orbit.jd_tdb = 2460600.5; // [day] TDB date
+    orbit.a = 2.7666197;      // [AU]
+    orbit.e = 0.079184;
+    orbit.i = 10.5879;      // [deg]
+    orbit.omega = 73.28579; // [deg]
+    orbit.Omega = 80.25414; // [deg]
+    orbit.M0 = 145.84905;   // [deg]
+    orbit.n = 0.21418047;   // [deg/day]
 
-    nng_http_server *http_server;
-    nng_url *url;
+    // Define Ceres as the observed object (we can use whatever ID numbering
+    // system here, since it's irrelevant to SuperNOVAS in this context).
+    make_orbital_object("Ceres", 2000001, &orbit, &source);
+#elif 0
+    // ... Or, you could define orbitals for a satellite instead:
+
+    // E.g. Callisto's orbital parameters from JPL Horizons
+    // https://ssd.jpl.nasa.gov/sats/elem/sep.html
+    // 1882700. 0.007 43.8  87.4  0.3 309.1 16.690440 277.921 577.264 268.7 64.8
+    orbit.system.center = NOVAS_JUPITER;
+    novas_set_orbsys_pole(NOVAS_GCRS, 268.7 / 15.0, 64.8, &orbit.system);
+
+    orbit.jd_tdb = NOVAS_JD_J2000;
+    orbit.a = 1882700.0 * 1e3 / NOVAS_AU;
+    orbit.e = 0.007;
+    orbit.omega = 43.8;
+    orbit.M0 = 87.4;
+    orbit.i = 0.3;
+    orbit.Omega = 309.1;
+    orbit.n = TWOPI / 16.690440;
+    orbit.apsis_period = 277.921 * 365.25;
+    orbit.node_period = 577.264 * 365.25;
+
+    // Set Callisto as the observed object
+    make_orbital_object("Callisto", 501, &orbit, &source);
+#elif 1
+    make_planet(NOVAS_MOON, &source);
+    //   make_ephem_object("STEREO-A", -234, &source);
+    // make_ephem_object("Io", 501, &source);
+    // make_ephem_object("JWST", -170, &source);
+#endif
+
+    // -------------------------------------------------------------------------
+    // Define observer somewhere on Earth (we can also define observers in Earth
+    // or Sun orbit, at the geocenter or at the Solary-system barycenter...)
+
+    // Specify the location we are observing from
+    // 50.7374 deg N, 7.0982 deg E, 60m elevation
+    // (We'll ignore the local weather parameters here, but you can set those too.)
+    if (make_observer_at_geocenter(&obs))
+    // if (make_observer_on_surface(48.783934, 1.815666, 173.0, 0.0, 0.0, &obs) != 0)
     {
-
-        nng_url_parse(&url, http_server_url.c_str());
-        nng_http_server_hold(&http_server, url);
+        fprintf(stderr, "ERROR! defining Earth-based observer location.\n");
+        return 1;
     }
 
-    nng_http_handler *handler_api;
-    {
-        nng_http_handler_alloc(&handler_api, "/api", http_handle);
-        nng_http_handler_set_method(handler_api, "GET");
-        nng_http_server_add_handler(http_server, handler_api);
-    }
-
-    nng_http_handler *handler_apiP;
-    {
-        nng_http_handler_alloc(&handler_api, "/apip", http_handleP);
-        nng_http_handler_set_method(handler_api, "POST");
-        nng_http_server_add_handler(http_server, handler_api);
-    }
-
-    nng_socket socket;
-
-    {
-
-        int rv = 0;
-        if (rv = nng_bus0_open(&socket); rv != 0)
-        {
-            printf("pair open error\n");
-        }
-
-        if (rv = nng_listen(socket, "ws://0.0.0.0:8080/ws", nullptr, 0); rv != 0)
-        {
-            printf("server listen error\n");
-        }
-    }
-
-    nng_url_free(url);
-
-    nng_http_server_start(http_server);
-
-    fftPan->on_fft = [&](float *b)
-    {
-        std::vector<uint8_t> send_buf(8 + 65536);
-        float *min = (float *)&send_buf[0];
-        float *max = (float *)&send_buf[4];
-        uint8_t *dat = &send_buf[8];
-
-        *min = 1e6;
-        *max = -1e6;
-
-        for (int i = 0; i < 65536; i++)
-        {
-            if (*min > b[i])
-                *min = b[i];
-            if (*max < b[i])
-                *max = b[i];
-        }
-
-        for (int i = 0; i < 65536; i++)
-        {
-            float val = (b[i] - *min) / (*max - *min);
-            dat[i] = val * 255;
-        }
-
-        nng_send(socket, send_buf.data(), send_buf.size(), NNG_FLAG_NONBLOCK);
-    };
-    fftPan->start();
+    observer obs2;
+    make_observer_on_surface(48.783934, 1.815666, 173.0, 0.0, 0.0, &obs2);
 
     while (1)
     {
-        /*char *buf = nullptr;
-        size_t size;
+        // -------------------------------------------------------------------------
+        // Set the astrometric time of observation...
 
-        int rv = 0;
-        printf("WAIT\n");
-        if (rv = nng_recv(socket, &buf, &size, NNG_FLAG_ALLOC); rv != 0)
+        // Get the current system time, with up to nanosecond resolution...
+        clock_gettime(CLOCK_REALTIME, &unix_time);
+
+        // Set the time of observation to the precise UTC-based UNIX time
+        // (We can set astromtric time using an other time measure also...)
+        if (novas_set_unix_time(unix_time.tv_sec, unix_time.tv_nsec, LEAP_SECONDS, DUT1, &obs_time) != 0)
         {
-            printf("recv error: %s\n", nng_strerror(rv));
+            fprintf(stderr, "ERROR! failed to set time of observation.\n");
+            return 1;
         }
 
-        printf("server get with client: %s\n", buf);
+        // ... Or you could set a time explicily in any known timescale.
+        /*
+        // Let's set a TDB-based time for the start of the J2000 epoch exactly...
+        if(novas_set_time(NOVAS_TDB, NOVAS_JD_J2000, 32, 0.0, &obs_time) != 0) {
+          fprintf(stderr, "ERROR! failed to set time of observation.\n");
+          return 1;
+        }
+        */
 
-        std::string testStr = "Server Reply!\n\r";
-        //  int rv = 0;
-        if (rv = nng_send(socket, (void *)testStr.c_str(), testStr.size(), NULL); rv != 0)
+        // -------------------------------------------------------------------------
+        // You might want to set a provider for precise planet positions so we might
+        // calculate Earth, Sun and major planet positions accurately. It is needed
+        // if you have orbitals defined around a major planet.
+        //
+        // There are many ways to set a provider of planet positions. For example,
+        // you may use the CALCEPH library:
+        //
+        // t_calcephbin *planets = calceph_open("path/to/de440s.bsp");
+        // novas_use_calceph(planets);
+
+        // -------------------------------------------------------------------------
+        // Initialize the observing frame with the given observing and Earth
+        // orientation patameters.
+        //
+        if (novas_make_frame(accuracy, &obs, &obs_time, POLAR_DX, POLAR_DY, &obs_frame) != 0)
         {
-            printf("send error: %s\n", nng_strerror(rv));
+            fprintf(stderr, "ERROR! failed to define observing frame.\n");
+            return 1;
         }
 
-        printf("SEND\n");
-*/
+        // -------------------------------------------------------------------------
+        // Calculate the precise apparent position (e.g. in CIRS).
+        if (novas_sky_pos(&source, &obs_frame, NOVAS_CIRS, &apparent) != 0)
+        {
+            fprintf(stderr, "ERROR! failed to calculate apparent position.\n");
+            return 1;
+        }
+
+        // Let's print the apparent position
+        // (Note, CIRS R.A. is relative to CIO, not the true equinox of date.)
+        printf(" RA = %.9f deg, Dec = %.9f deg, rad_vel = %.6f km/s, distance = %.6f ", apparent.ra * 15., apparent.dec, apparent.rv, (apparent.dis * NOVAS_AU) / 1e3);
+
+        // -------------------------------------------------------------------------
+        // Convert the apparent position in CIRS on sky to horizontal coordinates
+        // We'll use a standard (fixed) atmospheric model to estimate an optical refraction
+        // (You might use other refraction models, or NULL to ignore refraction corrections)
+        //     if (novas_app_to_hor(&obs_frame, NOVAS_CIRS, apparent.ra, apparent.dec, novas_standard_refraction, &az, &el) != 0)
+        //    {
+        //        fprintf(stderr, "ERROR! failed to calculate azimuth / elevation.\n");
+        //       return 1;
+        //   }
+
+        double pos[3], vel[3];
+        // if (novas_orbit_posvel((obs_time.ijd_tt + obs_time.fjd_tt) + obs_time.tt2tdb, &orbit, NOVAS_FULL_ACCURACY, pos,vel))
+        if (novas_geom_posvel(&source, &obs_frame, novas_reference_system::NOVAS_CIRS, pos, vel))
+        {
+            fprintf(stderr, "ERROR! failed to calculate pos / vel.\n");
+            return 1;
+        }
+
+        double pos2[3];
+        if (cirs_to_itrs(/*double jd_tt_high*/ obs_time.ijd_tt, /*double jd_tt_low*/ obs_time.fjd_tt, obs_time.ut1_to_tt, NOVAS_FULL_ACCURACY, POLAR_DX * 1e3, POLAR_DY * 1e3, pos, pos2))
+        {
+            fprintf(stderr, "ERROR! failed to calculate CIRS => ITRS.\n");
+            return 1;
+        }
+
+        geodetic::geodetic_coords_t c;
+        t::xyz2lla({(pos2[0] * NOVAS_AU) / 1e3, (pos2[1] * NOVAS_AU) / 1e3, (pos2[2] * NOVAS_AU) / 1e3}, c);
+        c.toDegs();
+
+        printf(" X %.6f Y %.6f Z %.6f (%.6f, %.6f, %.6f Km)", (pos2[0] * NOVAS_AU) / 1e3, (pos2[1] * NOVAS_AU) / 1e3, (pos2[2] * NOVAS_AU) / 1e3, c.lat, c.lon, c.alt);
+
+        //   novas_track tr;
+        //   novas_equ_track(&source, &obs_frame, 0.00001, &tr);
+        //   printf(" Lat = %.2f deg, Lon = %.6f deg ", tr.pos.lat, tr.pos.lon);
+
+        geodetic::geodetic_coords_t obs(48.783934, 1.815666, 173.0 / 1e3);
+        auto v = geodetic::calc_azel(obs, c);
+        printf(" Az2 = %.6f deg, El2 = %.6f deg ||| ", v.az - 180, v.el);
+
+        novas_frame obs_frame2;
+        novas_make_frame(accuracy, &obs2, &obs_time, POLAR_DX, POLAR_DY, &obs_frame2);
+        sky_pos apparent2;
+        novas_sky_pos(&source, &obs_frame2, NOVAS_CIRS, &apparent2);
+        novas_app_to_hor(&obs_frame2, NOVAS_CIRS, apparent2.ra, apparent2.dec, NULL, &az, &el);
+        // Let's print the calculated azimuth and elevation
+        printf(" Az = %.6f deg, El = %.6f deg\n", az, el);
+
         sleep(1);
     }
 
-    nng_http_server_stop(http_server);
-    nng_http_server_release(http_server);
+    return 0;
 }
-#endif
