@@ -1,8 +1,7 @@
 #pragma once
 
 #include "angelscript/angelscript.h"
-#include "angelscript/scriptarray/scriptarray.h"
-#include "angelscript/scriptstdstring/scriptstdstring.h"
+#include <string>
 
 namespace satdump
 {
@@ -16,17 +15,10 @@ namespace satdump
         void registerProj(asIScriptEngine *engine);
         void registerImage(asIScriptEngine *engine);
 
-        inline void registerAll(asIScriptEngine *engine)
-        {
-            RegisterStdString(engine);
-            RegisterScriptArray(engine, true);
+        template <typename T, typename Factory>
+        void registerProduct(std::string name, asIScriptEngine *engine);
+        void registerImageProduct(asIScriptEngine *engine);
 
-            registerLogger(engine);
-            registerSystem(engine);
-            registerJson(engine);
-            registerGeodetic(engine);
-            registerProj(engine);
-            registerImage(engine);
-        }
+        void registerAll(asIScriptEngine *engine);
     } // namespace script
 } // namespace satdump

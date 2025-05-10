@@ -10,75 +10,12 @@
 #include "common/image/meta.h"
 #include "common/image/text.h"
 
+#include "bind_image.h"
+
 namespace satdump
 {
     namespace script
     {
-        namespace
-        {
-            class CScriptImage
-            {
-            public:
-                // Constructors
-                CScriptImage()
-                {
-                    refCount = 1;
-                    img = new image::Image();
-                }
-
-                CScriptImage(int bit_depth, size_t width, size_t height, int channels)
-                {
-                    refCount = 1;
-                    img = new image::Image(bit_depth, width, height, channels);
-                }
-
-                CScriptImage(image::Image i)
-                {
-                    refCount = 1;
-                    img = new image::Image();
-                    *img = i;
-                }
-
-                // Memory management
-                int AddRef() const
-                {
-                    // Increase counter
-                    return asAtomicInc(refCount);
-                }
-
-                int Release() const
-                {
-                    // Decrease the ref counter
-                    if (asAtomicDec(refCount) == 0)
-                    {
-                        // Delete this object as no more references to it exists
-                        delete this;
-                        return 0;
-                    }
-
-                    return refCount;
-                }
-
-                // Copy the stored value from another any object
-                CScriptImage &operator=(const CScriptImage &other)
-                {
-                    *img = *other.img;
-                    return *this;
-                }
-
-            protected:
-                virtual ~CScriptImage() { delete img; }
-
-                mutable int refCount;
-
-            public:
-                image::Image *img;
-            };
-
-            static CScriptImage *ScriptImageFactory() { return new CScriptImage(); }
-            static CScriptImage *ScriptImageFactory2(int bit_depth, size_t width, size_t height, int channels) { return new CScriptImage(bit_depth, width, height, channels); }
-        } // namespace
-
         std::vector<double> arrayToVectorDouble(CScriptArray *array) { return std::vector<double>((double *)array->At(0), (double *)array->At(0) + array->GetSize()); }
 
         namespace img
@@ -184,6 +121,10 @@ namespace satdump
             void set_metadata(CScriptImage *img, CScriptJson *metadata) { return image::set_metadata(*img->img, *metadata->j); }
             CScriptJson *get_metadata(CScriptImage *img) { return new CScriptJson(image::get_metadata(*img->img)); }
             void free_metadata(CScriptImage *img) { return image::free_metadata(*img->img); }
+
+            bool has_metadata_proj_cfg(CScriptImage *img) { return image::has_metadata_proj_cfg(*img->img); }
+            void set_metadata_proj_cfg(CScriptImage *img, CScriptJson *metadata) { return image::set_metadata_proj_cfg(*img->img, *metadata->j); }
+            CScriptJson *get_metadata_proj_cfg(CScriptImage *img) { return new CScriptJson(image::get_metadata_proj_cfg(*img->img)); }
         } // namespace meta
 
         namespace text
@@ -325,6 +266,10 @@ namespace satdump
             engine->RegisterGlobalFunction("void set_metadata(Image &, nlohmann::json &)", asFUNCTION(meta::set_metadata), asCALL_CDECL);
             engine->RegisterGlobalFunction("nlohmann::json@ get_metadata(Image &)", asFUNCTION(meta::get_metadata), asCALL_CDECL);
             engine->RegisterGlobalFunction("void free_metadata(Image &)", asFUNCTION(meta::free_metadata), asCALL_CDECL);
+
+            engine->RegisterGlobalFunction("bool has_metadata_proj_cfg(Image &)", asFUNCTION(meta::has_metadata_proj_cfg), asCALL_CDECL);
+            engine->RegisterGlobalFunction("void set_metadata_proj_cfg(Image &, nlohmann::json &)", asFUNCTION(meta::set_metadata_proj_cfg), asCALL_CDECL);
+            engine->RegisterGlobalFunction("nlohmann::json@ get_metadata_proj_cfg(Image &)", asFUNCTION(meta::get_metadata_proj_cfg), asCALL_CDECL);
 
             ////////////////////////////////
             //////// Image Text

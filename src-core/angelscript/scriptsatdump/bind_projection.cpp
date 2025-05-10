@@ -4,7 +4,9 @@
 #include "projection/projection.h"
 
 #include "bind_geodetic.h"
+#include "bind_image.h"
 #include "bind_json.h"
+#include "projection/reproject_img.h"
 
 namespace satdump
 {
@@ -83,15 +85,16 @@ namespace satdump
 
         namespace pro
         {
-
-        }
+            CScriptImage *reprojectImage(CScriptImage *img, CScriptProjection *p) { return new CScriptImage(proj::reprojectImage(*img->img, *p->p)); }
+            CScriptImage *reprojectImageJ(CScriptImage *img, CScriptJson *p) { return new CScriptImage(proj::reprojectImage(*img->img, *p->j)); }
+        } // namespace pro
 
         void registerProj(asIScriptEngine *engine)
         {
             engine->SetDefaultNamespace("proj");
 
             ////////////////////////////////
-            //////// Core Image Class
+            //////// Core Projection Class
             ////////////////////////////////
 
             // Base type
@@ -116,6 +119,13 @@ namespace satdump
             engine->RegisterObjectMethod("Projection", "bool init(bool, bool)", asMETHOD(CScriptProjection, init), asCALL_THISCALL);
             engine->RegisterObjectMethod("Projection", "bool forward(geodetic::geodetic_coords_t@, double &out, double &out)", asMETHOD(CScriptProjection, forward), asCALL_THISCALL);
             engine->RegisterObjectMethod("Projection", "bool inverse(double, double, geodetic::geodetic_coords_t@)", asMETHOD(CScriptProjection, inverse), asCALL_THISCALL);
+
+            ////////////////////////////////
+            //////// Other funcs
+            ////////////////////////////////
+
+            engine->RegisterGlobalFunction("image::Image@ reprojectImage(image::Image &, nlohmann::json &)", asFUNCTION(pro::reprojectImageJ), asCALL_CDECL);
+            engine->RegisterGlobalFunction("image::Image@ reprojectImage(image::Image &, Projection &)", asFUNCTION(pro::reprojectImage), asCALL_CDECL);
         }
     } // namespace script
 } // namespace satdump
