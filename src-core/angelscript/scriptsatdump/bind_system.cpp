@@ -1,4 +1,5 @@
 #include "bind_satdump.h"
+#include <ctime>
 #include <string>
 
 #ifdef _WIN32
@@ -120,11 +121,22 @@ namespace satdump
 #endif
         }
 
+        std::string formatTimestamp(std::string s, double timestamp)
+        {
+            char buffer[100];
+            time_t tt = timestamp;
+            tm *t = gmtime(&tt);
+            strftime(buffer, 100, s.c_str(), t);
+            return std::string(buffer);
+        }
+
         void registerSystem(asIScriptEngine *engine)
         {
             engine->SetDefaultNamespace("");
             engine->RegisterGlobalFunction("int exec(const string &in)", asFUNCTIONPR(ExecSystemCmd, (const std::string &), int), asCALL_CDECL);
             engine->RegisterGlobalFunction("int exec(const string &in, string &out)", asFUNCTIONPR(ExecSystemCmd, (const std::string &, std::string &), int), asCALL_CDECL);
+
+            engine->RegisterGlobalFunction("string formatTimestamp(string, double)", asFUNCTION(formatTimestamp), asCALL_CDECL);
         }
     } // namespace script
 } // namespace satdump
