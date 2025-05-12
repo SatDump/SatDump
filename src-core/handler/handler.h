@@ -132,6 +132,12 @@ namespace satdump
              */
             void setSubHandlersCanBeDragged(bool v) { handler_can_subhandlers_be_dragged = v; }
 
+             /**
+             * @brief Set if a handler's subhandlers can be reordered
+             * @param v true to have them be reorderable
+             */
+             void setCanSubBeReorgTo(bool v) { handler_can_be_reorg = v; }
+
             /**
              * @brief Optional, allows setting a configuration/state from JSON
              * @param p JSON object

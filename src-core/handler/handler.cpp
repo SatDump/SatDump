@@ -4,6 +4,7 @@
 
 //// TODOREWORK?
 #include "product/image_product_handler.h"
+#include <utility>
 
 namespace satdump
 {
@@ -95,18 +96,26 @@ namespace satdump
                 }
 
                 if (handler_can_be_reorg)
-                { // TODOREWORK
+                {
                     ImGui::SetCursorPos({arrow_pos.x - 100, arrow_pos.y});
 
-                    ImGui::SameLine();
-                    if (ImGui::SmallButton(u8"\ueaf4"))
+                    if (i > 0)
                     {
-                        logger->trace("Up");
+                        ImGui::SameLine();
+                        if (ImGui::SmallButton((u8"\ueaf4##" + handler->getTreeID()).c_str()))
+                        {
+                            logger->trace("Up");
+                            std::swap(subhandlers[i], subhandlers[i - 1]);
+                        }
                     }
-                    ImGui::SameLine();
-                    if (ImGui::SmallButton(u8"\ueaf3"))
+                    if (i != subhandlers.size() - 1)
                     {
-                        logger->trace("Down");
+                        ImGui::SameLine();
+                        if (ImGui::SmallButton((u8"\ueaf3##" + handler->getTreeID()).c_str()))
+                        {
+                            logger->trace("Down");
+                            std::swap(subhandlers[i], subhandlers[i + 1]);
+                        }
                     }
 
                     ImGui::SetCursorPos(arrow_pos);

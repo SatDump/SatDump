@@ -35,14 +35,20 @@ namespace satdump
             void addSubHandler(std::shared_ptr<Handler> handler)
             {
                 Handler::addSubHandler(handler);
-                img_handler.addSubHandler(handler);
+                //   img_handler.addSubHandler(handler);
             }
 
             void delSubHandler(std::shared_ptr<Handler> handler, bool now = false)
             {
-                img_handler.delSubHandler(handler, true);
+                //  img_handler.delSubHandler(handler, true);
                 Handler::delSubHandler(handler, now);
             }
+
+            // void drawTreeMenu(std::shared_ptr<Handler> &h)
+            // {
+            //     img_handler.drawTreeMenu(h);
+            //     Handler::drawTreeMenu(h);
+            // }
 
             std::string getName() { return "ProjectionToRename"; }
             std::string getID() { return "projection_handler"; }

@@ -1,4 +1,5 @@
 #include "projection_handler.h"
+#include "common/image/image.h"
 #include "core/style.h"
 #include "logger.h"
 
@@ -6,13 +7,18 @@
 #include "../vector/shapefile_handler.h"
 
 // TODOREWORK
+#include "projection/reproject_img.h"
 #include "projection/reprojector.h"
 
 namespace satdump
 {
     namespace viewer
     {
-        ProjectionHandler::ProjectionHandler() { handler_tree_icon = u8"\uf6e6"; }
+        ProjectionHandler::ProjectionHandler()
+        {
+            handler_tree_icon = u8"\uf6e6";
+            setCanSubBeReorgTo(true);
+        }
 
         ProjectionHandler::~ProjectionHandler() {}
 
@@ -62,6 +68,8 @@ namespace satdump
 
         void ProjectionHandler::do_process()
         {
+            image::Image img;
+
             for (auto &h : subhandlers)
             {
                 if (h->getID() == "image_handler")
@@ -71,32 +79,38 @@ namespace satdump
                     //                    sh_h->draw_to_image(curr_image, pfunc);
 
                     // TODOREWORK!!!!
-                    proj::ReprojectionOperation op;
-                    op.img = &im_h->get_current_img();
-                    op.target_prj_info = projui.get_proj();
-                    // op.target_prj_info["width"] = width;
-                    // op.target_prj_info["height"] = height;
-                    op.output_width = op.target_prj_info["width"];
-                    op.output_height = op.target_prj_info["height"];
-                    auto cfg = image::get_metadata_proj_cfg(*op.img);
-                    cfg["width"] = op.img->width();
-                    cfg["height"] = op.img->height();
-                    image::set_metadata_proj_cfg(*op.img, cfg);
-                    auto img = proj::reproject(op);
+                    img = proj::reprojectImage(im_h->get_current_img(), projui.get_proj());
                     logger->critical("DONE REPROJECTING!");
-                    img_handler.updateImage(img);
                 }
             }
 
-            /* for (auto &h : subhandlers)
-             {
-                 if (h->getID() == "shapefile_handler")
-                 {
-                     ShapefileHandler *sh_h = (ShapefileHandler *)h.get();
-                     logger->critical("Drawing OVERLAY!");
-                     //                    sh_h->draw_to_image(curr_image, pfunc);
-                 }
-             }*/
+            for (auto &h : subhandlers)
+            {
+                if (h->getID() == "shapefile_handler")
+                {
+                    ShapefileHandler *sh_h = (ShapefileHandler *)h.get();
+                    logger->critical("Drawing OVERLAY!");
+
+                    nlohmann::json cfg = image::get_metadata_proj_cfg(img);
+                    cfg["width"] = img.width();
+                    cfg["height"] = img.height();
+                    std::unique_ptr<proj::Projection> p = std::make_unique<proj::Projection>();
+                    *p = cfg;
+                    p->init(1, 0);
+
+                    auto pfunc = [&p](double lat, double lon, double h, double w) mutable -> std::pair<double, double>
+                    {
+                        double x, y;
+                        if (p->forward(geodetic::geodetic_coords_t(lat, lon, 0, false), x, y) || x < 0 || x >= w || y < 0 || y >= h)
+                            return {-1, -1};
+                        else
+                            return {x, y};
+                    };
+                    sh_h->draw_to_image(img, pfunc);
+                }
+            }
+
+            img_handler.updateImage(img);
         }
 
         void ProjectionHandler::drawMenuBar()

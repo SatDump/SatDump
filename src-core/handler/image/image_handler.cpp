@@ -36,6 +36,7 @@ namespace satdump
         ImageHandler::ImageHandler()
         {
             handler_tree_icon = u8"\uf7e8";
+            setCanSubBeReorgTo(true);
 
             // TODOREWORK experimental?
             image_view.cropCallback = [this](int x1, int y1, int x2, int y2)
@@ -399,8 +400,9 @@ namespace satdump
                     }
                 };
 
-                for (auto &h : subhandlers)
+                for (int i = subhandlers.size() - 1; i >= 0; i--)
                 {
+                    auto &h = subhandlers[i];
                     if (h->getID() == "shapefile_handler")
                     {
                         ShapefileHandler *sh_h = (ShapefileHandler *)h.get();
