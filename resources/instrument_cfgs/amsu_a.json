@@ -1,0 +1,111 @@
+{
+    "name": "AMSU-A",
+    "presets": [
+        {
+            "name": "AMSU False Color",
+            "expression": "ch5, ch4, ch3",
+            "image": {
+                "individual_equalize": true
+            }
+        },
+        {
+            "name": "550hPa Temperature (~5 km)",
+            "expression": "cch5=(5, brightness_temperature, 220.000000, 280.000000);lut=lut(lut/generic/roygbiv.png);lut(cch5, 0, 0), lut(cch5, 0, 1), lut(cch5, 0, 2)",
+            "image": {
+                "individual_equalize": false
+            }
+        },
+        {
+            "name": "350hPa Temperature (~10 km)",
+            "expression": "cch6=(6, brightness_temperature, 210.000000, 260.000000);lut=lut(lut/generic/roygbiv.png);lut(cch6, 0, 0), lut(cch6, 0, 1), lut(cch6, 0, 2)",
+            "image": {
+                "individual_equalize": false
+            }
+        },
+        {
+            "name": "200hPa Temperature (~12 km)",
+            "expression": "cch7=(7, brightness_temperature, 210.000000, 240.000000);lut=lut(lut/generic/roygbiv.png);lut(cch7, 0, 0), lut(cch7, 0, 1), lut(cch7, 0, 2)",
+            "image": {
+                "individual_equalize": false
+            }
+        },
+        {
+            "name": "100hPa Temperature (~15 km)",
+            "expression": "cch8=(8, brightness_temperature, 200.000000, 250.000000);lut=lut(lut/generic/roygbiv.png);lut(cch8, 0, 0), lut(cch8, 0, 1), lut(cch8, 0, 2)",
+            "image": {
+                "individual_equalize": false
+            }
+        },
+        {
+            "name": "SSEC 89 GHz AMSU-A BT",
+            "expression": "cch15=(15, brightness_temperature, 180.000000, 280.000000);lut=lut(lut/cal/ssec_amsu.png);lut(cch15, 0, 0), lut(cch15, 0, 1), lut(cch15, 0, 2)",
+            "image": {
+                "individual_equalize": false
+            }
+        }
+    ],
+    "default": {
+        "calibration_ranges": {
+            "1": {
+                "min": 0.000779621972953437,
+                "max": 0.0015622179344403863
+            },
+            "2": {
+                "min": 0.0013553764899884486,
+                "max": 0.002717578436511613
+            },
+            "3": {
+                "min": 0.004865746444467732,
+                "max": 0.00696308194430693
+            },
+            "4": {
+                "min": 0.0056166810282885634,
+                "max": 0.007157345603664202
+            },
+            "5": {
+                "min": 0.005786807567995949,
+                "max": 0.007374275796202008
+            },
+            "6": {
+                "min": 0.005688631364705234,
+                "max": 0.007051507611199274
+            },
+            "7": {
+                "min": 0.005801766274223301,
+                "max": 0.006635805524504344
+            },
+            "8": {
+                "min": 0.0056365572191744324,
+                "max": 0.0070551049233337475
+            },
+            "9": {
+                "min": 0.006004780089835529,
+                "max": 0.0075163223534913
+            },
+            "10": {
+                "min": 0.006004780089835529,
+                "max": 0.0075163223534913
+            },
+            "11": {
+                "min": 0.006004780089835529,
+                "max": 0.0075163223534913
+            },
+            "12": {
+                "min": 0.006004780089835529,
+                "max": 0.00781863168521178
+            },
+            "13": {
+                "min": 0.006004780089835529,
+                "max": 0.00781863168521178
+            },
+            "14": {
+                "min": 0.006004780089835529,
+                "max": 0.00781863168521178
+            },
+            "15": {
+                "min": 0.01443633925780236,
+                "max": 0.02173195346280265
+            }
+        }
+    }
+}

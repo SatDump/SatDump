@@ -515,52 +515,6 @@
     // Settings for the Viewer. Those also are default settings when generating viewer-less
     "viewer": {
         "instruments": {
-            "amsu_a": {
-                "handler": "image_handler",
-                "name": "AMSU-A",
-                "rgb_composites": {
-                    "AMSU False Color": {
-                        "equation": "ch5, ch4, ch3",
-                        "individual_equalize": true
-                    },
-                    "Surface Relative Temperature": {
-                        "equation": "cos(ln(ch1) + ln(ch2)+0.3)",
-                        "apply_lut": true
-                    },
-                    "550hPa Temperature (~5 km)": {
-                        "equation": "cch5",
-                        "apply_lut": true
-                    },
-                    "350hPa Temperature (~10 km)": {
-                        "equation": "cch6",
-                        "apply_lut": true
-                    },
-                    "200hPa Temperature (~12 km)": {
-                        "equation": "cch7",
-                        "apply_lut": true
-                    },
-                    "100hPa Temperature (~15 km)": {
-                        "equation": "cch8",
-                        "apply_lut": true
-                    },
-                    "Snow cover (Transparent)": {
-                        "equation": "cch3^0.3, 0, 0, cch2 > 0.45 ? (cch3 < 0.439 ? 1 : 0) : 0",
-                        "apply_lut": true,
-                        "autogen": false
-                    },
-                    "SSEC 89 GHz AMSU-A BT": {
-                        "channels": "cch15",
-                        "lut": "lut/cal/ssec_amsu.png",
-                        "calib_cfg": {
-                            "cch15": {
-                                "type": "temperature",
-                                "min": 180,
-                                "max": 280
-                            }
-                        }
-                    }
-                }
-            },
             "hirs": {
                 "handler": "image_handler",
                 "name": "HIRS",
@@ -822,18 +776,6 @@
                                 "max": 400
                             }
                         }
-                    }
-                }
-            },
-            "sem": {
-                "handler": "radiation_handler",
-                "name": "SEM",
-                "radiation_maps": {
-                    "ch1": {
-                        "channel": 1,
-                        "radius": 5,
-                        "min": 0,
-                        "max": 255
                     }
                 }
             },
