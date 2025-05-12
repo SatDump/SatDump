@@ -130,7 +130,7 @@
             "image": {
                 "individual_equalize": false
             }
-        },
+        }
     ],
     "default": {
         "calibration_ranges": {
