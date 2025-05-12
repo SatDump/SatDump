@@ -47,7 +47,11 @@ namespace satdump
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
 
-                if (ImGui::TreeNodeEx(handler->getTreeID().c_str(), nodeFlags(handler, h == handler)) | tree_local.node(handler->handler_tree_icon))
+                bool clicked = ImGui::TreeNodeEx(handler->getTreeID().c_str(), nodeFlags(handler, h == handler));
+                tree_local.node(handler->handler_tree_icon);
+                auto arrow_pos = ImGui::GetCursorPos();
+
+                if (clicked)
                 {
                     if (ImGui::IsItemClicked())
                         h = handler;
@@ -88,6 +92,24 @@ namespace satdump
 
                     handler->drawTreeMenu(h);
                     ImGui::TreePop();
+                }
+
+                if (handler_can_be_reorg)
+                { // TODOREWORK
+                    ImGui::SetCursorPos({arrow_pos.x - 100, arrow_pos.y});
+
+                    ImGui::SameLine();
+                    if (ImGui::SmallButton(u8"\ueaf4"))
+                    {
+                        logger->trace("Up");
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::SmallButton(u8"\ueaf3"))
+                    {
+                        logger->trace("Down");
+                    }
+
+                    ImGui::SetCursorPos(arrow_pos);
                 }
             }
             tree_local.end();

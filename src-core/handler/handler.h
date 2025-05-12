@@ -45,6 +45,8 @@ namespace satdump
             bool handler_can_be_dragged_to = true;
             bool handler_can_subhandlers_be_dragged = true;
 
+            bool handler_can_be_reorg = false;
+
             void delSubHandlersNow()
             {
                 subhandlers_mtx.lock();
