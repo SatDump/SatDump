@@ -515,119 +515,10 @@
     // Settings for the Viewer. Those also are default settings when generating viewer-less
     "viewer": {
         "instruments": {
-            "amsu_a": {
-                "handler": "image_handler",
-                "name": "AMSU-A",
-                "rgb_composites": {
-                    "AMSU False Color": {
-                        "equation": "ch5, ch4, ch3",
-                        "individual_equalize": true
-                    },
-                    "Surface Relative Temperature": {
-                        "equation": "cos(ln(ch1) + ln(ch2)+0.3)",
-                        "apply_lut": true
-                    },
-                    "550hPa Temperature (~5 km)": {
-                        "equation": "cch5",
-                        "apply_lut": true
-                    },
-                    "350hPa Temperature (~10 km)": {
-                        "equation": "cch6",
-                        "apply_lut": true
-                    },
-                    "200hPa Temperature (~12 km)": {
-                        "equation": "cch7",
-                        "apply_lut": true
-                    },
-                    "100hPa Temperature (~15 km)": {
-                        "equation": "cch8",
-                        "apply_lut": true
-                    },
-                    "Snow cover (Transparent)": {
-                        "equation": "cch3^0.3, 0, 0, cch2 > 0.45 ? (cch3 < 0.439 ? 1 : 0) : 0",
-                        "apply_lut": true,
-                        "autogen": false
-                    },
-                    "SSEC 89 GHz AMSU-A BT": {
-                        "channels": "cch15",
-                        "lut": "lut/cal/ssec_amsu.png",
-                        "calib_cfg": {
-                            "cch15": {
-                                "type": "temperature",
-                                "min": 180,
-                                "max": 280
-                            }
-                        }
-                    }
-                }
-            },
             "hirs": {
                 "handler": "image_handler",
                 "name": "HIRS",
                 "rgb_composites": {
-                    "HIRS False Color": {
-                        "equation": "ch5, ch4, ch3",
-                        "description": "descriptions/sounders/HIRSFalseColor.md",
-                        "individual_equalize": true,
-                        "white_balance": true
-                    },
-                    "HIRS alternate airmass": {
-                        "equation": "ch11, ch8, ch6",
-                        "individual_equalize": true
-                    },
-                    "Clouds Only (N2O Sounding)": {
-                        "equation": "ch14, ch13, 1",
-                        "description": "descriptions/sounders/CloudOnlyN2O.md",
-                        "individual_equalize": true
-                    },
-                    "6.25µm Calibrated Water Vapor": {
-                        "lut": "lut/cal/star_abi_wv_8-10.png",
-                        //"description": "descriptions/cal_wv.md",
-                        "channels": "cch12",
-                        "calib_cfg": {
-                            "cch12": {
-                                "type": "radiance",
-                                "min": 0,
-                                "max": 5.2
-                            }
-                        }
-                    },
-                    "6.25µm Calibrated Water Vapor (RAMSDIS)": {
-                        "lut": "lut/cal/RAMSDIS_WV+55-108.png",
-                        //"description": "descriptions/cal_wv.md",
-                        "channels": "cch12",
-                        "calib_cfg": {
-                            "cch12": {
-                                "type": "temperature",
-                                "min": 165.15,
-                                "max": 328.15
-                            }
-                        }
-                    },
-                    "7.35µm Calibrated Water Vapor": {
-                        "lut": "lut/cal/star_abi_wv_8-10.png",
-                        //"description": "descriptions/cal_wv.md",
-                        "channels": "cch11",
-                        "calib_cfg": {
-                            "cch11": {
-                                "type": "radiance",
-                                "min": 0,
-                                "max": 23.2
-                            }
-                        }
-                    },
-                    "7.35µm Calibrated Water Vapor (RAMSDIS)": {
-                        "lut": "lut/cal/RAMSDIS_WV+55-108.png",
-                        //"description": "descriptions/cal_wv.md",
-                        "channels": "cch11",
-                        "calib_cfg": {
-                            "cch11": {
-                                "type": "temperature",
-                                "min": 165.15,
-                                "max": 328.15
-                            }
-                        }
-                    },
                     "Split Water Vapor": {
                         "channels": "cch12, cch11",
                         "draw_map_overlay": true,
@@ -686,98 +577,6 @@
                         ],
                         "autogen": false
                     },
-                    "Mid Stratosphere CO2 Temperature": {
-                        "description": "descriptions/sounders/MidStratoCO2T.md",
-                        "lut": "lut/cal/bluered.png",
-                        "channels": "cch2",
-                        "calib_cfg": {
-                            "cch2": {
-                                "type": "temperature",
-                                "min": 213.15,
-                                "max": 243.15
-                            }
-                        }
-                    },
-                    "Low Stratosphere CO2 Temperature": {
-                        "description": "descriptions/sounders/LowStratoCO2T.md",
-                        "lut": "lut/cal/bluered.png",
-                        "channels": "cch3",
-                        "calib_cfg": {
-                            "cch3": {
-                                "type": "temperature",
-                                "min": 213.15,
-                                "max": 243.15
-                            }
-                        }
-                    },
-                    "Top Troposphere CO2 Temperature": {
-                        "description": "descriptions/sounders/TopTropoCO2T.md",
-                        "lut": "lut/cal/bluered.png",
-                        "channels": "cch4",
-                        "calib_cfg": {
-                            "cch4": {
-                                "type": "temperature",
-                                "min": 213.15,
-                                "max": 243.15
-                            }
-                        }
-                    },
-                    "High Troposphere CO2 Temperature": {
-                        "description": "descriptions/sounders/HighTropoCO2T.md",
-                        "lut": "lut/cal/bluered.png",
-                        "channels": "cch5",
-                        "calib_cfg": {
-                            "cch5": {
-                                "type": "temperature",
-                                "min": 223.2,
-                                "max": 253.2
-                            }
-                        }
-                    },
-                    "Mid Troposphere CO2/H2O Temperature": {
-                        "description": "descriptions/sounders/MidTropoCO2H2OT.md",
-                        "lut": "lut/cal/bluered.png",
-                        "channels": "cch6",
-                        "calib_cfg": {
-                            "cch6": {
-                                "type": "temperature",
-                                "min": 213.15,
-                                "max": 283.15
-                            }
-                        }
-                    },
-                    "Low Troposphere CO2/H2O Temperature": {
-                        "description": "descriptions/sounders/LowTropoCO2H2OT.md",
-                        "lut": "lut/cal/bluered.png",
-                        "channels": "cch7",
-                        "calib_cfg": {
-                            "cch7": {
-                                "type": "temperature",
-                                "min": 213.15,
-                                "max": 293.15
-                            }
-                        }
-                    },
-                    "Cloud Detection Channel": {
-                        "equation": "ch17",
-                        "description": "descriptions/sounders/CloudDetection.md",
-                        "individual_equalize": true,
-                        "apply_lut": true
-                    },
-                    "Visible Channel": {
-                        "equation": "ch20",
-                        "individual_equalize": true
-                    },
-                    "AVHRR 3b45 IR False Color": {
-                        "equation": "ch19,ch10,ch8",
-                        "description": "descriptions/3b45.md",
-                        "individual_equalize": true
-                    },
-                    "AVHRR 543b IR False Color": {
-                        "equation": "ch8,ch10,ch19",
-                        "description": "descriptions/543b.md",
-                        "individual_equalize": true
-                    },
                     "IR 10.8µm - IR 6.2 µm Difference": {
                         "channels": "cch9, cch12",
                         "draw_map_overlay": true,
@@ -822,18 +621,6 @@
                                 "max": 400
                             }
                         }
-                    }
-                }
-            },
-            "sem": {
-                "handler": "radiation_handler",
-                "name": "SEM",
-                "radiation_maps": {
-                    "ch1": {
-                        "channel": 1,
-                        "radius": 5,
-                        "min": 0,
-                        "max": 255
                     }
                 }
             },

@@ -362,7 +362,7 @@
         },
         {
             "name": "HVC (channel 1)",
-            "expression": "lut=lut(lut/WXtoImg-HVC-1.png); lut(ch2, ch4, 0), lut(ch2, ch4, 1), lut(ch2, ch4, 2)",
+            "expression": "lut=lut(lut/WXtoImg-HVC-1.png); lut(ch1, ch4, 0), lut(ch1, ch4, 1), lut(ch1, ch4, 2)",
             "image": {
                 "geo_correct": true
             },
