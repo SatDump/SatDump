@@ -1,4 +1,5 @@
 #include "handler.h"
+#include "core/style.h"
 #include "imgui/imgui.h"
 #include "logger.h"
 
@@ -48,11 +49,10 @@ namespace satdump
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
 
-                bool clicked = ImGui::TreeNodeEx(handler->getTreeID().c_str(), nodeFlags(handler, h == handler));
+                bool tree_extended = ImGui::TreeNodeEx(handler->getTreeID().c_str(), nodeFlags(handler, h == handler));
                 tree_local.node(handler->handler_tree_icon);
-                auto arrow_pos = ImGui::GetCursorPos();
 
-                if (clicked)
+                if (tree_extended)
                 {
                     if (ImGui::IsItemClicked())
                         h = handler;
@@ -91,34 +91,29 @@ namespace satdump
                     }
                     // TODOREWORK CLEANUP
 
+                    if (handler_can_be_reorg)
+                    {
+                        if (i > 0)
+                        {
+                            ImGui::SameLine();
+                            ImGui::Text(u8"   \ueaf4");
+                            if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+                                std::swap(subhandlers[i], subhandlers[i - 1]);
+                        }
+                        if (i != (int)subhandlers.size() - 1)
+                        {
+                            ImGui::SameLine();
+                            if (i > 0)
+                                ImGui::Text(u8"\ueaf3");
+                            else
+                                ImGui::Text(u8"   \ueaf3");
+                            if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+                                std::swap(subhandlers[i], subhandlers[i + 1]);
+                        }
+                    }
+
                     handler->drawTreeMenu(h);
                     ImGui::TreePop();
-                }
-
-                if (handler_can_be_reorg)
-                {
-                    ImGui::SetCursorPos({arrow_pos.x - 100, arrow_pos.y});
-
-                    if (i > 0)
-                    {
-                        ImGui::SameLine();
-                        if (ImGui::SmallButton((u8"\ueaf4##" + handler->getTreeID()).c_str()))
-                        {
-                            logger->trace("Up");
-                            std::swap(subhandlers[i], subhandlers[i - 1]);
-                        }
-                    }
-                    if (i != subhandlers.size() - 1)
-                    {
-                        ImGui::SameLine();
-                        if (ImGui::SmallButton((u8"\ueaf3##" + handler->getTreeID()).c_str()))
-                        {
-                            logger->trace("Down");
-                            std::swap(subhandlers[i], subhandlers[i + 1]);
-                        }
-                    }
-
-                    ImGui::SetCursorPos(arrow_pos);
                 }
             }
             tree_local.end();
