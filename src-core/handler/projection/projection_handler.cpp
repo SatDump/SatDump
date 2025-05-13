@@ -1,5 +1,6 @@
 #include "projection_handler.h"
 #include "common/image/image.h"
+#include "common/image/meta.h"
 #include "core/style.h"
 #include "logger.h"
 
@@ -70,8 +71,10 @@ namespace satdump
         {
             image::Image img;
 
-            for (auto &h : subhandlers)
+            std::vector<image::Image> all_imgs;
+            for (int i = subhandlers.size() - 1; i >= 0; i--)
             {
+                auto &h = subhandlers[i];
                 if (h->getID() == "image_handler")
                 {
                     ImageHandler *im_h = (ImageHandler *)h.get();
@@ -79,13 +82,27 @@ namespace satdump
                     //                    sh_h->draw_to_image(curr_image, pfunc);
 
                     // TODOREWORK!!!!
-                    img = proj::reprojectImage(im_h->get_current_img(), projui.get_proj());
+                    auto im = proj::reprojectImage(im_h->get_current_img(), projui.get_proj());
+                    all_imgs.push_back(im);
                     logger->critical("DONE REPROJECTING!");
                 }
             }
 
-            for (auto &h : subhandlers)
+            if (all_imgs.size() > 0)
             {
+                img.init(all_imgs[0].depth(), all_imgs[0].width(), all_imgs[0].height(), 3);
+                image::set_metadata_proj_cfg(img, image::get_metadata_proj_cfg(all_imgs[0]));
+            }
+
+            for (int i = 0; i < all_imgs.size(); i++)
+            {
+                logger->trace("Draw %d", i);
+                img.draw_image_alpha(all_imgs[i]);
+            }
+
+            for (int i = subhandlers.size() - 1; i >= 0; i--)
+            {
+                auto &h = subhandlers[i];
                 if (h->getID() == "shapefile_handler")
                 {
                     ShapefileHandler *sh_h = (ShapefileHandler *)h.get();
@@ -115,7 +132,7 @@ namespace satdump
 
         void ProjectionHandler::drawMenuBar()
         {
-            img_handler.drawMenuBar();
+            // img_handler.drawMenuBar();
             /*if (ImGui::MenuItem("Image To Handler"))
             {
                 std::shared_ptr<ImageHandler> a = std::make_shared<ImageHandler>();
