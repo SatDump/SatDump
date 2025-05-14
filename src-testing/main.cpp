@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
 
     // First open one or more ephemeris files with CALCEPH to use
     // E.g. the DE440 (short-term) ephemeris data from JPL.
-    const char *arrr[2] = {"/home/alan/Downloads/de440s.bsp", "/home/alan/Downloads/jwst_pred.bsp"};
+    const char *arrr[2] = {"/home/alan/Downloads/de440s.bsp", /*"/home/alan/Downloads/jwst_pred.bsp"*/ "/home/alan/Downloads/juice_orbc_000082_230414_310721_v01.bsp"};
     t_calcephbin *de440 = calceph_open_array(2, arrr); // calceph_open("/home/alan/Downloads/de440s.bsp");
     if (!de440)
     {
@@ -172,10 +172,11 @@ int main(int argc, char *argv[])
     // Set Callisto as the observed object
     make_orbital_object("Callisto", 501, &orbit, &source);
 #elif 1
-    make_planet(NOVAS_MOON, &source);
-    //   make_ephem_object("STEREO-A", -234, &source);
-    // make_ephem_object("Io", 501, &source);
-    // make_ephem_object("JWST", -170, &source);
+                                    // make_planet(NOVAS_MOON, &source);
+    //    make_ephem_object("STEREO-A", -234, &source);
+    //  make_ephem_object("Io", 501, &source);
+    //  make_ephem_object("JWST", -170, &source);
+    make_ephem_object("JUIce", -28, &source);
 #endif
 
     // -------------------------------------------------------------------------

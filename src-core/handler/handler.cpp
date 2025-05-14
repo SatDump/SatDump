@@ -1,9 +1,11 @@
 #include "handler.h"
+#include "core/style.h"
 #include "imgui/imgui.h"
 #include "logger.h"
 
 //// TODOREWORK?
 #include "product/image_product_handler.h"
+#include <utility>
 
 namespace satdump
 {
@@ -47,7 +49,10 @@ namespace satdump
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
 
-                if (ImGui::TreeNodeEx(handler->getTreeID().c_str(), nodeFlags(handler, h == handler)) | tree_local.node(handler->handler_tree_icon))
+                bool tree_extended = ImGui::TreeNodeEx(handler->getTreeID().c_str(), nodeFlags(handler, h == handler));
+                tree_local.node(handler->handler_tree_icon);
+
+                if (tree_extended)
                 {
                     if (ImGui::IsItemClicked())
                         h = handler;
@@ -85,6 +90,27 @@ namespace satdump
                         ImGui::EndDragDropTarget();
                     }
                     // TODOREWORK CLEANUP
+
+                    if (handler_can_be_reorg)
+                    {
+                        if (i > 0)
+                        {
+                            ImGui::SameLine();
+                            ImGui::Text(u8"   \ueaf4");
+                            if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+                                std::swap(subhandlers[i], subhandlers[i - 1]);
+                        }
+                        if (i != (int)subhandlers.size() - 1)
+                        {
+                            ImGui::SameLine();
+                            if (i > 0)
+                                ImGui::Text(u8"\ueaf3");
+                            else
+                                ImGui::Text(u8"   \ueaf3");
+                            if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+                                std::swap(subhandlers[i], subhandlers[i + 1]);
+                        }
+                    }
 
                     handler->drawTreeMenu(h);
                     ImGui::TreePop();

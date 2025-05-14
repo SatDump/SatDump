@@ -45,6 +45,8 @@ namespace satdump
             bool handler_can_be_dragged_to = true;
             bool handler_can_subhandlers_be_dragged = true;
 
+            bool handler_can_be_reorg = false;
+
             void delSubHandlersNow()
             {
                 subhandlers_mtx.lock();
@@ -129,6 +131,12 @@ namespace satdump
              * @param v true to have them be draggable
              */
             void setSubHandlersCanBeDragged(bool v) { handler_can_subhandlers_be_dragged = v; }
+
+             /**
+             * @brief Set if a handler's subhandlers can be reordered
+             * @param v true to have them be reorderable
+             */
+             void setCanSubBeReorgTo(bool v) { handler_can_be_reorg = v; }
 
             /**
              * @brief Optional, allows setting a configuration/state from JSON

@@ -5,6 +5,7 @@ This enhancement uses a land mask to remove ground, two long wave infrared chann
 ### Appearance
 
 Colder temperatures appear violet while warmer temperatures appear orange or red.
+Invalid areas (e.g. due to cloud cover or dust) are marked as white.
 
 ### Intended usage
 
