@@ -3,6 +3,7 @@
 #include "common/image/hue_saturation.h"
 #include "common/image/image_background.h"
 #include "common/image/meta.h"
+#include "core/plugin.h"
 #include "core/style.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
@@ -27,7 +28,11 @@
 #include "resources.h"
 #include <cstddef>
 #include <filesystem>
+#include <memory>
 #include <utility>
+
+// TODOREWORK
+#include "../../../src-interface/viewer2/viewer.h"
 
 namespace satdump
 {
@@ -234,6 +239,16 @@ namespace satdump
                 image_view.zoom_out_next |= ImGui::MenuItem(u8"\ueb82");
                 image_view.autoFitNextFrame |= ImGui::MenuItem("Fit");
                 image_view.select_crop_next |= ImGui::MenuItem("Crop");
+
+                if (ImGui::MenuItem("Add To Proj"))
+                {
+                    std::shared_ptr<Handler> h;
+                    eventBus->fire_event<viewer::ViewerApplication::GetLastSelectedOfTypeEvent>({"projection_handler", h});
+                    if (h)
+                        h->addSubHandler(std::make_shared<ImageHandler>(get_current_img(), getName()));
+                    else
+                        logger->warn("No projection selected");
+                }
 
                 ImGui::EndMenuBar();
             }
