@@ -122,8 +122,8 @@ namespace satdump
             flowgraph.node_internal_registry.insert(
                 {"correct_iq_cc", {"Utils/Correct IQ", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::CorrectIQBlock<complex_t>>()); }}});
 
-            // flowgraph.node_internal_registry.insert(
-            //     {"freq_shift_cc", {"Utils/Frequency Shift", [=](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::FreqShiftBlock>()); }}});
+            flowgraph.node_internal_registry.insert(
+                {"freq_shift_cc", {"Utils/Frequency Shift", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::FreqShiftBlock>()); }}});
 
             //   flowgraph.node_internal_registry.insert({"airspy_dev_cc", {"Airspy Dev", [=](const ndsp::Flowgraph *f)
             //                                                              { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::AirspyDevBlock>()); }}});
