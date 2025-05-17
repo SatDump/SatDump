@@ -19,8 +19,8 @@ namespace satdump
          *
          * @param needs_reinit handles live changes
          * @param raw_shift if true, allows for manual frequency shift
-         * @freq_shift frequency shift value
-         * @samplerate stream sample rate
+         * @param freq_shift frequency shift value
+         * @param samplerate stream sample rate
          */
         class FreqShiftBlock : public Block
         {
