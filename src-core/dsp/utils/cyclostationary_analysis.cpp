@@ -5,7 +5,7 @@ namespace satdump
     namespace ndsp
     {
         CyclostationaryAnalysis::CyclostationaryAnalysis()
-            : Block("cyclostationary_analysis_cf", {{"in", DSP_SAMPLE_TYPE_CF32}}, {{"out", DSP_SAMPLE_TYPE_CF32}}) // TODOREWORK change "out" back to F32
+            : Block("cyclostationary_analysis_cc", {{"in", DSP_SAMPLE_TYPE_CF32}}, {{"out", DSP_SAMPLE_TYPE_CF32}}) // TODOREWORK change "out" back to F32
         {
         }
 
