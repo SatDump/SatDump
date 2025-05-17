@@ -22,7 +22,7 @@ namespace satdump
             engine->RegisterGlobalFunction("void trace(const string &in)", asFUNCTION(namelog::trace), asCALL_CDECL);
             engine->RegisterGlobalFunction("void debug(const string &in)", asFUNCTION(namelog::debug), asCALL_CDECL);
             engine->RegisterGlobalFunction("void info(const string &in)", asFUNCTION(namelog::info), asCALL_CDECL);
-            engine->RegisterGlobalFunction("void warn(const string &in)", asFUNCTION(namelog::error), asCALL_CDECL);
+            engine->RegisterGlobalFunction("void warn(const string &in)", asFUNCTION(namelog::warn), asCALL_CDECL);
             engine->RegisterGlobalFunction("void error(const string &in)", asFUNCTION(namelog::error), asCALL_CDECL);
             engine->RegisterGlobalFunction("void critical(const string &in)", asFUNCTION(namelog::critical), asCALL_CDECL);
         }

@@ -37,6 +37,16 @@ namespace satdump
             fileutils::FileSelTh *file_open_dialog = nullptr;
 
         public:
+            // TODOREWORK last opened by time
+            std::map<std::string, std::shared_ptr<Handler>> last_selected_handler;
+
+            struct GetLastSelectedOfTypeEvent
+            {
+                std::string type;
+                std::shared_ptr<Handler> &h;
+            };
+
+        public:
             void openProductOrDataset(std::string path);
 
         public:

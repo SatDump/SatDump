@@ -54,6 +54,15 @@ namespace satdump
                         openProductOrDataset(f);
                 });
 
+            eventBus->register_handler<GetLastSelectedOfTypeEvent>(
+                [this](const GetLastSelectedOfTypeEvent &v)
+                {
+                    if (last_selected_handler.count(v.type))
+                        v.h = last_selected_handler[v.type];
+                    else
+                        v.h = 0;
+                });
+
             openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/metop_test/dataset.json");
         }
 
@@ -69,6 +78,8 @@ namespace satdump
 
             if (ImGui::CollapsingHeader("General", ImGuiTreeNodeFlags_DefaultOpen))
             {
+                auto prev_curr = curr_handler;
+
                 if (ImGui::BeginTable("##masterhandlertable", 1, ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders))
                 {
                     ImGui::TableSetupColumn("##masterhandlertable_col", ImGuiTableColumnFlags_None);
@@ -79,6 +90,9 @@ namespace satdump
 
                     ImGui::EndTable();
                 }
+
+                if (prev_curr != curr_handler)
+                    last_selected_handler.insert_or_assign(curr_handler->getID(), curr_handler);
 
                 if (curr_handler)
                     curr_handler->drawMenu();
