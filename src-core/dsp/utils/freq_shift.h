@@ -5,7 +5,7 @@
  */
 
 #include "common/dsp/complex.h"
-#include "dsp/block.h"
+#include "dsp/block_simple.h"
 
 namespace satdump
 {
@@ -22,7 +22,7 @@ namespace satdump
          * @param freq_shift frequency shift value
          * @param samplerate stream sample rate
          */
-        class FreqShiftBlock : public Block
+        class FreqShiftBlock : public BlockSimple<complex_t, complex_t>
         {
         private:
             bool needs_reinit = false;
@@ -34,11 +34,11 @@ namespace satdump
             complex_t phase_delta;
             complex_t phase;
 
-            bool work();
-
         public:
             FreqShiftBlock();
             ~FreqShiftBlock();
+
+            uint32_t process(complex_t *input, uint32_t nsamples, complex_t *output);
 
             void init()
             {
