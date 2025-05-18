@@ -1,0 +1,118 @@
+name: Build BitViewer and other WIP tools
+
+on: [push]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+permissions:
+  contents: write
+
+jobs:
+  build_windows_x64:
+    runs-on: windows-2019
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        id: win-deps-x64
+        with:
+          path: vcpkg
+          key: win-deps-x64-${{ hashFiles('windows/Configure-vcpkg.ps1') }}
+
+      - name: Set up Python 3.13
+        if: steps.win-deps-x64.outputs.cache-hit != 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+
+      - name: Install mako
+        if: steps.win-deps-x64.outputs.cache-hit != 'true'
+        run: pip install mako
+
+      - name: Add msbuild to PATH
+        if: steps.win-deps-x64.outputs.cache-hit != 'true'
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Configure vcpkg
+        if: steps.win-deps-x64.outputs.cache-hit != 'true'
+        shell: powershell
+        run: ${{github.workspace}}\windows\Configure-vcpkg.ps1 -platform x64-windows
+
+      - name: Clean up vcpkg
+        if: steps.win-deps-x64.outputs.cache-hit != 'true'
+        run: rm -recurse -force $Env:GITHUB_WORKSPACE/vcpkg/packages, $Env:GITHUB_WORKSPACE/vcpkg/downloads, $Env:GITHUB_WORKSPACE/vcpkg/buildtrees
+
+      - name: Download Aaronia RTSA API
+        if: steps.win-deps-x64.outputs.cache-hit != 'true'
+        shell: powershell
+        run: Invoke-WebRequest -Uri "https://www.satdump.org/Aaronia_RTSA_Suite_PRO_2.2.0.12821_Setup_64bit.exe" -OutFile $Env:GITHUB_WORKSPACE/vcpkg/rtsa.exe
+
+      - name: Install Aaronia RTSA API
+        shell: cmd
+        run: start /wait vcpkg\rtsa.exe /q2 /install
+
+      - name: Add support to NSIS for long PATHs
+        shell: powershell
+        run: ${{github.workspace}}\windows\Get-NSIS-LongStrings.ps1
+
+      - name: Create Build Environment
+        run: cmake -E make_directory ${{runner.workspace}}/build
+
+      - name: Configure CMake
+        working-directory: ${{runner.workspace}}/build
+        run: cmake -DVCPKG_TARGET_TRIPLET="x64-windows" -DPLUGIN_AARONIA_SDR_SUPPORT=ON -DPLUGIN_BITVIEW_APP=ON -DBUILD_TOOLS=true -DBUILD_MSVC=ON -DCMAKE_TOOLCHAIN_FILE="${{github.workspace}}\vcpkg\scripts\buildsystems\vcpkg.cmake" "$Env:GITHUB_WORKSPACE"
+
+      - name: Build
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        run: cmake --build . --config $BUILD_TYPE
+
+      - name: Build Installer
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        run: cpack -C $BUILD_TYPE
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: SatDump-Windows_x64_Installer
+          path: ${{runner.workspace}}/build/SatDump-*.exe
+
+      - name: Add dumpbin to PATH
+        run: echo "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\$((Get-ChildItem -Path "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC" | Sort-Object Name -Descending | Select-Object -First 1).Name)\bin\Hostx64\x64" >> $env:GITHUB_PATH
+
+      - name: Build Portable
+        shell: powershell
+        run: ${{github.workspace}}\windows\Finish-Release.ps1 -platform x64-windows -BuildPath ${{runner.workspace}}\build
+
+      - name: Upload Portable
+        uses: actions/upload-artifact@v4
+        with:
+          name: SatDump-Windows_x64_Portable
+          path: ${{runner.workspace}}/build/Release/*
+
+  # Yes, since I was asked to do like SDR++ for this I did look at how Ryzerth has done it :-)
+  update_nightly_release:
+    needs: [
+        "build_windows_x64",]
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Install zip
+        run: sudo apt install -y unzip
+
+      - name: Copy files
+        run: mkdir satdump_out && (cd SatDump-Windows_x64_Portable && zip -r ../satdump_out/SatDump-Windows_x64_Portable.zip *) && cp SatDump-Windows_x64_Installer/SatDump-*.exe satdump_out/SatDump-Windows_x64_Installer.exe
+# && (cd SatDump-Windows_arm64_Portable && zip -r ../satdump_out/SatDump-Windows_arm64_Portable.zip *) && cp SatDump-Windows_arm64_Installer/SatDump-*.exe satdump_out/SatDump-Windows_arm64_Installer.exe
+
+      - name: Update Nightly
+        run: gh release upload nightly satdump_out/* -R ${{github.repository}} --clobber
