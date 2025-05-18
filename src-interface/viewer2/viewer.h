@@ -15,6 +15,8 @@ namespace satdump
         public:
             struct RenderLoadMenuElementsEvent
             {
+                std::shared_ptr<Handler> &curr_handler;
+                std::shared_ptr<Handler> &master_handler;
             };
 
         protected:

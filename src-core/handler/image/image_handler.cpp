@@ -240,14 +240,17 @@ namespace satdump
                 image_view.autoFitNextFrame |= ImGui::MenuItem("Fit");
                 image_view.select_crop_next |= ImGui::MenuItem("Crop");
 
-                if (ImGui::MenuItem("Add To Proj"))
+                if (image_proj_valid)
                 {
-                    std::shared_ptr<Handler> h;
-                    eventBus->fire_event<viewer::ViewerApplication::GetLastSelectedOfTypeEvent>({"projection_handler", h});
-                    if (h)
-                        h->addSubHandler(std::make_shared<ImageHandler>(get_current_img(), getName()));
-                    else
-                        logger->warn("No projection selected");
+                    if (ImGui::MenuItem("Add To Proj"))
+                    {
+                        std::shared_ptr<Handler> h;
+                        eventBus->fire_event<viewer::ViewerApplication::GetLastSelectedOfTypeEvent>({"projection_handler", h});
+                        if (h)
+                            h->addSubHandler(std::make_shared<ImageHandler>(get_current_img(), getName()));
+                        else
+                            logger->warn("No projection selected");
+                    }
                 }
 
                 ImGui::EndMenuBar();
@@ -268,7 +271,7 @@ namespace satdump
             median_blur_img = getValueOrDefault(p["median_blur"], false);
             despeckle_img = getValueOrDefault(p["despeckle"], false);
             rotate180_image = getValueOrDefault(p["rotate180"], rotate180_image);
-            geocorrect_image = getValueOrDefault(p["geocorrect"], false);
+            geocorrect_image = getValueOrDefault(p["geocorrect"], geocorrect_image);
             brightness_contrast_image = getValueOrDefault(p["brightness_contrast"], false);
             brightness_contrast_brightness_image = getValueOrDefault(p["brightness_contrast_brightness"], 0);
             brightness_contrast_constrast_image = getValueOrDefault(p["brightness_contrast_constrast"], 0);

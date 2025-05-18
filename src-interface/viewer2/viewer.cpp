@@ -177,15 +177,6 @@ namespace satdump
                             master_handler->addSubHandler(std::make_shared<ProjectionHandler>());
                         if (ImGui::MenuItem("DSP Flowgraph"))
                             master_handler->addSubHandler(std::make_shared<DSPFlowGraphHandler>());
-                        if (ImGui::MenuItem("BitView TEST"))
-                        {
-                            std::vector<std::shared_ptr<Handler>> e;
-                            eventBus->fire_event<RequestHandlersEvent>({e});
-                            // if (e.size() > 0)
-                            //     master_handler->addSubHandler(e[0]);
-                            for (auto &h : e)
-                                master_handler->addSubHandler(h);
-                        }
                         if (ImGui::MenuItem("Waterfall TEST"))
                             master_handler->addSubHandler(std::make_shared<WaterfallTestHandler>());
                         if (ImGui::MenuItem("NewRec TEST"))
@@ -216,7 +207,7 @@ namespace satdump
                     }
                 }
 
-                eventBus->fire_event<RenderLoadMenuElementsEvent>({});
+                eventBus->fire_event<RenderLoadMenuElementsEvent>({curr_handler, master_handler});
 
                 ImGui::EndMenuBar();
             }
