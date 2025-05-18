@@ -22,6 +22,7 @@
 #include "dsp/utils/correct_iq.h"
 #include "dsp/utils/delay_one_imag.h"
 #include "dsp/utils/freq_shift.h"
+#include "dsp/utils/real_to_complex.h"
 
 #include "nlohmann/json_utils.h"
 #include <memory>
@@ -58,12 +59,6 @@ namespace satdump
                 return false;
             }
         };
-
-        // class NodeTestFreqShift : public ndsp::NodeInternal
-        // {
-        // public:
-        //     NodeTestFreqShift(const ndsp::Flowgraph *f) : ndsp::NodeInternal(f, std::make_shared<ndsp::FreqShiftBlock>()) { ((ndsp::FreqShiftBlock *)blk.get())->set_freq(6e6, 10000); }
-        // };
 
         class NodeTestFFT : public ndsp::NodeInternal
         {
@@ -124,6 +119,9 @@ namespace satdump
 
             flowgraph.node_internal_registry.insert(
                 {"freq_shift_cc", {"Utils/Frequency Shift", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::FreqShiftBlock>()); }}});
+
+            flowgraph.node_internal_registry.insert(
+                {"real_to_complex_fc", {"Utils/Real to Complex", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::RealToComplexBlock>()); }}});
 
             //   flowgraph.node_internal_registry.insert({"airspy_dev_cc", {"Airspy Dev", [=](const ndsp::Flowgraph *f)
             //                                                              { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::AirspyDevBlock>()); }}});
