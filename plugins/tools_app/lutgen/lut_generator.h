@@ -9,9 +9,9 @@
 // TODOREWORK, move into plugin? Or Core?
 namespace satdump
 {
-    namespace viewer
+    namespace lutgen
     {
-        class LutGeneratorHandler : public Handler
+        class LutGeneratorHandler : public viewer::Handler
         {
         private:
             struct ColorPX
@@ -95,5 +95,5 @@ namespace satdump
 
             std::string getID() { return "lut_generator_handler"; }
         };
-    } // namespace viewer
+    } // namespace lutgen
 } // namespace satdump

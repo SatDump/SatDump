@@ -441,6 +441,12 @@ if(PLUGIN_BITVIEW_APP)
   add_subdirectory(bitview_app)
 endif()
 
+option(PLUGIN_TOOLS_APP "Enable Tools Applications (Very WIP)" ON)
+
+if(PLUGIN_TOOLS_APP)
+  add_subdirectory(tools_app)
+endif()
+
 option(PLUGIN_WIPTRACKING_APP "Enable WIP Tracking Application" OFF)
 
 if(PLUGIN_WIPTRACKING_APP)

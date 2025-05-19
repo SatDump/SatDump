@@ -27,8 +27,6 @@
 
 #include "common/image/io.h"
 
-#include "tools_todoreworkmove/lut_generator.h"
-
 #include "imgui/imgui_filedrop.h"
 
 namespace satdump
@@ -183,8 +181,6 @@ namespace satdump
                             master_handler->addSubHandler(std::make_shared<NewRecHandler>());
                         if (ImGui::MenuItem("CycloHelper TEST"))
                             master_handler->addSubHandler(std::make_shared<CycloHelperHandler>());
-                        if (ImGui::MenuItem("Lut Generator"))
-                            master_handler->addSubHandler(std::make_shared<LutGeneratorHandler>());
                         ImGui::EndMenu();
                     }
                     if (curr_handler && ImGui::BeginMenu("Config"))

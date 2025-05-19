@@ -8,7 +8,7 @@
 
 namespace satdump
 {
-    namespace viewer
+    namespace lutgen
     {
         LutGeneratorHandler::LutGeneratorHandler()
         {
@@ -295,5 +295,5 @@ namespace satdump
             return {0, 0, 0, 255};
 #endif
         }
-    } // namespace viewer
+    } // namespace lutgen
 } // namespace satdump
