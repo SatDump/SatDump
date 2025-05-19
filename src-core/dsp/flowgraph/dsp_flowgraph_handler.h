@@ -1,14 +1,14 @@
 #pragma once
 
 #include "dsp/flowgraph/flowgraph.h"
-#include "handler/handler.h"
+#include "handlers/handler.h"
 
 #include "dsp/device/dev.h"
 
 // TODOREWORK, move into plugin? Or Core?
 namespace satdump
 {
-    namespace viewer
+    namespace handlers
     {
         class DSPFlowGraphHandler : public Handler
         {
@@ -33,5 +33,5 @@ namespace satdump
         {
             std::map<std::string, ndsp::Flowgraph::NodeInternalReg> &r;
         };
-    } // namespace viewer
+    } // namespace handlers
 } // namespace satdump

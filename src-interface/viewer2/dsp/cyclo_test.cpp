@@ -7,7 +7,7 @@
 
 namespace satdump
 {
-    namespace viewer
+    namespace handlers
     {
         CycloHelperHandler::CycloHelperHandler()
         {
@@ -158,5 +158,5 @@ namespace satdump
 
             constell->constel.draw();
         }
-    } // namespace viewer
+    } // namespace handlers
 } // namespace satdump

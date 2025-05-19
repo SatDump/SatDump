@@ -1,9 +1,9 @@
 #include "product_process.h"
 #include "logger.h"
 
-#include "handler/product/product_handler.h"
-#include "handler/product/image_product_handler.h"
-#include "handler/product/punctiform_product_handler.h"
+#include "handlers/product/image_product_handler.h"
+#include "handlers/product/product_handler.h"
+#include "handlers/product/punctiform_product_handler.h"
 
 namespace satdump
 {
@@ -11,13 +11,7 @@ namespace satdump
     { // TODOREWORK?
         void process_product_with_handler(std::shared_ptr<Product> p, std::string directory)
         {
-            std::shared_ptr<viewer::ProductHandler> handler;
-            if (p->type == "image")
-                handler = std::make_shared<viewer::ImageProductHandler>(p);
-            else if (p->type == "punctiform")
-                handler = std::make_shared<viewer::PunctiformProductHandler>(p);
-            else
-                logger->critical("TODOREWORK");
+            std::shared_ptr<handlers::ProductHandler> handler = handlers::getProductHandlerForProduct(p);
 
             auto instr_cfg = handler->getInstrumentCfg();
             if (instr_cfg.contains("presets"))
@@ -30,5 +24,5 @@ namespace satdump
                 }
             }
         }
-    }
-}
+    } // namespace products
+} // namespace satdump

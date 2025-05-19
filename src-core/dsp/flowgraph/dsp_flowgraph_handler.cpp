@@ -30,7 +30,7 @@
 
 namespace satdump
 {
-    namespace viewer
+    namespace handlers
     {
         class NodeTestFileSource : public ndsp::NodeInternal
         {
@@ -213,5 +213,5 @@ namespace satdump
         }
 
         void DSPFlowGraphHandler::drawContents(ImVec2 win_size) { flowgraph.render(); }
-    } // namespace viewer
+    } // namespace handlers
 } // namespace satdump

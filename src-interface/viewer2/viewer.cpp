@@ -12,12 +12,12 @@
 #include "core/style.h"
 #include "dsp/cyclo_test.h"
 #include "dsp/flowgraph/dsp_flowgraph_handler.h"
-#include "handler/dataset/dataset_handler.h"
-#include "handler/dummy_handler.h"
-#include "handler/product/image_product_handler.h" // TODOREWORK CLEAN
-#include "handler/projection/projection_handler.h"
-#include "handler/trash/trash_handler.h"
-#include "handler/vector/shapefile_handler.h"
+#include "handlers/dataset/dataset_handler.h"
+#include "handlers/dummy_handler.h"
+#include "handlers/product/image_product_handler.h" // TODOREWORK CLEAN
+#include "handlers/projection/projection_handler.h"
+#include "handlers/trash/trash_handler.h"
+#include "handlers/vector/shapefile_handler.h"
 // TODOREWORK
 #include "resources.h"
 
@@ -35,11 +35,11 @@ namespace satdump
     {
         ViewerApplication::ViewerApplication() : Application("viewer")
         {
-            master_handler = std::make_shared<DummyHandler>("MasterHandlerViewer");
+            master_handler = std::make_shared<handlers::DummyHandler>("MasterHandlerViewer");
 
             // Add trashcan
-            trash_handler = std::make_shared<DummyHandler>("TrashHandlerViewer");
-            auto trash_h = std::make_shared<TrashHandler>();
+            trash_handler = std::make_shared<handlers::DummyHandler>("TrashHandlerViewer");
+            auto trash_h = std::make_shared<handlers::TrashHandler>();
             trash_h->setCanBeDragged(false);
             trash_handler->addSubHandler(trash_h);
             trash_handler->setCanBeDraggedTo(false);
@@ -49,19 +49,21 @@ namespace satdump
                 [this](const imgui_utils::FileDropEvent &v)
                 {
                     for (auto &f : v.files)
-                        openProductOrDataset(f);
+                        tryOpenFileInViewer(f);
                 });
 
+            // TODOREWORK. Returns the last selected handler of a specific type if available
             eventBus->register_handler<GetLastSelectedOfTypeEvent>(
                 [this](const GetLastSelectedOfTypeEvent &v)
                 {
                     if (last_selected_handler.count(v.type))
                         v.h = last_selected_handler[v.type];
                     else
-                        v.h = 0;
+                        v.h = nullptr;
                 });
 
-            openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/metop_test/dataset.json");
+            // TODOREWORK remove
+            tryOpenFileInViewer("/home/alan/Downloads/SatDump_NEWPRODS/metop_test/dataset.json");
         }
 
         ViewerApplication::~ViewerApplication()
@@ -101,13 +103,11 @@ namespace satdump
         {
             // Handle File Stuff TODOREWORK?
             {
-                if (file_open_dialog && file_open_dialog->is_ready())
+                if (file_open_dialog.update())
                 {
-                    std::string prod_path = file_open_dialog->result();
-                    delete file_open_dialog;
-                    file_open_dialog = nullptr;
+                    std::string prod_path = file_open_dialog.getPath();
                     if (prod_path.size() > 0)
-                        openProductOrDataset(prod_path);
+                        tryOpenFileInViewer(prod_path);
                     else
                         logger->trace("No file selected");
                 }
@@ -115,48 +115,49 @@ namespace satdump
 
             if (ImGui::BeginMenuBar())
             {
+                // Main "Open" menu, for files, other handlers, etc
                 if (ImGui::BeginMenu("File"))
                 {
-                    if (ImGui::MenuItem("Open File") && !file_open_dialog)                     // TODOREWORK switch to general thing
-                        file_open_dialog = new fileutils::FileSelTh({{"All Files", "*"}}, ""); // TODOREWORK remember path?
+                    file_open_dialog.render("Open File", "Open File", "", {{"All Files", "*"}});
 
+                    // TODOREWORK remove
                     if (ImGui::BeginMenu("Hardcoded"))
                     {
                         if (ImGui::MenuItem("Load KMSS"))
-                            openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/dataset.json");
+                            tryOpenFileInViewer("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/dataset.json");
                         if (ImGui::MenuItem("Load Sterna"))
-                            openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/aws_pfm_cadu/dataset.json");
+                            tryOpenFileInViewer("/home/alan/Downloads/SatDump_NEWPRODS/aws_pfm_cadu/dataset.json");
                         if (ImGui::MenuItem("Load MSUGS"))
-                            openProductOrDataset("/home/alan/Downloads/20241231_132953_ARKTIKA-M 2_dat/MSUGS_VIS1/product.cbor");
+                            tryOpenFileInViewer("/home/alan/Downloads/20241231_132953_ARKTIKA-M 2_dat/MSUGS_VIS1/product.cbor");
                         if (ImGui::MenuItem("Load MSUGS 2"))
-                            openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/20250104_071415_ELEKTRO-L_3_dat/dataset.json");
+                            tryOpenFileInViewer("/home/alan/Downloads/SatDump_NEWPRODS/20250104_071415_ELEKTRO-L_3_dat/dataset.json");
                         if (ImGui::MenuItem("Load MetOp"))
-                            openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/metop_test/dataset.json");
+                            tryOpenFileInViewer("/home/alan/Downloads/SatDump_NEWPRODS/metop_test/dataset.json");
                         if (ImGui::MenuItem("Load L3"))
-                            openProductOrDataset("/data_ssd/ELEKTRO-L3/20250104_071415_ELEKTRO-L 3.dat_OUT/dataset.json");
+                            tryOpenFileInViewer("/data_ssd/ELEKTRO-L3/20250104_071415_ELEKTRO-L 3.dat_OUT/dataset.json");
                         if (ImGui::MenuItem("Load JPSS-1"))
-                            openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/202411271228_NOAA_20/dataset.json");
+                            tryOpenFileInViewer("/home/alan/Downloads/SatDump_NEWPRODS/202411271228_NOAA_20/dataset.json");
                         if (ImGui::MenuItem("Load JPSS-2"))
-                            openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/n21_day/dataset.json");
+                            tryOpenFileInViewer("/home/alan/Downloads/SatDump_NEWPRODS/n21_day/dataset.json");
                         if (ImGui::MenuItem("Load APT"))
-                            openProductOrDataset("/home/alan/Downloads/audio_137912500Hz_11-39-56_04-03-2024_wav/dataset.json");
+                            tryOpenFileInViewer("/home/alan/Downloads/audio_137912500Hz_11-39-56_04-03-2024_wav/dataset.json");
                         if (ImGui::MenuItem("Load GOES"))
-                            openProductOrDataset("/home/alan/Downloads/SatDump_NEWPRODS/goes_hrit_jvital2013_cadu/IMAGES/GOES-16/Full Disk/2024-04-17_18-00-20/product.cbor");
+                            tryOpenFileInViewer("/home/alan/Downloads/SatDump_NEWPRODS/goes_hrit_jvital2013_cadu/IMAGES/GOES-16/Full Disk/2024-04-17_18-00-20/product.cbor");
                         if (ImGui::MenuItem("Load Shapefile"))
                         {
-                            auto shp_h = std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_admin_0_countries.shp"));
+                            auto shp_h = std::make_shared<handlers::ShapefileHandler>(resources::getResourcePath("maps/ne_10m_admin_0_countries.shp"));
                             master_handler->addSubHandler(shp_h);
                         }
 
                         if (ImGui::MenuItem("Load Shapefile FRA_1"))
                         {
-                            auto shp_h = std::make_shared<ShapefileHandler>("/home/alan/Downloads/gadm41_FRA_shp/gadm41_FRA_1.shp");
+                            auto shp_h = std::make_shared<handlers::ShapefileHandler>("/home/alan/Downloads/gadm41_FRA_shp/gadm41_FRA_1.shp");
                             master_handler->addSubHandler(shp_h);
                         }
 
                         if (ImGui::MenuItem("Load Shapefile FRA_2"))
                         {
-                            auto shp_h = std::make_shared<ShapefileHandler>("/home/alan/Downloads/gadm41_FRA_shp/gadm41_FRA_2.shp");
+                            auto shp_h = std::make_shared<handlers::ShapefileHandler>("/home/alan/Downloads/gadm41_FRA_shp/gadm41_FRA_2.shp");
                             master_handler->addSubHandler(shp_h);
                         }
 
@@ -165,24 +166,24 @@ namespace satdump
 
                     ImGui::EndMenu();
                 }
+
                 if (ImGui::BeginMenu("Handler"))
                 {
                     if (ImGui::BeginMenu("Add"))
-                    {
-                        if (ImGui::MenuItem("Dataset"))
-                            logger->error("Dummy Menu!");
+                    { // TODOREWORK?
                         if (ImGui::MenuItem("Projection"))
-                            master_handler->addSubHandler(std::make_shared<ProjectionHandler>());
+                            master_handler->addSubHandler(std::make_shared<handlers::ProjectionHandler>());
                         if (ImGui::MenuItem("DSP Flowgraph"))
-                            master_handler->addSubHandler(std::make_shared<DSPFlowGraphHandler>());
+                            master_handler->addSubHandler(std::make_shared<handlers::DSPFlowGraphHandler>());
                         if (ImGui::MenuItem("Waterfall TEST"))
-                            master_handler->addSubHandler(std::make_shared<WaterfallTestHandler>());
+                            master_handler->addSubHandler(std::make_shared<handlers::WaterfallTestHandler>());
                         if (ImGui::MenuItem("NewRec TEST"))
-                            master_handler->addSubHandler(std::make_shared<NewRecHandler>());
+                            master_handler->addSubHandler(std::make_shared<handlers::NewRecHandler>());
                         if (ImGui::MenuItem("CycloHelper TEST"))
-                            master_handler->addSubHandler(std::make_shared<CycloHelperHandler>());
+                            master_handler->addSubHandler(std::make_shared<handlers::CycloHelperHandler>());
                         ImGui::EndMenu();
                     }
+
                     if (curr_handler && ImGui::BeginMenu("Config"))
                     {
                         if (ImGui::MenuItem("JSON To Clipboard"))
@@ -245,7 +246,7 @@ namespace satdump
             }
         }
 
-        void ViewerApplication::openProductOrDataset(std::string path) // TODOREWORK Rename!
+        void ViewerApplication::tryOpenFileInViewer(std::string path)
         {
             if (file_open_thread.joinable())
                 file_open_thread.join();
@@ -259,14 +260,13 @@ namespace satdump
                         return;
                     }
 
-                    // TODOREWORK Load more than just image products
                     if (std::filesystem::path(path).extension().string() == ".cbor")
                     {
                         logger->trace("Viewer loading product " + path);
 
                         try
                         {
-                            std::shared_ptr<ProductHandler> prod_h = std::make_shared<ImageProductHandler>(products::loadProduct(path));
+                            auto prod_h = handlers::getProductHandlerForProduct(products::loadProduct(path));
                             master_handler->addSubHandler(prod_h);
                         }
                         catch (std::exception &e)
@@ -282,7 +282,7 @@ namespace satdump
                         {
                             products::DataSet dataset;
                             dataset.load(path);
-                            std::shared_ptr<DatasetHandler> dat_h = std::make_shared<DatasetHandler>(std::filesystem::path(path).parent_path().string(), dataset);
+                            std::shared_ptr<handlers::DatasetHandler> dat_h = std::make_shared<handlers::DatasetHandler>(std::filesystem::path(path).parent_path().string(), dataset);
                             master_handler->addSubHandler(dat_h);
                         }
                         catch (std::exception &e)
@@ -294,7 +294,7 @@ namespace satdump
                     {
                         logger->trace("Viewer loading shapefile " + path);
 
-                        master_handler->addSubHandler(std::make_shared<ShapefileHandler>(path));
+                        master_handler->addSubHandler(std::make_shared<handlers::ShapefileHandler>(path));
                     }
                     else
                     {
@@ -303,7 +303,7 @@ namespace satdump
                         image::Image img;
                         image::load_img(img, path);
                         if (img.size() > 0)
-                            master_handler->addSubHandler(std::make_shared<ImageHandler>(img, std::filesystem::path(path).stem().string()));
+                            master_handler->addSubHandler(std::make_shared<handlers::ImageHandler>(img, std::filesystem::path(path).stem().string()));
                         else
                             logger->error("Could not open this file as image!"); // TODOREWORK Probably check before this?
                     }

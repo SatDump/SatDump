@@ -1,6 +1,6 @@
 #pragma once
 
-#include "handler/handler.h"
+#include "handlers/handler.h"
 
 #include "common/widgets/image_view.h"
 #include "common/widgets/menuitem_fileopen.h"
@@ -11,7 +11,7 @@ namespace satdump
 {
     namespace lutgen
     {
-        class LutGeneratorHandler : public viewer::Handler
+        class LutGeneratorHandler : public handlers::Handler
         {
         private:
             struct ColorPX

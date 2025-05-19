@@ -21,7 +21,7 @@ public:
     {
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::BeginMenu("Others"))
+            if (ImGui::BeginMenu("Add"))
             {
                 if (ImGui::MenuItem("WIP Tracking"))
                     evt.master_handler->addSubHandler(std::make_shared<satdump::WipTrackingHandler>());

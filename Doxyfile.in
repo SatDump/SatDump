@@ -3,7 +3,7 @@ OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@/documentation/
 PROJECT_NUMBER         = @SATDUMP_VERSION@
 INPUT                  = src-core/common/ccsds \
                          src-core/products2 \
-                         src-core/handler \
+                         src-core/handlers \
                          src-interface/viewer2 \
                          src-core/projection \
                          src-core/dsp \

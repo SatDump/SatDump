@@ -17,7 +17,7 @@ public:
         satdump::eventBus->register_handler<satdump::ndsp::RequestDeviceListEvent>(registerDevs);
         satdump::eventBus->register_handler<satdump::ndsp::RequestDeviceInstanceEvent>(provideDeviceInstance);
 
-        satdump::eventBus->register_handler<satdump::viewer::RegisterNodesEvent>(registerNodes);
+        satdump::eventBus->register_handler<satdump::handlers::RegisterNodesEvent>(registerNodes);
     }
 
     static void registerSources(const dsp::RegisterDSPSampleSourcesEvent &evt)
@@ -40,7 +40,7 @@ public:
             evt.i.push_back(std::make_shared<satdump::ndsp::AirspyDevBlock>());
     }
 
-    static void registerNodes(const satdump::viewer::RegisterNodesEvent &evt)
+    static void registerNodes(const satdump::handlers::RegisterNodesEvent &evt)
     {
         evt.r.insert({"airspy_cc",
                       {"Device/Airspy Dev", [](const satdump::ndsp::Flowgraph *f) { return std::make_shared<satdump::ndsp::NodeInternal>(f, std::make_shared<satdump::ndsp::AirspyDevBlock>()); }}});
