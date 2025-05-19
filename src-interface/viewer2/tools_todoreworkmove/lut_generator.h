@@ -75,6 +75,9 @@ namespace satdump
             // Replicate
             int replicate_times = 2;
 
+            // Interpolate
+            int interpolate_size = 2;
+
             // TODOREWORK File save
             widget::MenuItemImageSave file_save_menu;
             widget::MenuItemFileOpen file_open_menu;

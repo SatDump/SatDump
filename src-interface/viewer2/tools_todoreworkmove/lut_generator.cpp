@@ -4,6 +4,7 @@
 #include "imgui/implot/implot.h"
 #include "logger.h"
 #include "resources.h"
+#include <cstdint>
 
 namespace satdump
 {
@@ -105,6 +106,17 @@ namespace satdump
                         for (int i = 0; i < replicate_times; i++)
                             lut.insert(lut.end(), lut2.begin(), lut2.end());
                     }
+                }
+
+                ImGui::InputInt("##interpolate", &interpolate_size);
+                ImGui::SameLine();
+                if (ImGui::Button("Interpolate##interpolatebutton"))
+                {
+                    auto img = generateLutImage();
+                    img.resize_bilinear(interpolate_size, 1);
+                    lut.clear();
+                    for (int i = 0; i < interpolate_size; i++)
+                        lut.push_back({(uint8_t)img.get(0, i, 0), (uint8_t)img.get(1, i, 0), (uint8_t)img.get(2, i, 0), (uint8_t)img.get(3, i, 0)});
                 }
             }
         }
