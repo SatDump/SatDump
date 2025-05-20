@@ -421,7 +421,7 @@ namespace satdump
                             t->px = x, t->py = y;
                             rtkt->transform.forward(&t->px, &t->py);
                             t->transform.reverse(&t->px, &t->py);
-                            if (t->px > 0 && t->px < t->width && t->py > 0 && t->py < t->height)
+                            if (t->px >= 0 && t->px < t->width && t->py >= 0 && t->py < t->height)
                                 t->v = (((t->px - (uint32_t)t->px) == 0 && (t->py - (uint32_t)t->py) == 0) ? (double)t->img.get(0, t->px, t->py) : (double)t->img.get_pixel_bilinear(0, t->px, t->py)) /
                                        t->maxval; // TODOREWORK optimize
                             else

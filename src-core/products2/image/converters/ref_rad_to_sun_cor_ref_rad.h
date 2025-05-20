@@ -1,5 +1,9 @@
 #pragma once
 
+/**
+ * @file ref_rad_to_sun_cor_ref_rad.h
+ */
+
 #include "products2/image/calibration_converter.h"
 
 namespace satdump
@@ -8,6 +12,16 @@ namespace satdump
     {
         namespace conv
         {
+            /**
+             * @brief Reflective Radiance to Sun Corrected
+             * Reflective Radiance converter
+             *
+             * This corrects reflective radiance to negate the
+             * effects of varying solar irradiance/elevation.
+             *
+             * It is also used for albedo correction, as the
+             * math is identical.
+             */
             class RefRadToSunCorRefRadConverter : public ConverterBase
             {
             public:

@@ -2,7 +2,8 @@
 
 #include "handlers/handler.h"
 #include "imgui/imgui.h"
-#include <cstdint>
+
+#include "libs/predict/predict.h"
 
 namespace satdump
 {
@@ -27,6 +28,10 @@ namespace satdump
         struct ObjectPosition
         {
         };
+
+    public:
+        predict_orbital_elements_t *satellite_object = nullptr;
+        predict_position satellite_orbit;
 
     public:
         WipTrackingHandler();

@@ -236,7 +236,7 @@ namespace satdump
                 product_internal_name = p["name"].get<std::string>();
             else
                 product_internal_name = "Image";
-            img_handler->image_name = generateFileName();
+            img_handler->setName(generateFileName());
         }
 
         nlohmann::json ImageProductHandler::getConfig()
@@ -273,7 +273,7 @@ namespace satdump
                 if (channel_selection_curr_id == -1)
                 {
                     auto img = products::generate_expression_product_composite(product, expression, &progress);
-                    img_handler->updateImage(img);
+                    img_handler->setImage(img);
                 }
                 else
                 {
@@ -291,7 +291,7 @@ namespace satdump
                         image::set_metadata_proj_cfg(img, product->get_proj_cfg(product->images[channel_selection_curr_id].abs_index));
                     }
 
-                    img_handler->updateImage(img);
+                    img_handler->setImage(img);
                 }
             }
             catch (std::exception &e)
@@ -309,8 +309,8 @@ namespace satdump
             {
                 std::shared_ptr<ImageHandler> a = std::make_shared<ImageHandler>();
                 a->setConfig(img_handler->getConfig());
-                a->updateImage(img_handler->image);
-                a->image_name = img_handler->image_name;
+                a->setImage(img_handler->getImage(false));
+                a->setName(img_handler->getName());
                 addSubHandler(a);
             }
         }

@@ -13,18 +13,21 @@
 #include "common/geodetic/calc_azel.h"
 #include "common/geodetic/geodetic_coordinates.h"
 #include "common/geodetic/wgs84.h"
+#include "common/utils.h"
 #include "logger.h"
+#include "nutation.h"
 #include <calceph.h>
+#include <cstdio>
 #include <sstream>
 #include <unistd.h>
 
+#if 1
 extern "C"
 {
 #include <novas.h>
-}
-extern "C"
-{
+
 #include <novas-calceph.h>
+#include <novas-cspice.h>
 }
 
 // Below are some Earth orientation values. Here we define them as constants, but they may
@@ -35,8 +38,11 @@ extern "C"
 #define DUT1 0.114                 ///< [s] current UT1 - UTC time difference from IERS Bulletin A
 #define POLAR_DX (0.0863 / 1000.0) // 230.0 ///< [mas] Earth polar offset x, e.g. from IERS Bulletin A.
 #define POLAR_DY (0.4178 / 1000.0) // -62.0             ///< [mas] Earth polar offset y, e.g. from IERS Bulletin A.
+#endif
 
-#if 1
+#define ENABLE_CUSTOM_AZ_EL 1
+
+#if ENABLE_CUSTOM_AZ_EL
 namespace t
 {
     struct vector
@@ -86,9 +92,11 @@ namespace t
 
 int main(int argc, char *argv[])
 {
-    //   initLogger();
-    printf("NOVAS_TEST\n");
+    initLogger();
 
+    logger->trace("NOVAS_TEST\n");
+
+#if 1
     // SuperNOVAS variables used for the calculations ------------------------->
     novas_orbital orbit = NOVAS_ORBIT_INIT; // Orbital parameters
     object source;                          // a celestial object: sidereal, planet, ephemeris or orbital source
@@ -113,16 +121,56 @@ int main(int argc, char *argv[])
 
     // First open one or more ephemeris files with CALCEPH to use
     // E.g. the DE440 (short-term) ephemeris data from JPL.
-    const char *arrr[2] = {"/home/alan/Downloads/de440s.bsp", /*"/home/alan/Downloads/jwst_pred.bsp"*/ "/home/alan/Downloads/juice_orbc_000082_230414_310721_v01.bsp"};
-    t_calcephbin *de440 = calceph_open_array(2, arrr); // calceph_open("/home/alan/Downloads/de440s.bsp");
+    const char *arrr[2] = {"/home/alan/Downloads/de440s.bsp", "/home/alan/Downloads/jwst_pred.bsp"}; //*/ "/home/alan/Downloads/juice_orbc_000082_230414_310721_v01.bsp"};
+    t_calcephbin *de440 = calceph_open_array(2, arrr);                                               // calceph_open("/home/alan/Downloads/de440s.bsp");
     if (!de440)
     {
         fprintf(stderr, "ERROR! could not open ephemeris data\n");
         return 1;
     }
 
+#if 0
+    // Try to list
+    {
+        struct ObjEntry
+        {
+        };
+
+        int count = calceph_getpositionrecordcount(de440);
+        logger->info(count);
+        for (int i = 0; i < count; i++)
+        {
+            int target;
+            int center;
+            double firsttime;
+            double lasttime;
+            int frame;
+            calceph_getpositionrecordindex(de440, i, &target, &center, &firsttime, &lasttime, &frame);
+
+            char objname[40];
+            calceph_getnamebyidss(de440, target, 0, objname);
+
+            char timestamp1[40], timestamp2[40];
+            novas_timespec timespec1, timespec2;
+            novas_set_time(novas_timescale::NOVAS_TAI, firsttime, LEAP_SECONDS, DUT1, &timespec1);
+            novas_set_time(novas_timescale::NOVAS_TAI, lasttime, LEAP_SECONDS, DUT1, &timespec2);
+
+            novas_iso_timestamp(&timespec1, timestamp1, sizeof(timestamp1));
+            novas_iso_timestamp(&timespec2, timestamp2, sizeof(timestamp2));
+
+            logger->info("- Body ((%s)) : ID %d || %s %s", std::string(objname).c_str(), target, timestamp1, timestamp2);
+        }
+    }
+#endif
+
     // Make de440 provide ephemeris data for the major planets.
     novas_use_calceph(de440);
+#elif 1
+    cspice_add_kernel("/home/alan/Downloads/de440s.bsp");
+    cspice_add_kernel("/home/alan/Downloads/juice_orbc_000082_230414_310721_v01.bsp");
+    cspice_add_kernel("/home/alan/Downloads/jwst_pred.bsp");
+
+    novas_use_cspice();
 #endif
 
     // Orbitals assume Keplerian motion, and are never going to be accurate much below the
@@ -172,11 +220,12 @@ int main(int argc, char *argv[])
     // Set Callisto as the observed object
     make_orbital_object("Callisto", 501, &orbit, &source);
 #elif 1
-                                    // make_planet(NOVAS_MOON, &source);
-    //    make_ephem_object("STEREO-A", -234, &source);
+    // make_planet(NOVAS_MOON, &source);
+    // make_planet(NOVAS_SUN, &source);
+    //     make_ephem_object("STEREO-A", -234, &source);
     //  make_ephem_object("Io", 501, &source);
     //  make_ephem_object("JWST", -170, &source);
-    make_ephem_object("JUIce", -28, &source);
+    make_ephem_object("JUICE", -28, &source);
 #endif
 
     // -------------------------------------------------------------------------
@@ -187,14 +236,14 @@ int main(int argc, char *argv[])
     // 50.7374 deg N, 7.0982 deg E, 60m elevation
     // (We'll ignore the local weather parameters here, but you can set those too.)
     if (make_observer_at_geocenter(&obs))
-    // if (make_observer_on_surface(48.783934, 1.815666, 173.0, 0.0, 0.0, &obs) != 0)
+    // if (make_observer_on_surface(48.0, 1.8, 173.0, 0.0, 0.0, &obs) != 0)
     {
         fprintf(stderr, "ERROR! defining Earth-based observer location.\n");
         return 1;
     }
 
     observer obs2;
-    make_observer_on_surface(48.783934, 1.815666, 173.0, 0.0, 0.0, &obs2);
+    make_observer_on_surface(48.0, 1.8, 173.0, 0.0, 0.0, &obs2);
 
     while (1)
     {
@@ -264,6 +313,9 @@ int main(int argc, char *argv[])
         //       return 1;
         //   }
 
+        double jd_tt = novas_get_time(&obs_time, novas_timescale::NOVAS_TT);
+
+#if ENABLE_CUSTOM_AZ_EL
         double pos[3], vel[3];
         // if (novas_orbit_posvel((obs_time.ijd_tt + obs_time.fjd_tt) + obs_time.tt2tdb, &orbit, NOVAS_FULL_ACCURACY, pos,vel))
         if (novas_geom_posvel(&source, &obs_frame, novas_reference_system::NOVAS_CIRS, pos, vel))
@@ -273,7 +325,7 @@ int main(int argc, char *argv[])
         }
 
         double pos2[3];
-        if (cirs_to_itrs(/*double jd_tt_high*/ obs_time.ijd_tt, /*double jd_tt_low*/ obs_time.fjd_tt, obs_time.ut1_to_tt, NOVAS_FULL_ACCURACY, POLAR_DX * 1e3, POLAR_DY * 1e3, pos, pos2))
+        if (cirs_to_itrs(/*double jd_tt_high*/ jd_tt, /*double jd_tt_low*/ 0, obs_time.ut1_to_tt, NOVAS_FULL_ACCURACY, POLAR_DX * 1e3, POLAR_DY * 1e3, pos, pos2))
         {
             fprintf(stderr, "ERROR! failed to calculate CIRS => ITRS.\n");
             return 1;
@@ -283,15 +335,23 @@ int main(int argc, char *argv[])
         t::xyz2lla({(pos2[0] * NOVAS_AU) / 1e3, (pos2[1] * NOVAS_AU) / 1e3, (pos2[2] * NOVAS_AU) / 1e3}, c);
         c.toDegs();
 
-        printf(" X %.6f Y %.6f Z %.6f (%.6f, %.6f, %.6f Km)", (pos2[0] * NOVAS_AU) / 1e3, (pos2[1] * NOVAS_AU) / 1e3, (pos2[2] * NOVAS_AU) / 1e3, c.lat, c.lon, c.alt);
+        // printf(" X %.6f Y %.6f Z %.6f (%.6f, %.6f, %.6f Km)", (pos2[0] * NOVAS_AU) / 1e3, (pos2[1] * NOVAS_AU) / 1e3, (pos2[2] * NOVAS_AU) / 1e3, c.lat, c.lon, c.alt);
 
         //   novas_track tr;
         //   novas_equ_track(&source, &obs_frame, 0.00001, &tr);
         //   printf(" Lat = %.2f deg, Lon = %.6f deg ", tr.pos.lat, tr.pos.lon);
 
-        geodetic::geodetic_coords_t obs(48.783934, 1.815666, 173.0 / 1e3);
+        geodetic::geodetic_coords_t obs(48.0, 1.8, 173.0 / 1e3);
         auto v = geodetic::calc_azel(obs, c);
-        printf(" Az2 = %.6f deg, El2 = %.6f deg ||| ", v.az - 180, v.el);
+        printf(" Az2 = %.6f deg, El2 = %.6f deg ||| ", v.az, v.el);
+#endif
+
+        /*double dx, dy;
+        // iau2000a(jd_tt, 0, &dx, &dy);
+        double jd_tt2 = novas_get_time(&obs_time, novas_timescale::NOVAS_TT);
+        nutation_angles((jd_tt2 - 2451545.0) / 36525.0, NOVAS_FULL_ACCURACY, &dx, &dy);
+        printf("JD %f DX %f %f, DY %f %f ", jd_tt, dx * NOVAS_ARCSEC, POLAR_DX, dy * NOVAS_ARCSEC, POLAR_DY);
+*/
 
         novas_frame obs_frame2;
         novas_make_frame(accuracy, &obs2, &obs_time, POLAR_DX, POLAR_DY, &obs_frame2);
@@ -301,8 +361,8 @@ int main(int argc, char *argv[])
         // Let's print the calculated azimuth and elevation
         printf(" Az = %.6f deg, El = %.6f deg\n", az, el);
 
-        sleep(1);
+        // sleep(1);
     }
-
+#endif
     return 0;
 }

@@ -51,10 +51,10 @@ namespace satdump
                 if (y2 < y1)
                     std::swap(y1, y2);
 
-                logger->critical("CROPPING %d %d, %d %d, %d %d", x1, y1, x2, y2, get_current_img().width(), get_current_img().height());
+                logger->critical("CROPPING %d %d, %d %d, %d %d", x1, y1, x2, y2, getImage().width(), getImage().height());
 
-                auto img = get_current_img().crop_to(x1, y1, x2, y2);
-                auto proj_cfg = image::get_metadata_proj_cfg(get_current_img());
+                auto img = getImage().crop_to(x1, y1, x2, y2);
+                auto proj_cfg = image::get_metadata_proj_cfg(getImage());
                 if (proj_cfg.contains("transform2"))
                 {
                     x1 += proj_cfg["transform2"]["bx"].get<double>();
@@ -64,11 +64,11 @@ namespace satdump
                 proj_cfg["height"] = img.height();
                 proj_cfg["transform2"] = ChannelTransform().init_affine(1, 1, x1, y1);
                 image::set_metadata_proj_cfg(img, proj_cfg);
-                updateImage(img);
+                setImage(img);
             };
         }
 
-        ImageHandler::ImageHandler(image::Image img) : ImageHandler::ImageHandler() { updateImage(img); }
+        ImageHandler::ImageHandler(image::Image img) : ImageHandler::ImageHandler() { setImage(img); }
 
         ImageHandler::ImageHandler(image::Image img, std::string name) : ImageHandler::ImageHandler(img) { image_name = name; }
 
@@ -145,7 +145,7 @@ namespace satdump
             }
         }
 
-        void ImageHandler::drawMenuBar()
+        void ImageHandler::drawSaveMenu()
         {
             bool needs_to_be_disabled = is_processing || file_save_thread_running;
 
@@ -161,7 +161,7 @@ namespace satdump
                     std::string save_type = "png";
                     config::tryAssignValueFromSatdumpGeneralConfig(save_type, "image_format");
                     std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
-                    std::string saved_at = save_image_dialog(getSaneName(), default_path, "Save Image", &get_current_img(), &save_type);
+                    std::string saved_at = save_image_dialog(getSaneName(), default_path, "Save Image", &getImage(), &save_type);
                     if (saved_at == "")
                         logger->info("Save cancelled");
                     else
@@ -173,6 +173,14 @@ namespace satdump
                     file_save_thread.join();
                 file_save_thread = std::thread(fun);
             }
+
+            if (needs_to_be_disabled)
+                style::endDisabled();
+        }
+
+        void ImageHandler::drawMenuBar()
+        {
+            drawSaveMenu();
 
             // TODOREWORK move out?!
             if (ImGui::BeginMenu("Add Overlay"))
@@ -187,9 +195,6 @@ namespace satdump
 
                 ImGui::EndMenu();
             }
-
-            if (needs_to_be_disabled)
-                style::endDisabled();
         }
 
         void ImageHandler::drawContents(ImVec2 win_size)
@@ -198,7 +203,7 @@ namespace satdump
 
             if (imgview_needs_update)
             {
-                image_view.update(get_current_img());
+                image_view.update(getImage());
                 imgview_needs_update = false;
 
                 image_view.mouseCallback = [this](float x, float y)
@@ -206,7 +211,7 @@ namespace satdump
                     if (correct_fwd_lut.size() > 0 && x > 0 && x < correct_fwd_lut.size())
                         x = correct_fwd_lut[x];
 
-                    auto &img = get_current_img();
+                    auto &img = getImage();
                     ImGui::BeginTooltip(); // TODOREWORK
                     additionalMouseCallback(x, y);
                     ImGui::Text("Raw : %d", img.get(0, x, y));
@@ -247,7 +252,7 @@ namespace satdump
                         std::shared_ptr<Handler> h;
                         eventBus->fire_event<viewer::ViewerApplication::GetLastSelectedOfTypeEvent>({"projection_handler", h});
                         if (h)
-                            h->addSubHandler(std::make_shared<ImageHandler>(get_current_img(), getName()));
+                            h->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()));
                         else
                             logger->warn("No projection selected");
                     }
@@ -302,7 +307,7 @@ namespace satdump
             return p;
         }
 
-        void ImageHandler::updateImage(image::Image &img) // TODOREWORK
+        void ImageHandler::setImage(image::Image &img) // TODOREWORK
         {
             image::set_metadata(image, {});
             image = img;
@@ -319,7 +324,7 @@ namespace satdump
         }
 
         // TODOREWORK?
-        void ImageHandler::saveResult(std::string directory) { image::save_img_safe(get_current_img(), directory + "/" + getSaneName()); }
+        void ImageHandler::saveResult(std::string directory) { image::save_img_safe(getImage(), directory + "/" + getSaneName()); }
 
         void ImageHandler::do_process()
         {
