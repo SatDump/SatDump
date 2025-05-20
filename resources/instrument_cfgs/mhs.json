@@ -27,12 +27,12 @@
         },
         {
             "name": "Rainfall",
-            "expression": "cch5=(5, emissive_radiance, 0.06, 0.096); cch4=(4, emissive_radiance, 0.059, 0.09); ((1-(cch5-cch4))-0.95)^0.25",
+            "expression": "cch5=(5, emissive_radiance, 0.06, 0.096); cch4=(4, emissive_radiance, 0.059, 0.09); lut=lut(lut/generic/roygbiv.png); lut((((cch5-cch4))-0.95)^0.25, 0, 0), lut((((1-(cch5-cch4))-0.95)^0.25), 0, 1), lut((((cch5-cch4))-0.95)^0.25, 0, 2)",
             "description": "descriptions/sounders/Rainfall.md"
         },
         {
             "name": "Rainfall (Transparent)",
-            "expression": "cch5=(5, emissive_radiance, 0.06, 0.096); cch4=(4, emissive_radiance, 0.059, 0.09); ((1-(cch5-cch4))-0.95)^0.25, 0, 0, ((1-(cch5-cch4))-0.95)^0.25 > 0.01 ? 1 : 0",
+            "expression": "cch5=(5, emissive_radiance, 0.06, 0.096); cch4=(4, emissive_radiance, 0.059, 0.09); lut=lut(lut/generic/roygbiv.png); lut((((cch5-cch4))-0.95)^0.25, 0, 0), lut((((1-(cch5-cch4))-0.95)^0.25), 0, 1), lut((((cch5-cch4))-0.95)^0.25, 0, 2), ((1-(cch5-cch4))-0.95)^0.25 > 0.01 ? 1 : 0",
             "description": "descriptions/sounders/RainfallTransparent.md"
         },
         {
