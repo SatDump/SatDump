@@ -38,7 +38,7 @@ namespace satdump
             std::string handler_tree_icon = "N";
 
         private:
-            TreeDrawerToClean tree_local;
+            TreeDrawer tree_local;
             std::vector<std::shared_ptr<Handler>> subhandlers_marked_for_del;
 
             bool handler_can_be_dragged = true;

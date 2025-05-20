@@ -1,5 +1,9 @@
 #pragma once
 
+/**
+ * @file sun_angle.h
+ */
+
 #include "products2/image/calibration_converter.h"
 
 namespace satdump
@@ -8,6 +12,13 @@ namespace satdump
     {
         namespace conv
         {
+            /**
+             * @brief Sun angle converter.
+             *
+             * This does not actually "convert" from anything,
+             * but simply returns the calculated Solar Zenith Angle
+             * for the requested image pixel.
+             */
             class SunAngleConverter : public ConverterBase
             {
             public:

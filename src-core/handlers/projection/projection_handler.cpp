@@ -82,7 +82,7 @@ namespace satdump
                     //                    sh_h->draw_to_image(curr_image, pfunc);
 
                     // TODOREWORK!!!!
-                    auto im = proj::reprojectImage(im_h->get_current_img(), projui.get_proj());
+                    auto im = proj::reprojectImage(im_h->getImage(), projui.get_proj());
                     all_imgs.push_back(im);
                     logger->critical("DONE REPROJECTING!");
                 }
@@ -127,7 +127,7 @@ namespace satdump
                 }
             }
 
-            img_handler.updateImage(img);
+            img_handler.setImage(img);
         }
 
         void ProjectionHandler::drawMenuBar()

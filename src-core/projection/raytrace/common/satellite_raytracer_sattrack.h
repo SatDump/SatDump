@@ -4,8 +4,8 @@
  * @file satellite_raytracer_sattrack.h
  */
 
-#include "projection/raytrace/satellite_raytracer.h"
 #include "common/tracking/tracking.h"
+#include "projection/raytrace/satellite_raytracer.h"
 
 namespace satdump
 {
@@ -26,5 +26,5 @@ namespace satdump
         public:
             SatelliteRaytracerSatTrack(nlohmann::json cfg);
         };
-    }
-}
+    } // namespace proj
+} // namespace satdump

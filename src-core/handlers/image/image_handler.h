@@ -1,5 +1,9 @@
 #pragma once
 
+/**
+ * @file image_handler.h
+ */
+
 #include "../handler.h"
 #include "../processing_handler.h"
 
@@ -14,14 +18,41 @@ namespace satdump
 {
     namespace handlers
     {
+        /**
+         * @brief The main standard ImageHandler.
+         *
+         * This is more or less just meant to display images. It
+         * may either be used directly to present an image to the user
+         * in the viewer, while also showing edition options (TODOREWORK,
+         * have a mode where (part of?) editing is disabled?), or
+         * integrated in another handler as you wish.
+         *
+         * It may also be used to perform various image processing tasks. TODOREWORK document all functions!
+         */
         class ImageHandler : public Handler, public ProcessingHandler
         {
         public:
+            /**
+             * @brief Constructor
+             */
             ImageHandler();
+
+            /**
+             * @brief Constructor, init with an image
+             * @param img image to be initialized with
+             */
             ImageHandler(image::Image img);
+
+            /**
+             * @brief Constructor, init with image and name
+             * @param img image to be initialized with
+             * @param name of the handler to display
+             */
             ImageHandler(image::Image img, std::string name);
+
             ~ImageHandler();
 
+        private:
             std::string image_name = "Unknown Image";
 
             bool imgview_needs_update = false;
@@ -29,10 +60,35 @@ namespace satdump
             image::Image image, curr_image;
             ImageViewWidget image_view;
 
-            image::Image &get_current_img() { return has_second_image ? curr_image : image; }
+        public:
+            /**
+             * @brief set current image (raw). Does
+             * NOT reset settings
+             * @param img image to set
+             */
+            void setImage(image::Image &img);
 
-            void updateImage(image::Image &img); // TODOREWORK
+            /**
+             * @brief Get current image. Either
+             * processed or raw.
+             * @param current If true, returns the
+             * *processed* image. Raw if false.
+             */
+            image::Image &getImage(bool current = true)
+            {
+                if (current)
+                    return has_second_image ? curr_image : image;
+                else
+                    return image;
+            }
 
+            /**
+             * @brief Set the image name
+             * @param name new name to set
+             */
+            void setName(std::string name) { image_name = name; }
+
+        private:
             // All params
             bool huesaturation_img = false;
             image::HueSaturation huesaturation_cfg_img;
@@ -65,10 +121,18 @@ namespace satdump
             // Proc function
             void do_process();
 
+        public:
             // Mouse callback to be added by other handlers if needed
             std::function<void(int x, int y)> additionalMouseCallback = [](int, int) {};
 
+        public:
+            /**
+             * @brief Return a sane image name for saving
+             * @return cleaned-up name. TODOREWORK generalize?
+             */
             std::string getSaneName();
+
+            // TODOREWORK document?
             void saveResult(std::string directory);
 
             // The Rest

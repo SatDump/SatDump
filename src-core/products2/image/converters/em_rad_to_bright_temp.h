@@ -1,5 +1,9 @@
 #pragma once
 
+/**
+ * @file em_rad_to_bright_temp.h
+ */
+
 #include "products2/image/calibration_converter.h"
 
 namespace satdump
@@ -8,6 +12,14 @@ namespace satdump
     {
         namespace conv
         {
+            /**
+             * @brief Emissive Radiance to Brightness
+             * Temperature converter
+             *
+             * Given a wavenumber, this will convert a
+             * radiance value to its equivalent brightness
+             * temperature in Kelvins.
+             */
             class EmRadToBrightTempConverter : public ConverterBase
             {
             public:

@@ -131,12 +131,12 @@ namespace satdump
                 if (current_mode == MODE_DOTMAP)
                 {
                     auto img = products::generate_dotmap_product_image(product, selected_channel, -1, -1, 5, true, true, range_min, range_max, &progress);
-                    img_handler.updateImage(img);
+                    img_handler.setImage(img);
                 }
                 else if (current_mode == MODE_FILLMAP)
                 {
                     auto img = products::generate_fillmap_product_image(product, selected_channel, 200, 100, range_min, range_max, &progress);
-                    img_handler.updateImage(img);
+                    img_handler.setImage(img);
                 }
             }
             catch (std::exception &e)
@@ -151,7 +151,7 @@ namespace satdump
             if (current_mode == MODE_DOTMAP || current_mode == MODE_FILLMAP)
             {
                 // TODOREWORK
-                auto &img = img_handler.get_current_img();
+                auto &img = img_handler.getImage();
                 int autogen_id = 0;
                 while (std::filesystem::exists(directory + "/img_" + std::to_string(autogen_id) + ".png"))
                     autogen_id++;

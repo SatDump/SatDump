@@ -1,11 +1,28 @@
 #pragma once
 
+/**
+ * @file normal_line.h
+ */
+
 #include "satellite_raytracer_sattrack.h"
 
 namespace satdump
 {
     namespace proj
     {
+        /**
+         * @brief Standard timestamp + line raytracer
+         *
+         * This implementation is meant for push-broom
+         * or similar instruments that accumulate lines
+         * one after the other.
+         *
+         * This assumes static pointing towards the center
+         * of the Earth and static relative to the velocity
+         * vector.
+         *
+         * Used on AVHRR, MSU-MR, MODIS...
+         */
         class NormalLineRaytracer : public SatelliteRaytracerSatTrack
         {
         private:
@@ -62,5 +79,5 @@ namespace satdump
             NormalLineRaytracerOld(nlohmann::json cfg);
             bool get_position(double x, double y, geodetic::geodetic_coords_t &pos, double *otime);
         };
-    }
-}
+    } // namespace proj
+} // namespace satdump
