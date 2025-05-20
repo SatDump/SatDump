@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
     // We'll print debugging messages and error traces...
     novas_debug(NOVAS_DEBUG_ON);
 
-#if 0
+#if 1
     // -------------------------------------------------------------------------
     // We'll use the CALCEPH library to provide ephemeris data
 

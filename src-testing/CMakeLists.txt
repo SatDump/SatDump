@@ -8,4 +8,4 @@ target_include_directories(satdump-testing PUBLIC src-testing src-core /home/ala
 target_link_directories(satdump-testing PUBLIC satdump_core /home/alan/Downloads/supernovas/lib/)
 
 # Link against the core
-target_link_libraries(satdump-testing PUBLIC satdump_core supernovas calceph solsys-calceph solsys-cspice cspice) # mfhdf)
+target_link_libraries(satdump-testing PUBLIC satdump_core supernovas calceph solsys-calceph)# solsys-cspice cspice) # mfhdf)
