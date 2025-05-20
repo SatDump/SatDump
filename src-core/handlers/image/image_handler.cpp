@@ -145,7 +145,7 @@ namespace satdump
             }
         }
 
-        void ImageHandler::drawMenuBar()
+        void ImageHandler::drawSaveMenu()
         {
             bool needs_to_be_disabled = is_processing || file_save_thread_running;
 
@@ -174,6 +174,14 @@ namespace satdump
                 file_save_thread = std::thread(fun);
             }
 
+            if (needs_to_be_disabled)
+                style::endDisabled();
+        }
+
+        void ImageHandler::drawMenuBar()
+        {
+            drawSaveMenu();
+
             // TODOREWORK move out?!
             if (ImGui::BeginMenu("Add Overlay"))
             {
@@ -187,9 +195,6 @@ namespace satdump
 
                 ImGui::EndMenu();
             }
-
-            if (needs_to_be_disabled)
-                style::endDisabled();
         }
 
         void ImageHandler::drawContents(ImVec2 win_size)

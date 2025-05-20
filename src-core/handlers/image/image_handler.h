@@ -135,6 +135,11 @@ namespace satdump
             // TODOREWORK document?
             void saveResult(std::string directory);
 
+            /**
+             * @brief Draws the same image Menu Item
+             */
+            void drawSaveMenu();
+
             // The Rest
             void drawMenu();
             void drawContents(ImVec2 win_size);
