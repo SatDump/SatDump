@@ -132,7 +132,7 @@ namespace satdump
 
         void ProjectionHandler::drawMenuBar()
         {
-            // img_handler.drawMenuBar();
+            img_handler.drawMenuBar(); // TODOREWORK remove this
             /*if (ImGui::MenuItem("Image To Handler"))
             {
                 std::shared_ptr<ImageHandler> a = std::make_shared<ImageHandler>();
