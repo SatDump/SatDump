@@ -16,7 +16,7 @@ namespace satdump
         virtual void getHorPos(Station station, double time); // AzElRange
     };
 
-    class WipTrackingHandler : public viewer::Handler
+    class WipTrackingHandler : public handlers::Handler
     {
     protected:
         void drawMenu();
