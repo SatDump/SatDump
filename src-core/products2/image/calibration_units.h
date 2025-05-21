@@ -18,6 +18,7 @@
 #define CALIBRATION_ID_REFLECTIVE_RADIANCE "reflective_radiance"
 #define CALIBRATION_ID_SUN_ANGLE_COMPENSATED_REFLECTIVE_RADIANCE "sun_angle_compensated_reflective_radiance"
 #define CALIBRATION_ID_BRIGHTNESS_TEMPERATURE "brightness_temperature"
+#define CALIBRATION_ID_BRIGHTNESS_TEMPERATURE_CELCIUS "brightness_temperature_celcius"
 
 namespace satdump
 {
@@ -33,6 +34,12 @@ namespace satdump
         {
             std::string unit;
             std::string name;
+
+            /**
+             * @brief Return a nicer name
+             * @return string of a nice name for UI use
+             */
+            std::string getNiceUnits() { return name + " (" + unit + ")"; }
         };
 
         /**

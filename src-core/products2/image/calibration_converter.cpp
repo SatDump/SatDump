@@ -1,6 +1,7 @@
 #include "calibration_converter.h"
 #include "core/plugin.h"
 #include "logger.h"
+#include "products2/image/calibration_units.h"
 #include "products2/image_product.h"
 
 #include "converters/bright_temp_to_em_rad.h"
@@ -58,7 +59,9 @@ namespace satdump
             if (itype == CALIBRATION_ID_REFLECTIVE_RADIANCE && otype == CALIBRATION_ID_SUN_ANGLE_COMPENSATED_REFLECTIVE_RADIANCE)
                 converters.push_back(std::make_shared<conv::RefRadToSunCorRefRadConverter>());
             else if (itype == CALIBRATION_ID_EMISSIVE_RADIANCE && otype == CALIBRATION_ID_BRIGHTNESS_TEMPERATURE)
-                converters.push_back(std::make_shared<conv::EmRadToBrightTempConverter>());
+                converters.push_back(std::make_shared<conv::EmRadToBrightTempConverter>(false));
+            else if (itype == CALIBRATION_ID_EMISSIVE_RADIANCE && otype == CALIBRATION_ID_BRIGHTNESS_TEMPERATURE_CELCIUS)
+                converters.push_back(std::make_shared<conv::EmRadToBrightTempConverter>(true));
             else if (itype == CALIBRATION_ID_BRIGHTNESS_TEMPERATURE && otype == CALIBRATION_ID_EMISSIVE_RADIANCE)
                 converters.push_back(std::make_shared<conv::BrightTempToEmRadConverter>());
             else if (itype == CALIBRATION_ID_ALBEDO && otype == CALIBRATION_ID_SUN_ANGLE_COMPENSATED_ALBEDO)
@@ -75,18 +78,21 @@ namespace satdump
         {
             std::vector<std::string> otypes = {itype};
 
-            logger->trace("Unit Conversions Request : " + itype);
+            // logger->trace("Unit Conversions Request : " + itype);
 
             if (itype == CALIBRATION_ID_REFLECTIVE_RADIANCE)
                 otypes.push_back(CALIBRATION_ID_SUN_ANGLE_COMPENSATED_REFLECTIVE_RADIANCE);
             else if (itype == CALIBRATION_ID_EMISSIVE_RADIANCE)
+            {
                 otypes.push_back(CALIBRATION_ID_BRIGHTNESS_TEMPERATURE);
+                otypes.push_back(CALIBRATION_ID_BRIGHTNESS_TEMPERATURE_CELCIUS);
+            }
             else if (itype == CALIBRATION_ID_BRIGHTNESS_TEMPERATURE)
                 otypes.push_back(CALIBRATION_ID_EMISSIVE_RADIANCE);
             else if (itype == CALIBRATION_ID_ALBEDO)
                 otypes.push_back(CALIBRATION_ID_SUN_ANGLE_COMPENSATED_ALBEDO);
 
-            otypes.push_back(CALIBRATION_ID_SUN_ANGLE); // TODOREWORK?
+            otypes.push_back(CALIBRATION_ID_SUN_ANGLE);
 
             eventBus->fire_event<ConversionRequestEvent>({itype, otypes});
 
