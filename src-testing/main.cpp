@@ -18,6 +18,7 @@
 #include "nutation.h"
 #include <calceph.h>
 #include <cstdio>
+#include <cstring>
 #include <sstream>
 #include <unistd.h>
 
@@ -40,7 +41,7 @@ extern "C"
 #define POLAR_DY (0.4178 / 1000.0) // -62.0             ///< [mas] Earth polar offset y, e.g. from IERS Bulletin A.
 #endif
 
-#define ENABLE_CUSTOM_AZ_EL 1
+#define ENABLE_CUSTOM_AZ_EL 0
 
 #if ENABLE_CUSTOM_AZ_EL
 namespace t
@@ -121,13 +122,19 @@ int main(int argc, char *argv[])
 
     // First open one or more ephemeris files with CALCEPH to use
     // E.g. the DE440 (short-term) ephemeris data from JPL.
-    const char *arrr[2] = {"/home/alan/Downloads/de440s.bsp", /*"/home/alan/Downloads/jwst_pred.bsp",*/ "/home/alan/Downloads/juice_orbc_000082_230414_310721_v01.bsp"};
-    t_calcephbin *de440 = calceph_open_array(2, arrr); //// calceph_open("/home/alan/Downloads/de440s.bsp");
+    const char *arrr[] = {
+        "/home/alan/Downloads/juice_orbc_000082_230414_310721_v01.bsp", //
+        "/home/alan/Downloads/de440s.bsp",                              //
+        "/home/alan/Downloads/jwst_pred.bsp"                            //
+    };
+    t_calcephbin *de440 = calceph_open_array(3, arrr); //// calceph_open("/home/alan/Downloads/de440s.bsp");
     if (!de440)
     {
         fprintf(stderr, "ERROR! could not open ephemeris data\n");
         return 1;
     }
+
+    // calceph_prefetch(de440);
 
 #if 1
     // Try to list
@@ -145,10 +152,11 @@ int main(int argc, char *argv[])
             double firsttime;
             double lasttime;
             int frame;
-            calceph_getpositionrecordindex(de440, i, &target, &center, &firsttime, &lasttime, &frame);
+            calceph_getpositionrecordindex(de440, i + 1, &target, &center, &firsttime, &lasttime, &frame);
 
-            char objname[40];
-            calceph_getnamebyidss(de440, target, 0, objname);
+            // t_calcephcharvalue objname;
+            // calceph_getnamebyidss(de440, target, 1, objname);
+            // logger->trace(objname);
 
             char timestamp1[40], timestamp2[40];
             novas_timespec timespec1, timespec2;
@@ -158,9 +166,11 @@ int main(int argc, char *argv[])
             novas_iso_timestamp(&timespec1, timestamp1, sizeof(timestamp1));
             novas_iso_timestamp(&timespec2, timestamp2, sizeof(timestamp2));
 
-            logger->info("- Body ((%s)) : ID %d || %s %s", std::string(objname).c_str(), target, timestamp1, timestamp2);
+            logger->info("- Body ID %d || %s %s", /* std::string(objname).c_str(),*/ target, timestamp1, timestamp2);
         }
     }
+
+    // return 1;
 #endif
 
     // Make de440 provide ephemeris data for the major planets.
@@ -222,10 +232,11 @@ int main(int argc, char *argv[])
 #elif 1
     // make_planet(NOVAS_MOON, &source);
     // make_planet(NOVAS_SUN, &source);
-    //     make_ephem_object("STEREO-A", -234, &source);
+    make_planet(NOVAS_MERCURY, &source);
+    //      make_ephem_object("STEREO-A", -234, &source);
     //  make_ephem_object("Io", 501, &source);
-    //  make_ephem_object("JWST", -170, &source);
-    make_ephem_object("JUICE", -28, &source);
+    // make_ephem_object("JWST", -170, &source);
+    // make_ephem_object("JUICE_T", -28, &source);
 #endif
 
     // -------------------------------------------------------------------------
@@ -247,6 +258,8 @@ int main(int argc, char *argv[])
 
     while (1)
     {
+        sleep(1);
+
         // -------------------------------------------------------------------------
         // Set the astrometric time of observation...
 
@@ -258,7 +271,7 @@ int main(int argc, char *argv[])
         if (novas_set_unix_time(unix_time.tv_sec, unix_time.tv_nsec, LEAP_SECONDS, DUT1, &obs_time) != 0)
         {
             fprintf(stderr, "ERROR! failed to set time of observation.\n");
-            return 1;
+            continue;
         }
 
         // ... Or you could set a time explicily in any known timescale.
@@ -288,7 +301,7 @@ int main(int argc, char *argv[])
         if (novas_make_frame(accuracy, &obs, &obs_time, POLAR_DX, POLAR_DY, &obs_frame) != 0)
         {
             fprintf(stderr, "ERROR! failed to define observing frame.\n");
-            return 1;
+            continue;
         }
 
         // -------------------------------------------------------------------------
@@ -296,12 +309,12 @@ int main(int argc, char *argv[])
         if (novas_sky_pos(&source, &obs_frame, NOVAS_CIRS, &apparent) != 0)
         {
             fprintf(stderr, "ERROR! failed to calculate apparent position.\n");
-            return 1;
+            continue;
         }
 
         // Let's print the apparent position
         // (Note, CIRS R.A. is relative to CIO, not the true equinox of date.)
-        printf(" RA = %.9f deg, Dec = %.9f deg, rad_vel = %.6f km/s, distance = %.6f ", apparent.ra * 15., apparent.dec, apparent.rv, (apparent.dis * NOVAS_AU) / 1e3);
+        printf(" RA = %.9f deg, Dec = %.9f deg, rad_vel = %.6f km/s, distance = %.6f km", apparent.ra * 15., apparent.dec, apparent.rv, (apparent.dis * NOVAS_AU) / 1e3);
 
         // -------------------------------------------------------------------------
         // Convert the apparent position in CIRS on sky to horizontal coordinates
@@ -313,7 +326,7 @@ int main(int argc, char *argv[])
         //       return 1;
         //   }
 
-        double jd_tt = novas_get_time(&obs_time, novas_timescale::NOVAS_TT);
+        //  double jd_tt = novas_get_time(&obs_time, novas_timescale::NOVAS_TT);
 
 #if ENABLE_CUSTOM_AZ_EL
         double pos[3], vel[3];
@@ -360,8 +373,6 @@ int main(int argc, char *argv[])
         novas_app_to_hor(&obs_frame2, NOVAS_CIRS, apparent2.ra, apparent2.dec, NULL, &az, &el);
         // Let's print the calculated azimuth and elevation
         printf(" Az = %.6f deg, El = %.6f deg\n", az, el);
-
-        // sleep(1);
     }
 #endif
     return 0;
