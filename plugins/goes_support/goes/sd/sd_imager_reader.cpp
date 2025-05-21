@@ -57,7 +57,7 @@ namespace goes
 
                     if (!is_shifted)
                     {
-                        /*
+                        
                         for (int b = 0; b < 4; b++)
                         {
                             image_vis[size_t(lines * 8 + 0) * IMG_WIDTH + (x * 4 + b)] = block[b * 12 + 9] << 6;
@@ -69,7 +69,7 @@ namespace goes
                             image_vis[size_t(lines * 8 + 6) * IMG_WIDTH + (x * 4 + b)] = block[b * 12 + 3] << 6;
                             image_vis[size_t(lines * 8 + 7) * IMG_WIDTH + (x * 4 + b)] = block[b * 12 + 2] << 6;
                         }
-                            */
+                            
 
                         image_ir1[size_t(lines * 2 + 1) * IMG_WIDTH + x] = 65535 - (block[0 * 12 + 10] << 6);
                         image_ir1[size_t(lines * 2 + 0) * IMG_WIDTH + x] = 65535 - (block[0 * 12 + 11] << 6);
@@ -85,7 +85,7 @@ namespace goes
                     }
                     else
                     {
-                        /*
+                        
                         for (int b = 0; b < 4; b++)
                         {
                             image_vis[size_t(lines * 8 + 0) * IMG_WIDTH + (x * 4 + 3 - b)] = block[b * 12 + 9] << 6;
@@ -97,7 +97,7 @@ namespace goes
                             image_vis[size_t(lines * 8 + 6) * IMG_WIDTH + (x * 4 + 3 - b)] = block[b * 12 + 3] << 6;
                             image_vis[size_t(lines * 8 + 7) * IMG_WIDTH + (x * 4 + 3 - b)] = block[b * 12 + 2] << 6;
                         }
-                            */
+                            
 
                         image_ir1[size_t(lines * 2 + 1) * IMG_WIDTH + x] = 65535 - (block[0 * 12 + 10] << 6);
                         image_ir1[size_t(lines * 2 + 0) * IMG_WIDTH + x] = 65535 - (block[0 * 12 + 11] << 6);
