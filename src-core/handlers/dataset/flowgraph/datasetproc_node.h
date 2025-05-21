@@ -1,0 +1,31 @@
+#pragma once
+
+#include "../../image/image_handler.h"
+#include "../dataset_product_handler.h"
+#include "flowgraph.h"
+
+namespace satdump
+{
+    class ImageHandlerSink_Node : public NodeInternal
+    {
+    private:
+        handlers::Handler *ptr;
+
+    public:
+        ImageHandlerSink_Node(handlers::Handler *ptr) : NodeInternal("Image Handler Sink"), ptr(ptr) { inputs.push_back({"Image"}); }
+
+        void process()
+        {
+            std::shared_ptr<image::Image> img_pro = std::static_pointer_cast<image::Image>(inputs[0].ptr);
+
+            auto handler = std::make_shared<handlers::ImageHandler>(*img_pro);
+            ptr->addSubHandler(handler);
+
+            has_run = true;
+        }
+
+        void render() {}
+        nlohmann::json to_json() { return {}; }
+        void from_json(nlohmann::json j) {}
+    };
+} // namespace satdump

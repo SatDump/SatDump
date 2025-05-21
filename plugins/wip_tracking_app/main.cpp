@@ -4,6 +4,7 @@
 
 #include "app.h"
 #include "tracking.h"
+#include "viewer2/viewer.h"
 
 class WipTrackingAppPlugin : public satdump::Plugin
 {
@@ -12,15 +13,24 @@ public:
 
     void init()
     {
-        //   satdump::eventBus->register_handler<satdump::AddGUIApplicationEvent>(provideAppToRegister);
-        satdump::eventBus->register_handler<satdump::viewer::RequestHandlersEvent>(provideAppToRegister);
+        // TODOREWORK maybe a way to call up/init a handler?
+        satdump::eventBus->register_handler<satdump::viewer::ViewerApplication::RenderLoadMenuElementsEvent>(renderViewerLoaderButton);
     }
 
-    static void provideAppToRegister(const satdump::viewer::RequestHandlersEvent &evt)
+    static void renderViewerLoaderButton(const satdump::viewer::ViewerApplication::RenderLoadMenuElementsEvent &evt)
     {
-        evt.h.push_back(std::make_shared<satdump::WipTrackingHandler>());
-        //        evt.applications.push_back(std::make_shared<satdump::BitViewApplication>());
-    }
+        if (ImGui::BeginMenu("File"))
+        {
+            if (ImGui::BeginMenu("Add"))
+            {
+                if (ImGui::MenuItem("WIP Tracking"))
+                    evt.master_handler->addSubHandler(std::make_shared<satdump::WipTrackingHandler>());
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndMenu();
+        }
+    } // TODOREWORK
 };
 
 PLUGIN_LOADER(WipTrackingAppPlugin)

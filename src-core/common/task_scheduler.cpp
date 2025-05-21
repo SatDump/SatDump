@@ -1,6 +1,8 @@
 #include "task_scheduler.h"
 #include "core/plugin.h"
+#include <chrono>
 #include <limits>
+#include <thread>
 
 namespace satdump
 {
@@ -38,11 +40,12 @@ namespace satdump
             needs_update = false;
             if (sleep_for > 0)
                 cv.wait_for(lock, std::chrono::seconds(sleep_for), [this] { return !running || needs_update; });
+            std::this_thread::sleep_for(std::chrono::seconds(1)); // TODOREWORK. Hogs CPU otherwise...
 
             // Stop/Restart loop if needed
-            if (!running || needs_update ||            // We were woken up because of a change in the program
-                task_to_run == nullptr ||              // Spurious wake when no task scheduled
-                wait_began + sleep_for > time(NULL))   // Spurious wake
+            if (!running || needs_update ||          // We were woken up because of a change in the program
+                task_to_run == nullptr ||            // Spurious wake when no task scheduled
+                wait_began + sleep_for > time(NULL)) // Spurious wake
                 continue;
 
             // Run the task that should be due now, and mark it for next run
@@ -51,10 +54,7 @@ namespace satdump
         }
     }
 
-    TaskScheduler::TaskScheduler()
-    {
-        task_thread = std::thread(&TaskScheduler::thread_func, this);
-    }
+    TaskScheduler::TaskScheduler() { task_thread = std::thread(&TaskScheduler::thread_func, this); }
 
     TaskScheduler::~TaskScheduler()
     {
@@ -63,4 +63,4 @@ namespace satdump
         if (task_thread.joinable())
             task_thread.join();
     }
-}
+} // namespace satdump

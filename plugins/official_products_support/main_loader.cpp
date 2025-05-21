@@ -1,27 +1,24 @@
+#include "core/module.h"
 #include "core/plugin.h"
 #include "logger.h"
-#include "core/module.h"
 
 #include "core/config.h"
-#include "loader/archive_loader.h"
 #include "imgui/imgui_stdlib.h"
+#include "loader/archive_loader.h"
 
 #include "viewer2/viewer.h"
 
 namespace
 {
-    bool _enable_loader = false;
+    bool _enable_loader = true;
     bool _loader_open = false;
     std::unique_ptr<satdump::ArchiveLoader> _loader = nullptr;
-}
+} // namespace
 
 class OfficalProductsLoaderSupport : public satdump::Plugin
 {
 public:
-    std::string getID()
-    {
-        return "official_products_loader_support";
-    }
+    std::string getID() { return "official_products_loader_support"; }
 
     void init()
     {

@@ -1,8 +1,8 @@
 #define SATDUMP_DLL_EXPORT2 1
-#include <filesystem>
 #include "processing.h"
-#include "logger.h"
 #include "core/pipeline.h"
+#include "logger.h"
+#include <filesystem>
 
 #include "core/config.h"
 #include "main_ui.h"
@@ -17,11 +17,7 @@ namespace satdump
 
     namespace processing
     {
-        void process(std::string downlink_pipeline,
-                     std::string input_level,
-                     std::string input_file,
-                     std::string output_file,
-                     nlohmann::json parameters)
+        void process(std::string downlink_pipeline, std::string input_level, std::string input_file, std::string output_file, nlohmann::json parameters)
         {
             // Get pipeline
             std::optional<Pipeline> pipeline = getPipelineFromName(downlink_pipeline);
@@ -34,11 +30,7 @@ namespace satdump
             process(pipeline.value(), input_level, input_file, output_file, parameters);
         }
 
-        void process(Pipeline downlink_pipeline,
-                     std::string input_level,
-                     std::string input_file,
-                     std::string output_file,
-                     nlohmann::json parameters)
+        void process(Pipeline downlink_pipeline, std::string input_level, std::string input_file, std::string output_file, nlohmann::json parameters)
         {
             processing_mutex.lock();
             is_processing = true;
@@ -75,7 +67,7 @@ namespace satdump
                 if (std::filesystem::exists(output_file + "/dataset.json"))
                 {
                     logger->info("Opening viewer!");
-                    viewer_app2->openProductOrDataset(output_file + "/dataset.json");
+                    viewer_app2->tryOpenFileInViewer(output_file + "/dataset.json");
                 }
             }
 
@@ -85,5 +77,5 @@ namespace satdump
         SATDUMP_DLL2 std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> ui_call_list = std::make_shared<std::vector<std::shared_ptr<ProcessingModule>>>();
         SATDUMP_DLL2 std::shared_ptr<std::mutex> ui_call_list_mutex = std::make_shared<std::mutex>();
         SATDUMP_DLL2 bool is_processing = false;
-    }
-}
+    } // namespace processing
+} // namespace satdump

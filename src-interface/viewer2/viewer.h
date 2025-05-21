@@ -2,7 +2,8 @@
 
 #include "../app.h"
 
-#include "handler/handler.h"
+#include "common/widgets/menuitem_fileopen.h"
+#include "handlers/handler.h"
 
 #include "imgui/dialogs/widget.h"
 
@@ -15,6 +16,8 @@ namespace satdump
         public:
             struct RenderLoadMenuElementsEvent
             {
+                std::shared_ptr<handlers::Handler> &curr_handler;
+                std::shared_ptr<handlers::Handler> &master_handler;
             };
 
         protected:
@@ -28,16 +31,27 @@ namespace satdump
             void drawContents();
             void drawMenuBar();
 
-            std::shared_ptr<Handler> curr_handler;
-            std::shared_ptr<Handler> master_handler;
-            std::shared_ptr<Handler> trash_handler;
+            // Viewer main handlers
+            std::shared_ptr<handlers::Handler> curr_handler;
+            std::shared_ptr<handlers::Handler> master_handler;
+            std::shared_ptr<handlers::Handler> trash_handler;
 
-            // TODOREWORK File open
-            std::thread file_open_thread;
-            fileutils::FileSelTh *file_open_dialog = nullptr;
+            // File open
+            widget::MenuItemFileOpen file_open_dialog;
+            std::thread file_open_thread; // TODOREWORK?
 
         public:
-            void openProductOrDataset(std::string path);
+            // TODOREWORK last opened by time
+            std::map<std::string, std::shared_ptr<handlers::Handler>> last_selected_handler;
+
+            struct GetLastSelectedOfTypeEvent
+            {
+                std::string type;
+                std::shared_ptr<handlers::Handler> &h;
+            };
+
+        public:
+            void tryOpenFileInViewer(std::string path);
 
         public:
             ViewerApplication();

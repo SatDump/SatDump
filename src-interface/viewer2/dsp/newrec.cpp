@@ -8,7 +8,7 @@
 
 namespace satdump
 {
-    namespace viewer
+    namespace handlers
     {
         NewRecHandler::NewRecHandler()
         {
@@ -184,5 +184,5 @@ namespace satdump
             }
             ImGui::EndChild();
         }
-    } // namespace viewer
+    } // namespace handlers
 } // namespace satdump

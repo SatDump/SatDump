@@ -1,14 +1,14 @@
 #include "dsp_flowgraph_handler.h"
 #include "core/plugin.h"
+#include "dsp/agc/agc.h"
 #include "dsp/device/dev.h"
+#include "dsp/fft/fft_pan.h"
 #include "dsp/filter/rrc.h"
+#include "dsp/io/file_source.h"
 #include "dsp/utils/cyclostationary_analysis.h"
+#include "dsp/utils/freq_shift.h"
 #include "imgui/imnodes/imnodes.h"
 #include "logger.h"
-
-#include "dsp/agc/agc.h"
-#include "dsp/fft/fft_pan.h"
-#include "dsp/io/file_source.h"
 
 #include "common/widgets/fft_plot.h"
 
@@ -21,6 +21,8 @@
 
 #include "dsp/utils/correct_iq.h"
 #include "dsp/utils/delay_one_imag.h"
+#include "dsp/utils/freq_shift.h"
+#include "dsp/utils/real_to_complex.h"
 
 #include "nlohmann/json_utils.h"
 #include <memory>
@@ -29,7 +31,7 @@
 
 namespace satdump
 {
-    namespace viewer
+    namespace handlers
     {
         class NodeTestFileSource : public ndsp::NodeInternal
         {
@@ -114,6 +116,12 @@ namespace satdump
 
             flowgraph.node_internal_registry.insert(
                 {"correct_iq_cc", {"Utils/Correct IQ", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::CorrectIQBlock<complex_t>>()); }}});
+
+            flowgraph.node_internal_registry.insert(
+                {"freq_shift_cc", {"Utils/Frequency Shift", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::FreqShiftBlock>()); }}});
+
+            flowgraph.node_internal_registry.insert(
+                {"real_to_complex_fc", {"Utils/Real to Complex", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::RealToComplexBlock>()); }}});
 
             //   flowgraph.node_internal_registry.insert({"airspy_dev_cc", {"Airspy Dev", [=](const ndsp::Flowgraph *f)
             //                                                              { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::AirspyDevBlock>()); }}});
@@ -203,5 +211,5 @@ namespace satdump
         }
 
         void DSPFlowGraphHandler::drawContents(ImVec2 win_size) { flowgraph.render(); }
-    } // namespace viewer
+    } // namespace handlers
 } // namespace satdump

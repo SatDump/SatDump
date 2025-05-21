@@ -1,6 +1,6 @@
 #pragma once
 
-#include "handler/handler.h"
+#include "handlers/handler.h"
 
 #include "dsp/agc/agc.h"
 #include "dsp/clock_recovery/clock_recovery_mm.h"
@@ -23,7 +23,7 @@
 // TODOREWORK, move into plugin? Or Core?
 namespace satdump
 {
-    namespace viewer
+    namespace handlers
     {
         class CycloHelperHandler : public Handler
         {
@@ -74,5 +74,5 @@ namespace satdump
 
             std::string getID() { return "cyclo_helper_handler"; }
         };
-    } // namespace viewer
+    } // namespace handlers
 } // namespace satdump

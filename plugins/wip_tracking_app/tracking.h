@@ -1,8 +1,9 @@
 #pragma once
 
-#include "handler/handler.h"
+#include "handlers/handler.h"
 #include "imgui/imgui.h"
-#include <cstdint>
+
+#include "libs/predict/predict.h"
 
 namespace satdump
 {
@@ -16,7 +17,7 @@ namespace satdump
         virtual void getHorPos(Station station, double time); // AzElRange
     };
 
-    class WipTrackingHandler : public viewer::Handler
+    class WipTrackingHandler : public handlers::Handler
     {
     protected:
         void drawMenu();
@@ -27,6 +28,10 @@ namespace satdump
         struct ObjectPosition
         {
         };
+
+    public:
+        predict_orbital_elements_t *satellite_object = nullptr;
+        predict_position satellite_orbit;
 
     public:
         WipTrackingHandler();

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "handler/handler.h"
+#include "handlers/handler.h"
 
 #include "common/widgets/fft_plot.h"
 #include "common/widgets/waterfall_plot.h"
@@ -12,7 +12,7 @@
 // TODOREWORK, move into plugin? Or Core?
 namespace satdump
 {
-    namespace viewer
+    namespace handlers
     {
         class WaterfallTestHandler : public Handler
         {
@@ -37,5 +37,5 @@ namespace satdump
 
             std::string getID() { return "waterfall_test_handler"; }
         };
-    }
-}
+    } // namespace handlers
+} // namespace satdump

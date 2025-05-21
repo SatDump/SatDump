@@ -1,6 +1,6 @@
 #pragma once
 
-#include "handler/handler.h"
+#include "handlers/handler.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
 #include <thread>
@@ -16,7 +16,7 @@
 
 namespace satdump
 {
-    class BitViewHandler : public viewer::Handler
+    class BitViewHandler : public handlers::Handler
     {
     protected:
         bool is_busy = false;

@@ -3,7 +3,7 @@
 
 namespace satdump
 {
-    namespace viewer
+    namespace handlers
     {
         WaterfallTestHandler::WaterfallTestHandler()
         {
@@ -52,10 +52,7 @@ namespace satdump
             listenTh = std::thread(fun);
         }
 
-        WaterfallTestHandler::~WaterfallTestHandler()
-        {
-            delete[] fft_buffer;
-        }
+        WaterfallTestHandler::~WaterfallTestHandler() { delete[] fft_buffer; }
 
         void WaterfallTestHandler::drawMenu()
         {
@@ -101,7 +98,9 @@ namespace satdump
                 ImGui::SetNextWindowSizeConstraints(ImVec2((right_width + offset * ui_scale), 50), ImVec2((right_width + offset * ui_scale), wf_size));
                 ImGui::SetNextWindowSize(ImVec2((right_width + offset * ui_scale), show_waterfall ? waterfall_ratio * wf_size : wf_size));
                 ImGui::SetNextWindowPos(ImVec2(left_width, 25 * ui_scale));
-                if (ImGui::Begin("#fft", &t, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+                if (ImGui::Begin("#fft", &t,
+                                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoScrollbar |
+                                     ImGuiWindowFlags_NoScrollWithMouse))
                 {
                     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 9 * ui_scale);
                     fft_plot->draw({float(wfft_widht), fft_height});
@@ -117,5 +116,5 @@ namespace satdump
             }
             ImGui::EndChild();
         }
-    }
-}
+    } // namespace handlers
+} // namespace satdump
