@@ -5,6 +5,7 @@
 #include <cstring>
 #include "common/image/io.h"
 #include "common/image/processing.h"
+#include <iostream>
 
 #define IMG_WIDTH 40000
 
@@ -14,17 +15,18 @@ namespace goes
     {
         SDImagerReader::SDImagerReader()
         {
-            memset(last_status, 0, FULL_BUF_SZ * sizeof(int));
+            memset(last_status, 0, FULL_BUF_SZ * sizeof(uint16_t));
         }
 
         void SDImagerReader::work(uint16_t *words)
         {
-            int type = words[1];
+            uint16_t type = words[1] & 31;
 
-            memmove(last_status, &last_status[1], (FULL_BUF_SZ - 1) * sizeof(int));
+            memmove(last_status, &last_status[1], (FULL_BUF_SZ - 1) * sizeof(uint16_t));
             last_status[FULL_BUF_SZ - 1] = type;
 
-            int last_types = most_common(&last_status[0], &last_status[FULL_BUF_SZ], 0);
+            uint16_t last_types = most_common(&last_status[0], &last_status[FULL_BUF_SZ], 0);
+            //std::cout<<type<<std::endl;
 
             if (last_types == 16 && images_lines > 10)
             {
@@ -37,7 +39,7 @@ namespace goes
                 images_lines = 0;
             }
 
-            if (type == 21)
+            if (type == 21 && last_types == 0)
             {
                 image_vis.resize(size_t(lines + 1) * 8 * IMG_WIDTH);
                 image_ir1.resize(size_t(lines + 1) * 2 * IMG_WIDTH);
@@ -47,7 +49,7 @@ namespace goes
 
                 bool is_shifted = ((words[3] >> 6) & 1);
 
-                int x = is_shifted ? ((20917 - 70 + 12 - 3 - 8) / 4) : 0;
+                int x = is_shifted ? ((20917 - 70 + 12 - 3 - 8 -7*4) / 4) : 0;
 
                 for (int y = 0; y < (int)wip_scanline.size() / 48; y++)
                 {
@@ -55,6 +57,7 @@ namespace goes
 
                     if (!is_shifted)
                     {
+                        
                         for (int b = 0; b < 4; b++)
                         {
                             image_vis[size_t(lines * 8 + 0) * IMG_WIDTH + (x * 4 + b)] = block[b * 12 + 9] << 6;
@@ -66,21 +69,23 @@ namespace goes
                             image_vis[size_t(lines * 8 + 6) * IMG_WIDTH + (x * 4 + b)] = block[b * 12 + 3] << 6;
                             image_vis[size_t(lines * 8 + 7) * IMG_WIDTH + (x * 4 + b)] = block[b * 12 + 2] << 6;
                         }
+                            
 
-                        image_ir1[size_t(lines * 2 + 0) * IMG_WIDTH + x] = 65535 - (block[0 * 12 + 10] << 6);
-                        image_ir1[size_t(lines * 2 + 1) * IMG_WIDTH + x] = 65535 - (block[0 * 12 + 11] << 6);
+                        image_ir1[size_t(lines * 2 + 1) * IMG_WIDTH + x] = 65535 - (block[0 * 12 + 10] << 6);
+                        image_ir1[size_t(lines * 2 + 0) * IMG_WIDTH + x] = 65535 - (block[0 * 12 + 11] << 6);
 
-                        image_ir2[size_t(lines * 2 + 0) * IMG_WIDTH + x] = 65535 - (block[1 * 12 + 10] << 6);
-                        image_ir2[size_t(lines * 2 + 1) * IMG_WIDTH + x] = 65535 - (block[1 * 12 + 11] << 6);
+                        image_ir2[size_t(lines * 2 + 1) * IMG_WIDTH + x] = 65535 - (block[1 * 12 + 10] << 6);
+                        image_ir2[size_t(lines * 2 + 0) * IMG_WIDTH + x] = 65535 - (block[1 * 12 + 11] << 6);
 
-                        image_ir3[size_t(lines * 2 + 0) * IMG_WIDTH + x] = 65535 - (block[2 * 12 + 10] << 6);
-                        image_ir3[size_t(lines * 2 + 1) * IMG_WIDTH + x] = 65535 - (block[2 * 12 + 11] << 6);
+                        image_ir3[size_t(lines * 2 + 1) * IMG_WIDTH + x] = 65535 - (block[2 * 12 + 10] << 6);
+                        image_ir3[size_t(lines * 2 + 0) * IMG_WIDTH + x] = 65535 - (block[2 * 12 + 11] << 6);
 
-                        image_ir4[size_t(lines * 2 + 0) * IMG_WIDTH + x] = 65535 - (block[3 * 12 + 10] << 6);
                         image_ir4[size_t(lines * 2 + 1) * IMG_WIDTH + x] = 65535 - (block[3 * 12 + 10] << 6);
+                        image_ir4[size_t(lines * 2 + 0) * IMG_WIDTH + x] = 65535 - (block[3 * 12 + 10] << 6);
                     }
                     else
                     {
+                        
                         for (int b = 0; b < 4; b++)
                         {
                             image_vis[size_t(lines * 8 + 0) * IMG_WIDTH + (x * 4 + 3 - b)] = block[b * 12 + 9] << 6;
@@ -92,18 +97,19 @@ namespace goes
                             image_vis[size_t(lines * 8 + 6) * IMG_WIDTH + (x * 4 + 3 - b)] = block[b * 12 + 3] << 6;
                             image_vis[size_t(lines * 8 + 7) * IMG_WIDTH + (x * 4 + 3 - b)] = block[b * 12 + 2] << 6;
                         }
+                            
 
-                        image_ir1[size_t(lines * 2 + 0) * IMG_WIDTH + x] = 65535 - (block[0 * 12 + 10] << 6);
-                        image_ir1[size_t(lines * 2 + 1) * IMG_WIDTH + x] = 65535 - (block[0 * 12 + 11] << 6);
+                        image_ir1[size_t(lines * 2 + 1) * IMG_WIDTH + x] = 65535 - (block[0 * 12 + 10] << 6);
+                        image_ir1[size_t(lines * 2 + 0) * IMG_WIDTH + x] = 65535 - (block[0 * 12 + 11] << 6);
 
-                        image_ir2[size_t(lines * 2 + 0) * IMG_WIDTH + x] = 65535 - (block[1 * 12 + 10] << 6);
-                        image_ir2[size_t(lines * 2 + 1) * IMG_WIDTH + x] = 65535 - (block[1 * 12 + 11] << 6);
+                        image_ir2[size_t(lines * 2 + 1) * IMG_WIDTH + x] = 65535 - (block[1 * 12 + 10] << 6);
+                        image_ir2[size_t(lines * 2 + 0) * IMG_WIDTH + x] = 65535 - (block[1 * 12 + 11] << 6);
 
-                        image_ir3[size_t(lines * 2 + 0) * IMG_WIDTH + x] = 65535 - (block[2 * 12 + 10] << 6);
-                        image_ir3[size_t(lines * 2 + 1) * IMG_WIDTH + x] = 65535 - (block[2 * 12 + 11] << 6);
+                        image_ir3[size_t(lines * 2 + 1) * IMG_WIDTH + x] = 65535 - (block[2 * 12 + 10] << 6);
+                        image_ir3[size_t(lines * 2 + 0) * IMG_WIDTH + x] = 65535 - (block[2 * 12 + 11] << 6);
 
-                        image_ir4[size_t(lines * 2 + 0) * IMG_WIDTH + x] = 65535 - (block[3 * 12 + 10] << 6);
                         image_ir4[size_t(lines * 2 + 1) * IMG_WIDTH + x] = 65535 - (block[3 * 12 + 10] << 6);
+                        image_ir4[size_t(lines * 2 + 0) * IMG_WIDTH + x] = 65535 - (block[3 * 12 + 10] << 6);
                     }
 
                     if (is_shifted)
@@ -120,10 +126,10 @@ namespace goes
 
                 wip_scanline.clear();
 
-                logger->info("Lines %d", lines);
+                //logger->info("Lines %d", lines);
             }
-
-            wip_scanline.insert(wip_scanline.end(), &words[0], &words[48]);
+            if (last_types == 26)
+                wip_scanline.insert(wip_scanline.end(), &words[0], &words[48]);
         }
 
         image::Image SDImagerReader::getChannel(int c)
@@ -146,9 +152,9 @@ namespace goes
             else
                 img.crop(0, 21072 / 4);
 
-            image::median_blur(img);
+            //image::median_blur(img);
 
-            img.resize_bilinear(img.width(), img.height() * 1.75);
+            //img.resize_bilinear(img.width(), img.height() * 1.75);
 
             // img.mirror(true, false);
 
