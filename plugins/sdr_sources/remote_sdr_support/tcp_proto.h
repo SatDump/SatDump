@@ -68,6 +68,12 @@ public:
         if (setsockopt(serversockfd, SOL_SOCKET, SO_SNDTIMEO, timeout_ptr, sizeof timeout) < 0)
             logger->trace("Problem setting send timeout on TCP socket; ignoring");
 
+        if (setsockopt(serversockfd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof (int)) < 0)
+            logger->trace("Problem setting SO_REUSEADDR on TCP socket; ignoring");
+
+        if (setsockopt(serversockfd, SOL_SOCKET, SO_REUSEPORT, &(int){1}, sizeof (int)) < 0)
+            logger->trace("Problem setting SO_REUSEPORT on TCP socket; ignoring");
+
         struct sockaddr_in servaddr;
         memset(&servaddr, 0, sizeof(servaddr));
         servaddr.sin_family = AF_INET;
