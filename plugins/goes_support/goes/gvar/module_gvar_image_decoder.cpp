@@ -618,7 +618,7 @@ namespace goes
                 if (crc_valid && image_time == 0)
                 {
                     tm time = block_header.time_code_bcd;
-                    image_time = mktime(&time); // + time.tm_gmtoff;
+                    image_time = timegm(&time); // + time.tm_gmtoff;
                 }
 
                 // Ensures we aren't looking at junk
@@ -654,15 +654,15 @@ namespace goes
                     {
                         tm block0_current_time = block_header0.TCURR;
                         tm block0_image_time = block_header0.CIFST;
-                        time_t current_time = mktime(&block0_current_time);
-                        time_t image_time = mktime(&block0_image_time);
+                        time_t current_time = timegm(&block0_current_time);
+                        time_t image_time = timegm(&block0_image_time);
                         float time_diff = difftime(current_time, image_time);
 
                         // Image start time and current header time is within one hour, set image time.
                         // Just a sanity check.
                         if (time_diff < 3600 && time_diff > -60)
                         {
-                            block_zero_timestamps.push_back(mktime(&block0_image_time) /*+ block0_image_time.tm_gmtoff*/);
+                            block_zero_timestamps.push_back(timegm(&block0_image_time) /*+ block0_image_time.tm_gmtoff*/);
                         }
                     }
                 }
