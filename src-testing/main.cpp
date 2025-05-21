@@ -121,15 +121,15 @@ int main(int argc, char *argv[])
 
     // First open one or more ephemeris files with CALCEPH to use
     // E.g. the DE440 (short-term) ephemeris data from JPL.
-    const char *arrr[2] = {"/home/alan/Downloads/de440s.bsp", "/home/alan/Downloads/jwst_pred.bsp"}; //*/ "/home/alan/Downloads/juice_orbc_000082_230414_310721_v01.bsp"};
-    t_calcephbin *de440 = calceph_open_array(2, arrr);                                               // calceph_open("/home/alan/Downloads/de440s.bsp");
+    const char *arrr[2] = {"/home/alan/Downloads/de440s.bsp", /*"/home/alan/Downloads/jwst_pred.bsp",*/ "/home/alan/Downloads/juice_orbc_000082_230414_310721_v01.bsp"};
+    t_calcephbin *de440 = calceph_open_array(2, arrr); //// calceph_open("/home/alan/Downloads/de440s.bsp");
     if (!de440)
     {
         fprintf(stderr, "ERROR! could not open ephemeris data\n");
         return 1;
     }
 
-#if 0
+#if 1
     // Try to list
     {
         struct ObjEntry
