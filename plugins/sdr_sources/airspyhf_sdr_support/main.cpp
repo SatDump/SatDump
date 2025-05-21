@@ -42,8 +42,9 @@ public:
 
     static void registerNodes(const satdump::handlers::RegisterNodesEvent &evt)
     {
-        evt.r.insert({"airspyhf_cc",
-                      {"Device/Airspy Dev", [](const satdump::ndsp::Flowgraph *f) { return std::make_shared<satdump::ndsp::NodeInternal>(f, std::make_shared<satdump::ndsp::AirspyHFDevBlock>()); }}});
+        evt.r.insert(
+            {"airspyhf_cc",
+             {"Device/AirspyHF Dev", [](const satdump::ndsp::Flowgraph *f) { return std::make_shared<satdump::ndsp::NodeInternal>(f, std::make_shared<satdump::ndsp::AirspyHFDevBlock>()); }}});
     }
 };
 
