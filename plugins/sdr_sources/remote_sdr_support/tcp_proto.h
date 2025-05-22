@@ -65,8 +65,16 @@ public:
         timeout.tv_usec = 0;
         struct timeval *timeout_ptr = &timeout;
 #endif
+        int enable = 1;
         if (setsockopt(serversockfd, SOL_SOCKET, SO_SNDTIMEO, timeout_ptr, sizeof timeout) < 0)
             logger->trace("Problem setting send timeout on TCP socket; ignoring");
+
+        if (setsockopt(serversockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof enable) < 0)
+            logger->trace("Problem setting SO_REUSEADDR on TCP socket; ignoring");
+#ifndef  _WIN32
+        if (setsockopt(serversockfd, SOL_SOCKET, SO_REUSEPORT, &enable, sizeof enable) < 0)
+            logger->trace("Problem setting SO_REUSEPORT on TCP socket; ignoring");
+#endif
 
         struct sockaddr_in servaddr;
         memset(&servaddr, 0, sizeof(servaddr));

@@ -22,12 +22,17 @@ namespace satdump
              */
             class EmRadToBrightTempConverter : public ConverterBase
             {
+            private:
+                const bool celcius = false;
+
             public:
+                EmRadToBrightTempConverter(bool celcius) : celcius(celcius) {}
+
                 double convert(const UnitConverter *c, double x, double y, double val)
                 {
                     if (c->wavenumber == -1)
                         return CALIBRATION_INVALID_VALUE;
-                    return radiance_to_temperature(val, c->wavenumber);
+                    return radiance_to_temperature(val, c->wavenumber) - (celcius ? 273.15 : 0.0);
                 }
 
                 bool convert_range(const UnitConverter *c, double &min, double &max)

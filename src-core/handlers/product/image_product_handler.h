@@ -2,8 +2,11 @@
 
 #include "../image/image_handler.h"
 #include "product_handler.h"
+#include "products2/image/calibration_converter.h"
+#include "products2/image/calibration_units.h"
 #include "products2/image/image_calibrator.h"
 #include "products2/image_product.h"
+#include <vector>
 
 namespace satdump
 {
@@ -28,13 +31,24 @@ namespace satdump
             std::string channel_selection_box_str;
             int channel_selection_curr_id = 0;
 
+            // Calibration : Single channels / range
             bool images_can_be_calibrated = false;
             bool channel_calibrated = false;
-            std::map<std::string, std::vector<double>> channel_calibrated_range_min;
-            std::map<std::string, std::vector<double>> channel_calibrated_range_max;
-            std::vector<std::string> channel_calibrated_output_units;
-            std::string channel_calibrated_combo_str;
-            int channel_calibrated_combo_curr_id = 0;
+
+            struct CalibInfo
+            {
+                calibration::UnitInfo info;
+                double min;
+                double max;
+            };
+
+            std::map<int, std::map<std::string, CalibInfo>> channels_calibrated_ranges;
+            std::string channels_calibrated_curr_unit;
+
+            // Calibration : Units / Ranges for mouse overlay
+            std::vector<std::pair<calibration::UnitInfo, std::shared_ptr<calibration::UnitConverter>>> channels_calibration_units_and_converters;
+
+            void initOverlayConverters();
 
             // Expression
             std::string expression;
