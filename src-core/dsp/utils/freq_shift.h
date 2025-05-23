@@ -15,7 +15,7 @@ namespace satdump
          * @brief Frequency Shift class
          *
          * This is a implementation of the old block
-         * using the new NDSP system.
+         * using the new NDSP system. TODOREWORK
          *
          * @param needs_reinit handles live changes
          * @param raw_shift if true, allows for manual frequency shift
