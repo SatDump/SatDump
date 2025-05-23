@@ -144,7 +144,7 @@ namespace goes
             // This can be adjusted to allow the spare to be more degraded than usual
             // >5 bits should be incredibly rare after bit-level majority law, at that point
             // the block ID is almost guaranteed to be incorrect messing the frame up anyways
-            if (errors > 5)
+            if (errors > 4)
             {
                 return false;
             }
