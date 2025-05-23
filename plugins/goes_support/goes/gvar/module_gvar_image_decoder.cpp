@@ -518,6 +518,13 @@ namespace goes
                 double final_offset_x = 9496.0 - (images.vis_xoff - 5789);
                 double final_offset_y = 9508.0 - (images.vis_yoff - 2485) * 1.75;
 
+                // It must just be special?
+                if (images.sat_number == 13)
+                {
+                    final_offset_x += 69.6943231441048;
+                    final_offset_y += 249.7816593886463;
+                }
+
                 double scalar_x = 2290 / 4.;
                 double scalar_y = 2290 / 4.;
                 proj_cfg["type"] = "geos";
