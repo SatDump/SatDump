@@ -115,6 +115,7 @@ namespace satdump
         {
         public:
             proj::Projection proj;
+            bool proj_valid = false;
             double wavenumber = -1;
 
         private:

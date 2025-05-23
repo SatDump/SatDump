@@ -16,6 +16,8 @@
 
 // geodetic::projection::GEOSProjection proj_geos;
 
+// TODOREWORK. This needs to be finally deleted!
+
 class GVARExtended : public satdump::Plugin
 {
 private:

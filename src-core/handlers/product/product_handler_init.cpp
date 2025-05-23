@@ -9,14 +9,14 @@ namespace satdump
 {
     namespace handlers
     {
-        std::shared_ptr<ProductHandler> getProductHandlerForProduct(std::shared_ptr<products::Product> prod)
+        std::shared_ptr<ProductHandler> getProductHandlerForProduct(std::shared_ptr<products::Product> prod, bool dataset_mode)
         {
             std::shared_ptr<ProductHandler> prod_h;
 
             if (prod->type == "image")
-                prod_h = std::make_shared<ImageProductHandler>(prod, true);
+                prod_h = std::make_shared<ImageProductHandler>(prod, dataset_mode);
             else if (prod->type == "punctiform")
-                prod_h = std::make_shared<PunctiformProductHandler>(prod, true);
+                prod_h = std::make_shared<PunctiformProductHandler>(prod, dataset_mode);
             else
                 logger->error("TODOREWORK!!!!!! Actually handle loading properly...");
 

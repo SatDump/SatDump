@@ -19,7 +19,7 @@ namespace satdump
         void UnitConverter::set_proj(nlohmann::json p)
         {
             proj = p;
-            proj.init(0, 1);
+            proj_valid = proj.init(0, 1);
         }
 
         void UnitConverter::set_wavenumber(double w) { wavenumber = w; }

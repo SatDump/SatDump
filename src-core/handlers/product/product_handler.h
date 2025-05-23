@@ -88,8 +88,9 @@ namespace satdump
          * provided products.
          *
          * @param product product, loaded with loadProducts()
+         * @param dataset_mode must be true if opening inside a dataset
          * @return appropriate handler pointer
          */
-        std::shared_ptr<ProductHandler> getProductHandlerForProduct(std::shared_ptr<products::Product> product);
+        std::shared_ptr<ProductHandler> getProductHandlerForProduct(std::shared_ptr<products::Product> product, bool dataset_mode = false);
     } // namespace handlers
 } // namespace satdump

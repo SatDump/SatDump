@@ -14,6 +14,8 @@
 
 #include "goes/hrit/dcs/dcs_settings.h"
 
+#include "goes/gvar/gvar_calibrator.h"
+
 class GOESSupport : public satdump::Plugin
 {
 public:
@@ -23,6 +25,7 @@ public:
     {
         satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
         satdump::eventBus->register_handler<satdump::config::RegisterPluginConfigHandlersEvent>(registerConfigHandler);
+        satdump::eventBus->register_handler<satdump::products::RequestImageCalibratorEvent>(provideImageCalibratorHandler);
         satdump::eventBus->register_handler<goes::hrit::GOESLRITDataDecoderModule::DCPUpdateEvent>(goes::hrit::GOESLRITDataDecoderModule::updateDCPs);
         goes::hrit::initDcsConfig();
     }
@@ -38,6 +41,12 @@ public:
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, goes::sd::GOESNSDDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, goes::sd::SDImageDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, goes::instruments::GOESRInstrumentsDecoderModule);
+    }
+
+    static void provideImageCalibratorHandler(const satdump::products::RequestImageCalibratorEvent &evt)
+    {
+        if (evt.id == "gvar_imager")
+            evt.calibrators.push_back(std::make_shared<goes::gvar::GvarCalibrator>(evt.products, evt.calib));
     }
 
     static void registerConfigHandler(const satdump::config::RegisterPluginConfigHandlersEvent &evt)
