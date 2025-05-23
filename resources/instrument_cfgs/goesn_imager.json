@@ -6,6 +6,14 @@
             "expression": "lut=lut(lut/goes/gvar/fc_lut.png);lut(ch1, ch4, 0),lut(ch1, ch4, 1),lut(ch1, ch4, 2)"
         },
         {
+            "name": "False Color IR Merge",
+            "expression": "cch=(2, emissive_radiance, 1.500000, 0.010000);bm=equp(maps/nasa_hd.jpg); s=(1, sun_angle, 0.000000, 32.000000);lut=lut(lut/goes/gvar/fc_lut.png);(cch * (cch) + (1-cch) * bm(0)) * (1-s) + lut(ch1, ch4, 0) * s,(cch * (cch) + (1-cch) * bm(1)) * (1-s) + lut(ch1, ch4, 1) * s,(cch * (cch) + (1-cch) * bm(2)) * (1-s) + lut(ch1, ch4, 2) * s"
+        },
+        {
+            "name": "MCIR",
+            "expression": "cch=(2, emissive_radiance, 1.500000, 0.010000);bm=equp(maps/nasa_hd.jpg); cch * (cch) + (1-cch) * bm(0), cch * (cch) + (1-cch) * bm(1), cch * (cch) + (1-cch) * bm(2)"
+        },
+        {
             "name": "AVHRR 543b IR False Color",
             "expression": "ch5 == 0 ? 0 : 1-ch5, ch4 == 0 ? 0 : 1-ch4, ch2 == 0 ? 0 : 1-ch2",
             "image": {
