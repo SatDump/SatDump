@@ -4,7 +4,6 @@
 #include "imgui/imgui_image.h"
 #include "logger.h"
 #include "products2/image_product.h"
-#include <arpa/inet.h> // for ntohs() & htonl()
 #include <filesystem>
 
 #define FRAME_SIZE 44356

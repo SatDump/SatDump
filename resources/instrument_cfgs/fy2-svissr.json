@@ -1,0 +1,34 @@
+{
+    "name": "S-VISSR",
+    "presets": [
+        {
+            "name": "False Color",
+            "expression":  "lut=lut(lut/fy2/svissr/lut.png);ch1*0 + lut(ch2, 1-ch1, 0),lut(ch2, 1-ch1, 1),lut(ch2, 1-ch1, 2)"
+        },
+        {
+            "name": "EWS-G False Color (WIP)",
+            "expression": "lut=lut(lut/goes/gvar/fc_lut.png);lut(ch1/3, ch4, 0),lut(ch1/3, ch4, 1),lut(ch1/3, ch4, 2)",
+            "image": {
+                "white_balance": true
+            }
+        },
+        {
+        "name": "AVHRR 543b IR False Color",
+        "expression": "ch5 == 0 ? 0 : 1-ch5, ch4 == 0 ? 0 : 1-ch4, ch2 == 0 ? 0 : 1-ch2",
+        "image": {
+            "individual_equalize": true,
+            "white_balance": true
+        },
+        "description": "descriptions/543b.md"
+        },
+        {
+        "name": "AVHRR 124 False Color (Cloud RGB)",
+        "expression": "ch1, ch1, 1-ch4",
+        "image": {
+            "white_balance": true
+        },
+        "description": "descriptions/124.md"
+        }
+    ]
+
+}
