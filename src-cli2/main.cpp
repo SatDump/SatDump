@@ -7,6 +7,7 @@
 #include "logger.h"
 #include "nlohmann/json.hpp"
 #include "probe.h"
+#include "process.h"
 #include "satdump_vars.h"
 
 #include "core/pipeline.h"
@@ -103,6 +104,10 @@ int main(int argc, char *argv[])
         }
     }
 
+    CLI::App *sub_process = app.add_subcommand("process", "Process products/dataset automatically");
+    sub_process->add_option("product", "Product to process")->required();
+    sub_process->add_option("directory", "Output folder")->required();
+
     CLI11_PARSE(app, argc, argv);
 
     for (auto *subcom : app.get_subcommands())
@@ -127,7 +132,7 @@ int main(int argc, char *argv[])
                 {
                     if (s2->count(s33->get_name()))
                     {
-                        logger->critical(s33->get_name().substr(2));
+                        // logger->critical(s33->get_name().substr(2));
                         auto optname = s33->get_name().substr(2);
                         if (pipeline_opts[pipeline->name].count(optname))
                             params[optname] = nlohmann::json::parse(s33->as<std::string>());
@@ -154,6 +159,12 @@ int main(int argc, char *argv[])
             bool rx = subcom->count("--rx");
             bool pa = subcom->count("--params");
             satdump::probeDevices(tx, rx, pa);
+        }
+        else if (subcom->get_name() == "process")
+        {
+            std::string pro = subcom->get_option("product")->as<std::string>();
+            std::string dir = subcom->get_option("directory")->as<std::string>();
+            satdump::processProductsOrDataset(pro, dir);
         }
     }
 }
