@@ -26,6 +26,7 @@ namespace widgets
         HistoViewer(float hscale = 1, float vscale = 1, int histo_size = 200);
         ~HistoViewer();
         void pushComplex(complex_t *buffer, int size);
+        void pushFloatAndGaussian(float *buffer, int size);
         void draw();
     };
 } // namespace widgets
