@@ -254,7 +254,33 @@ namespace fengyun_svissr
                         frame[68] = counter & 0xFF;
                     }
                 }
+                /*
 
+                // Gets the timestamp
+                //          Sector ID |   S/C and CDAS | Constants | Sub-communication ID | Simplified mapping  | Zero-based indexing fix
+                int offset =    2     +       126      +     64    +           4          +      100                        -1;
+
+              
+                int group_id = frame[193];
+                // First 6 bytes, so ID 0 /first 410 bytes/
+                    if (group_id == 0){
+                    // R6*8 -> 6 byte integer, needs 10e-8 for value
+                    // !Little endian, needs to be changed to Big endian!
+                    uint64_t raw = (
+                        (uint64_t)frame[offset] << 40 |
+                        (uint64_t)frame[offset+1] << 32 |
+                        (uint64_t)frame[offset+2] << 24 |
+                        (uint64_t)frame[offset+3] << 16 |
+                        (uint64_t)frame[offset+4] << 8 |
+                        (uint64_t)frame[offset+5]
+                
+                    );
+
+                    double timestamp = raw*10e-8;
+
+
+                    logger->warn("ID: " + std::to_string(group_id) + " Timestamp (JD): " + std::to_string(timestamp+2400000.5));
+                }*/
                 // Parse SCID
                 int scid = frame[89];
 
