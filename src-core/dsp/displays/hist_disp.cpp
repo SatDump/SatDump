@@ -1,17 +1,14 @@
-#include "const_disp.h"
+#include "hist_disp.h"
 
 namespace satdump
 {
     namespace ndsp
     {
-        ConstellationDisplayBlock::ConstellationDisplayBlock()
-            : Block("const_disp_cc", {{"in", DSP_SAMPLE_TYPE_CF32}}, {})
-        {
-        }
+        HistogramDisplayBlock::HistogramDisplayBlock() : Block("hist_disp_cc", {{"in", DSP_SAMPLE_TYPE_CF32}}, {}) {}
 
-        ConstellationDisplayBlock::~ConstellationDisplayBlock() {}
+        HistogramDisplayBlock::~HistogramDisplayBlock() {}
 
-        bool ConstellationDisplayBlock::work()
+        bool HistogramDisplayBlock::work()
         {
             DSPBuffer iblk;
             inputs[0].fifo->wait_dequeue(iblk);
@@ -24,7 +21,7 @@ namespace satdump
 
             complex_t *samples = iblk.getSamples<complex_t>();
 
-            constel.pushComplex(samples, iblk.size);
+            histo.pushComplex(samples, iblk.size);
 
             iblk.free();
             return false;

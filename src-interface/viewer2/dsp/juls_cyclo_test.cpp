@@ -2,6 +2,7 @@
 #include "common/dsp_source_sink/format_notated.h"
 #include "common/widgets/stepped_slider.h"
 #include "core/style.h"
+#include "dsp/utils/correct_iq.h"
 #include "imgui/imgui.h"
 
 namespace satdump
@@ -11,6 +12,7 @@ namespace satdump
         JulsCycloHelperHandler::JulsCycloHelperHandler()
         {
             file_source = std::make_shared<ndsp::FileSourceBlock>();
+            dc_block = std::make_shared<ndsp::CorrectIQBlock<complex_t>>();
             freq_shift = std::make_shared<ndsp::FreqShiftBlock>();
             splitter = std::make_shared<ndsp::SplitterBlock<complex_t>>();
             fft = std::make_shared<ndsp::FFTPanBlock>();
@@ -30,8 +32,9 @@ namespace satdump
             splitter->set_cfg("noutputs", 2);
             splitter2->set_cfg("noutputs", 2);
             splitter3->set_cfg("noutputs", 2);
-
-            freq_shift->link(file_source.get(), 0, 0, 4);
+            
+            dc_block->link(file_source.get(), 0, 0, 4);
+            freq_shift->link(dc_block.get(), 0, 0, 4);
             splitter->link(freq_shift.get(), 0, 0, 4);
             fft->link(splitter.get(), 0, 0, 4);
 
@@ -158,6 +161,7 @@ namespace satdump
                         started = true;
 
                         file_source->start();
+                        dc_block->start();
                         freq_shift->start();
                         splitter->start();
                         fft->start();
@@ -189,6 +193,7 @@ namespace satdump
                         file_source->stop(true);
 
                         file_source->stop();
+                        dc_block->stop();
                         freq_shift->stop();
                         splitter->stop();
                         fft->stop();

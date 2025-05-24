@@ -16,7 +16,7 @@
 #include "dsp/filter/fir.h"
 
 #include "dsp/clock_recovery/clock_recovery_mm.h"
-#include "dsp/const/const_disp.h"
+#include "dsp/displays/const_disp.h"
 #include "dsp/pll/costas.h"
 
 #include "dsp/utils/correct_iq.h"

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "dsp/utils/correct_iq.h"
 #include "dsp/utils/cyclostationary_analysis.h"
 #include "dsp/utils/delay_one_imag.h"
 #include "dsp/utils/freq_shift.h"
@@ -8,7 +9,8 @@
 
 #include "dsp/agc/agc.h"
 #include "dsp/clock_recovery/clock_recovery_mm.h"
-#include "dsp/const/const_disp.h"
+#include "dsp/displays/const_disp.h"
+#include "dsp/displays/hist_disp.h"
 #include "dsp/fft/fft_pan.h"
 #include "dsp/filter/rrc.h"
 #include "dsp/io/file_source.h"
@@ -31,6 +33,7 @@ namespace satdump
         {
         public:
             std::shared_ptr<ndsp::FileSourceBlock> file_source;
+            std::shared_ptr<ndsp::CorrectIQBlock<complex_t>> dc_block;
             std::shared_ptr<ndsp::SplitterBlock<complex_t>> splitter;
             std::shared_ptr<ndsp::FFTPanBlock> fft;
             std::shared_ptr<ndsp::AGCBlock<complex_t>> agc;
