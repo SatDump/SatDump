@@ -4,7 +4,7 @@ namespace satdump
 {
     namespace ndsp
     {
-        HistogramDisplayBlock::HistogramDisplayBlock() : Block("hist_disp_cc", {{"in", DSP_SAMPLE_TYPE_CF32}}, {}) {}
+        HistogramDisplayBlock::HistogramDisplayBlock() : Block("hist_disp_c", {{"in", DSP_SAMPLE_TYPE_CF32}}, {}) {}
 
         HistogramDisplayBlock::~HistogramDisplayBlock() {}
 

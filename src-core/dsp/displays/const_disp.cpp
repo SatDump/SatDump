@@ -5,7 +5,7 @@ namespace satdump
     namespace ndsp
     {
         ConstellationDisplayBlock::ConstellationDisplayBlock()
-            : Block("const_disp_cc", {{"in", DSP_SAMPLE_TYPE_CF32}}, {})
+            : Block("const_disp_c", {{"in", DSP_SAMPLE_TYPE_CF32}}, {})
         {
         }
 
