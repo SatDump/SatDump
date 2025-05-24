@@ -83,6 +83,7 @@ namespace fengyun_svissr
 
         // Stats
         std::vector<int> scid_stats;
+        std::vector<int> timestamp_stats;
 
         // UI Stuff
         float corr_history_ca[200];

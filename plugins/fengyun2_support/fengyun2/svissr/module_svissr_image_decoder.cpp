@@ -31,7 +31,20 @@ namespace fengyun_svissr
 
         logger->info("Found SCID " + std::to_string(buffer.scid));
 
-        const time_t timevalue = buffer.timestamp; // time(0);
+        if (buffer.timestamp == 0)
+        {
+            logger->warn("No timestamps were pulled! Was the reception too short? Defaulting to system time");
+            buffer.timestamp = time(0);
+        }
+        // Sanity check, if the timestamp isn't between 2000 and 2050, consider it to be incorrect
+        // (I don't think the Fengyun 2 satellites will live for another 25 years)
+        else if (buffer.timestamp < 946681200 || buffer.timestamp > 2524604400)
+        {
+            logger->warn("The pulled timestamp looks erroneous! Was the SNR too low? Defaulting to system time");
+            buffer.timestamp = time(0);
+        }
+
+        const time_t timevalue = buffer.timestamp;
         std::tm *timeReadable = gmtime(&timevalue);
         std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
                                 (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
@@ -144,8 +157,7 @@ namespace fengyun_svissr
         writingImage = false;
     }
 
-    SVISSRImageDecoderModule::SVISSRImageDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-        : ProcessingModule(input_file, output_file_hint, parameters)
+    SVISSRImageDecoderModule::SVISSRImageDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
         frame = new uint8_t[FRAME_SIZE * 2];
 
@@ -254,33 +266,31 @@ namespace fengyun_svissr
                         frame[68] = counter & 0xFF;
                     }
                 }
-                /*
 
-                // Gets the timestamp
-                //          Sector ID |   S/C and CDAS | Constants | Sub-communication ID | Simplified mapping  | Zero-based indexing fix
-                int offset =    2     +       126      +     64    +           4          +      100                        -1;
-
-              
+                // ID of the block group: Simplified mapping, Orbit and attitude data, MANAM,
+                // Calibration block 1 and 2 are all sent in 25 separate groups because of their
+                // size. The group ID defines which group is sent. Every group gets transmitted
+                // 8 times every 200 lines, the retransmission counter is at the 195th byte
                 int group_id = frame[193];
-                // First 6 bytes, so ID 0 /first 410 bytes/
-                    if (group_id == 0){
-                    // R6*8 -> 6 byte integer, needs 10e-8 for value
-                    // !Little endian, needs to be changed to Big endian!
-                    uint64_t raw = (
-                        (uint64_t)frame[offset] << 40 |
-                        (uint64_t)frame[offset+1] << 32 |
-                        (uint64_t)frame[offset+2] << 24 |
-                        (uint64_t)frame[offset+3] << 16 |
-                        (uint64_t)frame[offset+4] << 8 |
-                        (uint64_t)frame[offset+5]
-                
-                    );
 
-                    double timestamp = raw*10e-8;
+                // First 6 bytes from the Orbit and Attitude header, which is sent in 25 100-byte pieces
+                // We need the first piece -> GID = 0
+                if (group_id == 0)
+                {
 
+                    // R6*8 -> Big endian 6 byte integer, needs 10e-8 to read the value
+                    uint64_t raw =
+                        ((uint64_t)frame[296] << 40 | (uint64_t)frame[297] << 32 | (uint64_t)frame[298] << 24 | (uint64_t)frame[299] << 16 | (uint64_t)frame[300] << 8 | (uint64_t)frame[301]);
 
-                    logger->warn("ID: " + std::to_string(group_id) + " Timestamp (JD): " + std::to_string(timestamp+2400000.5));
-                }*/
+                    // note for future developers that will save you 6 hours of your life debugging
+                    // 10x10^-8 != 10^-8
+                    // i hate myself
+                    double timestamp = raw * 1e-8;
+
+                    // Converts the MJD timestamp to a unix timestamp
+                    timestamp_stats.push_back(((timestamp - 40587) * 86400));
+                }
+
                 // Parse SCID
                 int scid = frame[89];
 
@@ -332,7 +342,14 @@ namespace fengyun_svissr
                     buffer->scid = most_common(scid_stats.begin(), scid_stats.end(), 0);
                     scid_stats.clear();
 
-                    buffer->timestamp = time(0);
+                    // TODOREWORK majority law would be incredibly useful here, but needs N-element
+                    // implementation because we might sync less frames than intended
+                    // Please note that the timestamps are already converted to unix timestamps,
+                    // this would have to happen on the raw JD one (see where the the stats are pushed to)
+
+                    buffer->timestamp = most_common(timestamp_stats.begin(), timestamp_stats.end(), 0);
+                    timestamp_stats.clear();
+
                     buffer->directory = directory;
 
                     // Write those
@@ -395,7 +412,14 @@ namespace fengyun_svissr
             buffer->scid = most_common(scid_stats.begin(), scid_stats.end(), 0);
             scid_stats.clear();
 
-            buffer->timestamp = time(0);
+            // TODOREWORK majority law would be incredibly useful here, but needs N-element
+            // implementation because we might sync less frames than intended
+            // Please note that the timestamps are already converted to unix timestamps,
+            // this would have to happen on the raw JD one (see where the the stats are pushed to)
+
+            buffer->timestamp = most_common(timestamp_stats.begin(), timestamp_stats.end(), 0);
+            timestamp_stats.clear();
+
             buffer->directory = directory;
 
             images_queue_mtx.lock();
@@ -422,7 +446,14 @@ namespace fengyun_svissr
             buffer->scid = most_common(scid_stats.begin(), scid_stats.end(), 0);
             scid_stats.clear();
 
-            buffer->timestamp = time(0);
+            // TODOREWORK majority law would be incredibly useful here, but needs N-element
+            // implementation because we might sync less frames than intended
+            // Please note that the timestamps are already converted to unix timestamps,
+            // this would have to happen on the raw JD one (see where the the stats are pushed to)
+
+            buffer->timestamp = most_common(timestamp_stats.begin(), timestamp_stats.end(), 0);
+            timestamp_stats.clear();
+
             buffer->directory = directory;
 
             writeImages(*buffer);
