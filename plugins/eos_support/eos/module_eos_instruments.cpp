@@ -1,24 +1,24 @@
 #include "module_eos_instruments.h"
-#include <fstream>
 #include "common/ccsds/ccsds_aos/demuxer.h"
 #include "common/ccsds/ccsds_aos/vcdu.h"
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
 #include "common/image/bowtie.h"
 #include "common/utils.h"
-#include "products2/image_product.h"
-#include "products2/dataset.h"
-#include "resources.h"
+#include "imgui/imgui.h"
 #include "instruments/modis/modis_histmatch.h"
+#include "logger.h"
 #include "nlohmann/json_utils.h"
+#include "products2/dataset.h"
+#include "products2/image_product.h"
+#include "resources.h"
+#include <filesystem>
+#include <fstream>
 
 #include "common/calibration.h"
-#include "instruments/modis/calibrator/modis_calibrator.h"
 #include "core/exception.h"
+#include "instruments/modis/calibrator/modis_calibrator.h"
 
-#include "common/image/io.h"
 #include "common/image/image_utils.h"
+#include "common/image/io.h"
 #include "common/tracking/tle.h"
 
 namespace eos
@@ -26,8 +26,7 @@ namespace eos
     namespace instruments
     {
         EOSInstrumentsDecoderModule::EOSInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            : ProcessingModule(input_file, output_file_hint, parameters),
-              d_modis_bowtie(d_parameters["modis_bowtie"].get<bool>())
+            : ProcessingModule(input_file, output_file_hint, parameters), d_modis_bowtie(d_parameters["modis_bowtie"].get<bool>())
         {
             if (parameters["satellite"] == "terra")
                 d_satellite = TERRA;
@@ -277,7 +276,7 @@ namespace eos
                     int ch = i;
                     if (ch >= 6)
                         ch++;
-                    modis_products.set_channel_wavenumber(21 + ch, freq_to_wavenumber(299792458.0 / modis_table["wavelengths"][i].get<double>()));
+                    modis_products.set_channel_wavenumber(21 + ch, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / modis_table["wavelengths"][i].get<double>()));
                 }
 
                 modis_products.save(directory);
@@ -427,10 +426,8 @@ namespace eos
                 img = omi_2_reader.getImageVisible();
                 image::save_img(img, directory + "/OMI-VIS-2");
 
-                image::Image imageAll1 = image::make_manyimg_composite(33, 24, 792, [this](int c)
-                                                                       { return omi_1_reader.getChannel(c); });
-                image::Image imageAll2 = image::make_manyimg_composite(33, 24, 792, [this](int c)
-                                                                       { return omi_2_reader.getChannel(c); });
+                image::Image imageAll1 = image::make_manyimg_composite(33, 24, 792, [this](int c) { return omi_1_reader.getChannel(c); });
+                image::Image imageAll2 = image::make_manyimg_composite(33, 24, 792, [this](int c) { return omi_2_reader.getChannel(c); });
                 image::save_img(imageAll1, directory + "/OMI-ALL-1");
                 image::save_img(imageAll2, directory + "/OMI-ALL-2");
                 omi_status = DONE;
@@ -534,19 +531,13 @@ namespace eos
             ImGui::End();
         }
 
-        std::string EOSInstrumentsDecoderModule::getID()
-        {
-            return "eos_instruments";
-        }
+        std::string EOSInstrumentsDecoderModule::getID() { return "eos_instruments"; }
 
-        std::vector<std::string> EOSInstrumentsDecoderModule::getParameters()
-        {
-            return {"satellite", "modis_bowtie"};
-        }
+        std::vector<std::string> EOSInstrumentsDecoderModule::getParameters() { return {"satellite", "modis_bowtie"}; }
 
         std::shared_ptr<ProcessingModule> EOSInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<EOSInstrumentsDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace modis
+    } // namespace instruments
 } // namespace eos

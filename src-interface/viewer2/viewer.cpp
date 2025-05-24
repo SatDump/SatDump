@@ -20,6 +20,7 @@
 #include "handlers/trash/trash_handler.h"
 #include "handlers/vector/shapefile_handler.h"
 // TODOREWORK
+#include "imgui/imgui.h"
 #include "resources.h"
 
 // TODOREWORK
@@ -120,6 +121,17 @@ namespace satdump
                 if (ImGui::BeginMenu("File"))
                 {
                     file_open_dialog.render("Open File", "Open File", "", {{"All Files", "*"}});
+
+                    if (ImGui::BeginMenu("Quick Open"))
+                    {
+                        ImGui::InputText("##quickvieweropen", &quickOpenString);
+                        if (ImGui::IsItemDeactivatedAfterEdit())
+                        {
+                            tryOpenFileInViewer(quickOpenString);
+                            quickOpenString.clear();
+                        }
+                        ImGui::EndMenu();
+                    }
 
                     // TODOREWORK remove
                     if (ImGui::BeginMenu("Hardcoded"))

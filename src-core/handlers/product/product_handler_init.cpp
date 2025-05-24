@@ -1,3 +1,5 @@
+#include "core/exception.h"
+#include "core/plugin.h"
 #include "product_handler.h"
 
 #include "logger.h"
@@ -9,18 +11,21 @@ namespace satdump
 {
     namespace handlers
     {
-        std::shared_ptr<ProductHandler> getProductHandlerForProduct(std::shared_ptr<products::Product> prod)
+        std::shared_ptr<ProductHandler> getProductHandlerForProduct(std::shared_ptr<products::Product> prod, bool dataset_mode)
         {
-            std::shared_ptr<ProductHandler> prod_h;
-
+            // Built-in standard handlers
             if (prod->type == "image")
-                prod_h = std::make_shared<ImageProductHandler>(prod, true);
-            else if (prod->type == "punctiform")
-                prod_h = std::make_shared<PunctiformProductHandler>(prod, true);
-            else
-                logger->error("TODOREWORK!!!!!! Actually handle loading properly...");
+                return std::make_shared<ImageProductHandler>(prod, dataset_mode);
+            if (prod->type == "punctiform")
+                return std::make_shared<PunctiformProductHandler>(prod, dataset_mode);
 
-            return prod_h;
+            // Plugin stuff, as needed
+            std::shared_ptr<ProductHandler> prod_h = nullptr;
+            eventBus->fire_event<RequestProductHandlerEvent>({prod, prod_h, dataset_mode});
+            if (prod_h)
+                return prod_h;
+            else
+                throw satdump_exception("Couldn't get a handler for product type " + prod->type + " and instrument " + prod->instrument_name + "!");
         }
     } // namespace handlers
 } // namespace satdump

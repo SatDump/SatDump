@@ -40,6 +40,8 @@ namespace satdump
             widget::MenuItemFileOpen file_open_dialog;
             std::thread file_open_thread; // TODOREWORK?
 
+            std::string quickOpenString;
+
         public:
             // TODOREWORK last opened by time
             std::map<std::string, std::shared_ptr<handlers::Handler>> last_selected_handler;

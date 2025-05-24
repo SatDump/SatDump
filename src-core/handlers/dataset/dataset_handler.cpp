@@ -30,7 +30,7 @@ namespace satdump
             for (auto &p : dataset.products_list)
             {
                 auto prod = products::loadProduct(path + "/" + p);
-                auto prod_h = getProductHandlerForProduct(prod);
+                auto prod_h = getProductHandlerForProduct(prod, true);
                 instrument_products->addSubHandler(prod_h);
                 all_products.push_back(prod);
             }

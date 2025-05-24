@@ -84,12 +84,29 @@ namespace satdump
         };
 
         /**
+         * @brief Event used to let plugins provide additional
+         * ProductHandlers.
+         *
+         * @param product the product
+         * @param handler the handler, nullptr by default
+         * @param dataset_mode to forward to the created handler
+         * as needed
+         */
+        struct RequestProductHandlerEvent
+        {
+            std::shared_ptr<products::Product> &product;
+            std::shared_ptr<ProductHandler> &handler;
+            bool dataset_mode;
+        };
+
+        /**
          * @brief Get the appropriate ProductHandler for the
          * provided products.
          *
          * @param product product, loaded with loadProducts()
+         * @param dataset_mode must be true if opening inside a dataset
          * @return appropriate handler pointer
          */
-        std::shared_ptr<ProductHandler> getProductHandlerForProduct(std::shared_ptr<products::Product> product);
+        std::shared_ptr<ProductHandler> getProductHandlerForProduct(std::shared_ptr<products::Product> product, bool dataset_mode = false);
     } // namespace handlers
 } // namespace satdump

@@ -542,7 +542,7 @@
                 "ccsds_simple_psk_decoder": {
                     "ccsds": false,
                     "constellation": "bpsk",
-                    "cadu_size": 4000,
+                    "cadu_size": 4224,
                     "nrzm": true,
                     "derandomize": false,
                     "rs_i": 0,
