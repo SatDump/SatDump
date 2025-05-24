@@ -1,7 +1,7 @@
 #pragma once
 
-#include "nlohmann/json.hpp"
 #include "dll_export.h"
+#include "nlohmann/json.hpp"
 #include <functional>
 
 namespace satdump
@@ -36,5 +36,7 @@ namespace satdump
                 return;
             val = main_cfg["satdump_general"][variablename]["value"].get<T>();
         }
-    }
-}
+
+        bool shouldAutoprocessProducts();
+    } // namespace config
+} // namespace satdump

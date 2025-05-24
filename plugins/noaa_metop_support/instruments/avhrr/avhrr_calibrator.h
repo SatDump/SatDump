@@ -3,7 +3,6 @@
 #include "products2/image/image_calibrator.h"
 #include "nlohmann/json.hpp"
 
-// TODOREWORK
 namespace noaa_metop
 {
     class NoaaAVHRR3Calibrator : public satdump::products::ImageCalibrator

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "projection/raytrace/common/satellite_raytracer_sattrack.h"
-#include "nlohmann/json_utils.h"
 #include "common/geodetic/euler_raytrace.h"
+#include "nlohmann/json_utils.h"
+#include "projection/raytrace/common/satellite_raytracer_sattrack.h"
 
 namespace satdump
 {
@@ -33,8 +33,7 @@ namespace satdump
             double slant_sc = 0;
 
         public:
-            NormalLineXYSatProj(nlohmann::ordered_json cfg)
-                : SatelliteRaytracerSatTrack(cfg)
+            NormalLineXYSatProj(nlohmann::ordered_json cfg) : SatelliteRaytracerSatTrack(cfg)
             {
                 timestamps = d_cfg["timestamps"].get<std::vector<double>>();
 
@@ -88,7 +87,7 @@ namespace satdump
 
                 auto pos_curr = sat_positions[y];
 
-                // TODOREWORK. Kind of a hack?
+                // TODO Kind of a hack?
                 double added_pitch_off = -pos_curr.latitude * RAD_TO_DEG * 0.1;
 
                 printf("Pitch Off %f\n", added_pitch_off);
@@ -113,5 +112,5 @@ namespace satdump
                     return 0;
             }
         };
-    }
-}
+    } // namespace proj
+} // namespace satdump

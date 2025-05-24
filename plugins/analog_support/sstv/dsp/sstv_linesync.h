@@ -16,7 +16,7 @@ namespace satdump
 
             // Frequencies in Hz
             float sync_freq = 1200;
-            float pixelmin_freq = 1488; // Should be 1500; but seems distorted... To investigate? TODOREWORK
+            float pixelmin_freq = 1488; // Should be 1500; but seems distorted... To investigate?
             float pixelmax_freq = 2300;
 
         private:

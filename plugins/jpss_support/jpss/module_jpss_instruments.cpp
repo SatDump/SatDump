@@ -8,9 +8,6 @@
 #include "jpss.h"
 #include "common/image/bowtie.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
-// #include "products/products.h"
-// #include "products/image_products.h" TODOREWORK
-// #include "products/dataset.h"
 #include "resources.h"
 #include "common/calibration.h"
 #include "nlohmann/json_utils.h"

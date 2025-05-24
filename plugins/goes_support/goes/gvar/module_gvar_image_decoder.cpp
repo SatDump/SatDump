@@ -307,7 +307,8 @@ namespace goes
             }
 
             // Processes all frames
-            for (size_t i = 0; i < frame_buffer.size(); i++)
+            size_t fsize = frame_buffer.size();
+            for (size_t i = 0; i < fsize; i++)
             {
                 uint8_t *current_frame = frame_buffer[i].frame;
                 PrimaryBlockHeader cur_block_header = get_header(current_frame);
@@ -315,7 +316,7 @@ namespace goes
                 // Tries to recover the block ID in case it is damaged within a series
                 // Junk will never pass through this, as those frames are thrown out before
                 // being added to the frame buffer
-                if (i > 1 && i < 10)
+                if (i > 1 && i < (fsize - 1))
                 {
                     uint32_t prev_counter = frame_buffer[i - 1].block_id;
                     uint32_t next_counter = frame_buffer[i + 1].block_id;
@@ -580,6 +581,9 @@ namespace goes
             // Save
             imager_product.save(disk_folder);
 
+            // Generate composites TODOREWORK re-enable
+            // if (satdump::config::shouldAutoprocessProducts())
+            //     satdump::products::process_product_with_handler(std::shared_ptr<satdump::products::Product>(&imager_product), disk_folder);
         }
 
         GVARImageDecoderModule::GVARImageDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)

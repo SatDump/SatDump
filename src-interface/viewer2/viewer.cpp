@@ -317,7 +317,7 @@ namespace satdump
                         if (img.size() > 0)
                             master_handler->addSubHandler(std::make_shared<handlers::ImageHandler>(img, std::filesystem::path(path).stem().string()));
                         else
-                            logger->error("Could not open this file as image!"); // TODOREWORK Probably check before this?
+                            logger->error("Could not open this file as image!");
                     }
                 }
                 catch (std::exception &e)

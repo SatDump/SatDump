@@ -117,10 +117,7 @@ namespace meteor
                 return CALIBRATION_INVALID_VALUE;
 
             if (lrpt)
-            {
                 pos_y /= 8; // Telemetry data covers 8 lines
-                            // TODOREWORK                px_val = ((float)px_val / 255.0f) * 1023.0f; // Scale to 10-bit
-            }
 
             if (channel < 3)
             {

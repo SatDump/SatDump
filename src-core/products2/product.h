@@ -6,7 +6,13 @@
 
 #include "nlohmann/json.hpp"
 
-#define PRODUCT_LOADER_FUN(TYPE) [](std::string file) -> std::shared_ptr<Product> { std::shared_ptr<TYPE> product = std::make_shared<TYPE>(); product->load(file); return product; }
+#define PRODUCT_LOADER_FUN(TYPE)                                                                                                                                                                       \
+    [](std::string file) -> std::shared_ptr<Product>                                                                                                                                                   \
+    {                                                                                                                                                                                                  \
+        std::shared_ptr<TYPE> product = std::make_shared<TYPE>();                                                                                                                                      \
+        product->load(file);                                                                                                                                                                           \
+        return product;                                                                                                                                                                                \
+    }
 
 namespace satdump
 {
@@ -99,12 +105,10 @@ namespace satdump
         /**
          * @brief Struct holding functions related to products
          * @param loadFromFile function to load a specific product type from the cbor file. Eg, simply calls Product::load()
-         * @param processProducts TODOREWORK
          */
         struct RegisteredProduct
         {
             std::function<std::shared_ptr<Product>(std::string)> loadFromFile;
-            std::function<void(Product *, std::string)> processProducts;
         };
 
         /**
@@ -128,5 +132,5 @@ namespace satdump
          * @param
          */
         void registerProducts();
-    }
-}
+    } // namespace products
+} // namespace satdump

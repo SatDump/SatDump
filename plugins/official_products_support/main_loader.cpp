@@ -98,7 +98,7 @@ public:
             initLoader();
             _loader->drawUI(&_loader_open);
         }
-    } // TODOREWORK
+    }
 };
 
 PLUGIN_LOADER(OfficalProductsLoaderSupport)

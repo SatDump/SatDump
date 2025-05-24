@@ -89,7 +89,7 @@ namespace sstv
 
         double sstv_samplerate = sstv_cfg["samplerate"]; // TODO resample!
         double freq_sync = getValueOrDefault(sstv_cfg["sync_freq"], 1200);
-        double freq_img_black = getValueOrDefault(sstv_cfg["freq_img_black"], 1488); // 1500); TODOREWORK should be 1500?
+        double freq_img_black = getValueOrDefault(sstv_cfg["freq_img_black"], 1488); // 1500); should be 1500?
         double freq_img_white = getValueOrDefault(sstv_cfg["freq_img_white"], 2300);
 
         bpf.set_cfg("taps", dsp::firdes::band_pass(1, sstv_samplerate, freq_sync, freq_img_white, 500, dsp::fft::window::WIN_KAISER));
