@@ -1,11 +1,10 @@
 #include "module_svissr_image_decoder.h"
-#include "common/codings/differential/nrzs.h"
-#include "common/image/io.h"
 #include "common/utils.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
 #include "logger.h"
-#include "resources.h"
+#include "products2/image_product.h"
+#include <arpa/inet.h> // for ntohs() & htonl()
 #include <filesystem>
 
 #define FRAME_SIZE 44356
@@ -47,17 +46,51 @@ namespace fengyun_svissr
 
         std::string disk_folder = buffer.directory + "/" + timestamp;
 
-        image::save_img(buffer.image5, std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "1")).c_str());
-        image::save_img(buffer.image1, std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "2")).c_str());
-        image::save_img(buffer.image2, std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "3")).c_str());
-        image::save_img(buffer.image3, std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "4")).c_str());
-        image::save_img(buffer.image4, std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "5")).c_str());
+        // TODOREWORK Get the correct SC/IDs
+        // Is the SC/ID we pull correct? It's 64 on both FY-2G and FY-2H
+        // Verify it's correct with some sample files if able, alternatively
+        // figure out a different way to identify the satellite (last resort is a manual selection)
+        sat_name = "FY-2x";
+        /*
+        // Get the sat name
+        switch (buffer.scid) {
 
-        // We are done with all channels but 1 and 4. Clear others to free up memory!
-        buffer.image1.clear();
-        buffer.image2.clear();
-        buffer.image3.clear();
+            case (0):
+            {
+                sat_name = "FY-2H";
+            }
+            break;
 
+            default:
+            {
+                sat_name = "Unknown FY-2";
+            }
+
+        }
+        */
+
+        // Save products
+        satdump::products::ImageProduct imager_product;
+        imager_product.instrument_name = "fy2-svissr";
+        imager_product.set_product_source(sat_name);
+        imager_product.set_product_timestamp(buffer.timestamp);
+
+        // Raw Images
+        imager_product.images.push_back({0, getSvissrFilename(timeReadable, "1"), "1", buffer.image5, 10, satdump::ChannelTransform().init_none()});
+        imager_product.images.push_back({1, getSvissrFilename(timeReadable, "2"), "2", buffer.image4, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
+        imager_product.images.push_back({2, getSvissrFilename(timeReadable, "3"), "3", buffer.image3, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
+        imager_product.images.push_back({3, getSvissrFilename(timeReadable, "4"), "4", buffer.image1, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
+        imager_product.images.push_back({4, getSvissrFilename(timeReadable, "5"), "5", buffer.image2, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
+
+        // Set the channel wavelengths
+        imager_product.set_channel_wavenumber(0, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 0.65e-6));
+        imager_product.set_channel_wavenumber(1, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 3.75e-6));
+        imager_product.set_channel_wavenumber(2, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 7.15e-6));
+        imager_product.set_channel_wavenumber(3, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 10.8e-6));
+        imager_product.set_channel_wavenumber(4, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 12e-6));
+
+        // TODOREWORK Uncomment when able to automate
+        /*
         // If we can, generate false color
         if (resources::resourceExists("fy2/svissr/lut.png"))
         {
@@ -99,7 +132,15 @@ namespace fengyun_svissr
         else
         {
             logger->warn("fy2/svissr/lut.png LUT is missing! False Color will not be generated");
-        }
+        }*/
+
+        imager_product.save(disk_folder);
+
+        buffer.image1.clear();
+        buffer.image2.clear();
+        buffer.image3.clear();
+        buffer.image4.clear();
+        buffer.image5.clear();
 
         writingImage = false;
     }

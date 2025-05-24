@@ -65,9 +65,7 @@
                 "fengyun_svissr_decoder": {}
             },
             "products": {
-                "fengyun_svissr_image_decoder": {
-                    "satname": "FY-2x"
-                }
+                "fengyun_svissr_image_decoder": {}
             }
         }
     }
