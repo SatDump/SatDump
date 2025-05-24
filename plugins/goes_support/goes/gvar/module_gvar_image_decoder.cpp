@@ -1,10 +1,9 @@
 #include "module_gvar_image_decoder.h"
-#include "common/image/brightness_contrast.h"
-#include "common/image/hue_saturation.h"
 #include "common/image/io.h"
 #include "common/physics_constants.h"
 #include "common/thread_priority.h"
 #include "common/utils.h"
+#include "core/config.h"
 #include "crc_table.h"
 #include "gvar_headers.h"
 #include "imgui/imgui.h"
@@ -13,8 +12,11 @@
 #include "nlohmann/json.hpp"
 #include "products2/image/calibration_units.h"
 #include "products2/image_product.h"
+#include "products2/product.h"
+#include "products2/product_process.h"
 #include "resources.h"
 #include <filesystem>
+#include <new>
 
 #define FRAME_SIZE 32786
 
@@ -307,7 +309,6 @@ namespace goes
             // Processes all frames
             for (size_t i = 0; i < frame_buffer.size(); i++)
             {
-
                 uint8_t *current_frame = frame_buffer[i].frame;
                 PrimaryBlockHeader cur_block_header = get_header(current_frame);
 
@@ -381,6 +382,8 @@ namespace goes
                             infraredImageReader2.pushFrame(&current_frame[8 + 30 * 3], final_counter, current_words);
                     }
                 }
+
+                delete[] current_frame;
             }
 
             // Clear buffer out so new frames can be appended
@@ -577,7 +580,6 @@ namespace goes
             // Save
             imager_product.save(disk_folder);
 
-            // TODOREWORK AUTOGEN COMPOSITES!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         }
 
         GVARImageDecoderModule::GVARImageDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
