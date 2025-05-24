@@ -1,18 +1,20 @@
 #pragma once
 
+#include "common/image/image.h"
 #include "core/module.h"
-#include <complex>
 #include <fstream>
 #include "image/svissr_reader.h"
+#include <string>
 #include <thread>
 
 namespace fengyun_svissr
 {
+
     class SVISSRImageDecoderModule : public ProcessingModule
     {
     protected:
         // Settings
-        const std::string sat_name;
+        std::string sat_name;
 
         // Read buffer
         uint8_t *frame;
@@ -81,6 +83,7 @@ namespace fengyun_svissr
 
         // Stats
         std::vector<int> scid_stats;
+        std::vector<int> timestamp_stats;
 
         // UI Stuff
         float corr_history_ca[200];
