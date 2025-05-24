@@ -804,7 +804,8 @@ namespace goes
             // TODO: Maybe don't write the sounder if it's empty?
 
             // Image time has to be passed manually, see func docstring
-            writeSounder(image_time);
+            if (sounderReader.frames > 2)
+                writeSounder(image_time);
 
             if (writeImagesAync)
             {
