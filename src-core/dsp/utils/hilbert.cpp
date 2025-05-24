@@ -6,7 +6,7 @@ namespace satdump
     namespace ndsp
     {
 
-        HilbertBlock::HilbertBlock() : Block("hilber_fc", {{"in", DSP_SAMPLE_TYPE_F32}}, {{"out", DSP_SAMPLE_TYPE_CF32}}) {}
+        HilbertBlock::HilbertBlock() : Block("hilbert_fc", {{"in", DSP_SAMPLE_TYPE_F32}}, {{"out", DSP_SAMPLE_TYPE_CF32}}) {}
 
         HilbertBlock::~HilbertBlock()
         {
@@ -46,18 +46,18 @@ namespace satdump
                 DSPBuffer oblk = DSPBuffer::newBufferSamples<complex_t>(lbuf_size);
                 complex_t *obuf = oblk.getSamples<complex_t>();
 
-                memcpy(&buffer[ntaps], ibuf + lbuf_offset, lbuf_size * sizeof(float));
+                memcpy(&buffer[p_ntaps], ibuf + lbuf_offset, lbuf_size * sizeof(float));
 
                 for (int i = 0; i < lbuf_size; i++)
                 {
-                    volk_32f_x2_dot_prod_32f(&obuf[i].imag, &buffer[i], taps, ntaps);
-                    obuf[i].real = buffer[i + ntaps / 2];
+                    volk_32f_x2_dot_prod_32f(&obuf[i].imag, &buffer[i], taps, p_ntaps);
+                    obuf[i].real = buffer[i + p_ntaps / 2];
                 }
 
                 oblk.size = lbuf_size;
                 outputs[0].fifo->wait_enqueue(oblk);
 
-                memmove(&buffer[0], &buffer[lbuf_size], ntaps * sizeof(float));
+                memmove(&buffer[0], &buffer[lbuf_size], p_ntaps * sizeof(float));
                 lbuf_offset += lbuf_size;
             }
 
