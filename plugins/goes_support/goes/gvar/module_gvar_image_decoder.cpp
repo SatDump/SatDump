@@ -581,9 +581,9 @@ namespace goes
             // Save
             imager_product.save(disk_folder);
 
-            // Generate composites TODOREWORK re-enable
-            // if (satdump::config::shouldAutoprocessProducts())
-            //     satdump::products::process_product_with_handler(std::shared_ptr<satdump::products::Product>(&imager_product), disk_folder);
+            // Generate composites, if enabled
+            if (satdump::config::shouldAutoprocessProducts()) // TODOREWORK. Per pipeline?
+                satdump::products::process_product_with_handler(&imager_product, disk_folder);
         }
 
         GVARImageDecoderModule::GVARImageDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
