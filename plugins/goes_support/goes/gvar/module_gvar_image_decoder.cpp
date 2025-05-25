@@ -1,10 +1,9 @@
 #include "module_gvar_image_decoder.h"
-#include "common/image/brightness_contrast.h"
-#include "common/image/hue_saturation.h"
 #include "common/image/io.h"
 #include "common/physics_constants.h"
 #include "common/thread_priority.h"
 #include "common/utils.h"
+#include "core/config.h"
 #include "crc_table.h"
 #include "gvar_headers.h"
 #include "imgui/imgui.h"
@@ -13,8 +12,11 @@
 #include "nlohmann/json.hpp"
 #include "products2/image/calibration_units.h"
 #include "products2/image_product.h"
+#include "products2/product.h"
+#include "products2/product_process.h"
 #include "resources.h"
 #include <filesystem>
+#include <new>
 
 #define FRAME_SIZE 32786
 
@@ -305,16 +307,16 @@ namespace goes
             }
 
             // Processes all frames
-            for (size_t i = 0; i < frame_buffer.size(); i++)
+            size_t fsize = frame_buffer.size();
+            for (size_t i = 0; i < fsize; i++)
             {
-
                 uint8_t *current_frame = frame_buffer[i].frame;
                 PrimaryBlockHeader cur_block_header = get_header(current_frame);
 
                 // Tries to recover the block ID in case it is damaged within a series
                 // Junk will never pass through this, as those frames are thrown out before
                 // being added to the frame buffer
-                if (i > 1 && i < 10)
+                if (i > 1 && i < (fsize - 1))
                 {
                     uint32_t prev_counter = frame_buffer[i - 1].block_id;
                     uint32_t next_counter = frame_buffer[i + 1].block_id;
@@ -381,6 +383,8 @@ namespace goes
                             infraredImageReader2.pushFrame(&current_frame[8 + 30 * 3], final_counter, current_words);
                     }
                 }
+
+                delete[] current_frame;
             }
 
             // Clear buffer out so new frames can be appended
@@ -518,6 +522,13 @@ namespace goes
                 double final_offset_x = 9496.0 - (images.vis_xoff - 5789);
                 double final_offset_y = 9508.0 - (images.vis_yoff - 2485) * 1.75;
 
+                // It must just be special?
+                if (images.sat_number == 13)
+                {
+                    final_offset_x += 69.6943231441048;
+                    final_offset_y += 249.7816593886463;
+                }
+
                 double scalar_x = 2290 / 4.;
                 double scalar_y = 2290 / 4.;
                 proj_cfg["type"] = "geos";
@@ -570,7 +581,9 @@ namespace goes
             // Save
             imager_product.save(disk_folder);
 
-            // TODOREWORK AUTOGEN COMPOSITES!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            // Generate composites, if enabled
+            if (satdump::config::shouldAutoprocessProducts()) // TODOREWORK. Per pipeline?
+                satdump::products::process_product_with_handler(&imager_product, disk_folder);
         }
 
         GVARImageDecoderModule::GVARImageDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
@@ -797,7 +810,8 @@ namespace goes
             // TODO: Maybe don't write the sounder if it's empty?
 
             // Image time has to be passed manually, see func docstring
-            writeSounder(image_time);
+            if (sounderReader.frames > 2)
+                writeSounder(image_time);
 
             if (writeImagesAync)
             {

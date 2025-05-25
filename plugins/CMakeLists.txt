@@ -257,13 +257,6 @@ if(PLUGIN_EARTHCARE OR PLUGINS_ALL)
   add_subdirectory(earthcare_support)
 endif()
 
-# add_subdirectory(sample)
-option(PLUGIN_GVAR_EXTENDED "Enable the GVAR Extended plugin" OFF)
-
-if(PLUGIN_GVAR_EXTENDED)
-  add_subdirectory(gvar_extended)
-endif()
-
 # ##############################################################################
 option(PLUGIN_SIMD_SSE41 "Enable SIMD SSE41 plugin" ON)
 

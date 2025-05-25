@@ -2,23 +2,23 @@
 
 #include "logger.h"
 
-#include <sys/types.h>
-#include <stdlib.h>
 #include <cstring>
-#include <thread>
 #include <functional>
 #include <mutex>
 #include <stdexcept>
 #include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <thread>
 #if defined(_WIN32)
-#include <winsock2.h>
 #include <WS2tcpip.h>
+#include <winsock2.h>
 #define MSG_NOSIGNAL 0
 #else
+#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #endif
 
 class TCPServer
@@ -58,20 +58,22 @@ public:
 
 #ifdef _WIN32
         int timeout = 60000;
-        const char *timeout_ptr = (const char*) &timeout;
+        const char *timeout_ptr = (const char *)&timeout;
 #else
         struct timeval timeout;
         timeout.tv_sec = 60;
         timeout.tv_usec = 0;
         struct timeval *timeout_ptr = &timeout;
 #endif
+
+#ifndef _WIN32
         int enable = 1;
         if (setsockopt(serversockfd, SOL_SOCKET, SO_SNDTIMEO, timeout_ptr, sizeof timeout) < 0)
             logger->trace("Problem setting send timeout on TCP socket; ignoring");
 
         if (setsockopt(serversockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof enable) < 0)
             logger->trace("Problem setting SO_REUSEADDR on TCP socket; ignoring");
-#ifndef  _WIN32
+
         if (setsockopt(serversockfd, SOL_SOCKET, SO_REUSEPORT, &enable, sizeof enable) < 0)
             logger->trace("Problem setting SO_REUSEPORT on TCP socket; ignoring");
 #endif
@@ -162,7 +164,7 @@ public:
                 FD_SET(clientsockfd, &socket_set);
                 if (select(clientsockfd + 1, &socket_set, nullptr, nullptr, &timeout) == 0)
                 {
-                    //Prevent timeout from hanging loop
+                    // Prevent timeout from hanging loop
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
                     continue;
                 }
@@ -282,12 +284,12 @@ public:
 
 #ifdef _WIN32
         int timeout = 10000;
-        const char* timeout_ptr = (const char*)&timeout;
+        const char *timeout_ptr = (const char *)&timeout;
 #else
         struct timeval timeout;
         timeout.tv_sec = 10;
         timeout.tv_usec = 0;
-        struct timeval* timeout_ptr = &timeout;
+        struct timeval *timeout_ptr = &timeout;
 #endif
         if (setsockopt(clientsockfd, SOL_SOCKET, SO_SNDTIMEO, timeout_ptr, sizeof timeout) < 0)
             logger->trace("Problem setting send timeout on TCP socket; ignoring");
@@ -394,8 +396,5 @@ public:
     }
 
 public:
-    void closeconn()
-    {
-        readOne = true;
-    }
+    void closeconn() { readOne = true; }
 };

@@ -1,15 +1,15 @@
 #define SATDUMP_DLL_EXPORT 1
 #include "config.h"
-#include "nlohmann/json_utils.h"
 #include "logger.h"
+#include "nlohmann/json_utils.h"
 #include <filesystem>
 
 #if defined(__APPLE__)
-#include <sysdir.h>
 #include <glob.h>
+#include <sysdir.h>
 #elif defined(_WIN32)
-#include <direct.h>
 #include <Shlobj.h>
+#include <direct.h>
 #endif
 
 namespace satdump
@@ -135,8 +135,7 @@ namespace satdump
 
             try
             {
-                if (!std::filesystem::exists(std::filesystem::path(user_cfg_path).parent_path()) &&
-                    std::filesystem::path(user_cfg_path).has_parent_path())
+                if (!std::filesystem::exists(std::filesystem::path(user_cfg_path).parent_path()) && std::filesystem::path(user_cfg_path).has_parent_path())
                     std::filesystem::create_directories(std::filesystem::path(user_cfg_path).parent_path());
             }
             catch (std::exception &e)
@@ -148,5 +147,7 @@ namespace satdump
             logger->info("Saving user config at " + user_cfg_path);
             saveJsonFile(user_cfg_path, diff_json);
         }
-    }
-}
+
+        bool shouldAutoprocessProducts() { return satdump::config::main_cfg["satdump_general"]["auto_process_products"]["value"].get<bool>(); }
+    } // namespace config
+} // namespace satdump

@@ -4,6 +4,7 @@
 #include "handlers/product/image_product_handler.h"
 #include "handlers/product/product_handler.h"
 #include "handlers/product/punctiform_product_handler.h"
+#include <exception>
 
 namespace satdump
 {
@@ -18,9 +19,16 @@ namespace satdump
             {
                 for (auto &cfg : instr_cfg["presets"])
                 {
-                    handler->setConfig(cfg);
-                    handler->process();
-                    handler->saveResult(directory);
+                    try
+                    {
+                        handler->setConfig(cfg);
+                        handler->process();
+                        handler->saveResult(directory);
+                    }
+                    catch (std::exception &e)
+                    {
+                        logger->error("Error generating preset! %s", e.what());
+                    }
                 }
             }
         }

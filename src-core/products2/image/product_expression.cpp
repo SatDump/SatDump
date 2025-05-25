@@ -241,6 +241,9 @@ namespace satdump
             std::vector<LutCfg> lut_cfgs;
             std::vector<EqupCfg> equp_cfgs;
 
+            // Also see if the reference channel is getting overwritten
+            std::string reference_channel = "";
+
             if (expression.find(';') != std::string::npos)
             {
                 try
@@ -265,7 +268,15 @@ namespace satdump
                         {
                             auto macro = splitString(cfg, '=');
                             if (macro.size() == 2)
-                                replaceAllStr(expression, macro[0], "(" + macro[1] + ")");
+                            {
+                                if (macro[0] == "ref_channel")
+                                { // Special case to override the ref
+                                    reference_channel = macro[1];
+                                    logger->info("Using reference channel : " + reference_channel);
+                                }
+                                else
+                                    replaceAllStr(expression, macro[0], "(" + macro[1] + ")");
+                            }
                             else
                                 logger->warn("Invalid macro config!");
                         }
@@ -322,6 +333,9 @@ namespace satdump
                 TokenS(image::Image &img, ChannelTransform &transform) : img(img), transform(transform) {}
             };
 
+            // Index of the reference channel
+            int reference_channel_index = reference_channel == "" ? 0 : -1;
+
             try
             {
                 // Setup expression parser
@@ -369,6 +383,9 @@ namespace satdump
                         nt->maxval = h.image.maxval();
                         equParser.DefineVar(tkt, &nt->v);
                         tkts[ntkts++] = nt;
+
+                        if (reference_channel != "" && reference_channel == index)
+                            reference_channel_index = ntkts - 1; // Try to set reference
                     }
                     else if (calib_cfgs.count(tkt))
                     { // Calibrated channel case
@@ -385,6 +402,9 @@ namespace satdump
                         nt->maxval = image.maxval();
                         equParser.DefineVar(tkt, &nt->v);
                         tkts[ntkts++] = nt;
+
+                        if (reference_channel != "" && reference_channel == index)
+                            reference_channel_index = ntkts - 1; // Try to set reference
                     }
                     else // Abort if we can't recognize token
                         throw satdump_exception("Token " + tkt + " is invalid!");
@@ -393,8 +413,12 @@ namespace satdump
                 if (ntkts == 0)
                     throw satdump_exception("No channel in expression!");
 
-                // Select reference channel, setup output
-                TokenS *rtkt = tkts[0];
+                // Select reference channel
+                if (reference_channel_index == -1)
+                    throw satdump_exception("Reference channel " + reference_channel + " not found! Must be present/used in equation!");
+                TokenS *rtkt = tkts[reference_channel_index];
+
+                // Setup output image
                 image::Image out(rtkt->img.depth(), rtkt->img.width(), rtkt->img.height(), nout_channels);
 
                 // Variables to utilize

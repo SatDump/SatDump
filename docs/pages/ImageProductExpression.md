@@ -120,4 +120,4 @@ For several instruments, channels are not actually aligned with one or the other
 
 ![Macro Example](img_exp/align.png)
 
-The output alignment and size will be dictated by the first channel found in the equation. Therefore `ch2, ch2, ch1` will lead to `ch2` being used as the output size/offset, while `ch1 * 0 + ch2, ch2, ch1` will generate the same output but using `ch1` as an output reference.
+The output alignment and size will be dictated by the first channel found in the equation. Therefore `ch2, ch2, ch1` will lead to `ch2` being used as the output size/offset, while `ch1 * 0 + ch2, ch2, ch1` will generate the same output but using `ch1` as an output reference. This behaviour can be overwritten by explicitely specifying `ref_channel=1` if necessary. Do note said channel *must* be part of the expression still.
