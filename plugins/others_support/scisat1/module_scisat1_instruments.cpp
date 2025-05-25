@@ -6,7 +6,7 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "common/ccsds/ccsds_tm/demuxer.h"
-#include "common/image/io.h"
+#include "image/io.h"
 
 namespace scisat1
 {

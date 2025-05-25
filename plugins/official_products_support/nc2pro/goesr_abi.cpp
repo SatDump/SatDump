@@ -1,7 +1,7 @@
 #include "common/utils.h"
 
 #include "common/calibration.h"
-#include "common/image/image.h"
+#include "image/image.h"
 #include "hdf5_utils.h"
 #include "logger.h"
 #include "products2/image_product.h"
@@ -10,7 +10,7 @@
 #include <filesystem>
 
 #include "nlohmann/json_utils.h"
-#include "resources.h"
+#include "core/resources.h"
 
 #include "core/exception.h"
 

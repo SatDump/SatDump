@@ -6,7 +6,7 @@
 #include "common/lrit/crc_table.h"
 #include "nlohmann/json_utils.h"
 #include "logger.h"
-#include "resources.h"
+#include "core/resources.h"
 #include "init.h"
 
 #include "../module_goes_lrit_data_decoder.h"

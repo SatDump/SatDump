@@ -5,12 +5,12 @@
 #include "imgui/imgui_image.h"
 #include "common/utils.h"
 #include "nlohmann/json_utils.h"
-#include "common/image/io.h"
-#include "common/image/processing.h"
+#include "image/io.h"
+#include "image/processing.h"
 #include "common/tracking/tle.h"
 
 #include "common/dsp/filter/firdes.h"
-#include "resources.h"
+#include "core/resources.h"
 
 #include "common/wav.h"
 

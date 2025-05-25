@@ -2,7 +2,7 @@
 #include <ctime>
 #include <filesystem>
 #include "logger.h"
-#include "resources.h"
+#include "core/resources.h"
 
 namespace goes
 {

@@ -2,9 +2,9 @@
 #include "logger.h"
 #include "lrit_header.h"
 #include <fstream>
-#include "common/image/jpeg_utils.h"
-#include "common/image/jpeg12_utils.h"
-#include "common/image/io.h"
+#include "image/jpeg_utils.h"
+#include "image/jpeg12_utils.h"
+#include "image/io.h"
 #include "imgui/imgui_image.h"
 #include <filesystem>
 

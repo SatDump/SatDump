@@ -9,7 +9,7 @@
 #include "core/config.h"
 #include "nlohmann/json_utils.h"
 
-#include "common/image/io.h"
+#include "image/io.h"
 
 namespace lrit
 {

@@ -1,6 +1,6 @@
 #include "xeuvi_reader.h"
 #include "logger.h"
-#include "common/image/io.h"
+#include "image/io.h"
 
 namespace fengyun3
 {

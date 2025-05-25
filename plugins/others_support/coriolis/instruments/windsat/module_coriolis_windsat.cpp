@@ -3,7 +3,7 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
-#include "common/image/io.h"
+#include "image/io.h"
 
 // Return filesize
 uint64_t getFilesize(std::string filepath);

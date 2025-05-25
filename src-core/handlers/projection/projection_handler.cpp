@@ -1,6 +1,6 @@
 #include "projection_handler.h"
-#include "common/image/image.h"
-#include "common/image/meta.h"
+#include "image/image.h"
+#include "image/meta.h"
 #include "core/style.h"
 #include "logger.h"
 

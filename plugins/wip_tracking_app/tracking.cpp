@@ -2,6 +2,8 @@
 #include "common/tracking/tle.h"
 #include "common/utils.h"
 #include "imgui/implot3d/implot3d.h"
+#include "testgl.h"
+#include <GLFW/glfw3.h>
 
 namespace satdump
 {
@@ -42,5 +44,18 @@ namespace satdump
         ImPlot3D::PlotScatter("METEOR-M 2", &x, &y, &z, 1);
 
         ImPlot3D::EndPlot();
+
+        // ImGui::SetNextWindowPos({0, 0});
+        // ImGui::SetNextWindowSize({wwidth, wheight});
+        // ImGui::Begin("TestGL");
+
+        GLFWwindow *window = glfwGetCurrentContext();
+
+        if (scene == nullptr)
+            scene = new OpenGLScene();
+
+        GLuint text = scene->draw(window, 400, 400);
+        ImGui::Image((void *)(intptr_t)text, {400, 400});
+        //  ImGui::End();
     }
 } // namespace satdump

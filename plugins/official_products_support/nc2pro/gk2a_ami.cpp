@@ -2,7 +2,7 @@
 #include <cmath>
 #include <filesystem>
 
-#include "common/image/image.h"
+#include "image/image.h"
 #include "common/utils.h"
 #include "core/exception.h"
 #include "gk2a_ami.h"

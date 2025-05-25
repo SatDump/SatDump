@@ -3,7 +3,7 @@
 #include "core/module.h"
 
 #include "instruments/secchi/secchi_demuxer.h"
-#include "common/image/image.h"
+#include "image/image.h"
 
 #include "instruments/secchi/secchi_reader.h"
 

@@ -3,10 +3,10 @@
 #include <filesystem>
 #include "imgui/imgui_image.h"
 #include "lrit_header.h"
-#include "common/image/jpeg_utils.h"
+#include "image/jpeg_utils.h"
 #include "DecompWT/CompressWT.h"
 #include "DecompWT/CompressT4.h"
-#include "common/image/io.h"
+#include "image/io.h"
 
 namespace elektro
 {

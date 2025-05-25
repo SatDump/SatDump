@@ -15,7 +15,7 @@
 
 #include "processing.h"
 
-#include "resources.h"
+#include "core/resources.h"
 
 namespace satdump
 {

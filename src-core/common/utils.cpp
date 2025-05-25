@@ -1,7 +1,7 @@
 #include "utils.h"
 #include <cmath>
 #include <sstream>
-#include "resources.h"
+#include "core/resources.h"
 #include <locale>
 #include <codecvt>
 

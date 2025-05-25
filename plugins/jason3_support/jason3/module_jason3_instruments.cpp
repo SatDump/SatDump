@@ -6,7 +6,7 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "common/ccsds/ccsds_tm/demuxer.h"
-#include "common/image/io.h"
+#include "image/io.h"
 
 #include <thread>
 
@@ -15,7 +15,7 @@
 #include "products2/punctiform_product.h"
 #include "products2/dataset.h"
 #include "common/tracking/tle.h"
-#include "resources.h"
+#include "core/resources.h"
 
 namespace jason3
 {

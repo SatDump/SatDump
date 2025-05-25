@@ -3,7 +3,7 @@
 #include "common/widgets/pipeline_selector.h"
 #include "passes.h"
 #include <functional>
-#include "common/image/image.h"
+#include "image/image.h"
 #include "common/dsp/io/baseband_type.h"
 #include "nlohmann/json_utils.h"
 

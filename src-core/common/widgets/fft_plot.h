@@ -2,7 +2,7 @@
 
 #include "imgui/imgui.h"
 #include <mutex>
-#include "common/image/image.h"
+#include "image/image.h"
 #include <string>
 
 namespace widgets

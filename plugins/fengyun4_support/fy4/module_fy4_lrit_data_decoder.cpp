@@ -7,8 +7,8 @@
 #include "common/utils.h"
 #include "common/lrit/lrit_demux.h"
 #include "lrit_header.h"
-#include "resources.h"
-#include "common/image/io.h"
+#include "core/resources.h"
+#include "image/io.h"
 
 namespace fy4
 {

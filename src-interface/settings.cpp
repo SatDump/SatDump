@@ -14,7 +14,7 @@
 #include "common/widgets/json_editor.h"
 
 #include "core/style.h"
-#include "resources.h"
+#include "core/resources.h"
 
 namespace satdump
 {

@@ -1,11 +1,11 @@
 #include "module_svissr_image_decoder.h"
 #include "common/codings/differential/nrzs.h"
-#include "common/image/io.h"
+#include "image/io.h"
 #include "common/utils.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
 #include "logger.h"
-#include "resources.h"
+#include "core/resources.h"
 #include <filesystem>
 
 #define FRAME_SIZE 44356

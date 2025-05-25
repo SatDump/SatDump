@@ -10,8 +10,8 @@
 #include "common/utils.h"
 #include "common/dsp_source_sink/format_notated.h"
 #include "common/widgets/frequency_input.h"
-#include "resources.h"
-#include "common/image/text.h"
+#include "core/resources.h"
+#include "image/text.h"
 
 namespace satdump
 {

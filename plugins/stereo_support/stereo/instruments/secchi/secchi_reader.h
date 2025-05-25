@@ -2,7 +2,7 @@
 
 #include "common/ccsds/ccsds.h"
 #include "secchi_demuxer.h"
-#include "common/image/image.h"
+#include "image/image.h"
 #include <string>
 
 namespace stereo

@@ -8,7 +8,7 @@
 #include <filesystem>
 #include "common/repack.h"
 #include "../crc.h"
-#include "common/image/io.h"
+#include "image/io.h"
 
 #define ALL_MODE 2
 #define WATER_MODE 3

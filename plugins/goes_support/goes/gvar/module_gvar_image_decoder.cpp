@@ -1,5 +1,5 @@
 #include "module_gvar_image_decoder.h"
-#include "common/image/io.h"
+#include "image/io.h"
 #include "common/physics_constants.h"
 #include "common/thread_priority.h"
 #include "common/utils.h"
@@ -14,7 +14,7 @@
 #include "products2/image_product.h"
 #include "products2/product.h"
 #include "products2/product_process.h"
-#include "resources.h"
+#include "core/resources.h"
 #include <filesystem>
 #include <new>
 

@@ -8,7 +8,7 @@
 #include "nlohmann/json_utils.h"
 #include "products2/dataset.h"
 #include "products2/image_product.h"
-#include "resources.h"
+#include "core/resources.h"
 #include <filesystem>
 #include <fstream>
 

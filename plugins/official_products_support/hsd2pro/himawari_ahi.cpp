@@ -1,6 +1,6 @@
 #include "himawari_ahi.h"
 
-#include "common/image/image.h"
+#include "image/image.h"
 #include "common/utils.h"
 #include "core/exception.h"
 #include "libs/bzlib_utils.h"

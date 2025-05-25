@@ -8,7 +8,7 @@ This decoder takes in raw AIP data and processes it to MHS. It perfprms calibrat
 
 #include "mhs_reader.h"
 #include <cstring>
-#include "resources.h"
+#include "core/resources.h"
 #include "nlohmann/json_utils.h"
 #include "common/utils.h"
 #include "common/calibration.h"

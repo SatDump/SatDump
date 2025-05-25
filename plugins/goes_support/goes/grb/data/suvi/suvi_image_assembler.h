@@ -1,10 +1,10 @@
 #pragma once
 
-#include "common/image/image.h"
+#include "image/image.h"
 #include "suvi_products.h"
 #include "../grb_headers.h"
 #include <string>
-#include "common/image/image_saving_thread.h"
+#include "image/image_saving_thread.h"
 
 namespace goes
 {

@@ -1,7 +1,7 @@
 
 #include "logger.h"
 #include "common/map/map_drawer.h"
-#include "resources.h"
+#include "core/resources.h"
 #include "nlohmann/json_utils.h"
 #include "core/config.h"
 #include "common/projection/reprojector.h"

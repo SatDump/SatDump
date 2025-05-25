@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include "common/image/image.h"
+#include "image/image.h"
 #include "../../tip_time_parser.h"
 #include "../../contains.h"
 #include "nlohmann/json.hpp"

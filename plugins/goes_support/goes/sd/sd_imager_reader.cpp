@@ -3,8 +3,8 @@
 #include "common/utils.h"
 #include <filesystem>
 #include <cstring>
-#include "common/image/io.h"
-#include "common/image/processing.h"
+#include "image/io.h"
+#include "image/processing.h"
 #include <iostream>
 
 #define IMG_WIDTH 40000

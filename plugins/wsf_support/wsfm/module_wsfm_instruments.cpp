@@ -8,7 +8,7 @@
 #include "common/ccsds/ccsds_aos/demuxer.h"
 #include "common/ccsds/ccsds_aos/vcdu.h"
 #include "products2/dataset.h"
-#include "resources.h"
+#include "core/resources.h"
 #include "nlohmann/json_utils.h"
 #include "common/tracking/tle.h"
 

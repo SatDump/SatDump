@@ -3,8 +3,8 @@
 #include "common/geodetic/geodetic_coordinates.h"
 #include "common/utils.h"
 #include "logger.h"
-#include "common/image/io.h"
-#include "common/image/meta.h"
+#include "image/io.h"
+#include "image/meta.h"
 
 std::pair<double, double> deg2num(double lat, double lon, int zoom)
 {

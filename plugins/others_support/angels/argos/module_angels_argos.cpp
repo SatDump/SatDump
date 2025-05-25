@@ -4,8 +4,8 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 
-#include "common/image/image.h"
-#include "common/image/io.h"
+#include "image/image.h"
+#include "image/io.h"
 
 // #include <iostream>
 

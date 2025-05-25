@@ -9,7 +9,7 @@
 #include "common/simple_deframer.h"
 #include "common/tracking/tle.h"
 #include "products2/dataset.h"
-#include "resources.h"
+#include "core/resources.h"
 #include "nlohmann/json_utils.h"
 #include "instruments/msumr/msumr_tlm.h"
 

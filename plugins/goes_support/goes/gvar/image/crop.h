@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/image/image.h"
+#include "image/image.h"
 
 namespace goes
 {

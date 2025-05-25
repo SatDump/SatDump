@@ -1,7 +1,7 @@
 #include "sc3_olci.h"
 
 #include "common/utils.h"
-#include "common/image/image.h"
+#include "image/image.h"
 #include <filesystem>
 #include "logger.h"
 #include <array>
@@ -12,7 +12,7 @@
 #include "common/calibration.h"
 
 #include "nlohmann/json_utils.h"
-#include "resources.h"
+#include "core/resources.h"
 #include "hdf5_utils.h"
 #include <H5LTpublic.h>
 

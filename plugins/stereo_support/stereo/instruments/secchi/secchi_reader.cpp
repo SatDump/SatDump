@@ -1,13 +1,13 @@
 #include "secchi_reader.h"
 #include <filesystem>
 #include "common/utils.h"
-#include "resources.h"
+#include "core/resources.h"
 
 #include "rice_decomp.h"
 
-#include "common/image/processing.h"
-#include "common/image/text.h"
-#include "common/image/io.h"
+#include "image/processing.h"
+#include "image/text.h"
+#include "image/io.h"
 
 namespace stereo
 {

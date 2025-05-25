@@ -1,18 +1,18 @@
 #include "image_handler.h"
 
-#include "common/image/hue_saturation.h"
-#include "common/image/image_background.h"
-#include "common/image/meta.h"
+#include "image/hue_saturation.h"
+#include "image/image_background.h"
+#include "image/meta.h"
 #include "core/plugin.h"
 #include "core/style.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
 #include "logger.h"
 
-#include "common/image/brightness_contrast.h"
-#include "common/image/earth_curvature.h"
-#include "common/image/io.h" // TODOREWORK
-#include "common/image/processing.h"
+#include "image/brightness_contrast.h"
+#include "image/earth_curvature.h"
+#include "image/io.h" // TODOREWORK
+#include "image/processing.h"
 
 #include "nlohmann/json_utils.h"
 
@@ -25,7 +25,7 @@
 // TODOREWORK!
 #include "handlers/vector/shapefile_handler.h"
 #include "products2/image/channel_transform.h"
-#include "resources.h"
+#include "core/resources.h"
 #include <cstddef>
 #include <filesystem>
 #include <memory>

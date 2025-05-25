@@ -5,7 +5,7 @@
 #include "imgui/imgui_stdlib.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
-#include "resources.h"
+#include "core/resources.h"
 #include <regex>
 
 namespace satdump

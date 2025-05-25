@@ -2,9 +2,9 @@
 
 #include <map>
 #include <mutex>
-#include "common/image/image.h"
-#include "common/image/io.h"
-#include "common/image/j2k_utils.h"
+#include "image/image.h"
+#include "image/io.h"
+#include "image/j2k_utils.h"
 #include "common/ccsds/ccsds.h"
 #include "common/ccsds/ccsds_time.h"
 #include "common/utils.h"

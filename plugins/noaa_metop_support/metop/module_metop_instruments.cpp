@@ -6,15 +6,15 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "metop.h"
-#include "common/image/bowtie.h"
+#include "image/bowtie.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
 // #include "products/radiation_products.h" TODOREWORK
 // #include "products/scatterometer_products.h" TODOREWORK ASCAT
 #include "common/tracking/tle.h"
-#include "resources.h"
+#include "core/resources.h"
 #include "nlohmann/json_utils.h"
-#include "common/image/io.h"
-#include "common/image/processing.h"
+#include "image/io.h"
+#include "image/processing.h"
 #include "common/calibration.h"
 
 #include "products2/punctiform_product.h"

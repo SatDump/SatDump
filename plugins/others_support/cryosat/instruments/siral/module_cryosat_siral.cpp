@@ -8,8 +8,8 @@
 // #include <iostream>
 #include <fftw3.h>
 
-#include "common/image/image.h"
-#include "common/image/io.h"
+#include "image/image.h"
+#include "image/io.h"
 #include "common/resizeable_buffer.h"
 
 // Return filesize

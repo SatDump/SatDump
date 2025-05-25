@@ -5,8 +5,8 @@
 #include "libs/miniz/miniz_zip.h"
 #include "imgui/imgui_image.h"
 #include <filesystem>
-#include "common/image/io.h"
-#include "common/image/processing.h"
+#include "image/io.h"
+#include "image/processing.h"
 
 namespace goes
 {

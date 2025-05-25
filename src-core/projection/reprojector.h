@@ -2,7 +2,7 @@
 
 // TODOREWORK THIS WHOLE FILE IS TEMPORARY
 #include "nlohmann/json.hpp"
-#include "common/image/image.h"
+#include "image/image.h"
 
 namespace satdump
 {

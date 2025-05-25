@@ -4,8 +4,8 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
-#include "common/image/io.h"
-#include "common/image/image_lut.h"
+#include "image/io.h"
+#include "image/image_lut.h"
 
 #define BUFFER_SIZE 8192
 

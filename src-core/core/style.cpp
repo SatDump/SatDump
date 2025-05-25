@@ -7,7 +7,7 @@
 #include "imgui/imgui_internal.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
-#include "resources.h"
+#include "core/resources.h"
 #include <filesystem>
 
 #ifdef __APPLE__

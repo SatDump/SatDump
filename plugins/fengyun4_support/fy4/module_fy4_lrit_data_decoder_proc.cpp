@@ -2,11 +2,11 @@
 #include "logger.h"
 #include "lrit_header.h"
 #include <fstream>
-#include "common/image/jpeg_utils.h"
+#include "image/jpeg_utils.h"
 #include "imgui/imgui_image.h"
-#include "common/image/j2k_utils.h"
+#include "image/j2k_utils.h"
 #include <filesystem>
-#include "common/image/io.h"
+#include "image/io.h"
 
 namespace fy4
 {

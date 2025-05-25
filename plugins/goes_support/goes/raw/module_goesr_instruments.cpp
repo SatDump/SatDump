@@ -6,7 +6,7 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
-#include "resources.h"
+#include "core/resources.h"
 
 namespace goes
 {

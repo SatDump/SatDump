@@ -168,9 +168,9 @@ namespace meteor
 
 #include "logger.h"
 #include <fstream>
-#include "common/image/io.h"
+#include "image/io.h"
 
-#include "common/image/processing.h"
+#include "image/processing.h"
 #include "common/utils.h"
 
 int main(int argc, char *argv[])
@@ -362,13 +362,13 @@ int main(int argc, char *argv[])
 /*
 Full C code
 
-#include "common/image/image.h"
-#include "common/image/io.h"
-#include "common/image/meta.h"
+#include "image/image.h"
+#include "image/io.h"
+#include "image/meta.h"
 #include "logger.h"
 #include <fstream>
 
-#include "common/image/processing.h"
+#include "image/processing.h"
 #include "common/utils.h"
 #include "products2/image/product_expression.h"
 #include "products2/image_product.h"

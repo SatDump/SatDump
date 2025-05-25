@@ -1,7 +1,7 @@
 #include "module_sstv_decoder.h"
 #include "common/dsp/filter/firdes.h"
-#include "common/image/image.h"
-#include "common/image/io.h"
+#include "image/image.h"
+#include "image/io.h"
 #include "common/utils.h"
 #include "common/wav.h"
 #include "core/exception.h"
@@ -13,7 +13,7 @@
 #include "imgui/imgui_image.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
-#include "resources.h"
+#include "core/resources.h"
 
 #include "lineproc.h"
 

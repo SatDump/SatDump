@@ -1,10 +1,10 @@
 #pragma once
 
-#include "common/image/image.h"
+#include "image/image.h"
 #include <memory>
 #include "abi/abi_image_assembler.h"
 #include "suvi/suvi_image_assembler.h"
-#include "common/image/image_saving_thread.h"
+#include "image/image_saving_thread.h"
 
 /*
 All the information used to fill in products APIDs,

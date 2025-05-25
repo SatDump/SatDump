@@ -17,15 +17,15 @@
 #include "common/simple_deframer.h"
 #include <fstream>
 
-#include "common/image/image.h"
-#include "common/image/io.h"
-#include "common/image/processing.h"
+#include "image/image.h"
+#include "image/io.h"
+#include "image/processing.h"
 
 #include <cstring>
 
 #include "common/repack.h"
 
-#include "common/image/bayer/bayer.h"
+#include "image/bayer/bayer.h"
 
 #include "common/codings/reedsolomon/reedsolomon.h"
 

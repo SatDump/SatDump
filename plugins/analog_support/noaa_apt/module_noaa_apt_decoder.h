@@ -8,7 +8,7 @@
 #include "common/dsp/resamp/rational_resampler.h"
 #include "common/dsp/utils/complex_to_mag.h"
 
-#include "common/image/image.h"
+#include "image/image.h"
 
 #define APT_IMG_WIDTH 2080
 #define APT_IMG_OVERS 4

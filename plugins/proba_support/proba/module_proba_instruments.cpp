@@ -8,7 +8,7 @@
 #include "common/ccsds/ccsds_tm/demuxer.h"
 #include "products2/dataset.h"
 #include "core/exception.h"
-#include "common/image/io.h"
+#include "image/io.h"
 
 namespace proba
 {

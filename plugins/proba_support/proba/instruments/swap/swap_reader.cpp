@@ -4,11 +4,11 @@
 #include <map>
 #include <filesystem>
 #include "logger.h"
-#include "common/image/image.h"
-#include "common/image/jpeg_utils.h"
-#include "common/image/io.h"
-#include "common/image/processing.h"
-#include "resources.h"
+#include "image/image.h"
+#include "image/jpeg_utils.h"
+#include "image/io.h"
+#include "image/processing.h"
+#include "core/resources.h"
 #include "common/ccsds/ccsds_time.h"
 
 #define WRITE_IMAGE_LOCAL(img, path)                        \

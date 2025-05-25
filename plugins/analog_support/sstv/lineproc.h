@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/image/image.h"
+#include "image/image.h"
 #include "common/utils.h"
 #include "core/exception.h"
 #include "logger.h"

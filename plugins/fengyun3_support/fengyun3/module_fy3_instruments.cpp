@@ -5,18 +5,18 @@
 #include "logger.h"
 #include <filesystem>
 #include "imgui/imgui.h"
-#include "common/image/bowtie.h"
+#include "image/bowtie.h"
 #include "common/utils.h"
 #include "products2/image_product.h"
 #include "products2/dataset.h"
 #include "common/simple_deframer.h"
 #include "fengyun3.h"
-#include "resources.h"
+#include "core/resources.h"
 #include "instruments/mersi_histmatch.h"
 #include "instruments/mersi_offset_interleaved.h"
 #include "nlohmann/json_utils.h"
 #include "core/exception.h"
-#include "common/image/io.h"
+#include "image/io.h"
 #include "common/tracking/tle.h"
 
 namespace fengyun3

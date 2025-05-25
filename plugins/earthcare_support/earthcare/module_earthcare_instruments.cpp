@@ -9,10 +9,10 @@
 #include "products2/image_product.h"
 #include "products2/dataset.h"
 #include "nlohmann/json_utils.h"
-#include "resources.h"
+#include "core/resources.h"
 #include "common/tracking/tle.h"
 
-#include "common/image/io.h"
+#include "image/io.h"
 
 namespace earthcare
 {

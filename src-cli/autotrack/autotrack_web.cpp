@@ -2,7 +2,7 @@
 #include "../webserver.h"
 #include "logger.h"
 #include "common/utils.h"
-#include "common/image/jpeg_utils.h"
+#include "image/jpeg_utils.h"
 
 void AutoTrackApp::setup_webserver()
 {
