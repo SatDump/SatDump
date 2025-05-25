@@ -37,15 +37,12 @@ namespace satdump
             int16_t *res_samples = samples.getSamples<int16_t>();
             int16_t *audio_samples = samples.getSamples<int16_t>();
 
-            for (uint32_t i = 0; i < iblk.size; i++)
-            {
-                volk_32f_s32f_convert_16i(res_samples, (float *)floats, 32767, iblk.size);
+            volk_32f_s32f_convert_16i(res_samples, (float *)floats, 32767, iblk.size);
 
-                audio_sink->resample_s16(audio_samples, res_samples, samplerate, audio_samplerate, iblk.size, 1);
+            audio_sink->resample_s16(audio_samples, res_samples, samplerate, audio_samplerate, iblk.size, 1);
 
-                if (play_audio && enable_audio)
-                    audio_sink->push_samples(audio_samples, iblk.size);
-            }
+            if (play_audio && enable_audio)
+                audio_sink->push_samples(audio_samples, iblk.size);
 
             iblk.free();
 

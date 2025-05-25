@@ -1,4 +1,5 @@
 #include "dsp_flowgraph_handler.h"
+#include "common/audio/audio_sink.h"
 #include "core/plugin.h"
 #include "dsp/agc/agc.h"
 #include "dsp/device/dev.h"
@@ -21,6 +22,7 @@
 #include "dsp/displays/hist_disp.h"
 #include "dsp/pll/costas.h"
 
+#include "dsp/io/audio_sink.h"
 #include "dsp/utils/correct_iq.h"
 #include "dsp/utils/cyclostationary_analysis.h"
 #include "dsp/utils/delay_one_imag.h"
@@ -126,6 +128,10 @@ namespace satdump
 
             flowgraph.node_internal_registry.insert(
                 {"rrc_fir_cc", {"RRC FIR CC", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::RRC_FIRBlock<complex_t>>()); }}});
+
+            // flowgraph.node_internal_registry.insert({"audio_sink_f", {"IO/Audio", [](const ndsp::Flowgraph *f) { return std::make_shared<NodeTestAudio>(f); }}});
+            flowgraph.node_internal_registry.insert(
+                {"audio_sink_f", {"IO/Audio", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::AudioSinkBlock>()); }}});
 
             flowgraph.node_internal_registry.insert(
                 {"cyclostationary_analysis_cf",
