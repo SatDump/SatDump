@@ -8,6 +8,7 @@ INPUT                  = src-core/common/ccsds \
                          src-core/projection \
                          src-core/dsp \
                          src-core/image \
+                         src-core/utils \
                          docs/pages
 EXCLUDE                = src-core/image/font_lib src-core/image/font 
 RECURSIVE              = YES

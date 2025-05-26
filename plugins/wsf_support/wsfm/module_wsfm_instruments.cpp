@@ -11,6 +11,7 @@
 #include "core/resources.h"
 #include "nlohmann/json_utils.h"
 #include "common/tracking/tle.h"
+#include "utils/stats.h"
 
 namespace wsfm
 {
@@ -65,7 +66,7 @@ namespace wsfm
 
         data_in.close();
 
-        int scid = most_common(wsfm_scids.begin(), wsfm_scids.end(), 0);
+        int scid = satdump::most_common(wsfm_scids.begin(), wsfm_scids.end(), 0);
         wsfm_scids.clear();
 
 #define WSFM_1_SCID 120
@@ -82,7 +83,7 @@ namespace wsfm
         // Products dataset
         satdump::products::DataSet dataset;
         dataset.satellite_name = sat_name;
-        dataset.timestamp = get_median(mwi_reader.timestamps);
+        dataset.timestamp = satdump::get_median(mwi_reader.timestamps);
 
         std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
 

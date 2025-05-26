@@ -10,6 +10,7 @@
 #include <filesystem>
 #include <curl/curl.h>
 #include "satdump_vars.h"
+#include "utils/http.h"
 
 namespace satdump
 {
@@ -111,7 +112,7 @@ namespace satdump
             int http_res = 1, trials = 0;
             while (http_res == 1 && trials < 10)
             {
-                if ((http_res = perform_http_request(url_str, result)) != 1)
+                if ((http_res = satdump::perform_http_request(url_str, result)) != 1)
                 {
                     std::istringstream tle_stream(result);
                     success = parseTLEStream(tle_stream, new_registry) > 0;
@@ -350,7 +351,7 @@ namespace satdump
         std::string result;
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, NULL);
         curl_easy_setopt(curl, CURLOPT_POST, 0);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_std_string);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, satdump::curl_write_std_string);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
         curl_easy_setopt(curl, CURLOPT_URL, final_url.c_str());
 

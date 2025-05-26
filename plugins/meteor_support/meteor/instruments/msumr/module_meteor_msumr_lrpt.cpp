@@ -17,6 +17,7 @@
 #include <ctime>
 #include <filesystem>
 #include <fstream>
+#include "utils/stats.h"
 
 #define BUFFER_SIZE 8192
 
@@ -200,7 +201,7 @@ namespace meteor
             logger->info("Writing images.... (Can take a while)");
 
             // Identify satellite, and apply per-sat settings...
-            int msumr_serial_number = most_common(msumr_ids.begin(), msumr_ids.end(), -1);
+            int msumr_serial_number = satdump::most_common(msumr_ids.begin(), msumr_ids.end(), -1);
             msumr_ids.clear();
             logger->trace("MSU-MR ID %d", msumr_serial_number);
 
@@ -310,14 +311,14 @@ namespace meteor
             }
 
             msumr_products.images.swap(msumr_images);
-            createMSUMRProduct(msumr_products, get_median(msureader.timestamps), norad, msumr_serial_number, calib_cfg, lrpt_channels, msureader.timestamps, sat_name);
+            createMSUMRProduct(msumr_products, satdump::get_median(msureader.timestamps), norad, msumr_serial_number, calib_cfg, lrpt_channels, msureader.timestamps, sat_name);
             msumr_products.save(directory);
             msumr_products.images.clear(); // Free up memory
 
             // Products dataset
             satdump::products::DataSet dataset;
             dataset.satellite_name = sat_name;
-            dataset.timestamp = get_median(msureader.timestamps);
+            dataset.timestamp = satdump::get_median(msureader.timestamps);
             dataset.products_list.push_back("MSU-MR");
 
             if (d_parameters.contains("fill_missing") && d_parameters["fill_missing"])
@@ -373,7 +374,7 @@ namespace meteor
                     if (img.size() > 0)
                         filled_products.images.push_back({i, "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, 10});
                 }
-                createMSUMRProduct(filled_products, get_median(msureader.timestamps), norad, msumr_serial_number, calib_cfg, lrpt_channels, msureader.timestamps, sat_name);
+                createMSUMRProduct(filled_products, satdump::get_median(msureader.timestamps), norad, msumr_serial_number, calib_cfg, lrpt_channels, msureader.timestamps, sat_name);
                 filled_products.save(fill_directory);
                 dataset.products_list.push_back("MSU-MR (Filled)");
             }

@@ -7,6 +7,7 @@
 #include <filesystem>
 #include "image/io.h"
 #include "image/processing.h"
+#include "utils/string.h"
 
 namespace goes
 {
@@ -147,7 +148,7 @@ namespace goes
                     {
                         lmeta.satellite_name = "GOES-" + std::to_string(noaa_header.product_id);
                         lmeta.satellite_short_name = "G" + std::to_string(noaa_header.product_id);
-                        std::vector<std::string> cutFilename = splitString(current_filename, '-');
+                        std::vector<std::string> cutFilename = satdump::splitString(current_filename, '-');
 
                         if (cutFilename.size() >= 4)
                         {
@@ -292,7 +293,7 @@ namespace goes
                         // Apparently the timestamp is in there for Himawari-8 data
                         AnnotationRecord annotation_record = file.getHeader<AnnotationRecord>();
 
-                        std::vector<std::string> strParts = splitString(annotation_record.annotation_text, '_');
+                        std::vector<std::string> strParts = satdump::splitString(annotation_record.annotation_text, '_');
                         if (strParts.size() > 3)
                         {
                             strptime(strParts[2].c_str(), "%Y%m%d%H%M", timeReadable);

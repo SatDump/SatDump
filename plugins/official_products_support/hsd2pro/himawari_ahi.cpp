@@ -6,6 +6,7 @@
 #include "libs/bzlib_utils.h"
 #include "logger.h"
 #include "products2/image_product.h"
+#include "utils/string.h"
 
 #include <filesystem>
 #include <set>
@@ -169,7 +170,7 @@ namespace hsd2pro
         std::vector<ParsedHimawariAHI> all_images;
         std::map<std::string, std::set<std::string>> files_to_parse; // Channel, paths
         {
-            auto ori_splt = splitString(std::filesystem::path(hsd_file).stem().string(), '_');
+            auto ori_splt = satdump::splitString(std::filesystem::path(hsd_file).stem().string(), '_');
             if (ori_splt.size() != 8)
                 throw satdump_exception("Invalid Himawari filename!");
 
@@ -184,7 +185,7 @@ namespace hsd2pro
 
                 {
                     std::string cleanname = std::filesystem::path(path).stem().string();
-                    auto splt = splitString(cleanname, '_');
+                    auto splt = satdump::splitString(cleanname, '_');
 
                     if (splt.size() == 8 && ori_splt[0] == splt[0] && ori_splt[1] == splt[1] && ori_splt[2] == splt[2] && ori_splt[3] == splt[3] && ori_splt[5] == splt[5])
                     {

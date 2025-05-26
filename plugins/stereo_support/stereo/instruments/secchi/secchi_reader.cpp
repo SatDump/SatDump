@@ -2,6 +2,7 @@
 #include <filesystem>
 #include "common/utils.h"
 #include "core/resources.h"
+#include "utils/time.h"
 
 #include "rice_decomp.h"
 
@@ -79,7 +80,7 @@ namespace stereo
 
                         std::string channel_name = "COR2";
 
-                        text_drawer.draw_text(img, 150 / 2, 460 / 2, text_color, 30 / 2, timestamp_to_string(last_timestamp_0));
+                        text_drawer.draw_text(img, 150 / 2, 460 / 2, text_color, 30 / 2, satdump::timestamp_to_string(last_timestamp_0));
 
                         std::filesystem::create_directories(output_directory + "/" + channel_name);
 
@@ -91,7 +92,7 @@ namespace stereo
                             image::save_img(img, output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++));
 
                         if (last_filename_0.size() > 0)
-                            decompression_status_out << channel_name << "     " << last_filename_0 << " " << timestamp_to_string(last_timestamp_0) << " " << ((img.size() > 0) ? "PASS" : "FAIL") << "\n";
+                            decompression_status_out << channel_name << "     " << last_filename_0 << " " << satdump::timestamp_to_string(last_timestamp_0) << " " << ((img.size() > 0) ? "PASS" : "FAIL") << "\n";
                         last_filename_0 = "";
                         last_timestamp_0 = 0;
                     }
@@ -124,7 +125,7 @@ namespace stereo
 
                         std::string channel_name = "HI1";
 
-                        text_drawer.draw_text(img, 150 / 2, 460 / 2, text_color, 30 / 2, timestamp_to_string(last_timestamp_1));
+                        text_drawer.draw_text(img, 150 / 2, 460 / 2, text_color, 30 / 2, satdump::timestamp_to_string(last_timestamp_1));
 
                         std::filesystem::create_directories(output_directory + "/" + channel_name);
 
@@ -136,7 +137,7 @@ namespace stereo
                         image::save_img(img, output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++));
 
                         if (last_filename_1.size() > 0)
-                            decompression_status_out << channel_name << "      " << last_filename_1 << " " << timestamp_to_string(last_timestamp_1) << " " << ((img.size() > 0) ? "PASS" : "FAIL") << "\n";
+                            decompression_status_out << channel_name << "      " << last_filename_1 << " " << satdump::timestamp_to_string(last_timestamp_1) << " " << ((img.size() > 0) ? "PASS" : "FAIL") << "\n";
                         last_filename_1 = "";
                         last_timestamp_1 = 0;
                     }
@@ -166,7 +167,7 @@ namespace stereo
 
                         std::string channel_name = "HI2";
 
-                        text_drawer.draw_text(img, 150 / 2, 460 / 2, text_color, 30 / 2, timestamp_to_string(last_timestamp_2));
+                        text_drawer.draw_text(img, 150 / 2, 460 / 2, text_color, 30 / 2, satdump::timestamp_to_string(last_timestamp_2));
 
                         std::filesystem::create_directories(output_directory + "/" + channel_name);
 
@@ -178,7 +179,7 @@ namespace stereo
                         image::save_img(img, output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++));
 
                         if (last_filename_2.size() > 0)
-                            decompression_status_out << channel_name << "      " << last_filename_2 << " " << timestamp_to_string(last_timestamp_2) << " " << ((img.size() > 0) ? "PASS" : "FAIL") << "\n";
+                            decompression_status_out << channel_name << "      " << last_filename_2 << " " << satdump::timestamp_to_string(last_timestamp_2) << " " << ((img.size() > 0) ? "PASS" : "FAIL") << "\n";
                         last_filename_2 = "";
                         last_timestamp_2 = 0;
                     }
@@ -222,7 +223,7 @@ namespace stereo
                         else
                             channel_name = "Corrupted";
 
-                        text_drawer.draw_text(img, 150, 460, text_color, 30, timestamp_to_string(last_timestamp_3));
+                        text_drawer.draw_text(img, 150, 460, text_color, 30, satdump::timestamp_to_string(last_timestamp_3));
 
                         std::filesystem::create_directories(output_directory + "/" + channel_name);
 
@@ -234,7 +235,7 @@ namespace stereo
                             image::save_img(img, output_directory + "/" + channel_name + "/" + std::to_string(unknown_cnt++));
 
                         if (last_filename_3.size() > 0)
-                            decompression_status_out << channel_name << " " << last_filename_3 << " " << timestamp_to_string(last_timestamp_3) << " " << ((img.size() > 0) ? "PASS" : "FAIL") << "\n";
+                            decompression_status_out << channel_name << " " << last_filename_3 << " " << satdump::timestamp_to_string(last_timestamp_3) << " " << ((img.size() > 0) ? "PASS" : "FAIL") << "\n";
                         last_filename_3 = "";
                         last_timestamp_3 = 0;
                         last_polarization_3 = 0;

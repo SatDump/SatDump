@@ -6,6 +6,7 @@
 #include <cfloat>
 #include "imgui/imgui.h"
 #include "core/style.h"
+#include "utils/time.h"
 
 #include "common/widgets/azel_input.h"
 

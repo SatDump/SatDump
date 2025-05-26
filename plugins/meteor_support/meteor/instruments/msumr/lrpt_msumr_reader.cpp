@@ -1,6 +1,6 @@
 #include "lrpt_msumr_reader.h"
 #include "logger.h"
-#include "common/utils.h"
+#include "utils/stats.h"
 #include <ctime>
 #include <cmath>
 
@@ -240,7 +240,7 @@ namespace meteor
                         }
                     }
 
-                    timestamps.push_back(most_common(line_timestamps.begin(), line_timestamps.end(), -1.0));
+                    timestamps.push_back(satdump::most_common(line_timestamps.begin(), line_timestamps.end(), -1.0));
                 }
 
                 // Fill missing data, if requested

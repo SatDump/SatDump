@@ -10,6 +10,7 @@
 #include "core/resources.h"
 #include "common/projection/timestamp_filtering.h"
 #include "common/tracking/tle.h"
+#include "utils/stats.h"
 
 namespace noaa
 {
@@ -119,7 +120,7 @@ namespace noaa
                 } // done with the frames
                 data_in.close();
 
-                int scid = most_common(spacecraft_ids.begin(), spacecraft_ids.end(), 0);
+                int scid = satdump::most_common(spacecraft_ids.begin(), spacecraft_ids.end(), 0);
                 spacecraft_ids.clear();
                 int norad = 0;
                 std::string sat_name = "Unknown NOAA";
@@ -142,7 +143,7 @@ namespace noaa
                 // Products dataset
                 satdump::products::DataSet dataset;
                 dataset.satellite_name = sat_name;
-                dataset.timestamp = get_median(avhrr_reader.timestamps);
+                dataset.timestamp = satdump::get_median(avhrr_reader.timestamps);
 
                 std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
 
@@ -423,7 +424,7 @@ namespace noaa
                 }
 
                 // ID
-                uint8_t scid = most_common(scid_list.begin(), scid_list.end(), 0);
+                uint8_t scid = satdump::most_common(scid_list.begin(), scid_list.end(), 0);
                 scid_list.clear();
                 int norad = 0;
                 std::string sat_name = "Unknown NOAA";
@@ -446,7 +447,7 @@ namespace noaa
                 // Products dataset
                 satdump::products::DataSet dataset;
                 dataset.satellite_name = sat_name;
-                dataset.timestamp = get_median(hirs_reader.timestamps);
+                dataset.timestamp = satdump::get_median(hirs_reader.timestamps);
 
                 std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
 

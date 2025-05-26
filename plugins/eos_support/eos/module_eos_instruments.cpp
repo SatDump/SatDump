@@ -167,7 +167,7 @@ namespace eos
                 dataset.satellite_name = "Aura";
 
             if (d_satellite == AQUA || d_satellite == TERRA) // MODIS
-                dataset.timestamp = get_median(modis_reader.timestamps_1000);
+                dataset.timestamp = satdump::get_median(modis_reader.timestamps_1000);
             else
                 dataset.timestamp = time(0);
 

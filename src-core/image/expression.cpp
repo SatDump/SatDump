@@ -1,5 +1,5 @@
 #include "expression.h"
-#include "common/utils.h"
+#include "utils/string.h"
 #include "core/exception.h"
 #include "image/meta.h"
 #include "libs/muparser/muParser.h"

@@ -7,6 +7,7 @@
 #include "image/io.h"
 #include "imgui/imgui_image.h"
 #include <filesystem>
+#include "utils/string.h"
 
 extern "C"
 {
@@ -117,7 +118,7 @@ namespace gk2a
                         file.lrit_data.insert(file.lrit_data.end(), (uint8_t *)img.raw_data(), (uint8_t *)img.raw_data() + img.size() * img.typesize());
                     }
 
-                    std::vector<std::string> header_parts = splitString(current_filename, '_'); // Is this a FD?
+                    std::vector<std::string> header_parts = satdump::splitString(current_filename, '_'); // Is this a FD?
                     if (header_parts.size() < 2)
                         header_parts = {"", ""};
 
@@ -186,7 +187,7 @@ namespace gk2a
                             segmentedDecoder.meta = lmeta;
                         }
 
-                        std::vector<std::string> header_parts = splitString(orig_filename, '_');
+                        std::vector<std::string> header_parts = satdump::splitString(orig_filename, '_');
 
                         int seg_number = 0;
                         if (header_parts.size() >= 7)
@@ -233,7 +234,7 @@ namespace gk2a
 
                 int offset = primary_header.total_header_length;
 
-                std::vector<std::string> header_parts = splitString(current_filename, '_');
+                std::vector<std::string> header_parts = satdump::splitString(current_filename, '_');
 
                 // Get type name
                 std::string name = "";

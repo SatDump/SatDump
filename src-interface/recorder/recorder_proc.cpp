@@ -3,6 +3,7 @@
 #include "main_ui.h"
 #include "logger.h"
 #include "processing.h"
+#include "utils/time.h"
 
 #ifndef _MSC_VER
 #include <sys/statvfs.h>

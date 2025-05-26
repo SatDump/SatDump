@@ -8,6 +8,7 @@
 #include "image/io.h"
 #include "image/processing.h"
 #include "common/tracking/tle.h"
+#include "utils/stats.h"
 
 #include "common/dsp/filter/firdes.h"
 #include "core/resources.h"
@@ -1137,7 +1138,7 @@ namespace noaa_apt
                     for (int y = 0; y < 8; y++)
                         vals.push_back(wedge.get((wed.start_line + c * 8 + y) * wedge.width() + x));
 
-                double mean = avg_overflowless(vals);
+                double mean = satdump::avg_overflowless(vals);
                 double variance = 0;
                 for (double &val : vals)
                     variance += (val - mean) * (val - mean);

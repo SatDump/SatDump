@@ -1,11 +1,11 @@
 #include "module_gvar_image_decoder.h"
-#include "image/io.h"
 #include "common/physics_constants.h"
-#include "common/thread_priority.h"
 #include "common/utils.h"
 #include "core/config.h"
+#include "core/resources.h"
 #include "crc_table.h"
 #include "gvar_headers.h"
+#include "image/io.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
 #include "logger.h"
@@ -14,9 +14,9 @@
 #include "products2/image_product.h"
 #include "products2/product.h"
 #include "products2/product_process.h"
-#include "core/resources.h"
+#include "utils/thread_priority.h"
 #include <filesystem>
-#include <new>
+#include "utils/stats.h"
 
 #define FRAME_SIZE 32786
 
@@ -197,7 +197,7 @@ namespace goes
                     if (block_zero_timestamps.size() > 0)
                     {
                         logger->debug("Using time from satellite info block");
-                        image_time = most_common(block_zero_timestamps.begin(), block_zero_timestamps.end(), 0);
+                        image_time = satdump::most_common(block_zero_timestamps.begin(), block_zero_timestamps.end(), 0);
                     }
                     // There were no valid Block 0s received, use fallback
                     else
@@ -211,13 +211,13 @@ namespace goes
                 {
                     logger->debug("Using image size from satellite info block");
 
-                    img_size_x = most_common(block_zero_x_size.begin(), block_zero_x_size.end(), 0);
-                    img_size_y = most_common(block_zero_y_size.begin(), block_zero_y_size.end(), 0);
+                    img_size_x = satdump::most_common(block_zero_x_size.begin(), block_zero_x_size.end(), 0);
+                    img_size_y = satdump::most_common(block_zero_y_size.begin(), block_zero_y_size.end(), 0);
 
-                    img_off_x = most_common(block_zero_x_offset.begin(), block_zero_x_offset.end(), -1);
-                    img_off_y = most_common(block_zero_y_offset.begin(), block_zero_y_offset.end(), -1);
+                    img_off_x = satdump::most_common(block_zero_x_offset.begin(), block_zero_x_offset.end(), -1);
+                    img_off_y = satdump::most_common(block_zero_y_offset.begin(), block_zero_y_offset.end(), -1);
 
-                    subsat_lon = most_common(block_zero_subsat_lon.begin(), block_zero_subsat_lon.end(), 0) / 1000.0;
+                    subsat_lon = satdump::most_common(block_zero_subsat_lon.begin(), block_zero_subsat_lon.end(), 0) / 1000.0;
                 }
                 else
                 {
@@ -234,7 +234,7 @@ namespace goes
                     isSavingInProgress = true;
                     imageVectorMutex.lock();
                     imagesVector.push_back({infraredImageReader1.getImage1(), infraredImageReader1.getImage2(), infraredImageReader2.getImage1(), infraredImageReader2.getImage2(),
-                                            visibleImageReader.getImage(), most_common(scid_stats.begin(), scid_stats.end(), 0), img_size_x, img_size_y, image_time, img_off_x, img_off_y, subsat_lon});
+                                            visibleImageReader.getImage(), satdump::most_common(scid_stats.begin(), scid_stats.end(), 0), img_size_x, img_size_y, image_time, img_off_x, img_off_y, subsat_lon});
                     imageVectorMutex.unlock();
                     isSavingInProgress = false;
                 }
@@ -248,7 +248,7 @@ namespace goes
                                          infraredImageReader2.getImage1(),
                                          infraredImageReader2.getImage2(),
                                          visibleImageReader.getImage(),
-                                         most_common(scid_stats.begin(), scid_stats.end(), 0),
+                                         satdump::most_common(scid_stats.begin(), scid_stats.end(), 0),
                                          img_size_x, //   most_common(vis_width_stats.begin(), vis_width_stats.end(), 0),
                                          img_size_y,
                                          image_time,
@@ -370,7 +370,7 @@ namespace goes
                         ir_width_stats.push_back(line_header.word_count &= 0x1fff);
 
                         // Get current stats
-                        int current_words = most_common(ir_width_stats.begin(), ir_width_stats.end(), 0);
+                        int current_words = satdump::most_common(ir_width_stats.begin(), ir_width_stats.end(), 0);
 
                         // Safeguard
                         if (current_words > 6565)
@@ -619,7 +619,6 @@ namespace goes
         void GVARImageDecoderModule::writeImagesThread()
         {
             logger->info("Started saving thread...");
-            setLowestThreadPriority();
             while (writeImagesAync)
             {
                 imageVectorMutex.lock();
@@ -650,7 +649,8 @@ namespace goes
             if (writeImagesAync)
             {
                 imageSavingThread = std::thread(&GVARImageDecoderModule::writeImagesThread, this);
-                setLowestThreadPriority(imageSavingThread); // Low priority to avoid sampledrop
+                satdump::setLowestThreadPriority(imageSavingThread); // Low priority to avoid sampledrop
+                // TODOREWORK namespace remove
             }
 
             directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/IMAGE";

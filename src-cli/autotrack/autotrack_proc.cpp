@@ -1,7 +1,8 @@
 #include "autotrack.h"
-#include "logger.h"
+#include "utils/thread_priority.h"
 #include "common/utils.h"
-#include "common/thread_priority.h"
+#include "logger.h"
+#include "utils/time.h"
 
 void AutoTrackApp::start_processing()
 {
@@ -51,7 +52,7 @@ void AutoTrackApp::stop_processing()
             nlohmann::json pipeline_params_ = pipeline_params;
             auto fun = [selected_pipeline_, pipeline_output_dir_, input_file, pipeline_params_](int)
             {
-                setLowestThreadPriority();
+                satdump::setLowestThreadPriority(); // TODOREWORK namespace remove
                 satdump::Pipeline pipeline = selected_pipeline_;
                 int start_level = pipeline.live_cfg.normal_live[pipeline.live_cfg.normal_live.size() - 1].first;
                 std::string input_level = pipeline.steps[start_level].level_name;
@@ -70,7 +71,7 @@ void AutoTrackApp::start_recording()
 {
     splitter->set_enabled("record", true);
 
-    std::string filename = d_output_folder + "/" + prepareBasebandFileName(getTime(), get_samplerate(), frequency_hz);
+    std::string filename = d_output_folder + "/" + prepareBasebandFileName(satdump::getTime(), get_samplerate(), frequency_hz);
     std::string recorder_filename = file_sink->start_recording(filename, get_samplerate());
     logger->info("Recording to " + recorder_filename);
     is_recording = true;

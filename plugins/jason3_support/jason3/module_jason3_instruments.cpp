@@ -7,6 +7,7 @@
 #include "common/utils.h"
 #include "common/ccsds/ccsds_tm/demuxer.h"
 #include "image/io.h"
+#include "utils/stats.h"
 
 #include <thread>
 
@@ -90,7 +91,7 @@ namespace jason3
             // Products dataset
             satdump::products::DataSet dataset;
             dataset.satellite_name = "Jason-3";
-            dataset.timestamp = get_median(amr2_reader.timestamps);
+            dataset.timestamp = satdump::get_median(amr2_reader.timestamps);
 
             std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(41240, dataset.timestamp);
 

@@ -5,7 +5,7 @@
  */
 
 #include "image/image.h"
-#include "common/utils.h"
+#include "utils/stats.h"
 #include "image/channel_transform.h"
 #include "product.h"
 

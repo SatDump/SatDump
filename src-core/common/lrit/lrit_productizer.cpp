@@ -3,11 +3,12 @@
 #include "logger.h"
 #include "products2/image_product.h"
 #include <filesystem>
+#include "utils/string.h"
 
 // TODOREWORK #include "products/processor/image_processor.h"
-#include "common/thread_priority.h"
 #include "core/config.h"
 #include "nlohmann/json_utils.h"
+#include "utils/thread_priority.h"
 
 #include "image/io.h"
 
@@ -109,10 +110,10 @@ namespace lrit
             // if (instrument_id == "ahi")
             // printf("Channel %s\n%s\n", channel.c_str(), image_data_function_record->datas.c_str());
 
-            auto lines = splitString(image_data_function_record->datas, '\n');
+            auto lines = satdump::splitString(image_data_function_record->datas, '\n');
             if (lines.size() < 4)
             {
-                lines = splitString(image_data_function_record->datas, '\r');
+                lines = satdump::splitString(image_data_function_record->datas, '\r');
                 if (lines.size() < 4)
                 {
                     logger->error("Error parsing calibration info into lines!");
@@ -334,7 +335,7 @@ namespace lrit
 
     void LRITProductizer::compositeThreadFunc()
     {
-        setLowestThreadPriority();
+        satdump::setLowestThreadPriority(); // TODOREWORK namespace remove
 
         std::string file_for_cache = compo_cache_path + "/.composite_cache_do_not_delete.json";
 

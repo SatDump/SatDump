@@ -4,8 +4,9 @@
 #include "nlohmann/json_utils.h"
 #include "core/resources.h"
 #include "metop_nat.h"
+#include "utils/time.h"
 
-#include "common/utils.h"
+#include "utils/stats.h"
 #include "common/tracking/tle.h"
 
 #include "metop_helper.h"
@@ -125,7 +126,7 @@ namespace nat2pro
                     }
 
                     logger->info("%d %d %d %f %f %f %f %d - %s", (int)main_header.record_class, (int)main_header.record_size, (int)main_header.record_subclass_version,
-                                 lon_first, lat_first, lon_last, lat_last, ch3a, timestamp_to_string(main_header.record_start_time).c_str());
+                                 lon_first, lat_first, lon_last, lat_last, ch3a, satdump::timestamp_to_string(main_header.record_start_time).c_str());
                 }
             }
 
@@ -133,7 +134,7 @@ namespace nat2pro
         }
 
         {
-            auto ptime = get_median(timestamps);
+            auto ptime = satdump::get_median(timestamps);
             auto info = getMetOpSatInfoFromID(sat_id, ptime);
 
             satdump::products::ImageProduct avhrr_products;

@@ -7,6 +7,7 @@
 #include "DecompWT/CompressWT.h"
 #include "DecompWT/CompressT4.h"
 #include "image/io.h"
+#include "utils/string.h"
 
 namespace elektro
 {
@@ -193,7 +194,7 @@ namespace elektro
                 {
                     SegmentIdentificationHeader segment_id_header = file.getHeader<SegmentIdentificationHeader>();
 
-                    std::vector<std::string> header_parts = splitString(current_filename, '_');
+                    std::vector<std::string> header_parts = satdump::splitString(current_filename, '_');
 
                     // for (std::string part : header_parts)
                     //     logger->trace(part);

@@ -7,6 +7,7 @@
 #include "image/j2k_utils.h"
 #include <filesystem>
 #include "image/io.h"
+#include "utils/string.h"
 
 namespace fy4
 {
@@ -46,7 +47,7 @@ namespace fy4
             {
                 if (primary_header.file_type_code == 0 && file.hasHeader<ImageInformationRecord>())
                 {
-                    std::vector<std::string> header_parts = splitString(current_filename, '_');
+                    std::vector<std::string> header_parts = satdump::splitString(current_filename, '_');
 
                     // for (std::string part : header_parts)
                     //     logger->trace(part);

@@ -18,6 +18,7 @@
 #include "core/exception.h"
 #include "image/io.h"
 #include "common/tracking/tle.h"
+#include "utils/stats.h"
 
 namespace fengyun3
 {
@@ -435,7 +436,7 @@ namespace fengyun3
             if (d_dump_mersi)
                 mersi_bin.close();
 
-            int scid = most_common(fy_scids.begin(), fy_scids.end(), 0);
+            int scid = satdump::most_common(fy_scids.begin(), fy_scids.end(), 0);
             fy_scids.clear();
 
             std::string sat_name = "Unknown FengYun-3";
@@ -474,17 +475,17 @@ namespace fengyun3
             satdump::products::DataSet dataset;
             dataset.satellite_name = sat_name;
             if ((d_satellite == FY_AB || d_satellite == FY_3C) && d_downlink == AHRPT)
-                dataset.timestamp = get_median(virr_reader.timestamps);
+                dataset.timestamp = satdump::get_median(virr_reader.timestamps);
             else if (d_satellite == FY_AB && d_downlink == MPT)
-                dataset.timestamp = get_median(mersi1_reader.timestamps);
+                dataset.timestamp = satdump::get_median(mersi1_reader.timestamps);
             else if (d_satellite == FY_3D)
-                dataset.timestamp = get_median(mersi2_reader.timestamps);
+                dataset.timestamp = satdump::get_median(mersi2_reader.timestamps);
             else if (d_satellite == FY_3E)
-                dataset.timestamp = get_median(mersill_reader.timestamps);
+                dataset.timestamp = satdump::get_median(mersill_reader.timestamps);
             else if (d_satellite == FY_3F)
-                dataset.timestamp = get_median(mersi3_reader.timestamps);
+                dataset.timestamp = satdump::get_median(mersi3_reader.timestamps);
             else if (d_satellite == FY_3G)
-                dataset.timestamp = get_median(mersirm_reader.timestamps);
+                dataset.timestamp = satdump::get_median(mersirm_reader.timestamps);
 
             std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
 
@@ -599,12 +600,12 @@ namespace fengyun3
 
                 if (d_write_c10)
                 {
-                    virr_to_c10->close(get_median(virr_reader.timestamps), scid);
+                    virr_to_c10->close(satdump::get_median(virr_reader.timestamps), scid);
                     delete virr_to_c10;
                 }
 
                 if (d_downlink == AHRPT)
-                    dataset.timestamp = get_median(virr_reader.timestamps); // Re-set dataset timestamp since we just adjusted it
+                    dataset.timestamp = satdump::get_median(virr_reader.timestamps); // Re-set dataset timestamp since we just adjusted it
 
                 virr_products.save(directory);
                 dataset.products_list.push_back("VIRR");

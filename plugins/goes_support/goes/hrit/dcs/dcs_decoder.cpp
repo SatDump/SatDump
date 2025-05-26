@@ -3,6 +3,7 @@
 #include "dcs_decoder.h"
 #include "core/config.h"
 #include "common/utils.h"
+#include "utils/http.h"
 #include "common/lrit/crc_table.h"
 #include "nlohmann/json_utils.h"
 #include "logger.h"
@@ -42,7 +43,7 @@ namespace goes
             std::vector<std::string> pdt_urls = satdump::config::main_cfg["plugin_settings"]["goes_support"]["pdt_urls"];
             for (std::string& pdt_url : pdt_urls)
             {
-                if (perform_http_request(pdt_url, file_data) == 0)
+                if (satdump::perform_http_request(pdt_url, file_data) == 0)
                 {
                     std::ofstream save_pdts(satdump::user_path + "/PDTS_COMPRESSED.txt");
                     save_pdts << file_data;
@@ -63,7 +64,7 @@ namespace goes
             std::vector<std::string> hads_urls = satdump::config::main_cfg["plugin_settings"]["goes_support"]["hads_urls"];
             for (std::string& hads_url : hads_urls)
             {
-                if (perform_http_request(hads_url, file_data) == 0)
+                if (satdump::perform_http_request(hads_url, file_data) == 0)
                 {
                     std::ofstream save_hads(satdump::user_path + "/all_dcp_defs.txt");
                     save_hads << file_data;

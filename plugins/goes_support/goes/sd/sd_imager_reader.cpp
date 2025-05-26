@@ -6,6 +6,7 @@
 #include "image/io.h"
 #include "image/processing.h"
 #include <iostream>
+#include "utils/stats.h"
 
 #define IMG_WIDTH 40000
 
@@ -25,7 +26,7 @@ namespace goes
             memmove(last_status, &last_status[1], (FULL_BUF_SZ - 1) * sizeof(uint16_t));
             last_status[FULL_BUF_SZ - 1] = type;
 
-            uint16_t last_types = most_common(&last_status[0], &last_status[FULL_BUF_SZ], 0);
+            uint16_t last_types = satdump::most_common(&last_status[0], &last_status[FULL_BUF_SZ], 0);
             //std::cout<<type<<std::endl;
 
             if (last_types == 16 && images_lines > 10)

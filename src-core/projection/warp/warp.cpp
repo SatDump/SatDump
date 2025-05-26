@@ -7,6 +7,7 @@
 #include "core/opencl.h"
 #include <chrono>
 #include <cmath>
+#include "utils/stats.h"
 
 #include "common/geodetic/geodetic_coordinates.h"
 

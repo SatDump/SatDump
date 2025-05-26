@@ -18,7 +18,7 @@
 
 #include "../vector/shapefile_handler.h"
 
-#include "common/utils.h"
+#include "utils/string.h"
 #include "core/config.h"
 #include "imgui/dialogs/pfd_utils.h" // TODOREWORK
 

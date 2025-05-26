@@ -14,7 +14,7 @@
 
 #include "goes_abi.h"
 
-#include "common/thread_priority.h"
+#include "utils/thread_priority.h"
 
 namespace geonetcast
 {

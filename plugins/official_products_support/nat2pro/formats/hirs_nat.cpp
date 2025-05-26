@@ -5,7 +5,7 @@
 #include "core/resources.h"
 #include "metop_nat.h"
 
-#include "common/utils.h"
+#include "utils/stats.h"
 #include "metop_helper.h"
 
 namespace nat2pro
@@ -101,7 +101,7 @@ namespace nat2pro
         }
 
         {
-            auto ptime = get_median(timestamps);
+            auto ptime = satdump::get_median(timestamps);
             auto info = getMetOpSatInfoFromID(sat_id, ptime);
 
             satdump::products::ImageProduct hirs_products;

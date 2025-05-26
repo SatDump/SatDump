@@ -10,6 +10,7 @@
 #include "common/utils.h"
 #include "imgui/imgui_image.h"
 #include <filesystem>
+#include "utils/time.h"
 
 namespace orb
 {
@@ -107,7 +108,7 @@ namespace orb
         void saveAll(int channel = -1)
         {
             std::string dirpath = directory + "/" +
-                                  timestamp_to_string(last_timestamp); //+std::to_string(last_timestamp);
+                                  satdump::timestamp_to_string(last_timestamp); //+std::to_string(last_timestamp);
 
             if (!std::filesystem::exists(dirpath))
                 std::filesystem::create_directories(dirpath);

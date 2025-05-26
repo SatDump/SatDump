@@ -12,6 +12,7 @@
 #include "core/resources.h"
 #include "nlohmann/json_utils.h"
 #include "instruments/msumr/msumr_tlm.h"
+#include "utils/stats.h"
 
 namespace meteor
 {
@@ -131,7 +132,7 @@ namespace meteor
             data_in.close();
 
             // Identify satellite, and apply per-sat settings...
-            int msumr_serial_number = most_common(msumr_ids.begin(), msumr_ids.end(), -1);
+            int msumr_serial_number = satdump::most_common(msumr_ids.begin(), msumr_ids.end(), -1);
             msumr_ids.clear();
 
             std::string sat_name = "Unknown Meteor";
@@ -161,7 +162,7 @@ namespace meteor
             // Products dataset
             satdump::products::DataSet dataset;
             dataset.satellite_name = sat_name;
-            dataset.timestamp = get_median(msumr_timestamps);
+            dataset.timestamp = satdump::get_median(msumr_timestamps);
 
             // Satellite ID
             {

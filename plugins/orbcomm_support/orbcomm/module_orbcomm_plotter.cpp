@@ -8,6 +8,7 @@
 #include "common/geodetic/ecef_to_eci.h"
 #include "common/geodetic/lla_xyz.h"
 #include "core/config.h"
+#include "utils/time.h"
 
 // We need access to libpredict internals!
 #include "libs/predict/predict.h"
@@ -213,7 +214,7 @@ namespace orbcomm
                         time_t ephem_time = gps_time_to_unix(week_number, time_of_week);
 
                         logger->info("SCID %d, Week Number %d, Time Of Week %d, Time %s - X %.3d Y %.3d Z %.3d - X %.3f Y %.3f Z %.3f - Lon %.1f, Lat %.1f, Alt %.1f - Az %.1f El %.1f Range %.1f",
-                                     scid + 70, week_number, time_of_week, timestamp_to_string(ephem_time).c_str(),
+                                     scid + 70, week_number, time_of_week, satdump::timestamp_to_string(ephem_time).c_str(),
                                      x_raw, y_raw, z_raw,
                                      X_DOT, Y_DOT, Z_DOT,
                                      lla.lon, lla.lat, lla.alt,

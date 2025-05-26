@@ -1,7 +1,7 @@
 #pragma once
 
 #include "image/image.h"
-#include "common/utils.h"
+#include "utils/stats.h"
 #include "core/exception.h"
 #include "logger.h"
 #include "nlohmann/json.hpp"
@@ -108,7 +108,7 @@ namespace sstv
                 //  color_sync += newimg_sync.get(line * line_length + p_t) / 255.0;
                 colrsync_wip.push_back(line[p_t]);
             }
-            color_sync = get_median(colrsync_wip); // /= color_sync_length;
+            color_sync = satdump::get_median(colrsync_wip); // /= color_sync_length;
 
             bool color_sync_v = color_sync > 0.5;
 

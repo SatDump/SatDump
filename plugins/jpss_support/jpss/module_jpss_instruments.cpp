@@ -17,6 +17,7 @@
 #include "products2/image_product.h"
 #include "products2/dataset.h"
 #include "common/tracking/tle.h"
+#include "utils/stats.h"
 
 namespace jpss
 {
@@ -140,7 +141,7 @@ namespace jpss
 
             data_in.close();
 
-            int scid = most_common(jpss_scids.begin(), jpss_scids.end(), 0);
+            int scid = satdump::most_common(jpss_scids.begin(), jpss_scids.end(), 0);
             jpss_scids.clear();
 
             std::string sat_name = "Unknown JPSS";
@@ -166,7 +167,7 @@ namespace jpss
             // Products dataset
             satdump::products::DataSet dataset;
             dataset.satellite_name = sat_name;
-            dataset.timestamp = get_median(atms_reader.timestamps);
+            dataset.timestamp = satdump::get_median(atms_reader.timestamps);
 
             std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
 

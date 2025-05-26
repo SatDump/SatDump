@@ -7,7 +7,7 @@
 
 #include "image/processing.h"
 
-#include "common/utils.h"
+#include "utils/stats.h"
 #include "metop_helper.h"
 
 namespace nat2pro
@@ -120,7 +120,7 @@ namespace nat2pro
         }
 
         {
-            auto ptime = get_median(timestamps);
+            auto ptime = satdump::get_median(timestamps);
             auto info = getMetOpSatInfoFromID(sat_id, ptime);
 
             satdump::products::ImageProduct iasi_products;

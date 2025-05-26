@@ -1,7 +1,7 @@
 #include "image_product.h"
 #include "logger.h"
 #include "core/config.h"
-#include "common/utils.h"
+#include "utils/http.h"
 #include "image/io.h"
 #include "image/image_utils.h"
 

@@ -7,6 +7,7 @@
 #include "common/detect_header.h"
 #include "common/widgets/json_editor.h"
 #include "logger.h"
+#include "utils/string.h"
 
 #include <algorithm>
 
@@ -168,7 +169,7 @@ namespace satdump
                         int n = favourite[k];
                         bool show = true;
                         if (pipeline_search_in.size() != 0)
-                            show = isStringPresent(pipelines[n].readable_name, pipeline_search_in);
+                            show = satdump::isStringPresent(pipelines[n].readable_name, pipeline_search_in);
 
                         if (show && (!live_mode || pipelines[n].live))
                         {
@@ -216,7 +217,7 @@ namespace satdump
             {
                 bool show = true;
                 if (pipeline_search_in.size() != 0)
-                    show = isStringPresent(pipelines[n].readable_name, pipeline_search_in);
+                    show = satdump::isStringPresent(pipelines[n].readable_name, pipeline_search_in);
 
                 if (show && (!live_mode || pipelines[n].live))
                 {
