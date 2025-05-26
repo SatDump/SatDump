@@ -10,7 +10,7 @@ namespace fengyun3
         WindRADReader::WindRADReader(int width, std::string bnd, std::string dir) : width(width), band(bnd), directory(dir)
         {
             for (int i = 0; i < 2; i++)
-                channels[i].create(width);
+                channels[i].resize(width);
 
             lines = 0;
         }
@@ -18,7 +18,7 @@ namespace fengyun3
         WindRADReader::~WindRADReader()
         {
             for (int i = 0; i < 2; i++)
-                channels[i].destroy();
+                channels[i].clear();
         }
 
         void WindRADReader::work(std::vector<uint8_t> &packet)
@@ -91,7 +91,7 @@ namespace fengyun3
 
         image::Image WindRADReader::getChannel(int channel)
         {
-            return image::Image(channels[channel].buf, 16, width, lines, 1);
+            return image::Image(channels[channel].data(), 16, width, lines, 1);
         }
     } // namespace virr
 } // namespace fengyun

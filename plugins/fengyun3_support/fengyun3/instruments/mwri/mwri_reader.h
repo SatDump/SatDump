@@ -3,7 +3,6 @@
 #include <cstdint>
 #include "image/image.h"
 #include <vector>
-#include "common/resizeable_buffer.h"
 
 namespace fengyun3
 {
@@ -12,7 +11,7 @@ namespace fengyun3
         class MWRIReader
         {
         private:
-            ResizeableBuffer<unsigned short> channels[10];
+            std::vector<unsigned short> channels[10];
 
         public:
             MWRIReader();

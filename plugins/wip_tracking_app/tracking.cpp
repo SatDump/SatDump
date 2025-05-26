@@ -4,6 +4,7 @@
 #include "imgui/implot3d/implot3d.h"
 #include "testgl.h"
 #include <GLFW/glfw3.h>
+#include "utils/time.h"
 
 namespace satdump
 {
@@ -29,7 +30,7 @@ namespace satdump
 
     void WipTrackingHandler::drawContents(ImVec2 win_size)
     {
-        double utc_time = getTime();
+        double utc_time = satdump::getTime();
         predict_orbit(satellite_object, &satellite_orbit, predict_to_julian_double(utc_time));
 
         ImPlot3D::BeginPlot("ObjectsTest");

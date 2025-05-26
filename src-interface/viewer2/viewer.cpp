@@ -4,7 +4,6 @@
 // #include "scatterometer_handler.h"
 // #include "core/config.h"
 // #include "products/dataset.h"
-#include "common/event_bus.h"
 #include "common/utils.h"
 // #include "core/resources.h"
 #include "core/plugin.h"
