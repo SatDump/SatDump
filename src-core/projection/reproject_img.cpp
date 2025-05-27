@@ -5,7 +5,7 @@
 
 namespace satdump
 {
-    namespace proj
+    namespace projection
     {
         image::Image reprojectImage(image::Image &input, nlohmann::json target_prj, float *progress)
         {

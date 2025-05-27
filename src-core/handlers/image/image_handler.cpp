@@ -395,7 +395,7 @@ namespace satdump
                 nlohmann::json cfg = image::get_metadata_proj_cfg(image);
                 cfg["width"] = curr_image.width();
                 cfg["height"] = curr_image.height();
-                std::unique_ptr<proj::Projection> p = std::make_unique<proj::Projection>();
+                std::unique_ptr<projection::Projection> p = std::make_unique<projection::Projection>();
                 *p = cfg;
                 p->init(1, 0);
 

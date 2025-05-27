@@ -3,6 +3,7 @@
 #include "common/widgets/themed_widgets.h"
 #include "common/codings/randomization.h"
 #include "common/utils.h"
+#include "utils/binary.h"
 #include "common/codings/rotation.h"
 #include "core/exception.h"
 
@@ -51,8 +52,8 @@ namespace ccsds
         d_ldpc_data_size = ldpc_dec->data_length();
 
         correlator = std::make_unique<CorrelatorGeneric>(d_constellation,
-                                                         d_ldpc_rate == codings::ldpc::RATE_7_8 ? unsigned_to_bitvec<uint32_t>(0x1acffc1d)
-                                                                                                : unsigned_to_bitvec<uint64_t>(0x034776c7272895b0),
+                                                         d_ldpc_rate == codings::ldpc::RATE_7_8 ? satdump::unsigned_to_bitvec<uint32_t>(0x1acffc1d)
+                                                                                                : satdump::unsigned_to_bitvec<uint64_t>(0x034776c7272895b0),
                                                          d_ldpc_frame_size);
 
         logger->trace("LDPC Frame size %d, SIMD %d", d_ldpc_frame_size, d_ldpc_simd);

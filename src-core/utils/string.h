@@ -2,6 +2,7 @@
 
 /**
  * @file string.h
+ * @brief A collection of string-related utility functions
  */
 
 #include <string>

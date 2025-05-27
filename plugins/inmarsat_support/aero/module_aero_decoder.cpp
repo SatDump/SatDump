@@ -2,6 +2,7 @@
 #include <fstream>
 #include "logger.h"
 #include <filesystem>
+#include "utils/binary.h"
 #include "common/widgets/themed_widgets.h"
 #include "common/utils.h"
 #include "common/codings/rotation.h"
@@ -63,8 +64,8 @@ namespace inmarsat
             else
             {
                 correlator = std::make_unique<CorrelatorGeneric>(d_aero_oqpsk ? dsp::OQPSK : dsp::BPSK,
-                                                                 d_aero_oqpsk ? unsigned_to_bitvec<uint64_t>(0b1111110000000011001100111100110011111100110000001100001100001111)
-                                                                              : unsigned_to_bitvec<uint32_t>(0b11100001010110101110100010010011),
+                                                                 d_aero_oqpsk ? satdump::unsigned_to_bitvec<uint64_t>(0b1111110000000011001100111100110011111100110000001100001100001111)
+                                                                              : satdump::unsigned_to_bitvec<uint32_t>(0b11100001010110101110100010010011),
                                                                  d_aero_total_frm_size);
             }
 

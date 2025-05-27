@@ -9,7 +9,7 @@
 
 namespace satdump
 {
-    namespace proj
+    namespace projection
     {
         /**
          * @brief Many of the raytracers require calculating

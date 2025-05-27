@@ -114,7 +114,7 @@ namespace satdump
         class UnitConverter
         {
         public:
-            proj::Projection proj;
+            projection::Projection proj;
             bool proj_valid = false;
             double wavenumber = -1;
 

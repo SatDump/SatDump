@@ -2,6 +2,7 @@
 
 /**
  * @file time.h
+ * @brief A collection of time-related utility functions
  */
 
 #include <chrono>

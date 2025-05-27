@@ -17,7 +17,7 @@ namespace satdump
             nlohmann::json proj_cfg = image::get_metadata_proj_cfg(img);
             proj_cfg["width"] = width;
             proj_cfg["height"] = height;
-            satdump::proj::Projection p;
+            projection::Projection p;
             try
             {
                 p = proj_cfg;

@@ -6,7 +6,7 @@ Some variables are hardcoded for the intended usecase, making some
 degree of tuning unecessary.
 Uses the WGS84 ellipsoid.
 */
-namespace geodetic
+namespace satdump
 {
     namespace projection
     {

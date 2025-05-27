@@ -9,6 +9,7 @@
 #include "common/geodetic/lla_xyz.h"
 #include "core/config.h"
 #include "utils/time.h"
+#include "utils/color.h"
 
 // We need access to libpredict internals!
 #include "libs/predict/predict.h"
@@ -360,7 +361,7 @@ namespace orbcomm
                     point_y -= az_el_to_plot_y(d_pplot_size, radius, ephem.az, ephem.el);
 
                     uint8_t color[3];
-                    hsv_to_rgb(fmod(ephem.scid, 10) / 10.0, 1, 1, color);
+                    satdump::hsv_to_rgb(fmod(ephem.scid, 10) / 10.0, 1, 1, color);
                     draw_list->AddCircleFilled({point_x, point_y}, 2 * ui_scale, ImColor(color[0], color[1], color[2], 255.0));
                 }
             }
@@ -411,7 +412,7 @@ namespace orbcomm
                     if (ctime - ephem.time < 60)
                     {
                         uint8_t color[3];
-                        hsv_to_rgb(fmod(ephem.scid, 10) / 10.0, 1, 1, color);
+                        satdump::hsv_to_rgb(fmod(ephem.scid, 10) / 10.0, 1, 1, color);
                         ImGui::TextColored(ImColor(color[0], color[1], color[2], 255.0), "%d", ephem.scid);
                     }
                     else

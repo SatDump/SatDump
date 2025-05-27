@@ -82,7 +82,7 @@ namespace satdump
                     //                    sh_h->draw_to_image(curr_image, pfunc);
 
                     // TODOREWORK!!!!
-                    auto im = proj::reprojectImage(im_h->getImage(), projui.get_proj());
+                    auto im = projection::reprojectImage(im_h->getImage(), projui.get_proj());
                     all_imgs.push_back(im);
                     logger->critical("DONE REPROJECTING!");
                 }
@@ -111,7 +111,7 @@ namespace satdump
                     nlohmann::json cfg = image::get_metadata_proj_cfg(img);
                     cfg["width"] = img.width();
                     cfg["height"] = img.height();
-                    std::unique_ptr<proj::Projection> p = std::make_unique<proj::Projection>();
+                    std::unique_ptr<projection::Projection> p = std::make_unique<projection::Projection>();
                     *p = cfg;
                     p->init(1, 0);
 

@@ -1,7 +1,7 @@
 #include "equirectangular.h"
 #include <cmath>
 
-namespace geodetic
+namespace satdump
 {
     namespace projection
     {
@@ -66,5 +66,5 @@ namespace geodetic
             if (lat > top_left_lat || lat < bottom_right_lat || lon < top_left_lon || lon > bottom_right_lon)
                 lon = lat = -1;
         }
-    };
-};
+    }; // namespace projection
+}; // namespace satdump

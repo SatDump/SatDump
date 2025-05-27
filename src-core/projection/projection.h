@@ -8,14 +8,14 @@
 #include "nlohmann/json.hpp"
 
 // Needed for projs. Maybe hide later? TBD TODOREWORK
-#include "common/projection/projs2/proj.h"
 #include "products2/image/channel_transform.h"
+#include "standard/proj.h"
 #include "raytrace/satellite_raytracer.h"
 #include "tps/latlontps_proj.h"
 
 namespace satdump
 {
-    namespace proj
+    namespace projection
     {
         /**
          * @brief Extremely generic class to handle projections.
@@ -121,5 +121,5 @@ namespace satdump
             friend void to_json(nlohmann::json &j, const Projection &v) { v.to_json(j); }
             friend void from_json(const nlohmann::json &j, Projection &v) { v.from_json(j); }
         };
-    } // namespace proj
+    } // namespace projection
 } // namespace satdump

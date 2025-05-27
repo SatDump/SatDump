@@ -1,11 +1,11 @@
 #include "../io.h"
 #include "../meta.h"
-#include "common/projection/geotiff/geotiff.h"
-#include "common/projection/projs2/proj_json.h"
+#include "projection/standard/proj_json.h"
+#include "image/geotiff/geotiff.h"
 #include "logger.h"
+#include <cstdint>
 #include <cstring>
 #include <filesystem>
-#include <fstream>
 #include <tiffio.h>
 
 #define INVERT_ENDIAN_16(x) ((x >> 8) | (x << 8))
@@ -136,7 +136,7 @@ namespace satdump
                 size_t d_height = h;
                 int d_depth = bit_depth;
 
-                uint32 tile_width, tile_length;
+                uint32_t tile_width, tile_length;
                 if (TIFFGetField(tif, TIFFTAG_TILEWIDTH, &tile_width) && TIFFGetField(tif, TIFFTAG_TILELENGTH, &tile_length))
                 {
 

@@ -92,7 +92,8 @@ namespace satdump
             {
                 if (ImGui::Button("Start"))
                 {
-                    fftp->set_fft_settings(65536, 10e6, 30);
+                    fftp->set_fft_settings(65536, dev->getStreamSamplerate(0, false), 30);
+                    fftp->avg_num = 1;
 
                     fftp->link(dev.get(), 0, 0, 16); //        fftp->inputs[0] = dev->outputs[0];
 

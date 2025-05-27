@@ -12,7 +12,7 @@
 #include "products2/image_product.h"
 #include "libs/miniz/miniz.h"
 
-#include "common/projection/projs2/proj_json.h"
+#include "projection/standard/proj_json.h"
 #include "common/calibration.h"
 
 #include "nlohmann/json_utils.h"
