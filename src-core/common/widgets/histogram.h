@@ -6,6 +6,7 @@
 #include "imgui/imgui.h"
 #include "imgui/implot/implot.h"
 #include <mutex>
+#include <cstring>
 
 namespace widgets
 {
@@ -25,8 +26,10 @@ namespace widgets
     public:
         HistoViewer(float hscale = 1, float vscale = 1, int histo_size = 200);
         ~HistoViewer();
+        void pushComplexScaled(complex_t *buffer, int size, float scale);
         void pushComplex(complex_t *buffer, int size);
         void pushFloatAndGaussian(float *buffer, int size);
+        void pushSofttAndGaussian(int8_t *buffer, float scale, int size);
         void draw();
     };
 } // namespace widgets
