@@ -2,7 +2,6 @@
 
 #include "core/config.h"
 #include "imgui/imgui.h"
-#include "common/utils.h"
 #include "imgui/imgui_stdlib.h"
 #include "common/detect_header.h"
 #include "common/widgets/json_editor.h"

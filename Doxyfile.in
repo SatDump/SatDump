@@ -21,3 +21,5 @@ DISABLE_INDEX = NO
 FULL_SIDEBAR = NO
 HTML_EXTRA_STYLESHEET  = docs/doxygen-awesome-css/doxygen-awesome.css
 HTML_COLORSTYLE        = DARK
+
+USE_MDFILE_AS_MAINPAGE = README.md

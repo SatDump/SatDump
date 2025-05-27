@@ -2,6 +2,7 @@
 
 /**
  * @file thread_priority.h
+ * @brief Functions to set thread priority
  */
 
 #include <thread>

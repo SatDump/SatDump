@@ -3,7 +3,7 @@
 #include "logger.h"
 #include "imgui/imgui.h"
 #include <volk/volk.h>
-#include "common/utils.h"
+#include "utils/binary.h"
 #include "common/scrambling.h"
 
 #define FRM_SIZE 440
@@ -39,7 +39,7 @@ namespace lucky7
 
         // Buffers
         std::vector<float> sync = {-1, -1, 1, -1, 1, 1, -1, 1, 1, 1, -1, 1, -1, 1, -1, -1};
-        sync_buf = oversample_vector(sync, final_sps);
+        sync_buf = satdump::oversample_vector(sync, final_sps);
 
         oversampled_size = FRM_SIZE * final_sps;
         shifting_buffer = new float[oversampled_size];

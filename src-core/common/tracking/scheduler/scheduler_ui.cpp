@@ -7,7 +7,7 @@
 #include "imgui/imgui_internal.h"
 #include "imgui/imgui_stdlib.h"
 #include "core/style.h"
-#include "common/utils.h"
+#include "utils/color.h"
 #include "common/dsp_source_sink/format_notated.h"
 #include "common/widgets/frequency_input.h"
 #include "core/resources.h"

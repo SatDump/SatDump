@@ -2,6 +2,7 @@
 
 /**
  * @file stats.h
+ * @brief Math/Statistics functions
  */
 
 #include <algorithm>

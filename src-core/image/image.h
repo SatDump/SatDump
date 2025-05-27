@@ -2,6 +2,7 @@
 
 /**
  * @file image.h
+ * @brief Core Image class
  */
 
 #include <cstddef>

@@ -1,4 +1,4 @@
-#include "common/projection/projs2/proj_json.h"
+#include "projection/standard/proj_json.h"
 #include "formats.h"
 #include "products2/image_product.h"
 #include "common/repack.h"

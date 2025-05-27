@@ -9,7 +9,7 @@
 
 #include "image/io.h"
 
-#include "common/projection/projs/equirectangular.h"
+#include "projection/utils/equirectangular.h"
 #include "projection/projection.h"
 #include "core/resources.h"
 
@@ -25,9 +25,9 @@ namespace satdump
                 image::Image img;
                 size_t *x;
                 size_t *y;
-                proj::Projection p;
+                projection::Projection p;
                 geodetic::geodetic_coords_t pos;
-                geodetic::projection::EquirectangularProjection ep;
+                projection::EquirectangularProjection ep;
                 int ox, oy;
             };
 

@@ -5,7 +5,7 @@
 
 namespace satdump
 {
-    namespace proj
+    namespace projection
     {
         class ManualLineRaytracerOld : public SatelliteRaytracerSatTrack
         {

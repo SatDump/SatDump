@@ -5,7 +5,7 @@
 
 namespace satdump
 {
-    namespace proj
+    namespace projection
     {
         ManualLineRaytracerOld::ManualLineRaytracerOld(nlohmann::json cfg)
             : SatelliteRaytracerSatTrack(cfg)

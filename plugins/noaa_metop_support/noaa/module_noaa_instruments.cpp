@@ -8,7 +8,6 @@
 #include "products2/punctiform_product.h"
 #include "products2/dataset.h"
 #include "core/resources.h"
-#include "common/projection/timestamp_filtering.h"
 #include "common/tracking/tle.h"
 #include "utils/stats.h"
 

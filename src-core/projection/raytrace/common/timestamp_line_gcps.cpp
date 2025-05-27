@@ -5,7 +5,7 @@
 
 namespace satdump
 {
-    namespace proj
+    namespace projection
     {
         inline double lon_shift(double lon, double shift)
         {

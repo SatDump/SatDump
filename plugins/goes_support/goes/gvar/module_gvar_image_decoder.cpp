@@ -12,11 +12,11 @@
 #include "nlohmann/json.hpp"
 #include "products2/image/calibration_units.h"
 #include "products2/image_product.h"
-#include "products2/product.h"
 #include "products2/product_process.h"
+#include "utils/binary.h"
+#include "utils/stats.h"
 #include "utils/thread_priority.h"
 #include <filesystem>
-#include "utils/stats.h"
 
 #define FRAME_SIZE 32786
 
@@ -137,9 +137,9 @@ namespace goes
             for (int i = 31; i >= 0; i--)
             {
                 bool markerBit, testBit;
-                markerBit = getBit<uint32_t>(spare, i);
+                markerBit = satdump::getBit<uint32_t>(spare, i);
                 uint32_t zero = 0;
-                testBit = getBit<uint32_t>(zero, i);
+                testBit = satdump::getBit<uint32_t>(zero, i);
                 if (markerBit != testBit)
                     errors++;
             }
@@ -234,7 +234,8 @@ namespace goes
                     isSavingInProgress = true;
                     imageVectorMutex.lock();
                     imagesVector.push_back({infraredImageReader1.getImage1(), infraredImageReader1.getImage2(), infraredImageReader2.getImage1(), infraredImageReader2.getImage2(),
-                                            visibleImageReader.getImage(), satdump::most_common(scid_stats.begin(), scid_stats.end(), 0), img_size_x, img_size_y, image_time, img_off_x, img_off_y, subsat_lon});
+                                            visibleImageReader.getImage(), satdump::most_common(scid_stats.begin(), scid_stats.end(), 0), img_size_x, img_size_y, image_time, img_off_x, img_off_y,
+                                            subsat_lon});
                     imageVectorMutex.unlock();
                     isSavingInProgress = false;
                 }

@@ -1,12 +1,12 @@
 #pragma once
 
 // TODOREWORK THIS WHOLE FILE IS TEMPORARY
-#include "nlohmann/json.hpp"
 #include "image/image.h"
+#include "nlohmann/json.hpp"
 
 namespace satdump
 {
-    namespace proj
+    namespace projection
     {
         // Re-Projection operation
         struct ReprojectionOperation
@@ -18,5 +18,5 @@ namespace satdump
         };
 
         image::Image reproject(ReprojectionOperation &op, float *progress = nullptr);
-    }
-}
+    } // namespace projection
+} // namespace satdump

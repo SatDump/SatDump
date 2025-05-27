@@ -2,6 +2,7 @@
 
 /**
  * @file http.h
+ * @brief HTTP Get/Post functions and others
  */
 
 #include <string>

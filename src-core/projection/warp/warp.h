@@ -18,7 +18,7 @@ namespace satdump
         struct WarpOperation
         {
             image::Image *input_image;
-            std::vector<proj::GCP> ground_control_points;
+            std::vector<projection::GCP> ground_control_points;
             int output_width;
             int output_height;
             int output_rgba = false;
@@ -36,10 +36,10 @@ namespace satdump
         struct WarpResult
         {
             image::Image output_image;
-            proj::GCP top_left;
-            proj::GCP top_right;
-            proj::GCP bottom_right;
-            proj::GCP bottom_left;
+            projection::GCP top_left;
+            projection::GCP top_right;
+            projection::GCP bottom_right;
+            projection::GCP bottom_left;
         };
 
         WarpResult performSmartWarp(WarpOperation op, float *progress = nullptr);

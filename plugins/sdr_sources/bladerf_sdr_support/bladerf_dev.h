@@ -411,28 +411,28 @@ namespace satdump
 
             double getStreamSamplerate(int id, bool output)
             {
-                if (output ? (id >= outputs.size()) : (id >= inputs.size()))
+                if (output ? (id >= inputs.size()) : (id >= outputs.size()))
                     throw satdump_exception("Stream ID must be <= channel count in direction!");
                 return samplerate;
             }
 
             virtual void setStreamSamplerate(int id, bool output, double samplerate)
             {
-                if (output ? (id >= outputs.size()) : (id >= inputs.size()))
+                if (output ? (id >= inputs.size()) : (id >= outputs.size()))
                     throw satdump_exception("Stream ID must be <= channel count in direction!");
                 set_cfg("samplerate", samplerate);
             }
 
             virtual double getStreamFrequency(int id, bool output)
             {
-                if (output ? (id >= outputs.size()) : (id >= inputs.size()))
+                if (output ? (id >= inputs.size()) : (id >= outputs.size()))
                     throw satdump_exception("Stream ID must be <= channel count in direction!");
                 return output ? tx_frequency : rx_frequency;
             }
 
             virtual void setStreamFrequency(int id, bool output, double frequency)
             {
-                if (output ? (id >= outputs.size()) : (id >= inputs.size()))
+                if (output ? (id >= inputs.size()) : (id >= outputs.size()))
                     throw satdump_exception("Stream ID must be <= channel count in direction!");
                 if (output)
                     set_cfg("tx_frequency", frequency);

@@ -9,7 +9,7 @@
 
 namespace jpss
 {
-    class VIIRSNormalLineSatProj : public satdump::proj::SatelliteRaytracerSatTrack
+    class VIIRSNormalLineSatProj : public satdump::projection::SatelliteRaytracerSatTrack
     {
     protected:
         std::vector<double> timestamps;
@@ -25,7 +25,7 @@ namespace jpss
         std::vector<predict_position> sat_positions;
 
     public:
-        VIIRSNormalLineSatProj(nlohmann::ordered_json cfg) : satdump::proj::SatelliteRaytracerSatTrack(cfg)
+        VIIRSNormalLineSatProj(nlohmann::ordered_json cfg) : satdump::projection::SatelliteRaytracerSatTrack(cfg)
         {
             timestamps = cfg["timestamps"].get<std::vector<double>>();
 

@@ -45,8 +45,8 @@ namespace satdump
 
         this->interpx_points = interpx_points;
 
-        interp_fwd_interpolator = std::make_shared<proj::VizGeorefSpline2D>(1);
-        interp_rev_interpolator = std::make_shared<proj::VizGeorefSpline2D>(1);
+        interp_fwd_interpolator = std::make_shared<projection::VizGeorefSpline2D>(1);
+        interp_rev_interpolator = std::make_shared<projection::VizGeorefSpline2D>(1);
 
         for (auto &p : interpx_points)
         {
@@ -66,8 +66,8 @@ namespace satdump
 
         this->interp_xy_points = interp_xy_points;
 
-        interp_fwd_interpolator = std::make_shared<proj::VizGeorefSpline2D>(2);
-        interp_rev_interpolator = std::make_shared<proj::VizGeorefSpline2D>(2);
+        interp_fwd_interpolator = std::make_shared<projection::VizGeorefSpline2D>(2);
+        interp_rev_interpolator = std::make_shared<projection::VizGeorefSpline2D>(2);
 
         for (auto &p : interp_xy_points)
         {

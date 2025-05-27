@@ -7,7 +7,6 @@ namespace satdump
 {
     namespace projection
     {
-        using namespace satdump::proj; // TODOREWORK Remove
         class TPSTransform
         {
           private:
