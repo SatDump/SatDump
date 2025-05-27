@@ -9,10 +9,11 @@
 #include "products2/image_product.h"
 #include "products2/dataset.h"
 #include "nlohmann/json_utils.h"
-#include "resources.h"
+#include "core/resources.h"
 #include "common/tracking/tle.h"
+#include "utils/stats.h"
 
-#include "common/image/io.h"
+#include "image/io.h"
 
 namespace earthcare
 {
@@ -89,7 +90,7 @@ namespace earthcare
             // Products dataset
             satdump::products::DataSet dataset;
             dataset.satellite_name = "EarthCARE";
-            dataset.timestamp = get_median(msi_reader.timestamps);
+            dataset.timestamp = satdump::get_median(msi_reader.timestamps);
 
             int norad = 59908;
 

@@ -2,7 +2,7 @@
 
 #include "logger.h"
 #include "core/exception.h"
-#include "common/image/meta.h"
+#include "image/meta.h"
 
 #include "common/projection/projs2/proj_json.h"
 

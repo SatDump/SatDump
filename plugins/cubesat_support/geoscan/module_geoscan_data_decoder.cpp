@@ -2,7 +2,7 @@
 #include "logger.h"
 #include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/image/io.h"
+#include "image/io.h"
 
 namespace geoscan
 {

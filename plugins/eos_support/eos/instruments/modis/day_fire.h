@@ -1,19 +1,19 @@
 #pragma once
 
 #include "common/geodetic/geodetic_coordinates.h"
-#include "common/image/image.h"
-#include "common/image/processing.h"
-#include "common/image/io.h"
+#include "image/image.h"
+#include "image/processing.h"
+#include "image/io.h"
 #include "common/projection/projs/equirectangular.h"
 #include "common/projection/sat_proj/sat_proj.h"
 #include "common/utils.h"
 #include "products/image_products.h"
-#include "resources.h"
+#include "core/resources.h"
 #include <cmath>
 #include <cstdlib>
 #include <vector>
 #define DEFINE_COMPOSITE_UTILS 1
-#include "common/image/composite.h"
+#include "image/composite.h"
 #include "logger.h"
 
 namespace modis

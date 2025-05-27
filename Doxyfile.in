@@ -7,9 +7,10 @@ INPUT                  = src-core/common/ccsds \
                          src-interface/viewer2 \
                          src-core/projection \
                          src-core/dsp \
-                         src-core/common/image \
+                         src-core/image \
+                         src-core/utils \
                          docs/pages
-EXCLUDE                = src-core/common/image/font_lib src-core/common/image/font 
+EXCLUDE                = src-core/image/font_lib src-core/image/font 
 RECURSIVE              = YES
 
 PROJECT_LOGO           = docs/favicon.ico

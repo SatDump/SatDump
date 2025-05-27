@@ -6,7 +6,8 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "common/ccsds/ccsds_tm/demuxer.h"
-#include "common/image/io.h"
+#include "image/io.h"
+#include "utils/stats.h"
 
 #include <thread>
 
@@ -15,7 +16,7 @@
 #include "products2/punctiform_product.h"
 #include "products2/dataset.h"
 #include "common/tracking/tle.h"
-#include "resources.h"
+#include "core/resources.h"
 
 namespace jason3
 {
@@ -90,7 +91,7 @@ namespace jason3
             // Products dataset
             satdump::products::DataSet dataset;
             dataset.satellite_name = "Jason-3";
-            dataset.timestamp = get_median(amr2_reader.timestamps);
+            dataset.timestamp = satdump::get_median(amr2_reader.timestamps);
 
             std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(41240, dataset.timestamp);
 

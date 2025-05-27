@@ -2,9 +2,10 @@
 #include "common/geodetic/geodetic_coordinates.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
-#include "common/utils.h"
+#include "utils/string.h"
 #include "core/style.h"
 #include "common/tracking/tle.h"
+#include "utils/time.h"
 
 namespace satdump
 {
@@ -234,7 +235,7 @@ namespace satdump
                 {
                     bool show = true;
                     if (horizons_searchstr.size() != 0)
-                        show = isStringPresent(horizonsoptions[i].second, horizons_searchstr);
+                        show = satdump::isStringPresent(horizonsoptions[i].second, horizons_searchstr);
                     if (show)
                     {
                         if (ImGui::Selectable(horizonsoptions[i].second.c_str(), i == current_horizons_id))

@@ -1,10 +1,11 @@
 #include "archive_loader.h"
 
-#include "common/utils.h"
+#include "utils/http.h"
 #include "logger.h"
 #include "nlohmann/json.hpp"
 #include "processing.h"
 #include "main_ui.h"
+#include "utils/time.h"
 
 #include "libs/rapidxml.hpp"
 
@@ -14,7 +15,7 @@ namespace satdump
     {
         std::string url_req = url_host + url_path;
         std::string result;
-        while (perform_http_request(url_req, result) != 1)
+        while (satdump::perform_http_request(url_req, result) != 1)
         {
             // logger->trace("\nURL WAS : %s\n", url_req.c_str());
 
@@ -36,7 +37,7 @@ namespace satdump
                 time_t timestamp = 0;
                 std::string channel;
                 (this->*parseTimestamp)(stem, timestamp, channel);
-                aws_list[timestamp_to_string(timestamp)].insert(url_host + path);
+                aws_list[satdump::timestamp_to_string(timestamp)].insert(url_host + path);
             }
 
             // Continuation

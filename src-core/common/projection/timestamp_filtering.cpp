@@ -1,5 +1,5 @@
 #include "timestamp_filtering.h"
-#include "common/utils.h"
+#include "utils/stats.h"
 #include "logger.h"
 
 namespace timestamp_filtering
@@ -7,7 +7,7 @@ namespace timestamp_filtering
     std::vector<double> filter_timestamps_simple(std::vector<double> timestamps, double max_tolerate, double max_diff)
     {
         std::vector<double> filter_timestamps = timestamps;
-        double avg = get_median(filter_timestamps);
+        double avg = satdump::get_median(filter_timestamps);
         double last = -1;
         for (double &v : filter_timestamps)
         {

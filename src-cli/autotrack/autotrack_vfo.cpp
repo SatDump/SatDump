@@ -1,6 +1,7 @@
 #include "autotrack.h"
 #include "logger.h"
 #include "common/utils.h"
+#include "utils/time.h"
 
 void AutoTrackApp::add_vfo_live(std::string id, std::string name, double freq, satdump::Pipeline vpipeline, nlohmann::json vpipeline_params)
 {
@@ -65,7 +66,7 @@ void AutoTrackApp::add_vfo_reco(std::string id, std::string name, double freq, d
             wipInfo.decim_ptr->start();
         wipInfo.file_sink->start();
 
-        wipInfo.file_sink->start_recording(d_output_folder + "/" + prepareBasebandFileName(getTime(), get_samplerate() / decimation, freq), get_samplerate() / decimation);
+        wipInfo.file_sink->start_recording(d_output_folder + "/" + prepareBasebandFileName(satdump::getTime(), get_samplerate() / decimation, freq), get_samplerate() / decimation);
 
         splitter->set_vfo_enabled(id, true);
 

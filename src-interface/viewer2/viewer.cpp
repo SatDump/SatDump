@@ -4,9 +4,8 @@
 // #include "scatterometer_handler.h"
 // #include "core/config.h"
 // #include "products/dataset.h"
-#include "common/event_bus.h"
 #include "common/utils.h"
-// #include "resources.h"
+// #include "core/resources.h"
 #include "core/plugin.h"
 
 #include "core/style.h"
@@ -21,13 +20,13 @@
 #include "handlers/vector/shapefile_handler.h"
 // TODOREWORK
 #include "imgui/imgui.h"
-#include "resources.h"
+#include "core/resources.h"
 
 // TODOREWORK
 #include "dsp/newrec.h"
 #include "dsp/waterfall_test.h"
 
-#include "common/image/io.h"
+#include "image/io.h"
 
 #include "imgui/imgui_filedrop.h"
 
@@ -320,7 +319,7 @@ namespace satdump
                         if (img.size() > 0)
                             master_handler->addSubHandler(std::make_shared<handlers::ImageHandler>(img, std::filesystem::path(path).stem().string()));
                         else
-                            logger->error("Could not open this file as image!"); // TODOREWORK Probably check before this?
+                            logger->error("Could not open this file as image!");
                     }
                 }
                 catch (std::exception &e)

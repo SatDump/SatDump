@@ -7,8 +7,8 @@
 #include "../handler.h"
 #include "../processing_handler.h"
 
-#include "common/image/hue_saturation_json.h"
-#include "common/image/meta.h"
+#include "image/hue_saturation_json.h"
+#include "image/meta.h"
 #include "common/widgets/image_view.h"
 
 #include "nlohmann/json.hpp"

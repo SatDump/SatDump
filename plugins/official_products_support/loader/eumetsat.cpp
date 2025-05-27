@@ -6,6 +6,8 @@
 #include "processing.h"
 #include "main_ui.h"
 #include "libs/base64/base64.h"
+#include "utils/time.h"
+#include "utils/http.h"
 
 namespace satdump
 {
@@ -79,7 +81,7 @@ namespace satdump
         std::string final_token = macaron::Base64::Encode(eumetsat_user_consumer_credential + ":" + eumetsat_user_consumer_secret);
 
         std::string resp = "";
-        if (perform_http_request_post("https://api.eumetsat.int/token", resp, "grant_type=client_credentials", "Authorization: Basic " + final_token) != 1)
+        if (satdump::perform_http_request_post("https://api.eumetsat.int/token", resp, "grant_type=client_credentials", "Authorization: Basic " + final_token) != 1)
             resp = nlohmann::json::parse(resp)["access_token"];
         logger->trace("Token " + resp);
         return resp;
@@ -105,7 +107,7 @@ namespace satdump
                               "/products?format=json";
             std::string resp;
             logger->info(url);
-            if (perform_http_request(url, resp, "") != 1)
+            if (satdump::perform_http_request(url, resp, "") != 1)
             {
                 eumetsat_list.clear();
 
@@ -131,7 +133,7 @@ namespace satdump
                             time_t timestamp = timegm(&timeS);
 
                             std::string prod_d = prod["links"][0]["href"];
-                            eumetsat_list.push_back({timestamp_to_string(timestamp), prod_d});
+                            eumetsat_list.push_back({satdump::timestamp_to_string(timestamp), prod_d});
                         }
                     }
                 }
@@ -188,7 +190,7 @@ namespace satdump
                 if (ImGui::Button(std::string("Load##archiveloadertablebutton_" + str.timestamp).c_str()))
                 {
                     std::string resp;
-                    if (perform_http_request(str.href, resp, "") != 1)
+                    if (satdump::perform_http_request(str.href, resp, "") != 1)
                     {
                         nlohmann::json respj = nlohmann::json::parse(resp);
                         //                        printf("\n%s\n", respj.dump(4).c_str());

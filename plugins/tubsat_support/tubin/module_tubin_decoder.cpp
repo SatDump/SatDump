@@ -7,8 +7,8 @@
 #include "products2/image_product.h"
 #include "products2/dataset.h"
 #include "../png_fix.h"
-#include "common/image/bayer/bayer.h"
-#include "common/image/io.h"
+#include "image/bayer/bayer.h"
+#include "image/io.h"
 
 namespace tubin
 {

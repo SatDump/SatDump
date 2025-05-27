@@ -1,28 +1,28 @@
 #include "lrit_productizer.h"
-#include "products2/image_product.h"
 #include "common/utils.h"
-#include <filesystem>
 #include "logger.h"
+#include "products2/image_product.h"
+#include <filesystem>
+#include "utils/string.h"
 
 // TODOREWORK #include "products/processor/image_processor.h"
 #include "core/config.h"
-#include "common/thread_priority.h"
 #include "nlohmann/json_utils.h"
+#include "utils/thread_priority.h"
 
-#include "common/image/io.h"
+#include "image/io.h"
 
 namespace lrit
 {
     inline std::string getXRITTimestamp(time_t tim)
     {
         std::tm *timeReadable = gmtime(&tim);
-        std::string utc_filename =
-            std::to_string(timeReadable->tm_year + 1900) +                                                                               // Year yyyy
-            (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + // Month MM
-            (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "T" +    // Day dd
-            (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) +          // Hour HH
-            (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) +             // Minutes mm
-            (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec)) + "Z";        // Seconds ss
+        std::string utc_filename = std::to_string(timeReadable->tm_year + 1900) +                                                                               // Year yyyy
+                                   (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + // Month MM
+                                   (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "T" +    // Day dd
+                                   (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) +          // Hour HH
+                                   (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) +             // Minutes mm
+                                   (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec)) + "Z";        // Seconds ss
         return utc_filename;
     }
 
@@ -32,19 +32,16 @@ namespace lrit
             timestamp = 0;
         time_t tttime = timestamp;
         std::tm *timeReadable = gmtime(&tttime);
-        return std::to_string(timeReadable->tm_year + 1900) + "-" +
-               (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
+        return std::to_string(timeReadable->tm_year + 1900) + "-" + (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
                (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
                (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
                (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "-" +
                (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
     }
 
-    LRITProductizer::LRITProductizer(std::string instrument_id, bool sweep_x, std::string cache_path)
-        : should_sweep_x(sweep_x), instrument_id(instrument_id), compo_cache_path(cache_path)
+    LRITProductizer::LRITProductizer(std::string instrument_id, bool sweep_x, std::string cache_path) : should_sweep_x(sweep_x), instrument_id(instrument_id), compo_cache_path(cache_path)
     {
-        if (satdump::config::main_cfg["viewer"]["instruments"].contains(instrument_id) &&
-            satdump::config::main_cfg["satdump_general"]["auto_process_products"]["value"].get<bool>())
+        if (satdump::config::main_cfg["viewer"]["instruments"].contains(instrument_id) && satdump::config::main_cfg["satdump_general"]["auto_process_products"]["value"].get<bool>())
             can_make_composites = true;
 
         if (can_make_composites)
@@ -81,115 +78,31 @@ namespace lrit
             if (instrument_id == "goesn_imager" && std::stoi(channel) > 0 && std::stoi(channel) <= 5)
             {
                 const float goesn_imager_wavelength_table[5] = {
-                    630,
-                    3900,
-                    6480,
-                    10700,
-                    13300,
+                    630, 3900, 6480, 10700, 13300,
                 };
-                /*const float goesn_imager_radiance_ranges_table[16][2] = {
-                    {0, 1},       // 630,
-                    {0.01, 2.20}, // 3900,
-                    {0, 6},       // 64800,
-                    {10, 120},    // 10700,
-                    {20, 90},     // 13300,
-                };*/
+
                 pro.set_channel_wavenumber(pro.images.size() - 1, 1e7 / goesn_imager_wavelength_table[std::stoi(channel) - 1]);
             }
             else if (instrument_id == "abi" && channel.find_first_not_of("0123456789") == std::string::npos && std::stoi(channel) > 0 && std::stoi(channel) <= 16)
             {
                 const float goes_abi_wavelength_table[16] = {
-                    470,
-                    640,
-                    860,
-                    1380,
-                    1610,
-                    2260,
-                    3900,
-                    6190,
-                    6950,
-                    7340,
-                    8500,
-                    9610,
-                    10350,
-                    11200,
-                    12300,
-                    13300,
+                    470, 640, 860, 1380, 1610, 2260, 3900, 6190, 6950, 7340, 8500, 9610, 10350, 11200, 12300, 13300,
                 };
-                /*const float goes_abi_radiance_ranges_table[16][2] = {
-                    // TODOREWORK DELETE
-                    {0, 1},
-                    {0, 1},
-                    {0, 1},
-                    {0, 1},
-                    {0, 1},
-                    {0, 1},
-                    {0.01, 2.20}, // 3900,
-                    {0, 6},       // 6190,
-                    {0, 16},      // 6950,
-                    {0.02, 20},   // 7340,
-                    {5, 100},     // 8500,
-                    {10, 120},    // 9610,
-                    {10, 120},    // 10350,
-                    {10, 150},    // 11200,
-                    {20, 150},    // 12300,
-                    {20, 150},    // 13300,
-                };*/
+
                 pro.set_channel_wavenumber(pro.images.size() - 1, 1e7 / goes_abi_wavelength_table[std::stoi(channel) - 1]);
             }
             else if (instrument_id == "ahi" && std::stoi(channel) > 0 && std::stoi(channel) <= 16)
             {
                 const float hima_ahi_wavelength_table[16] = {
-                    470,
-                    510,
-                    640,
-                    860,
-                    1600,
-                    2300,
-                    3900,
-                    6200,
-                    6900,
-                    7300,
-                    8600,
-                    9600,
-                    10400,
-                    11200,
-                    12400,
-                    13300,
+                    470, 510, 640, 860, 1600, 2300, 3900, 6200, 6900, 7300, 8600, 9600, 10400, 11200, 12400, 13300,
                 };
-                /*const float hima_ahi_radiance_ranges_table[16][2] = {
-                    // TODOREWORK DELETE
-                    {0, 1},
-                    {0, 1},
-                    {0, 1},
-                    {0, 1},
-                    {0, 1},
-                    {0, 1},
-                    {0.01, 2.20}, // 3900,
-                    {0, 6},       // 6200,
-                    {0, 16},      // 6900,
-                    {0.02, 20},   // 7300,
-                    {5, 100},     // 8600,
-                    {10, 120},    // 9600,
-                    {10, 120},    // 10400,
-                    {10, 150},    // 11200,
-                    {20, 150},    // 12400,
-                    {20, 150},    // 13300,
-                };*/
+
                 pro.set_channel_wavenumber(pro.images.size() - 1, 1e7 / hima_ahi_wavelength_table[std::stoi(channel) - 1]);
             }
             else if (instrument_id == "ami")
             {
                 double wavelength_nm = std::stod(channel.substr(2, channel.size() - 1)) * 100;
                 pro.set_channel_wavenumber(pro.images.size() - 1, 1e7 / wavelength_nm);
-                // TODOREWORK DELETE                                if (channel == "IR105")
-                //                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, 10, 120);
-                //                else if (channel == "IR123")
-                //                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, 20, 150);
-                //                else if (channel == "SW038")
-                //                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, 0.01, 2.20);
-                //                else if (channel == "WV069")
-                //                    pro.set_calibration_default_radiance_range(pro.images.size() - 1, 0, 16);
             }
             else
                 pro.set_channel_wavenumber(pro.images.size() - 1, -1);
@@ -197,10 +110,10 @@ namespace lrit
             // if (instrument_id == "ahi")
             // printf("Channel %s\n%s\n", channel.c_str(), image_data_function_record->datas.c_str());
 
-            auto lines = splitString(image_data_function_record->datas, '\n');
+            auto lines = satdump::splitString(image_data_function_record->datas, '\n');
             if (lines.size() < 4)
             {
-                lines = splitString(image_data_function_record->datas, '\r');
+                lines = satdump::splitString(image_data_function_record->datas, '\r');
                 if (lines.size() < 4)
                 {
                     logger->error("Error parsing calibration info into lines!");
@@ -422,7 +335,7 @@ namespace lrit
 
     void LRITProductizer::compositeThreadFunc()
     {
-        setLowestThreadPriority();
+        satdump::setLowestThreadPriority(); // TODOREWORK namespace remove
 
         std::string file_for_cache = compo_cache_path + "/.composite_cache_do_not_delete.json";
 
@@ -491,22 +404,13 @@ namespace lrit
         }
     }
 
-    void LRITProductizer::saveImage(image::Image img,
-                                    int bit_depth,
-                                    std::string directory,
-                                    std::string satellite,
-                                    std::string satshort,
-                                    std::string channel,
-                                    time_t timestamp,
-                                    std::string region,
-                                    lrit::ImageNavigationRecord *image_navigation_record,
-                                    ImageDataFunctionRecord *image_data_function_record)
+    void LRITProductizer::saveImage(image::Image img, int bit_depth, std::string directory, std::string satellite, std::string satshort, std::string channel, time_t timestamp, std::string region,
+                                    lrit::ImageNavigationRecord *image_navigation_record, ImageDataFunctionRecord *image_data_function_record)
     {
         std::string ext;
         image::append_ext(&ext, true);
-        std::string directory_path = region == ""
-                                         ? (directory + "/" + satellite + "/" + timestamp_to_string2(timestamp) + "/")
-                                         : (directory + "/" + satellite + "/" + region + "/" + timestamp_to_string2(timestamp) + "/");
+        std::string directory_path =
+            region == "" ? (directory + "/" + satellite + "/" + timestamp_to_string2(timestamp) + "/") : (directory + "/" + satellite + "/" + region + "/" + timestamp_to_string2(timestamp) + "/");
         std::string filename = satshort + "_" + channel + "_" + getXRITTimestamp(timestamp) + ext;
         std::string pro_f_path = directory_path + "product.cbor";
 
@@ -517,11 +421,11 @@ namespace lrit
         if (image_navigation_record)
         {
             float sat_pos = 0;
-            if (sscanf(image_navigation_record->projection_name.c_str(), "geos(%f)", &sat_pos) == 1 ||
-                sscanf(image_navigation_record->projection_name.c_str(), "GEOS(%f)", &sat_pos) == 1)
+            if (sscanf(image_navigation_record->projection_name.c_str(), "geos(%f)", &sat_pos) == 1 || sscanf(image_navigation_record->projection_name.c_str(), "GEOS(%f)", &sat_pos) == 1)
             {
                 constexpr double k = 624597.0334223134;
-                double scalar_x = image_navigation_record->column_scalar == 0.0 ? (pow(2.0, 16.0) / double(image_navigation_record->column_scaling_factor)) * k : image_navigation_record->column_scalar;
+                double scalar_x =
+                    image_navigation_record->column_scalar == 0.0 ? (pow(2.0, 16.0) / double(image_navigation_record->column_scaling_factor)) * k : image_navigation_record->column_scalar;
                 double scalar_y = image_navigation_record->line_scalar == 0.0 ? (pow(2.0, 16.0) / double(image_navigation_record->line_scaling_factor)) * k : image_navigation_record->line_scalar;
 
                 proj_cfg["type"] = "geos";
@@ -648,4 +552,4 @@ namespace lrit
                 delete pro;
         }
     }
-}
+} // namespace lrit

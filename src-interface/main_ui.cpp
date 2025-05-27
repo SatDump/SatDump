@@ -9,7 +9,7 @@
 #include "notify_logger_sink.h"
 #include "offline.h"
 #include "processing.h"
-#include "resources.h"
+#include "core/resources.h"
 #include "satdump_vars.h"
 #include "settings.h"
 #include "status_logger_sink.h"

@@ -6,7 +6,7 @@
 
 #include "../product/image_product_handler.h"      // TODOREWORK CLEAN
 #include "../product/punctiform_product_handler.h" // TODOREWORK CLEAN
-#include "common/utils.h"
+#include "utils/time.h"
 
 namespace satdump
 {

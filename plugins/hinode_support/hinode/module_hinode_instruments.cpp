@@ -7,7 +7,7 @@
 #include "common/utils.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
 #include "nlohmann/json_utils.h"
-#include "common/image/io.h"
+#include "image/io.h"
 
 #include "common/codings/reedsolomon/reedsolomon.h"
 

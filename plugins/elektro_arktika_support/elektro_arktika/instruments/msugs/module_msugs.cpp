@@ -5,14 +5,15 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "common/simple_deframer.h"
-#include "common/image/io.h"
+#include "image/io.h"
+#include "utils/stats.h"
 
 #include "products2/image_product.h"
 #include "products2/dataset.h"
 
 #include "nlohmann/json_utils.h"
 #include "common/tracking/tle.h"
-#include "resources.h"
+#include "core/resources.h"
 
 namespace elektro_arktika
 {
@@ -109,7 +110,7 @@ namespace elektro_arktika
             // Products dataset
             satdump::products::DataSet dataset;
             dataset.satellite_name = sat_name;
-            dataset.timestamp = get_median(vis1_reader.timestamps);
+            dataset.timestamp = satdump::get_median(vis1_reader.timestamps);
 
             logger->info("----------- MSU-GS");
             logger->info("MSU-GS CH1 Lines        : " + std::to_string(vis1_reader.frames));

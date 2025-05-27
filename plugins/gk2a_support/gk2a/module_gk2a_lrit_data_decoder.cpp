@@ -7,11 +7,12 @@
 #include "common/utils.h"
 #include "common/lrit/lrit_demux.h"
 #include "lrit_header.h"
-#include "resources.h"
+#include "core/resources.h"
 #include "key_decryptor.h"
 #include "libs/miniz/miniz.h"
 #include "libs/miniz/miniz_zip.h"
 #include "init.h"
+#include "utils/http.h"
 
 namespace gk2a
 {
@@ -90,7 +91,7 @@ namespace gk2a
                     // Try to download
                     std::string download_url = "http://web.archive.org/web/20210502102522if_/http://nmsc.kma.go.kr/resources/enhome/resources/satellites/coms/COMS_Decryption_Sample_Cpp.zip";
                     std::string file_data;
-                    if (!perform_http_request(download_url, file_data))
+                    if (!satdump::perform_http_request(download_url, file_data))
                     {
                         logger->info("Downloaded COMS Decryption sample! Decompressing...");
 

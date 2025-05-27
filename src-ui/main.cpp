@@ -1,4 +1,4 @@
-#include "../src-core/resources.h"
+#include "core/resources.h"
 #include "backend.h"
 #include "common/cli_utils.h"
 #include "common/detect_header.h"

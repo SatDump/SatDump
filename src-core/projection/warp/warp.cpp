@@ -3,10 +3,11 @@
 #include "core/exception.h"
 #include <map>
 #include "common/utils.h"
-#include "resources.h"
+#include "core/resources.h"
 #include "core/opencl.h"
 #include <chrono>
 #include <cmath>
+#include "utils/stats.h"
 
 #include "common/geodetic/geodetic_coordinates.h"
 

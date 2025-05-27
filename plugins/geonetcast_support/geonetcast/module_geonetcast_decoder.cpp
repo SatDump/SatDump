@@ -10,11 +10,11 @@
 #include "common/mpeg_ts/fazzt_processor.h"
 #include "common/codings/dvb-s2/bbframe_ts_parser.h"
 #include "libs/ctpl/ctpl_stl.h"
-#include "common/image/io.h"
+#include "image/io.h"
 
 #include "goes_abi.h"
 
-#include "common/thread_priority.h"
+#include "utils/thread_priority.h"
 
 namespace geonetcast
 {

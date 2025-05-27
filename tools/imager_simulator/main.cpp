@@ -13,7 +13,7 @@
 #include "logger.h"
 #include "init.h"
 
-#include "common/image/image.h"
+#include "image/image.h"
 #include "common/tracking/tracking.h"
 #include "common/tracking/tle.h"
 

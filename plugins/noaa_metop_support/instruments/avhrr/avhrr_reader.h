@@ -1,10 +1,10 @@
 #pragma once
 
 #include "common/ccsds/ccsds.h"
-#include "common/image/image.h"
+#include "image/image.h"
 #include "noaa/tip_time_parser.h"
 #include "nlohmann/json.hpp"
-#include "resources.h"
+#include "core/resources.h"
 #include "common/calibration.h"
 
 #define BLB_LIMIT 150

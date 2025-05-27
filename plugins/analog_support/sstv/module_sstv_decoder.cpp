@@ -1,7 +1,7 @@
 #include "module_sstv_decoder.h"
 #include "common/dsp/filter/firdes.h"
-#include "common/image/image.h"
-#include "common/image/io.h"
+#include "image/image.h"
+#include "image/io.h"
 #include "common/utils.h"
 #include "common/wav.h"
 #include "core/exception.h"
@@ -13,7 +13,7 @@
 #include "imgui/imgui_image.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
-#include "resources.h"
+#include "core/resources.h"
 
 #include "lineproc.h"
 
@@ -89,7 +89,7 @@ namespace sstv
 
         double sstv_samplerate = sstv_cfg["samplerate"]; // TODO resample!
         double freq_sync = getValueOrDefault(sstv_cfg["sync_freq"], 1200);
-        double freq_img_black = getValueOrDefault(sstv_cfg["freq_img_black"], 1488); // 1500); TODOREWORK should be 1500?
+        double freq_img_black = getValueOrDefault(sstv_cfg["freq_img_black"], 1488); // 1500); should be 1500?
         double freq_img_white = getValueOrDefault(sstv_cfg["freq_img_white"], 2300);
 
         bpf.set_cfg("taps", dsp::firdes::band_pass(1, sstv_samplerate, freq_sync, freq_img_white, 500, dsp::fft::window::WIN_KAISER));

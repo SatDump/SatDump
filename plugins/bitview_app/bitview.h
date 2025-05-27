@@ -48,7 +48,7 @@ namespace satdump
             if (current_bit_container)
                 return current_bit_container->getName();
             else
-                return "BitView TODOREWORK";
+                return "BitView";
         }
     };
 }; // namespace satdump

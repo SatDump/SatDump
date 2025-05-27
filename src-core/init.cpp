@@ -5,7 +5,7 @@
 #include "core/pipeline.h"
 #include "core/plugin.h"
 #include "logger.h"
-#include "resources.h"
+#include "core/resources.h"
 #include "satdump_vars.h"
 #include <filesystem>
 

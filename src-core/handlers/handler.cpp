@@ -33,7 +33,6 @@ namespace satdump
 
         void Handler::drawTreeMenu(std::shared_ptr<Handler> &h)
         {
-            // TODOREWORK CLEANUP
             struct DragDropWip
             {
                 std::shared_ptr<Handler> drag;
@@ -58,7 +57,6 @@ namespace satdump
                     if (ImGui::IsItemHovered())
                         ImGui::SetTooltip("%s", handler->getName().c_str());
 
-                    // TODOREWORK CLEANUP
                     if (handler_can_subhandlers_be_dragged && handler->handler_can_be_dragged && ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
                     {
                         DragDropWip d({handler, this});
@@ -87,7 +85,6 @@ namespace satdump
                         }
                         ImGui::EndDragDropTarget();
                     }
-                    // TODOREWORK CLEANUP
 
                     if (handler_can_be_reorg)
                     {

@@ -1,7 +1,7 @@
 #include "module_eos_instruments.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
 #include "common/ccsds/ccsds_aos/vcdu.h"
-#include "common/image/bowtie.h"
+#include "image/bowtie.h"
 #include "common/utils.h"
 #include "imgui/imgui.h"
 #include "instruments/modis/modis_histmatch.h"
@@ -9,7 +9,7 @@
 #include "nlohmann/json_utils.h"
 #include "products2/dataset.h"
 #include "products2/image_product.h"
-#include "resources.h"
+#include "core/resources.h"
 #include <filesystem>
 #include <fstream>
 
@@ -17,8 +17,8 @@
 #include "core/exception.h"
 #include "instruments/modis/calibrator/modis_calibrator.h"
 
-#include "common/image/image_utils.h"
-#include "common/image/io.h"
+#include "image/image_utils.h"
+#include "image/io.h"
 #include "common/tracking/tle.h"
 
 namespace eos
@@ -167,7 +167,7 @@ namespace eos
                 dataset.satellite_name = "Aura";
 
             if (d_satellite == AQUA || d_satellite == TERRA) // MODIS
-                dataset.timestamp = get_median(modis_reader.timestamps_1000);
+                dataset.timestamp = satdump::get_median(modis_reader.timestamps_1000);
             else
                 dataset.timestamp = time(0);
 

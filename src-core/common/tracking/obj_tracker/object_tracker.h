@@ -7,7 +7,7 @@
 #include <thread>
 #include "common/tracking/rotator/rotator_handler.h"
 #include "common/geodetic/geodetic_coordinates.h"
-#include "common/image/image.h"
+#include "image/image.h"
 
 namespace satdump
 {

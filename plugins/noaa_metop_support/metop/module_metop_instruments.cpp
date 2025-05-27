@@ -6,16 +6,17 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "metop.h"
-#include "common/image/bowtie.h"
+#include "image/bowtie.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
 // #include "products/radiation_products.h" TODOREWORK
 // #include "products/scatterometer_products.h" TODOREWORK ASCAT
 #include "common/tracking/tle.h"
-#include "resources.h"
+#include "core/resources.h"
 #include "nlohmann/json_utils.h"
-#include "common/image/io.h"
-#include "common/image/processing.h"
+#include "image/io.h"
+#include "image/processing.h"
 #include "common/calibration.h"
+#include "utils/stats.h"
 
 #include "products2/punctiform_product.h"
 #include "products2/image_product.h"
@@ -153,7 +154,7 @@ namespace metop
 
             data_in.close();
 
-            int scid = most_common(metop_scids.begin(), metop_scids.end(), 0);
+            int scid = satdump::most_common(metop_scids.begin(), metop_scids.end(), 0);
             metop_scids.clear();
 
             std::string sat_name = "Unknown MetOp";
@@ -175,7 +176,7 @@ namespace metop
             // Products dataset
             satdump::products::DataSet dataset;
             dataset.satellite_name = sat_name;
-            dataset.timestamp = get_median(avhrr_reader.timestamps);
+            dataset.timestamp = satdump::get_median(avhrr_reader.timestamps);
 
             std::optional<satdump::TLE> satellite_tle = admin_msg_reader.tles.get_from_norad(norad);
             if (!satellite_tle.has_value() || ignore_integrated_tle)

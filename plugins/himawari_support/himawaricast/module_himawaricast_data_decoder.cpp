@@ -11,7 +11,7 @@
 #include "lrit_header.h"
 #include "common/codings/dvb-s2/bbframe_ts_parser.h"
 #include "libs/bzlib_utils.h"
-#include "common/image/io.h"
+#include "image/io.h"
 
 namespace himawari
 {

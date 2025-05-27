@@ -1,7 +1,7 @@
 #include "generic_correlator.h"
 #include "common/dsp/buffer.h"
 #include "rotation.h"
-#include "resources.h"
+#include "core/resources.h"
 #include "logger.h"
 
 CorrelatorGeneric::CorrelatorGeneric(dsp::constellation_type_t mod, std::vector<uint8_t> syncword, int max_frm_size) : d_modulation(mod)

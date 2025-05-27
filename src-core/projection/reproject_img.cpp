@@ -1,5 +1,5 @@
 #include "reproject_img.h"
-#include "common/image/meta.h"
+#include "image/meta.h"
 #include "projection/projection.h"
 #include "projection/reprojector.h"
 

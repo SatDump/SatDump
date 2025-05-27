@@ -8,9 +8,8 @@
 // #include <iostream>
 #include <fftw3.h>
 
-#include "common/image/image.h"
-#include "common/image/io.h"
-#include "common/resizeable_buffer.h"
+#include "image/image.h"
+#include "image/io.h"
 
 // Return filesize
 uint64_t getFilesize(std::string filepath);
@@ -55,8 +54,7 @@ namespace cryosat
             fftwf_plan p = fftwf_plan_dft_1d(243, (fftwf_complex *)fft_input, (fftwf_complex *)fft_output, FFTW_FORWARD, FFTW_MEASURE);
 
             // cimg_library::CImg<unsigned char> outputImage(243, 100000, 1, 1, 0);
-            ResizeableBuffer<unsigned char> fftImage;
-            fftImage.create(10 * 243);
+            std::vector<unsigned char> fftImage(10 * 243);
             int lines = 0;
 
             while (!data_in.eof())
@@ -125,11 +123,11 @@ namespace cryosat
             logger->info("Writing images.... (Can take a while)");
 
             {
-                image::Image outputImage(fftImage.buf, 8, 243, lines, 1);
+                image::Image outputImage(fftImage.data(), 8, 243, lines, 1);
                 image::save_img(outputImage, directory + "/SIRAL");
             }
 
-            fftImage.destroy();
+            fftImage.clear();
         }
 
         void CryoSatSIRALDecoderModule::drawUI(bool window)

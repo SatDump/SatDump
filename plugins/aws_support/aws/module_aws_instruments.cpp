@@ -8,8 +8,9 @@
 #include "common/ccsds/ccsds_tm/demuxer.h"
 #include "common/ccsds/ccsds_tm/vcdu.h"
 #include "products2/dataset.h"
-#include "resources.h"
+#include "core/resources.h"
 #include "nlohmann/json_utils.h"
+#include "utils/stats.h"
 
 #include "common/tracking/tle.h"
 
@@ -80,7 +81,7 @@ namespace aws
 
         data_in.close();
 
-        int scid = most_common(aws_scids.begin(), aws_scids.end(), 0);
+        int scid = satdump::most_common(aws_scids.begin(), aws_scids.end(), 0);
         aws_scids.clear();
 
         std::string sat_name = "Unknown AWS";
@@ -94,9 +95,9 @@ namespace aws
         // Products dataset
         satdump::products::DataSet dataset;
         dataset.satellite_name = sat_name;
-        dataset.timestamp = get_median(mwr_reader.timestamps);
+        dataset.timestamp = satdump::get_median(mwr_reader.timestamps);
         if (dataset.timestamp == -1)
-            dataset.timestamp = get_median(mwr_dump_reader.timestamps);
+            dataset.timestamp = satdump::get_median(mwr_dump_reader.timestamps);
 
         std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
 

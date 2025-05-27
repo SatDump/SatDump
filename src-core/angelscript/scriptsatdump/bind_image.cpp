@@ -2,13 +2,13 @@
 #include "angelscript/scriptarray/scriptarray.h"
 #include "bind_satdump.h"
 
-#include "common/image/image.h"
-#include "common/image/io.h"
-#include "common/image/processing.h"
+#include "image/image.h"
+#include "image/io.h"
+#include "image/processing.h"
 
 #include "bind_json.h"
-#include "common/image/meta.h"
-#include "common/image/text.h"
+#include "image/meta.h"
+#include "image/text.h"
 
 #include "bind_image.h"
 

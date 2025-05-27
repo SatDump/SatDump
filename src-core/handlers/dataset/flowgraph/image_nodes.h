@@ -1,12 +1,12 @@
 #pragma once
 
 #include "flowgraph.h"
-#include "common/image/io.h"
-#include "common/image/meta.h"
+#include "image/io.h"
+#include "image/meta.h"
 #include "projection/projection.h"
 #include "projection/reprojector.h"
-#include "common/image/expression.h"
-#include "common/image/processing.h"
+#include "image/expression.h"
+#include "image/processing.h"
 
 namespace satdump
 {

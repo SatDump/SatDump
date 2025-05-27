@@ -61,7 +61,7 @@ namespace satdump
                     fwd_type = inv_type = PROJ_STANDARD;
                     if (d_cfg.contains("proj_timestamp"))
                     {
-                        logger->warn("Using projection timestamps for timestamp feedback. May be inacurate!");
+                        // logger->warn("Using projection timestamps for timestamp feedback. May be inacurate!"); // Disabled usually as it triggers... Everytime the proj is init
                         proj_timestamp = d_cfg["proj_timestamp"];
                     }
                     return true;

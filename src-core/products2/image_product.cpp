@@ -1,9 +1,9 @@
 #include "image_product.h"
 #include "logger.h"
 #include "core/config.h"
-#include "common/utils.h"
-#include "common/image/io.h"
-#include "common/image/image_utils.h"
+#include "utils/http.h"
+#include "image/io.h"
+#include "image/image_utils.h"
 
 #ifdef __ANDROID__
 #include <android_native_app_glue.h>

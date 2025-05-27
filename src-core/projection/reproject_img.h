@@ -4,7 +4,7 @@
  * @file reproject_img.h
  */
 
-#include "common/image/image.h"
+#include "image/image.h"
 #include "nlohmann/json.hpp"
 
 namespace satdump

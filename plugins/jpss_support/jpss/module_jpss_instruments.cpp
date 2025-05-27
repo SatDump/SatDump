@@ -6,20 +6,18 @@
 #include "imgui/imgui.h"
 #include "common/utils.h"
 #include "jpss.h"
-#include "common/image/bowtie.h"
+#include "image/bowtie.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
-// #include "products/products.h"
-// #include "products/image_products.h" TODOREWORK
-// #include "products/dataset.h"
-#include "resources.h"
+#include "core/resources.h"
 #include "common/calibration.h"
 #include "nlohmann/json_utils.h"
-#include "common/image/io.h"
+#include "image/io.h"
 #include "instruments/viirs/viirs_viewang.h"
 
 #include "products2/image_product.h"
 #include "products2/dataset.h"
 #include "common/tracking/tle.h"
+#include "utils/stats.h"
 
 namespace jpss
 {
@@ -143,7 +141,7 @@ namespace jpss
 
             data_in.close();
 
-            int scid = most_common(jpss_scids.begin(), jpss_scids.end(), 0);
+            int scid = satdump::most_common(jpss_scids.begin(), jpss_scids.end(), 0);
             jpss_scids.clear();
 
             std::string sat_name = "Unknown JPSS";
@@ -169,7 +167,7 @@ namespace jpss
             // Products dataset
             satdump::products::DataSet dataset;
             dataset.satellite_name = sat_name;
-            dataset.timestamp = get_median(atms_reader.timestamps);
+            dataset.timestamp = satdump::get_median(atms_reader.timestamps);
 
             std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
 

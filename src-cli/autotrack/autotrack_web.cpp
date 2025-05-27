@@ -1,8 +1,9 @@
 #include "autotrack.h"
 #include "../webserver.h"
 #include "logger.h"
-#include "common/utils.h"
-#include "common/image/jpeg_utils.h"
+#include "utils/format.h"
+#include "image/jpeg_utils.h"
+#include "utils/time.h"
 
 void AutoTrackApp::setup_webserver()
 {
@@ -82,7 +83,7 @@ void AutoTrackApp::setup_webserver()
 
         webserver::handle_callback_schedule = [this]() -> std::vector<uint8_t>
         {
-            auto img = auto_scheduler.getScheduleImage(512, getTime());
+            auto img = auto_scheduler.getScheduleImage(512, satdump::getTime());
             std::vector<uint8_t> vec = image::save_jpeg_mem(img);
             return vec;
         };
@@ -145,12 +146,12 @@ void AutoTrackApp::setup_webserver()
                                    "<h2>Object Tracker</h2>" +
                                    "<div class=\"image-div\"><img src=\"polarplot.jpeg?r=" + std::to_string(cache_buster) + "\" width=256 height=256/></div>" +
                                    "<p>Next AOS time: <span class=\"fakeinput\">" +
-                                   timestamp_to_string(status["next_aos_time"].get<double>(), auto_scheduler.getAutoTrackCfg().use_localtime) +
+                                   satdump::timestamp_to_string(status["next_aos_time"].get<double>(), auto_scheduler.getAutoTrackCfg().use_localtime) +
                                    "</span>" +
                                    aos_in +
                                    "</p>" +
                                    "<p>Next LOS time: <span class=\"fakeinput\">" +
-                                   timestamp_to_string(status["next_los_time"].get<double>(), auto_scheduler.getAutoTrackCfg().use_localtime) +
+                                   satdump::timestamp_to_string(status["next_los_time"].get<double>(), auto_scheduler.getAutoTrackCfg().use_localtime) +
                                    "</span>" +
                                    los_in +
                                    "</p>" +
@@ -159,25 +160,25 @@ void AutoTrackApp::setup_webserver()
                                    "</span></p>" +
                                    "<p>Current position:<br />" +
                                    "Azimuth <span class=\"fakeinput\">" +
-                                   svformat("%.2f", (status["sat_current_pos"]["az"].get<double>())) +
+                                   satdump::svformat("%.2f", (status["sat_current_pos"]["az"].get<double>())) +
                                    "</span> °<br />Elevation <span class=\"fakeinput\">" +
-                                   svformat("%.2f", (status["sat_current_pos"]["el"].get<double>())) +
+                                   satdump::svformat("%.2f", (status["sat_current_pos"]["el"].get<double>())) +
                                    "</span> °<br /> Range <span class=\"fakeinput\">" +
-                                   svformat("%.2f", (status["sat_current_range"].get<double>())) +
+                                   satdump::svformat("%.2f", (status["sat_current_range"].get<double>())) +
                                    "</span> km</p>" +
                                    "<h2>Rotator Control</h2>" +
                                    "<p>Status:" + rot_engaged +
                                    ", <span class=\"fakeinput false\">" +
                                    rot_tracking + "</span></p>" +
                                    "<p>Azimuth: requested <span class=\"fakeinput\">" +
-                                   svformat("%.2f", (status["rot_current_req_pos"]["az"].get<double>())) +
+                                   satdump::svformat("%.2f", (status["rot_current_req_pos"]["az"].get<double>())) +
                                    "</span> °, actual <span class=\"fakeinput\">" +
-                                   svformat("%.2f", (status["rot_current_pos"]["az"].get<double>())) +
+                                   satdump::svformat("%.2f", (status["rot_current_pos"]["az"].get<double>())) +
                                    "</span> °</p>" +
                                    "<p>Elevation: requested <span class=\"fakeinput\">" +
-                                   svformat("%.2f", (status["rot_current_req_pos"]["el"].get<double>())) +
+                                   satdump::svformat("%.2f", (status["rot_current_req_pos"]["el"].get<double>())) +
                                    "</span> °, actual <span class=\"fakeinput\">" +
-                                   svformat("%.2f", (status["rot_current_pos"]["el"].get<double>())) +
+                                   satdump::svformat("%.2f", (status["rot_current_pos"]["el"].get<double>())) +
                                    "</span> °</p>" +
                                    schedule +
                                    fft;

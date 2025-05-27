@@ -3,7 +3,7 @@
 
 // TODOREWORK
 #include "nlohmann/json_utils.h"
-#include "resources.h"
+#include "core/resources.h"
 
 // TODOREWORK #include "lua_processor.h"
 #include "flowgraph_processor.h"

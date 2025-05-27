@@ -10,8 +10,11 @@
 #include "common/utils.h"
 #include "common/dsp_source_sink/format_notated.h"
 #include "common/widgets/frequency_input.h"
-#include "resources.h"
-#include "common/image/text.h"
+#include "core/resources.h"
+#include "image/text.h"
+#include "utils/time.h"
+#include "utils/string.h"
+#include "utils/format.h"
 
 namespace satdump
 {
@@ -39,7 +42,7 @@ namespace satdump
             for (int i = 0; i < num_objects; i++)
                 if (std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [i, &tle_registry](TrackedObject &c)
                                  { return c.norad == (*tle_registry)[i].norad; }) == enabled_satellites.end())
-                    if (availablesatssearch.size() == 0 || isStringPresent(satoptions[i], availablesatssearch))
+                    if (availablesatssearch.size() == 0 || satdump::isStringPresent(satoptions[i], availablesatssearch))
                     {
                         if (ImGui::Selectable(satoptions[i].c_str(), i == tracking_sats_menu_selected_1))
                             tracking_sats_menu_selected_1 = i;
@@ -84,7 +87,7 @@ namespace satdump
             for (int i = 0; i < num_objects; i++)
                 if (std::find_if(enabled_satellites.begin(), enabled_satellites.end(), [i, &tle_registry](TrackedObject &c)
                                  { return c.norad == (*tle_registry)[i].norad; }) != enabled_satellites.end())
-                    if (selectedsatssearch.size() == 0 || isStringPresent(satoptions[i], selectedsatssearch))
+                    if (selectedsatssearch.size() == 0 || satdump::isStringPresent(satoptions[i], selectedsatssearch))
                     {
                         if (ImGui::Selectable(satoptions[i].c_str(), i == tracking_sats_menu_selected_2))
                             tracking_sats_menu_selected_2 = i;
@@ -420,7 +423,7 @@ namespace satdump
             //              ImGui::Dummy(ImVec2(0, 0));
             for (int i = (timeReadable->tm_min < 30 ? 1 : 0); i < (timeReadable->tm_min < 30 ? 12 : 13); i++)
             {
-                text_drawer.draw_text(img, i * d_pplot_size / 12 - offset, 0, color_gray, 10, svformat("%s%s%s", (curr_hour + i) % 24 < 10 ? "0" : "", std::to_string((curr_hour + i) % 24).c_str(), ":00"));
+                text_drawer.draw_text(img, i * d_pplot_size / 12 - offset, 0, color_gray, 10, satdump::svformat("%s%s%s", (curr_hour + i) % 24 < 10 ? "0" : "", std::to_string((curr_hour + i) % 24).c_str(), ":00"));
             }
             float sat_blk_height = ((float)d_pplot_height / (float)enabled_satellites.size());
             for (int i = 0; i < (int)enabled_satellites.size(); i++)

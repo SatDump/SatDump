@@ -2,7 +2,7 @@
 
 #include "../handler.h"
 
-#include "common/image/image.h"
+#include "image/image.h"
 #include "common/map/shapefile.h"
 
 namespace satdump

@@ -1,12 +1,13 @@
 #include "module_svissr_image_decoder.h"
 #include "common/codings/differential/nrzs.h"
-#include "common/image/io.h"
+#include "image/io.h"
 #include "common/utils.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
 #include "logger.h"
-#include "resources.h"
+#include "core/resources.h"
 #include <filesystem>
+#include "utils/stats.h"
 
 #define FRAME_SIZE 44356
 
@@ -236,7 +237,7 @@ namespace fengyun_svissr
                 // std::cout << counter << std::endl;
 
                 // Try to detect a new scan
-                uint8_t is_back = most_common(&last_status[0], &last_status[20], 0);
+                uint8_t is_back = satdump::most_common(&last_status[0], &last_status[20], 0);
 
                 // Ensures the counter doesn't lock during rollback
                 // Situation:
@@ -263,7 +264,7 @@ namespace fengyun_svissr
                     buffer->image4 = vissrImageReader.getImageIR4();
                     buffer->image5 = vissrImageReader.getImageVIS();
 
-                    buffer->scid = most_common(scid_stats.begin(), scid_stats.end(), 0);
+                    buffer->scid = satdump::most_common(scid_stats.begin(), scid_stats.end(), 0);
                     scid_stats.clear();
 
                     buffer->timestamp = time(0);
@@ -326,7 +327,7 @@ namespace fengyun_svissr
             buffer->image4 = vissrImageReader.getImageIR4();
             buffer->image5 = vissrImageReader.getImageVIS();
 
-            buffer->scid = most_common(scid_stats.begin(), scid_stats.end(), 0);
+            buffer->scid = satdump::most_common(scid_stats.begin(), scid_stats.end(), 0);
             scid_stats.clear();
 
             buffer->timestamp = time(0);
@@ -353,7 +354,7 @@ namespace fengyun_svissr
             buffer->image4 = vissrImageReader.getImageIR4();
             buffer->image5 = vissrImageReader.getImageVIS();
 
-            buffer->scid = most_common(scid_stats.begin(), scid_stats.end(), 0);
+            buffer->scid = satdump::most_common(scid_stats.begin(), scid_stats.end(), 0);
             scid_stats.clear();
 
             buffer->timestamp = time(0);
