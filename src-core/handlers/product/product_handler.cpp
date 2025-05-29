@@ -1,12 +1,12 @@
 #include "product_handler.h"
-#include "utils/string.h"
-#include "utils/time.h"
 #include "core/config.h"
 #include "core/exception.h"
+#include "core/resources.h"
 #include "imgui/imgui_stdlib.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
-#include "core/resources.h"
+#include "utils/string.h"
+#include "utils/time.h"
 #include <regex>
 
 namespace satdump
@@ -41,6 +41,8 @@ namespace satdump
                 handler_name = p->get_product_source() + " " + handler_name;
             if (!dataset_mode && p->has_product_timestamp())
                 handler_name += " " + timestamp_to_string(p->get_product_timestamp());
+            if (p->has_product_id())
+                handler_name += " (" + p->get_product_id() + ")";
 
             // TODOREWORK, handle automated?, Filtering what can be made per channels present?
             if (instrument_cfg.contains("presets"))

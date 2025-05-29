@@ -69,8 +69,8 @@ namespace satdump
                     for (auto &u : channel_calibrated_output_units)
                         units_ranges.emplace(u, CalibInfo{calibration::getUnitInfo(u), 0.0, 100.0});
 
-                    if ((int)i == channel_selection_curr_id)
-                        channels_calibrated_curr_unit = product->images[i].calibration_type;
+                    if ((int)i == channel_selection_curr_id && units_ranges.size() > 0)
+                        channels_calibrated_curr_unit = units_ranges.begin()->first;
 
                     channels_calibrated_ranges.emplace(i, units_ranges);
                 }

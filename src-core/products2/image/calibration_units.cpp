@@ -18,6 +18,7 @@ namespace satdump
             {CALIBRATION_ID_SUN_ANGLE_COMPENSATED_REFLECTIVE_RADIANCE, {CALIBRATION_RADIANCE_UNIT, "Sun Angle Compensated Reflective Radiance"}},
             {CALIBRATION_ID_BRIGHTNESS_TEMPERATURE, {CALIBRATION_TEMPERATURE_UNIT, "Brightness Temperature"}},
             {CALIBRATION_ID_BRIGHTNESS_TEMPERATURE_CELCIUS, {CALIBRATION_TEMPERATURE_UNIT_CELCIUS, "Brightness Temperature"}},
+            {CALIBRATION_ID_BACKSCATTER, {"Backscatter", "Backscatter"}},
         };
 
         UnitInfo getUnitInfo(std::string id)

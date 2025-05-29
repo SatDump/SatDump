@@ -4,6 +4,7 @@
 #include "logger.h"
 #include <fstream>
 #include <filesystem>
+#include "utils/string.h"
 
 #include "init.h"
 
@@ -95,7 +96,7 @@ nlohmann::ordered_json run_singleinstance_tests_offline(nlohmann::ordered_json c
         {
             std::optional<satdump::Pipeline> pipeliner = satdump::getPipelineFromName(pipeline);
 
-            std::vector<std::string> split_str = splitString(parameters, ' ');
+            std::vector<std::string> split_str = satdump::splitString(parameters, ' ');
             std::vector<char *> v;
             for (std::string str : split_str)
             {

@@ -1,26 +1,26 @@
 #include "module_metop_instruments.h"
-#include <fstream>
-#include "common/ccsds/ccsds_aos/vcdu.h"
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
-#include "common/utils.h"
-#include "metop.h"
-#include "image/bowtie.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
+#include "common/utils.h"
+#include "image/bowtie.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include "metop.h"
+#include <filesystem>
+#include <fstream>
 // #include "products/radiation_products.h" TODOREWORK
 // #include "products/scatterometer_products.h" TODOREWORK ASCAT
+#include "common/calibration.h"
 #include "common/tracking/tle.h"
 #include "core/resources.h"
-#include "nlohmann/json_utils.h"
 #include "image/io.h"
 #include "image/processing.h"
-#include "common/calibration.h"
+#include "nlohmann/json_utils.h"
 #include "utils/stats.h"
 
-#include "products2/punctiform_product.h"
-#include "products2/image_product.h"
 #include "products2/dataset.h"
+#include "products2/image_product.h"
+#include "products2/punctiform_product.h"
 
 namespace metop
 {
@@ -76,9 +76,7 @@ namespace metop
                 // Parse this transport frame
                 ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
-                if (vcdu.spacecraft_id == METOP_A_SCID ||
-                    vcdu.spacecraft_id == METOP_B_SCID ||
-                    vcdu.spacecraft_id == METOP_C_SCID)
+                if (vcdu.spacecraft_id == METOP_A_SCID || vcdu.spacecraft_id == METOP_B_SCID || vcdu.spacecraft_id == METOP_C_SCID)
                     metop_scids.push_back(vcdu.spacecraft_id);
 
                 if (vcdu.vcid == 9) // AVHRR/3
@@ -273,68 +271,6 @@ namespace metop
                 mhs_status = DONE;
             }
 
-            /*// ASCAT
-            {
-                ascat_status = SAVING;
-                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/ASCAT";
-
-                if (!std::filesystem::exists(directory))
-                    std::filesystem::create_directory(directory);
-
-                logger->info("----------- ASCAT");
-                for (int i = 0; i < 6; i++)
-                    logger->info("Channel " + std::to_string(i + 1) + " lines : " + std::to_string(ascat_reader.lines[i]));
-
-                satdump::ScatterometerProducts ascat_products;
-                ascat_products.instrument_name = "ascat";
-                ascat_products.set_scatterometer_type(ascat_products.SCAT_TYPE_ASCAT);
-                ascat_products.has_timestamps = true;
-                ascat_products.set_tle(satellite_tle);
-
-                for (int i = 0; i < 6; i++)
-                {
-                    ascat_products.set_timestamps(i, ascat_reader.timestamps[i]);
-                    ascat_products.set_proj_cfg(i, loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_ascat_ch" + std::to_string(i + 1) + ".json")));
-                    ascat_products.set_channel(i, ascat_reader.getChannel(i));
-                }
-
-                // Output a few nice composites as well
-                logger->info("ASCAT Composite...");
-                image::Image imageAll(16, 256 * 2, ascat_reader.getChannelImg(0).height() * 3, 1);
-                {
-                    int height = ascat_reader.getChannelImg(0).height();
-
-                    auto image1 = ascat_reader.getChannelImg(0);
-                    auto image2 = ascat_reader.getChannelImg(1);
-                    auto image3 = ascat_reader.getChannelImg(2);
-                    image3.mirror(1, 0);
-                    auto image4 = ascat_reader.getChannelImg(3);
-                    image4.mirror(1, 0);
-                    auto image5 = ascat_reader.getChannelImg(4);
-                    auto image6 = ascat_reader.getChannelImg(5);
-                    image5.mirror(1, 0);
-
-                    // Row 1
-                    imageAll.draw_image(0, image6, 256 * 0, 0);
-                    imageAll.draw_image(0, image3, 256 * 1, 0);
-
-                    // Row 2
-                    imageAll.draw_image(0, image5, 256 * 0, height);
-                    imageAll.draw_image(0, image2, 256 * 1, height);
-
-                    // Row 3
-                    imageAll.draw_image(0, image4, 256 * 0, height * 2);
-                    imageAll.draw_image(0, image1, 256 * 1, height * 2);
-                }
-
-                image::save_img(imageAll, directory + "/ASCAT-ALL");
-
-                ascat_products.save(directory);
-                dataset.products_list.push_back("ASCAT");
-
-                ascat_status = DONE;
-            }*/
-
             // ASCAT
             {
                 ascat_status = SAVING;
@@ -347,12 +283,26 @@ namespace metop
                 for (int i = 0; i < 6; i++)
                     logger->info("Channel " + std::to_string(i + 1) + " lines : " + std::to_string(ascat_reader.lines[i]));
 
-                satdump::products::ImageProduct ascat_products;
-                ascat_products.instrument_name = "ascat";
-
                 for (int i = 0; i < 6; i++)
                 {
-                    ascat_products.images.push_back({i, "ASCAT-" + std::to_string(i + 1), std::to_string(i + 1), ascat_reader.getChannelImg(i), 16});
+                    std::string subdir = directory + "/" + std::to_string(i + 1);
+                    if (!std::filesystem::exists(subdir))
+                        std::filesystem::create_directory(subdir);
+
+                    satdump::products::ImageProduct ascat_products;
+                    ascat_products.instrument_name = "ascat";
+
+                    ascat_products.images.push_back({0, "ASCAT", "1", ascat_reader.getChannelImg(i), 16});
+                    ascat_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_ascat_ch" + std::to_string(i + 1) + ".json")), satellite_tle,
+                                                               ascat_reader.timestamps[i]);
+
+                    ascat_products.set_product_id(std::to_string(i + 1));
+
+                    ascat_products.set_channel_unit(0, "backscatter");
+                    ascat_products.set_calibration("metop_ascat", {});
+
+                    ascat_products.save(subdir);
+                    dataset.products_list.push_back("ASCAT/" + std::to_string(i + 1));
                 }
 
                 // Output a few nice composites as well
@@ -385,9 +335,6 @@ namespace metop
                 }
 
                 image::save_img(imageAll, directory + "/ASCAT-ALL");
-
-                ascat_products.save(directory);
-                dataset.products_list.push_back("ASCAT");
 
                 ascat_status = DONE;
             }
@@ -420,7 +367,8 @@ namespace metop
                     // Test! TODO : Cleanup!!
                     satdump::products::ImageProduct iasi_img_products;
                     iasi_img_products.instrument_name = "iasi_img";
-                    iasi_img_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_iasi_img.json")), satellite_tle, iasi_reader_img.timestamps_ifov);
+                    iasi_img_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_iasi_img.json")), satellite_tle,
+                                                                  iasi_reader_img.timestamps_ifov);
                     iasi_img_products.images.push_back({0, "IASI-IMG", "1", iasi_imaging, 16});
 
                     nlohmann::json calib_cfg;
@@ -659,19 +607,13 @@ namespace metop
             ImGui::End();
         }
 
-        std::string MetOpInstrumentsDecoderModule::getID()
-        {
-            return "metop_instruments";
-        }
+        std::string MetOpInstrumentsDecoderModule::getID() { return "metop_instruments"; }
 
-        std::vector<std::string> MetOpInstrumentsDecoderModule::getParameters()
-        {
-            return {};
-        }
+        std::vector<std::string> MetOpInstrumentsDecoderModule::getParameters() { return {}; }
 
         std::shared_ptr<ProcessingModule> MetOpInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<MetOpInstrumentsDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace amsu
+    } // namespace instruments
 } // namespace metop
