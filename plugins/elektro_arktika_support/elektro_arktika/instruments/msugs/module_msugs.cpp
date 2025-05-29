@@ -1,27 +1,25 @@
 #include "module_msugs.h"
-#include <fstream>
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
-#include "common/utils.h"
 #include "common/simple_deframer.h"
+#include "common/utils.h"
 #include "image/io.h"
+#include "imgui/imgui.h"
+#include "logger.h"
 #include "utils/stats.h"
+#include <filesystem>
+#include <fstream>
 
-#include "products2/image_product.h"
 #include "products2/dataset.h"
+#include "products2/image_product.h"
 
-#include "nlohmann/json_utils.h"
 #include "common/tracking/tle.h"
 #include "core/resources.h"
+#include "nlohmann/json_utils.h"
 
 namespace elektro_arktika
 {
     namespace msugs
     {
-        MSUGSDecoderModule::MSUGSDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
-        {
-        }
+        MSUGSDecoderModule::MSUGSDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters) {}
 
         void MSUGSDecoderModule::process()
         {
@@ -110,7 +108,7 @@ namespace elektro_arktika
             // Products dataset
             satdump::products::DataSet dataset;
             dataset.satellite_name = sat_name;
-            dataset.timestamp = satdump::get_median(vis1_reader.timestamps);
+            dataset.timestamp = time(0); // satdump::get_median(vis1_reader.timestamps);
 
             logger->info("----------- MSU-GS");
             logger->info("MSU-GS CH1 Lines        : " + std::to_string(vis1_reader.frames));
@@ -260,15 +258,9 @@ namespace elektro_arktika
             ImGui::End();
         }
 
-        std::string MSUGSDecoderModule::getID()
-        {
-            return "elektro_arktika_msugs";
-        }
+        std::string MSUGSDecoderModule::getID() { return "elektro_arktika_msugs"; }
 
-        std::vector<std::string> MSUGSDecoderModule::getParameters()
-        {
-            return {};
-        }
+        std::vector<std::string> MSUGSDecoderModule::getParameters() { return {}; }
 
         std::shared_ptr<ProcessingModule> MSUGSDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
