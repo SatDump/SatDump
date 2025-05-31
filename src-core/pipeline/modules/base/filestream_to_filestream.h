@@ -30,7 +30,7 @@ namespace satdump
                     if (fsfsm_enable_output)
                         return {DATA_FILE, DATA_STREAM};
                     else
-                        return {};
+                        return {DATA_FILE};
                 }
 
             private:
