@@ -1,8 +1,9 @@
 #include "module_goes_mdl_decoder.h"
-#include "logger.h"
+#include "common/codings/correlator32.h"
 #include "common/codings/rotation.h"
 #include "common/widgets/themed_widgets.h"
-#include "common/codings/correlator32.h"
+#include "logger.h"
+#include <cstdint>
 
 #define FRAME_SIZE 464
 #define ENCODED_FRAME_SIZE 464 * 8
@@ -14,42 +15,17 @@ namespace goes
 {
     namespace mdl
     {
-        GOESMDLDecoderModule::GOESMDLDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        GOESMDLDecoderModule::GOESMDLDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
             buffer = new uint8_t[ENCODED_FRAME_SIZE];
+            fsfsm_file_ext = ".frm";
         }
 
-        std::vector<ModuleDataType> GOESMDLDecoderModule::getInputTypes()
-        {
-            return {DATA_FILE, DATA_STREAM};
-        }
-
-        std::vector<ModuleDataType> GOESMDLDecoderModule::getOutputTypes()
-        {
-            return {DATA_FILE};
-        }
-
-        GOESMDLDecoderModule::~GOESMDLDecoderModule()
-        {
-            delete[] buffer;
-        }
+        GOESMDLDecoderModule::~GOESMDLDecoderModule() { delete[] buffer; }
 
         void GOESMDLDecoderModule::process()
         {
-            if (input_data_type == DATA_FILE)
-                filesize = getFilesize(d_input_file);
-            else
-                filesize = 0;
-            if (input_data_type == DATA_FILE)
-                data_in = std::ifstream(d_input_file, std::ios::binary);
-            data_out = std::ofstream(d_output_file_hint + ".frm", std::ios::binary);
-            d_output_files.push_back(d_output_file_hint + ".frm");
-
-            logger->info("Using input symbols " + d_input_file);
-            logger->info("Decoding to " + d_output_file_hint + ".frm");
-
-            time_t lastTime = 0;
-
             // Correlator
             Correlator32 correlator(QPSK, 0b00010111110101111001100100000 << 3);
 
@@ -59,13 +35,10 @@ namespace goes
             phase_t phase;
             bool swap;
 
-            while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
+            while (should_run())
             {
                 // Read a buffer
-                if (input_data_type == DATA_FILE)
-                    data_in.read((char *)buffer, ENCODED_FRAME_SIZE);
-                else
-                    input_fifo->read((uint8_t *)buffer, ENCODED_FRAME_SIZE);
+                read_data((uint8_t *)buffer, ENCODED_FRAME_SIZE);
 
                 int pos = correlator.correlate((int8_t *)buffer, phase, swap, cor, ENCODED_FRAME_SIZE);
 
@@ -75,10 +48,7 @@ namespace goes
                 {
                     std::memmove(buffer, &buffer[pos], pos);
 
-                    if (input_data_type == DATA_FILE)
-                        data_in.read((char *)&buffer[ENCODED_FRAME_SIZE - pos], pos);
-                    else
-                        input_fifo->read((uint8_t *)&buffer[ENCODED_FRAME_SIZE - pos], pos);
+                    read_data((uint8_t *)&buffer[ENCODED_FRAME_SIZE - pos], pos);
                 }
 
                 // Correct phase ambiguity
@@ -97,22 +67,18 @@ namespace goes
                 // data_out.put(0xFA);
                 // data_out.put(0xF3);
                 // data_out.put(0x20);
-                data_out.write((char *)&frameBuffer[0], FRAME_SIZE);
-
-                if (input_data_type == DATA_FILE)
-                    progress = data_in.tellg();
-
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    std::string lock_state = locked ? "SYNCED" : "NOSYNC";
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, Lock : " + lock_state);
-                }
+                write_data((uint8_t *)&frameBuffer[0], FRAME_SIZE);
             }
 
-            data_out.close();
-            if (input_data_type == DATA_FILE)
-                data_in.close();
+            cleanup();
+        }
+
+        nlohmann::json GOESMDLDecoderModule::getModuleStats()
+        {
+            auto v = satdump::pipeline::base::FileStreamToFileStreamModule::getModuleStats();
+            std::string lock_state = locked ? "SYNCED" : "NOSYNC";
+            v["lock_state"] = lock_state;
+            return v;
         }
 
         void GOESMDLDecoderModule::drawUI(bool window)
@@ -127,7 +93,7 @@ namespace goes
                 {
                     ImDrawList *draw_list = ImGui::GetWindowDrawList();
                     ImVec2 rect_min = ImGui::GetCursorScreenPos();
-                    ImVec2 rect_max = { rect_min.x + 200 * ui_scale, rect_min.y + 200 * ui_scale };
+                    ImVec2 rect_max = {rect_min.x + 200 * ui_scale, rect_min.y + 200 * ui_scale};
                     draw_list->AddRectFilled(rect_min, rect_max, style::theme.widget_bg);
                     draw_list->PushClipRect(rect_min, rect_max);
 
@@ -135,8 +101,7 @@ namespace goes
                     {
                         draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (((int8_t *)buffer)[i * 2 + 0] / 127.0) * 100 * ui_scale) % int(200 * ui_scale),
                                                           ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + (((int8_t *)buffer)[i * 2 + 1] / 127.0) * 100 * ui_scale) % int(200 * ui_scale)),
-                                                   2 * ui_scale,
-                                                   style::theme.constellation);
+                                                   2 * ui_scale, style::theme.constellation);
                     }
 
                     draw_list->PopClipRect();
@@ -158,31 +123,21 @@ namespace goes
                     std::memmove(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
                     cor_history[200 - 1] = cor;
 
-                    widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 40.0f, 64.0f,
-                        ImVec2(200 * ui_scale, 50 * ui_scale));
+                    widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 40.0f, 64.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
                 }
             }
             ImGui::EndGroup();
 
-            if (!streamingInput)
-                ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
-        std::string GOESMDLDecoderModule::getID()
-        {
-            return "goes_mdl_decoder";
-        }
+        std::string GOESMDLDecoderModule::getID() { return "goes_mdl_decoder"; }
 
-        std::vector<std::string> GOESMDLDecoderModule::getParameters()
-        {
-            return {};
-        }
-
-        std::shared_ptr<ProcessingModule> GOESMDLDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> GOESMDLDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<GOESMDLDecoderModule>(input_file, output_file_hint, parameters);
         }
-    }
-} // namespace meteor
+    } // namespace mdl
+} // namespace goes

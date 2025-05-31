@@ -1,38 +1,19 @@
 {
     "fengyun4_a_lrit": {
         "name": "FengYun-4A LRIT",
-        "live": true,
-        "live_cfg": {
+        "live": {
             "pkt_size": 10240, // 1024 * 10
             "default": [
-                [
-                    1,
-                    0
-                ],
-                [
-                    2,
-                    0
-                ],
-                [
-                    3,
-                    0
-                ]
+                1,
+                2,
+                3
             ],
             "server": [
-                [
-                    1,
-                    0
-                ],
-                [
-                    2,
-                    0
-                ]
+                1,
+                2
             ],
             "client": [
-                [
-                    3,
-                    0
-                ]
+                3
             ]
         },
         "frequencies": [
@@ -52,7 +33,8 @@
         "work": {
             "baseband": {},
             "bbframe": {
-                "dvbs2_demod": {
+                "module": "dvbs2_demod",
+                "parameters": {
                     "symbolrate": 90e3,
                     "rrc_alpha": 0.25,
                     "pll_bw": 0.01,
@@ -62,50 +44,32 @@
                 }
             },
             "cadu": {
-                "s2_udp_cadu_extractor": {
+                "module": "s2_udp_cadu_extractor",
+                "parameters": {
                     "bb_size": 25728,
                     "pid": 3004
                 }
             },
             "products": {
-                "fy4_lrit_data_decoder": {}
+                "module": "fy4_lrit_data_decoder"
             }
         }
     },
     "fengyun4_b_lrit": {
         "name": "FengYun-4B LRIT",
-        "live": true,
-        "live_cfg": {
+        "live": {
             "pkt_size": 10240, // 1024 * 10
             "default": [
-                [
-                    1,
-                    0
-                ],
-                [
-                    2,
-                    0
-                ],
-                [
-                    3,
-                    0
-                ]
+                1,
+                2,
+                3
             ],
             "server": [
-                [
-                    1,
-                    0
-                ],
-                [
-                    2,
-                    0
-                ]
+                1,
+                2
             ],
             "client": [
-                [
-                    3,
-                    0
-                ]
+                3
             ]
         },
         "frequencies": [
@@ -125,7 +89,8 @@
         "work": {
             "baseband": {},
             "bbframe": {
-                "dvbs2_demod": {
+                "module": "dvbs2_demod",
+                "parameters": {
                     "symbolrate": 120e3,
                     "rrc_alpha": 0.25,
                     "pll_bw": 0.01,
@@ -135,50 +100,33 @@
                 }
             },
             "cadu": {
-                "s2_udp_cadu_extractor": {
+                "module": "s2_udp_cadu_extractor",
+                "parameters": {
                     "bb_size": 57472,
                     "pid": 3000
                 }
             },
             "products": {
-                "fy4_lrit_data_decoder": {}
+                "module": "fy4_lrit_data_decoder",
+                "parameters": {}
             }
         }
     },
     "fengyun4_a_hrit23": {
         "name": "FengYun-4A HRIT-II/III",
-        "live": true,
-        "live_cfg": {
+        "live": {
             "pkt_size": 10240, // 1024 * 10
             "default": [
-                [
-                    1,
-                    0
-                ],
-                [
-                    2,
-                    0
-                ],
-                [
-                    3,
-                    0
-                ]
+                1,
+                2,
+                3
             ],
             "server": [
-                [
-                    1,
-                    0
-                ],
-                [
-                    2,
-                    0
-                ]
+                1,
+                2
             ],
             "client": [
-                [
-                    3,
-                    0
-                ]
+                3
             ]
         },
         "frequencies": [
@@ -198,7 +146,8 @@
         "work": {
             "baseband": {},
             "bbframe": {
-                "dvbs2_demod": {
+                "module": "dvbs2_demod",
+                "parameters": {
                     "symbolrate": 1e6,
                     "rrc_alpha": 0.25,
                     "pll_bw": 0.001,
@@ -207,13 +156,14 @@
                 }
             },
             "cadu": {
-                "s2_udp_cadu_extractor": {
+                "module": "s2_udp_cadu_extractor",
+                "parameters": {
                     "bb_size": 53840,
                     "pid": 3002
                 }
             },
             "products": {
-                "fy4_lrit_data_decoder": {}
+                "module": "fy4_lrit_data_decoder"
             }
         }
     }

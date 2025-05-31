@@ -1,11 +1,11 @@
 #pragma once
 
-#include "modules/demod/module_demod_base.h"
 #include "common/dsp/demod/quadrature_demod.h"
+#include "pipeline/modules/demod/module_demod_base.h"
 
 namespace generic_analog
 {
-    class GenericAnalogDemodModule : public demod::BaseDemodModule
+    class GenericAnalogDemodModule : public satdump::pipeline::demod::BaseDemodModule
     {
         enum ModulationType : int
         {
@@ -38,12 +38,12 @@ namespace generic_analog
         bool enable_audio = false;
 
     private:
-        std::string make_safe_string(const std::string& str);
+        std::string make_safe_string(const std::string &str);
 
     public:
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
-        static std::vector<std::string> getParameters();
+        static nlohmann::json getParams() { return {}; } // TODOREWORK
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
-}
+} // namespace generic_analog

@@ -1,26 +1,25 @@
 #include "module_meteor_instruments.h"
-#include <fstream>
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
-#include "common/utils.h"
-#include "meteor.h"
-#include "products2/image_product.h"
 #include "common/simple_deframer.h"
 #include "common/tracking/tle.h"
-#include "products2/dataset.h"
+#include "common/utils.h"
 #include "core/resources.h"
-#include "nlohmann/json_utils.h"
+#include "imgui/imgui.h"
 #include "instruments/msumr/msumr_tlm.h"
+#include "logger.h"
+#include "meteor.h"
+#include "nlohmann/json_utils.h"
+#include "products2/dataset.h"
+#include "products2/image_product.h"
 #include "utils/stats.h"
+#include <filesystem>
+#include <fstream>
 
 namespace meteor
 {
     namespace instruments
     {
         MeteorInstrumentsDecoderModule::MeteorInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            : ProcessingModule(input_file, output_file_hint, parameters),
-              bism_reader(getValueOrDefault<int>(parameters["year_override"], -1))
+            : ProcessingModule(input_file, output_file_hint, parameters), bism_reader(getValueOrDefault<int>(parameters["year_override"], -1))
         {
         }
 
@@ -255,9 +254,7 @@ namespace meteor
 
             // MTVZA
             {
-                auto &mreader = mtvza_reader2.lines > mtvza_reader.lines
-                                    ? mtvza_reader2
-                                    : mtvza_reader;
+                auto &mreader = mtvza_reader2.lines > mtvza_reader.lines ? mtvza_reader2 : mtvza_reader;
 
                 mtvza_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MTVZA";
@@ -334,10 +331,7 @@ namespace meteor
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("MTVZA");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::TextColored(style::theme.green, "%d",
-                                   mtvza_reader2.lines > mtvza_reader.lines
-                                       ? mtvza_reader2.lines
-                                       : mtvza_reader.lines);
+                ImGui::TextColored(style::theme.green, "%d", mtvza_reader2.lines > mtvza_reader.lines ? mtvza_reader2.lines : mtvza_reader.lines);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(mtvza_status);
 
@@ -357,19 +351,11 @@ namespace meteor
             ImGui::End();
         }
 
-        std::string MeteorInstrumentsDecoderModule::getID()
-        {
-            return "meteor_instruments";
-        }
-
-        std::vector<std::string> MeteorInstrumentsDecoderModule::getParameters()
-        {
-            return {};
-        }
+        std::string MeteorInstrumentsDecoderModule::getID() { return "meteor_instruments"; }
 
         std::shared_ptr<ProcessingModule> MeteorInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<MeteorInstrumentsDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace amsu
-} // namespace metop
+    } // namespace instruments
+} // namespace meteor

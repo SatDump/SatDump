@@ -1,38 +1,19 @@
 {
     "fengyun_svissr": {
         "name": "FengYun-2 S-VISSR",
-        "live": true,
-        "live_cfg": {
+        "live": {
             "pkt_size": 44356,
             "default": [
-                [
-                    1,
-                    0
-                ],
-                [
-                    2,
-                    0
-                ],
-                [
-                    3,
-                    0
-                ]
+                1,
+                2,
+                3
             ],
             "server": [
-                [
-                    1,
-                    0
-                ],
-                [
-                    2,
-                    0
-                ]
+                1,
+                2
             ],
             "client": [
-                [
-                    3,
-                    0
-                ]
+                3
             ]
         },
         "frequencies": [
@@ -53,7 +34,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 660e3,
                     "rrc_alpha": 0.5,
@@ -62,10 +44,12 @@
                 }
             },
             "svissr": {
-                "fengyun_svissr_decoder": {}
+                "module": "fengyun_svissr_decoder",
+                "parameters": {}
             },
             "products": {
-                "fengyun_svissr_image_decoder": {
+                "module": "fengyun_svissr_image_decoder",
+                "parameters": {
                     "satname": "FY-2x"
                 }
             }

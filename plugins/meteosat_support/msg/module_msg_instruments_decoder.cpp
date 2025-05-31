@@ -1,28 +1,24 @@
 #include "module_msg_instruments_decoder.h"
-#include <fstream>
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
-#include "common/utils.h"
 #include "common/ccsds/ccsds_tm/demuxer.h"
 #include "common/ccsds/ccsds_tm/vcdu.h"
+#include "common/utils.h"
+#include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
+#include "logger.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
 namespace meteosat
 {
     MSGInstrumentsDecoderModule::MSGInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-        : ProcessingModule(input_file, output_file_hint, parameters)
+        : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
     {
+        fsfsm_enable_output = false;
     }
 
     void MSGInstrumentsDecoderModule::process()
     {
-        filesize = getFilesize(d_input_file);
-        std::ifstream data_in(d_input_file, std::ios::binary);
-
-        logger->info("Using input frames " + d_input_file);
-
-        time_t lastTime = 0;
         uint8_t cadu[1279];
 
         // Demuxers
@@ -36,13 +32,10 @@ namespace meteosat
             std::filesystem::create_directory(seviri_directory);
         seviri_reader->d_directory = seviri_directory;
 
-        while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
+        while (should_run())
         {
             // Read a buffer
-            if (input_data_type == DATA_FILE)
-                data_in.read((char *)cadu, 1279);
-            else
-                input_fifo->read((uint8_t *)cadu, 1279);
+            read_data((uint8_t *)cadu, 1279);
 
             // Parse this transport frame
             ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
@@ -61,15 +54,10 @@ namespace meteosat
                     ; // WIP
             }
 
-            progress = data_in.tellg();
-            if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-            {
-                lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-            }
+            // TODOREWORK maybe add Progress as stats?
         }
 
-        data_in.close();
+        cleanup();
 
         seviri_reader->saveImages();
     }
@@ -115,24 +103,15 @@ namespace meteosat
         }
         ImGui::EndTabBar();
 
-        if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+        drawProgressBar();
 
         ImGui::End();
     }
 
-    std::string MSGInstrumentsDecoderModule::getID()
-    {
-        return "msg_instruments";
-    }
+    std::string MSGInstrumentsDecoderModule::getID() { return "msg_instruments"; }
 
-    std::vector<std::string> MSGInstrumentsDecoderModule::getParameters()
-    {
-        return {};
-    }
-
-    std::shared_ptr<ProcessingModule> MSGInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<satdump::pipeline::ProcessingModule> MSGInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<MSGInstrumentsDecoderModule>(input_file, output_file_hint, parameters);
     }
-}
+} // namespace meteosat

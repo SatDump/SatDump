@@ -5,18 +5,18 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
 
-#include "common/dsp_source_sink/dsp_sample_source.h"
-#include "common/dsp/resamp/smart_resampler.h"
-#include "common/dsp/path/splitter.h"
 #include "common/dsp/fft/fft_pan.h"
 #include "common/dsp/io/file_sink.h"
-#include "common/widgets/fft_plot.h"
-#include "common/widgets/waterfall_plot.h"
-#include "common/widgets/timed_message.h"
+#include "common/dsp/path/splitter.h"
+#include "common/dsp/resamp/smart_resampler.h"
+#include "common/dsp_source_sink/dsp_sample_source.h"
 #include "common/widgets/constellation.h"
+#include "common/widgets/fft_plot.h"
+#include "common/widgets/timed_message.h"
+#include "common/widgets/waterfall_plot.h"
 
 #include "common/widgets/pipeline_selector.h"
-#include "core/live_pipeline.h"
+#include "pipeline/live_pipeline.h"
 
 #include "tracking/tracking_widget.h"
 
@@ -128,7 +128,7 @@ namespace satdump
 
         bool automated_live_output_dir = false;
         PipelineUISelector pipeline_selector;
-        std::unique_ptr<satdump::LivePipeline> live_pipeline;
+        std::unique_ptr<pipeline::LivePipeline> live_pipeline;
         std::string pipeline_output_dir;
         nlohmann::json pipeline_params;
 
@@ -157,11 +157,11 @@ namespace satdump
             double freq;
 
             //// Live
-            Pipeline selected_pipeline;
+            pipeline::Pipeline selected_pipeline;
             nlohmann::json pipeline_params;
             std::string output_dir;
             std::shared_ptr<ctpl::thread_pool> lpool;
-            std::shared_ptr<satdump::LivePipeline> live_pipeline;
+            std::shared_ptr<pipeline::LivePipeline> live_pipeline;
 
             //// Recording
             std::shared_ptr<dsp::SmartResamplerBlock<complex_t>> decim_ptr;
@@ -171,7 +171,7 @@ namespace satdump
         std::mutex vfos_mtx;
         std::vector<VFOInfo> vfo_list;
 
-        void add_vfo_live(std::string id, std::string name, double freq, Pipeline vpipeline, nlohmann::json vpipeline_params);
+        void add_vfo_live(std::string id, std::string name, double freq, pipeline::Pipeline vpipeline, nlohmann::json vpipeline_params);
         void add_vfo_reco(std::string id, std::string name, double freq, dsp::BasebandType type, int decimation = -1);
         void del_vfo(std::string id);
 
@@ -219,14 +219,11 @@ namespace satdump
         RecorderApplication();
         ~RecorderApplication();
 
-        void save_settings()
-        {
-            config::main_cfg["user"]["recorder_state"] = serialize_config();
-        }
+        void save_settings() { config::main_cfg["user"]["recorder_state"] = serialize_config(); }
 
     public:
         static std::string getID() { return "recorder"; }
         std::string get_name() { return "Recorder"; }
         static std::shared_ptr<Application> getInstance() { return std::make_shared<RecorderApplication>(); }
     };
-};
+}; // namespace satdump

@@ -1,30 +1,27 @@
 #include "module_dscovr_instruments.h"
-#include <fstream>
-#include "common/ccsds/ccsds_tm/vcdu.h"
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
-#include "common/utils.h"
 #include "common/ccsds/ccsds_tm/demuxer.h"
-#include "products2/image_product.h"
+#include "common/ccsds/ccsds_tm/vcdu.h"
+#include "common/utils.h"
+#include "imgui/imgui.h"
+#include "logger.h"
 #include "products2/dataset.h"
+#include "products2/image_product.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
 namespace dscovr
 {
     namespace instruments
     {
         DSCOVRInstrumentsDecoderModule::DSCOVRInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            : ProcessingModule(input_file, output_file_hint, parameters)
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
+            fsfsm_enable_output = false;
         }
 
         void DSCOVRInstrumentsDecoderModule::process()
         {
-            filesize = getFilesize(d_input_file);
-            std::ifstream data_in(d_input_file, std::ios::binary);
-
-            logger->info("Using input frames " + d_input_file);
-
             std::string epic_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/EPIC";
 
             if (!std::filesystem::exists(epic_directory))
@@ -32,13 +29,12 @@ namespace dscovr
 
             epic_reader.directory = epic_directory;
 
-            time_t lastTime = 0;
             uint8_t cadu[1264];
 
-            while (!data_in.eof())
+            while (should_run())
             {
                 // Read buffer
-                data_in.read((char *)&cadu, 1264);
+                read_data((uint8_t *)&cadu, 1264);
 
                 // Parse this transport frame
                 ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
@@ -49,16 +45,9 @@ namespace dscovr
                 {
                     epic_reader.work(payload);
                 }
-
-                progress = data_in.tellg();
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
-            data_in.close();
+            cleanup();
 
 #if 0
             // CIPS
@@ -117,24 +106,16 @@ namespace dscovr
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
-        std::string DSCOVRInstrumentsDecoderModule::getID()
-        {
-            return "dscovr_instruments";
-        }
+        std::string DSCOVRInstrumentsDecoderModule::getID() { return "dscovr_instruments"; }
 
-        std::vector<std::string> DSCOVRInstrumentsDecoderModule::getParameters()
-        {
-            return {};
-        }
-
-        std::shared_ptr<ProcessingModule> DSCOVRInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> DSCOVRInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<DSCOVRInstrumentsDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace amsu
-} // namespace metop
+    } // namespace instruments
+} // namespace dscovr

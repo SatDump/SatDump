@@ -1,8 +1,8 @@
-#include "autotrack.h"
 #include "../webserver.h"
+#include "autotrack.h"
+#include "image/jpeg_utils.h"
 #include "logger.h"
 #include "utils/format.h"
-#include "image/jpeg_utils.h"
 #include "utils/time.h"
 
 void AutoTrackApp::setup_webserver()
@@ -19,8 +19,7 @@ void AutoTrackApp::setup_webserver()
             live_pipeline_mtx.lock();
             if (live_pipeline)
             {
-                live_pipeline->updateModuleStats();
-                p["live_pipeline"] = live_pipeline->stats;
+                p["live_pipeline"] = live_pipeline->getModulesStats();
             }
             live_pipeline_mtx.unlock();
 
@@ -36,8 +35,7 @@ void AutoTrackApp::setup_webserver()
                     pos["frequency"] = vfo.freq;
                     if (vfo.selected_pipeline.name != "")
                     {
-                        vfo.live_pipeline->updateModuleStats();
-                        pos["live_pipeline"] = vfo.live_pipeline->stats;
+                        pos["live_pipeline"] = vfo.live_pipeline->getModulesStats();
                     }
                     if (vfo.file_sink)
                     {
@@ -114,16 +112,12 @@ void AutoTrackApp::setup_webserver()
 
                 if (status["next_event_is_aos"].get<bool>() == true)
                 {
-                    aos_in = " (in <span class=\"fakeinput\">" +
-                             std::to_string((int)(status["next_event_in"].get<double>())) +
-                             "</span> seconds)";
+                    aos_in = " (in <span class=\"fakeinput\">" + std::to_string((int)(status["next_event_in"].get<double>())) + "</span> seconds)";
                     los_in = "";
                 }
                 else
                 {
-                    los_in = " (in <span class=\"fakeinput\">" +
-                             std::to_string((int)(status["next_event_in"].get<double>())) +
-                             "</span> seconds)";
+                    los_in = " (in <span class=\"fakeinput\">" + std::to_string((int)(status["next_event_in"].get<double>())) + "</span> seconds)";
                     aos_in = "";
                 }
 
@@ -132,96 +126,44 @@ void AutoTrackApp::setup_webserver()
 
                 std::string schedule = (std::string) "<h2>Schedule</h2><img src=\"schedule.jpeg?r=" + std::to_string(cache_buster) + "\" class=\"resp-img\" height=\"80\" width=\"600\" />";
 
-                std::string page = (std::string) "<h2>Device</h2><p>Hardware: <span class=\"fakeinput\">" +
-                                   selected_src.name + "</span></p>" +
-                                   "<p>Started: <span class=\"fakeinput\">" +
-                                   std::string(is_started ? "YES" : "NO") +
-                                   "</span></p>" +
-                                   "<p>Sample rate: <span class=\"fakeinput\">" +
-                                   std::to_string(source_ptr->get_samplerate() / 1e6) +
-                                   "</span> Msps</p>" +
-                                   "<p>Frequency: <span class=\"fakeinput\">" +
-                                   std::to_string(source_ptr->get_frequency() / 1e6) +
-                                   "</span> MHz</p>" +
-                                   "<h2>Object Tracker</h2>" +
-                                   "<div class=\"image-div\"><img src=\"polarplot.jpeg?r=" + std::to_string(cache_buster) + "\" width=256 height=256/></div>" +
-                                   "<p>Next AOS time: <span class=\"fakeinput\">" +
-                                   satdump::timestamp_to_string(status["next_aos_time"].get<double>(), auto_scheduler.getAutoTrackCfg().use_localtime) +
-                                   "</span>" +
-                                   aos_in +
-                                   "</p>" +
-                                   "<p>Next LOS time: <span class=\"fakeinput\">" +
-                                   satdump::timestamp_to_string(status["next_los_time"].get<double>(), auto_scheduler.getAutoTrackCfg().use_localtime) +
-                                   "</span>" +
-                                   los_in +
-                                   "</p>" +
-                                   "<p>Current object: <span class=\"fakeinput\">" +
-                                   status["object_name"].get<std::string>() +
-                                   "</span></p>" +
-                                   "<p>Current position:<br />" +
-                                   "Azimuth <span class=\"fakeinput\">" +
-                                   satdump::svformat("%.2f", (status["sat_current_pos"]["az"].get<double>())) +
-                                   "</span> °<br />Elevation <span class=\"fakeinput\">" +
-                                   satdump::svformat("%.2f", (status["sat_current_pos"]["el"].get<double>())) +
-                                   "</span> °<br /> Range <span class=\"fakeinput\">" +
-                                   satdump::svformat("%.2f", (status["sat_current_range"].get<double>())) +
-                                   "</span> km</p>" +
-                                   "<h2>Rotator Control</h2>" +
-                                   "<p>Status:" + rot_engaged +
-                                   ", <span class=\"fakeinput false\">" +
-                                   rot_tracking + "</span></p>" +
-                                   "<p>Azimuth: requested <span class=\"fakeinput\">" +
-                                   satdump::svformat("%.2f", (status["rot_current_req_pos"]["az"].get<double>())) +
-                                   "</span> °, actual <span class=\"fakeinput\">" +
-                                   satdump::svformat("%.2f", (status["rot_current_pos"]["az"].get<double>())) +
-                                   "</span> °</p>" +
-                                   "<p>Elevation: requested <span class=\"fakeinput\">" +
-                                   satdump::svformat("%.2f", (status["rot_current_req_pos"]["el"].get<double>())) +
-                                   "</span> °, actual <span class=\"fakeinput\">" +
-                                   satdump::svformat("%.2f", (status["rot_current_pos"]["el"].get<double>())) +
-                                   "</span> °</p>" +
-                                   schedule +
-                                   fft;
+                std::string page =
+                    (std::string) "<h2>Device</h2><p>Hardware: <span class=\"fakeinput\">" + selected_src.name + "</span></p>" + "<p>Started: <span class=\"fakeinput\">" +
+                    std::string(is_started ? "YES" : "NO") + "</span></p>" + "<p>Sample rate: <span class=\"fakeinput\">" + std::to_string(source_ptr->get_samplerate() / 1e6) + "</span> Msps</p>" +
+                    "<p>Frequency: <span class=\"fakeinput\">" + std::to_string(source_ptr->get_frequency() / 1e6) + "</span> MHz</p>" + "<h2>Object Tracker</h2>" +
+                    "<div class=\"image-div\"><img src=\"polarplot.jpeg?r=" + std::to_string(cache_buster) + "\" width=256 height=256/></div>" + "<p>Next AOS time: <span class=\"fakeinput\">" +
+                    satdump::timestamp_to_string(status["next_aos_time"].get<double>(), auto_scheduler.getAutoTrackCfg().use_localtime) + "</span>" + aos_in + "</p>" +
+                    "<p>Next LOS time: <span class=\"fakeinput\">" + satdump::timestamp_to_string(status["next_los_time"].get<double>(), auto_scheduler.getAutoTrackCfg().use_localtime) + "</span>" +
+                    los_in + "</p>" + "<p>Current object: <span class=\"fakeinput\">" + status["object_name"].get<std::string>() + "</span></p>" + "<p>Current position:<br />" +
+                    "Azimuth <span class=\"fakeinput\">" + satdump::svformat("%.2f", (status["sat_current_pos"]["az"].get<double>())) + "</span> °<br />Elevation <span class=\"fakeinput\">" +
+                    satdump::svformat("%.2f", (status["sat_current_pos"]["el"].get<double>())) + "</span> °<br /> Range <span class=\"fakeinput\">" +
+                    satdump::svformat("%.2f", (status["sat_current_range"].get<double>())) + "</span> km</p>" + "<h2>Rotator Control</h2>" + "<p>Status:" + rot_engaged +
+                    ", <span class=\"fakeinput false\">" + rot_tracking + "</span></p>" + "<p>Azimuth: requested <span class=\"fakeinput\">" +
+                    satdump::svformat("%.2f", (status["rot_current_req_pos"]["az"].get<double>())) + "</span> °, actual <span class=\"fakeinput\">" +
+                    satdump::svformat("%.2f", (status["rot_current_pos"]["az"].get<double>())) + "</span> °</p>" + "<p>Elevation: requested <span class=\"fakeinput\">" +
+                    satdump::svformat("%.2f", (status["rot_current_req_pos"]["el"].get<double>())) + "</span> °, actual <span class=\"fakeinput\">" +
+                    satdump::svformat("%.2f", (status["rot_current_pos"]["el"].get<double>())) + "</span> °</p>" + schedule + fft;
 
                 live_pipeline_mtx.unlock();
                 return page;
             }
             else if (uri == "/")
             {
-                std::string page = (std::string) "<!DOCTYPE html><html lang=\"EN\"><head>" +
-                                   "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
-                                   "<meta charset=\"utf-8\"><title>SatDump Status Page</title>" +
-                                   "<script type=\"text/javascript\">" +
-                                   "function xhr() {\n" +
-                                   "var http;\n" +
-                                   "if (window.XMLHttpRequest) {\n" +
-                                   "http = new XMLHttpRequest();\n" +
-                                   "} else {\n" +
-                                   "http = new ActiveXObject(\"Microsoft.XMLHTTP\");\n" +
-                                   "}" +
-                                   "var url = \"/status\";\n" +
-                                   "http.open(\"GET\", url, true);\n" +
-                                   "http.onreadystatechange = function() { \n" +
-                                   "if (http.readyState == 4 && http.status == 200) {\n" +
-                                   "document.getElementById('main-content').innerHTML = http.responseText;\n" +
-                                   "}\n" +
-                                   "}\n" +
-                                   "http.setRequestHeader(\"If-Modified-Since\", \"Sat, 1 Jan 2000 00:00:00 GMT\");\n" +
-                                   "http.send(null);\n" +
-                                   "}\n" +
-                                   "window.onload = function() {\n" +
+                std::string page = (std::string) "<!DOCTYPE html><html lang=\"EN\"><head>" + "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
+                                   "<meta charset=\"utf-8\"><title>SatDump Status Page</title>" + "<script type=\"text/javascript\">" + "function xhr() {\n" + "var http;\n" +
+                                   "if (window.XMLHttpRequest) {\n" + "http = new XMLHttpRequest();\n" + "} else {\n" + "http = new ActiveXObject(\"Microsoft.XMLHTTP\");\n" + "}" +
+                                   "var url = \"/status\";\n" + "http.open(\"GET\", url, true);\n" + "http.onreadystatechange = function() { \n" +
+                                   "if (http.readyState == 4 && http.status == 200) {\n" + "document.getElementById('main-content').innerHTML = http.responseText;\n" + "}\n" + "}\n" +
+                                   "http.setRequestHeader(\"If-Modified-Since\", \"Sat, 1 Jan 2000 00:00:00 GMT\");\n" + "http.send(null);\n" + "}\n" + "window.onload = function() {\n" +
                                    "xhr();\n"
                                    "setInterval(\"xhr()\", 1000)\n" +
-                                   "}\n" +
-                                   "</script>" +
+                                   "}\n" + "</script>" +
                                    "<!--[if lt IE 7 ]><style>body{width:600px;}</style><![endif]-->"
                                    "<style>body{background-color:#111;font-family:sans-serif;color:#ddd;" +
-                                   "max-width:600px;margin-left:auto;margin-right:auto}h1{text-align:center}" +
-                                   "h2{padding:5px;border-radius:5px;background-color:#3e3e43}" +
-                                   ".fakeinput{padding:2px;border-radius:1px;background-color:#232526}" +
-                                   ".resp-img{max-width:100%;height:auto}img{vertical-align:middle}" +
+                                   "max-width:600px;margin-left:auto;margin-right:auto}h1{text-align:center}" + "h2{padding:5px;border-radius:5px;background-color:#3e3e43}" +
+                                   ".fakeinput{padding:2px;border-radius:1px;background-color:#232526}" + ".resp-img{max-width:100%;height:auto}img{vertical-align:middle}" +
                                    ".true{color:#0f0}.false{color:red}.image-div{background-color:black;width:256px;height:256px;}</style></head>" +
-                                   "<div id=\"main-content\"><h2>Loading...</h2><p>If you see this, your browser does not support JavaScript. <a href=\"/status\">Click here</a> to view the status (you will need to refresh it manually) :)</p></div>" +
+                                   "<div id=\"main-content\"><h2>Loading...</h2><p>If you see this, your browser does not support JavaScript. <a href=\"/status\">Click here</a> to view the status "
+                                   "(you will need to refresh it manually) :)</p></div>" +
                                    "</body></html>";
                 return page;
             }

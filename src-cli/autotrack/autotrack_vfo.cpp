@@ -1,9 +1,9 @@
 #include "autotrack.h"
-#include "logger.h"
 #include "common/utils.h"
+#include "logger.h"
 #include "utils/time.h"
 
-void AutoTrackApp::add_vfo_live(std::string id, std::string name, double freq, satdump::Pipeline vpipeline, nlohmann::json vpipeline_params)
+void AutoTrackApp::add_vfo_live(std::string id, std::string name, double freq, satdump::pipeline::Pipeline vpipeline, nlohmann::json vpipeline_params)
 {
     vfos_mtx.lock();
 
@@ -26,7 +26,7 @@ void AutoTrackApp::add_vfo_live(std::string id, std::string name, double freq, s
 
         wipInfo.output_dir = output_dir;
 
-        wipInfo.live_pipeline = std::make_shared<satdump::LivePipeline>(vpipeline, vpipeline_params, output_dir);
+        wipInfo.live_pipeline = std::make_shared<satdump::pipeline::LivePipeline>(vpipeline, vpipeline_params, output_dir);
         splitter->add_vfo(id, get_samplerate(), frequency_hz - freq);
         wipInfo.live_pipeline->start(splitter->get_vfo_output(id), *wipInfo.lpool.get());
         splitter->set_vfo_enabled(id, true);
@@ -86,15 +86,13 @@ void AutoTrackApp::add_vfo_reco(std::string id, std::string name, double freq, d
 void AutoTrackApp::del_vfo(std::string id)
 {
     vfos_mtx.lock();
-    auto it = std::find_if(vfo_list.begin(), vfo_list.end(), [&id](VFOInfo &c)
-                           { return c.id == id; });
+    auto it = std::find_if(vfo_list.begin(), vfo_list.end(), [&id](VFOInfo &c) { return c.id == id; });
     if (it != vfo_list.end())
     {
         if (fft)
         {
             std::string name = it->name;
-            auto it2 = std::find_if(fft_plot->vfo_freqs.begin(), fft_plot->vfo_freqs.end(), [&name](auto &c)
-                                    { return c.first == name; });
+            auto it2 = std::find_if(fft_plot->vfo_freqs.begin(), fft_plot->vfo_freqs.end(), [&name](auto &c) { return c.first == name; });
             if (it2 != fft_plot->vfo_freqs.end())
                 fft_plot->vfo_freqs.erase(it2);
         }
@@ -118,17 +116,17 @@ void AutoTrackApp::del_vfo(std::string id)
 
         if (it->selected_pipeline.name != "")
         {
-            if (d_settings.contains("finish_processing") && d_settings["finish_processing"].get<bool>() && it->live_pipeline->getOutputFiles().size() > 0)
+            if (d_settings.contains("finish_processing") && d_settings["finish_processing"].get<bool>() && it->live_pipeline->getOutputFile().size() > 0)
             {
-                std::string input_file = it->live_pipeline->getOutputFiles()[0];
-                satdump::Pipeline selected_pipeline_ = it->selected_pipeline;
+                std::string input_file = it->live_pipeline->getOutputFile();
+                satdump::pipeline::Pipeline selected_pipeline_ = it->selected_pipeline;
                 std::string pipeline_output_dir_ = it->output_dir;
                 nlohmann::json pipeline_params_ = it->pipeline_params;
                 auto fun = [selected_pipeline_, pipeline_output_dir_, input_file, pipeline_params_](int)
                 {
-                    satdump::Pipeline pipeline = selected_pipeline_;
-                    int start_level = pipeline.live_cfg.normal_live[pipeline.live_cfg.normal_live.size() - 1].first;
-                    std::string input_level = pipeline.steps[start_level].level_name;
+                    satdump::pipeline::Pipeline pipeline = selected_pipeline_;
+                    int start_level = pipeline.live_cfg.normal_live[pipeline.live_cfg.normal_live.size() - 1];
+                    std::string input_level = pipeline.steps[start_level].level;
                     pipeline.run(input_file, pipeline_output_dir_, pipeline_params_, input_level);
                 };
                 main_thread_pool.push(fun);

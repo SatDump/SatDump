@@ -1,23 +1,21 @@
 #pragma once
 
-#include "core/module.h"
-#include "common/repack.h"
+#include "../instruments/amsu/amsu_reader.h"
 #include "../instruments/avhrr/avhrr_reader.h"
 #include "../instruments/mhs/mhs_reader.h"
 #include "instruments/hirs/hirs_reader.h"
-#include "../instruments/amsu/amsu_reader.h"
 #include "instruments/sem/sem_reader.h"
 #include "instruments/telemetry/telemetry_reader.h"
+#include "pipeline/modules/base/filestream_to_filestream.h"
+#include "pipeline/modules/instrument_utils.h"
 
 namespace noaa
 {
     namespace instruments
     {
-        class NOAAInstrumentsDecoderModule : public ProcessingModule
+        class NOAAInstrumentsDecoderModule : public satdump::pipeline::base::FileStreamToFileStreamModule
         {
         protected:
-            std::atomic<uint64_t> filesize;
-            std::atomic<uint64_t> progress;
             const bool is_gac;
             const bool is_dsb;
 
@@ -45,8 +43,8 @@ namespace noaa
         public:
             static std::string getID();
             virtual std::string getIDM() { return getID(); };
-            static std::vector<std::string> getParameters();
+            static nlohmann::json getParams() { return {}; } // TODOREWORK
             static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         };
-    } // namespace amsu
+    } // namespace instruments
 } // namespace noaa

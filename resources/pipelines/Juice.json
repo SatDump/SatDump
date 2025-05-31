@@ -1,24 +1,16 @@
 {
     "juice_x_link": {
         "name": "JUICE X-Band",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
-        "frequencies": [],
-        "parameters": {},
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
-                   // "resample_after_pll": true,
+                "module": "pm_demod",
+                "parameters": {
+                    // "resample_after_pll": true,
                     "symbolrate": 526316,
                     "pll_bw": 0.002,
                     "rrc_alpha": 0.35,
@@ -27,7 +19,8 @@
                 }
             },
             "cadu": {
-                "ccsds_turbo_decoder": {
+                "module": "ccsds_turbo_decoder",
+                "parameters": {
                     "turbo_rate": "1/2",
                     "turbo_base": 1115,
                     "turbo_iters": 5

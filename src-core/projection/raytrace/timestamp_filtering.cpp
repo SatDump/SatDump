@@ -43,7 +43,7 @@ namespace satdump
 
         std::vector<double> filter_timestamps_width_cfg(std::vector<double> timestamps, nlohmann::json timestamps_filter)
         {
-            logger->debug("Filtering timestamps...");
+            // logger->debug("Filtering timestamps..."); TODOREWORK?
 
             if (timestamps_filter["type"].get<std::string>() == "simple")
             {

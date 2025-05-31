@@ -1,16 +1,9 @@
 {
     "gfsk_test": {
         "name": "GFSK Test",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [],
         "parameters": {
@@ -21,13 +14,15 @@
         "work": {
             "baseband": {},
             "soft": {
-                "fsk_demod": {
+                "module": "fsk_demod",
+                "parameters": {
                     "symbolrate": 4.8e3, //16276.0625,
                     "rrc_alpha": 0.35
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 8192,
                     "nrzm": false,
@@ -39,22 +34,16 @@
     },
     "test_custom": {
         "name": "test_custom",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [],
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 2e6,
                     "rrc_alpha": 0.5,
@@ -62,7 +51,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
@@ -77,20 +67,10 @@
     },
     "ominous_orb": {
         "name": "Ominous Rebroadcast (ORB) WIP!!!",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ],
-            [
-                3,
-                0
-            ]
+        "live": [
+            1,
+            2,
+            3
         ],
         "frequencies": [],
         "parameters": {
@@ -101,7 +81,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 128e3,
                     "rrc_alpha": 0.6,
@@ -109,7 +90,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
@@ -121,7 +103,7 @@
                 }
             },
             "products": {
-                "orb_decoder_test": {}
+                "module": "orb_decoder_test"
             }
         }
     }

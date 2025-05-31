@@ -1,16 +1,9 @@
 {
     "iris_s_dump": {
         "name": "IRIS S-Band Dump",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -22,7 +15,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 512e3,
                     "rrc_alpha": 0.5,
@@ -30,7 +24,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "bpsk_90",
                     "cadu_size": 14304,
                     "nrzm": true,
@@ -49,7 +44,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 7.5e6,
                     "rrc_alpha": 0.5,
@@ -57,7 +53,8 @@
                 }
             },
             "cadu": {
-                "ccsds_ldpc_decoder": {
+                "module": "ccsds_ldpc_decoder",
+                "parameters": {
                     "constellation": "oqpsk",
                     "ldpc_rate": "7/8",
                     "ldpc_iterations": 10,

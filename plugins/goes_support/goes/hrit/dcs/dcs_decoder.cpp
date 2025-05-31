@@ -3,6 +3,7 @@
 #include "dcs_decoder.h"
 #include "core/config.h"
 #include "common/utils.h"
+#include "core/plugin.h"
 #include "utils/http.h"
 #include "common/lrit/crc_table.h"
 #include "nlohmann/json_utils.h"

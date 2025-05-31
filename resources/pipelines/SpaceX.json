@@ -1,8 +1,6 @@
 {
     "falcon9_tlm": {
         "name": "Falcon 9 S-Band TLM",
-        "live": false,
-        "frequencies": [],
         "parameters": {
             "samplerate": {
                 "value": 6e6
@@ -11,25 +9,25 @@
         "work": {
             "baseband": {},
             "soft": {
-                "fsk_demod": {
+                "module": "fsk_demod",
+                "parameters": {
                     "symbolrate": 3571400,
                     "rrc_alpha": 0.35
                 }
             },
             "cadu": {
-                "spacex_tlm_decoder": {
+                "module": "spacex_tlm_decoder",
+                "parameters": {
                     "qpsk": false
                 }
             },
             "products": {
-                "falcon_decoder": {}
+                "module": "falcon_decoder"
             }
         }
     },
     "starship_tlm": {
         "name": "Starship S-Band TLM",
-        "live": false,
-        "frequencies": [],
         "parameters": {
             "samplerate": {
                 "value": 6e6
@@ -38,7 +36,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 3.125e6,
                     "rrc_alpha": 0.5,
@@ -46,7 +45,8 @@
                 }
             },
             "cadu": {
-                "spacex_tlm_decoder": {
+                "module": "spacex_tlm_decoder",
+                "parameters": {
                     "qpsk": true
                 }
             }
@@ -54,16 +54,9 @@
     },
     "crew_dragon_tlm": {
         "name": "Crew Dragon S-Band TLM",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [],
         "parameters": {
@@ -74,13 +67,15 @@
         "work": {
             "baseband": {},
             "soft": {
-                "fsk_demod": {
+                "module": "fsk_demod",
+                "parameters": {
                     "symbolrate": 2.35e6,
                     "rrc_alpha": 0.35
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 2000,
                     "nrzm": false,

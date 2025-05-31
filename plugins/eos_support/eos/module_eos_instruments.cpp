@@ -1,15 +1,16 @@
 #include "module_eos_instruments.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
 #include "common/ccsds/ccsds_aos/vcdu.h"
-#include "image/bowtie.h"
 #include "common/utils.h"
+#include "core/resources.h"
+#include "image/bowtie.h"
 #include "imgui/imgui.h"
 #include "instruments/modis/modis_histmatch.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
 #include "products2/dataset.h"
 #include "products2/image_product.h"
-#include "core/resources.h"
+#include <cstdint>
 #include <filesystem>
 #include <fstream>
 
@@ -17,16 +18,16 @@
 #include "core/exception.h"
 #include "instruments/modis/calibrator/modis_calibrator.h"
 
+#include "common/tracking/tle.h"
 #include "image/image_utils.h"
 #include "image/io.h"
-#include "common/tracking/tle.h"
 
 namespace eos
 {
     namespace instruments
     {
         EOSInstrumentsDecoderModule::EOSInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            : ProcessingModule(input_file, output_file_hint, parameters), d_modis_bowtie(d_parameters["modis_bowtie"].get<bool>())
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters), d_modis_bowtie(d_parameters["modis_bowtie"].get<bool>())
         {
             if (parameters["satellite"] == "terra")
                 d_satellite = TERRA;
@@ -36,18 +37,13 @@ namespace eos
                 d_satellite = AURA;
             else
                 throw satdump_exception("EOS Instruments Decoder : EOS satellite \"" + parameters["satellite"].get<std::string>() + "\" is not valid!");
+            fsfsm_enable_output = false;
         }
 
         void EOSInstrumentsDecoderModule::process()
         {
-            filesize = getFilesize(d_input_file);
-            std::ifstream data_in(d_input_file, std::ios::binary);
-
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MODIS";
 
-            logger->info("Using input frames " + d_input_file);
-
-            time_t lastTime = 0;
             uint8_t cadu[1024];
 
             // Demuxers
@@ -61,10 +57,10 @@ namespace eos
             ccsds::ccsds_aos::Demuxer demuxer_vcid35;
             ccsds::ccsds_aos::Demuxer demuxer_vcid42;
 
-            while (!data_in.eof())
+            while (should_run())
             {
                 // Read buffer
-                data_in.read((char *)&cadu, 1024);
+                read_data((uint8_t *)&cadu, 1024);
 
                 // Parse this transport frame
                 ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
@@ -145,17 +141,9 @@ namespace eos
                         }
                     }
                 }
-
-                progress = data_in.tellg();
-
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
-            data_in.close();
+            cleanup();
 
             // Products dataset
             satdump::products::DataSet dataset;
@@ -526,16 +514,14 @@ namespace eos
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
         std::string EOSInstrumentsDecoderModule::getID() { return "eos_instruments"; }
 
-        std::vector<std::string> EOSInstrumentsDecoderModule::getParameters() { return {"satellite", "modis_bowtie"}; }
-
-        std::shared_ptr<ProcessingModule> EOSInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> EOSInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<EOSInstrumentsDecoderModule>(input_file, output_file_hint, parameters);
         }

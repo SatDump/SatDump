@@ -2,18 +2,18 @@
 
 #include <memory>
 
-#include "common/dsp_source_sink/dsp_sample_source.h"
-#include "common/dsp/path/splitter.h"
 #include "common/dsp/fft/fft_pan.h"
-#include "common/widgets/fft_plot.h"
+#include "common/dsp/path/splitter.h"
 #include "common/dsp/resamp/smart_resampler.h"
+#include "common/dsp_source_sink/dsp_sample_source.h"
+#include "common/widgets/fft_plot.h"
 
 #include "common/tracking/obj_tracker/object_tracker.h"
-#include "common/tracking/scheduler/scheduler.h"
 #include "common/tracking/rotator/rotcl_handler.h"
+#include "common/tracking/scheduler/scheduler.h"
 
-#include "core/live_pipeline.h"
 #include "common/dsp/io/file_sink.h"
+#include "pipeline/live_pipeline.h"
 
 #include "common/dsp/io/net_sink.h"
 
@@ -68,8 +68,8 @@ private:
 
 private:
     std::mutex live_pipeline_mtx;
-    std::unique_ptr<satdump::LivePipeline> live_pipeline;
-    satdump::Pipeline selected_pipeline;
+    std::unique_ptr<satdump::pipeline::LivePipeline> live_pipeline;
+    satdump::pipeline::Pipeline selected_pipeline;
     nlohmann::json pipeline_params;
     std::string pipeline_output_dir;
 
@@ -97,11 +97,11 @@ private: // VFO Stuff
         double freq;
 
         //// Live
-        satdump::Pipeline selected_pipeline;
+        satdump::pipeline::Pipeline selected_pipeline;
         nlohmann::json pipeline_params;
         std::string output_dir;
         std::shared_ptr<ctpl::thread_pool> lpool;
-        std::shared_ptr<satdump::LivePipeline> live_pipeline;
+        std::shared_ptr<satdump::pipeline::LivePipeline> live_pipeline;
 
         //// Recording
         std::shared_ptr<dsp::SmartResamplerBlock<complex_t>> decim_ptr;
@@ -111,7 +111,7 @@ private: // VFO Stuff
     std::mutex vfos_mtx;
     std::vector<VFOInfo> vfo_list;
 
-    void add_vfo_live(std::string id, std::string name, double freq, satdump::Pipeline vpipeline, nlohmann::json vpipeline_params);
+    void add_vfo_live(std::string id, std::string name, double freq, satdump::pipeline::Pipeline vpipeline, nlohmann::json vpipeline_params);
     void add_vfo_reco(std::string id, std::string name, double freq, dsp::BasebandType type, int decimation = -1);
     void del_vfo(std::string id);
 

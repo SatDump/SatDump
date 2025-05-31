@@ -1,39 +1,30 @@
 #include "module_gk2a_lrit_data_decoder.h"
-#include <fstream>
-#include "logger.h"
-#include <filesystem>
+#include "common/lrit/lrit_demux.h"
+#include "common/utils.h"
+#include "core/resources.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
-#include "common/utils.h"
-#include "common/lrit/lrit_demux.h"
-#include "lrit_header.h"
-#include "core/resources.h"
+#include "init.h"
 #include "key_decryptor.h"
 #include "libs/miniz/miniz.h"
 #include "libs/miniz/miniz_zip.h"
-#include "init.h"
+#include "logger.h"
+#include "lrit_header.h"
 #include "utils/http.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
 namespace gk2a
 {
     namespace lrit
     {
-        GK2ALRITDataDecoderModule::GK2ALRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                write_images(parameters["write_images"].get<bool>()),
-                                                                                                                                                write_additional(parameters["write_additional"].get<bool>()),
-                                                                                                                                                write_unknown(parameters["write_unknown"].get<bool>()),
-                                                                                                                                                productizer("ami", false, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
+        GK2ALRITDataDecoderModule::GK2ALRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters), write_images(parameters["write_images"].get<bool>()),
+              write_additional(parameters["write_additional"].get<bool>()), write_unknown(parameters["write_unknown"].get<bool>()),
+              productizer("ami", false, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
         {
-        }
-
-        std::vector<ModuleDataType> GK2ALRITDataDecoderModule::getInputTypes()
-        {
-            return {DATA_FILE, DATA_STREAM};
-        }
-
-        std::vector<ModuleDataType> GK2ALRITDataDecoderModule::getOutputTypes()
-        {
-            return {DATA_FILE};
+            fsfsm_enable_output = false;
         }
 
         GK2ALRITDataDecoderModule::~GK2ALRITDataDecoderModule()
@@ -51,24 +42,10 @@ namespace gk2a
 
         void GK2ALRITDataDecoderModule::process()
         {
-            std::ifstream data_in;
-
-            if (input_data_type == DATA_FILE)
-                filesize = getFilesize(d_input_file);
-            else
-                filesize = 0;
-            if (input_data_type == DATA_FILE)
-                data_in = std::ifstream(d_input_file, std::ios::binary);
-
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
-
-            logger->info("Using input frames " + d_input_file);
-            logger->info("Decoding to " + directory);
-
-            time_t lastTime = 0;
 
             uint8_t cadu[1024];
 
@@ -140,14 +117,8 @@ namespace gk2a
                 {
                     keyFile.read((char *)readBuf, 10);
                     int index = readBuf[0] << 8 | readBuf[1];
-                    uint64_t key = (uint64_t)readBuf[2] << 56 |
-                                   (uint64_t)readBuf[3] << 48 |
-                                   (uint64_t)readBuf[4] << 40 |
-                                   (uint64_t)readBuf[5] << 32 |
-                                   (uint64_t)readBuf[6] << 24 |
-                                   (uint64_t)readBuf[7] << 16 |
-                                   (uint64_t)readBuf[8] << 8 |
-                                   (uint64_t)readBuf[9];
+                    uint64_t key = (uint64_t)readBuf[2] << 56 | (uint64_t)readBuf[3] << 48 | (uint64_t)readBuf[4] << 40 | (uint64_t)readBuf[5] << 32 | (uint64_t)readBuf[6] << 24 |
+                                   (uint64_t)readBuf[7] << 16 | (uint64_t)readBuf[8] << 8 | (uint64_t)readBuf[9];
                     std::memcpy(&key, &readBuf[2], 8);
                     decryption_keys.emplace(std::pair<int, uint64_t>(index, key));
                 }
@@ -165,8 +136,7 @@ namespace gk2a
 
             this->directory = directory;
 
-            lrit_demux.onParseHeader =
-                [](::lrit::LRITFile &file) -> void
+            lrit_demux.onParseHeader = [](::lrit::LRITFile &file) -> void
             {
                 // Check if this is image data
                 if (file.hasHeader<::lrit::ImageStructureRecord>())
@@ -216,30 +186,18 @@ namespace gk2a
             if (!std::filesystem::exists(directory + "/IMAGES/Unknown"))
                 std::filesystem::create_directories(directory + "/IMAGES/Unknown");
 
-            while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
+            while (should_run())
             {
                 // Read buffer
-                if (input_data_type == DATA_FILE)
-                    data_in.read((char *)&cadu, 1024);
-                else
-                    input_fifo->read((uint8_t *)&cadu, 1024);
+                read_data((uint8_t *)&cadu, 1024);
 
                 std::vector<::lrit::LRITFile> files = lrit_demux.work(cadu);
 
                 for (auto &file : files)
                     processLRITFile(file);
-
-                if (input_data_type == DATA_FILE)
-                    progress = data_in.tellg();
-
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
-            data_in.close();
+            cleanup();
 
             for (auto &segmentedDecoder : segmentedDecoders)
                 if (segmentedDecoder.second.image_id != "")
@@ -310,25 +268,16 @@ namespace gk2a
             }
             ImGui::EndTabBar();
 
-            if (!streamingInput)
-                ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
-        std::string GK2ALRITDataDecoderModule::getID()
-        {
-            return "gk2a_lrit_data_decoder";
-        }
+        std::string GK2ALRITDataDecoderModule::getID() { return "gk2a_lrit_data_decoder"; }
 
-        std::vector<std::string> GK2ALRITDataDecoderModule::getParameters()
-        {
-            return {"write_images", "write_additional", "write_unknown"};
-        }
-
-        std::shared_ptr<ProcessingModule> GK2ALRITDataDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> GK2ALRITDataDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<GK2ALRITDataDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace avhrr
-} // namespace metop
+    } // namespace lrit
+} // namespace gk2a

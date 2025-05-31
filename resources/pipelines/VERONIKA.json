@@ -1,12 +1,8 @@
 {
     "veronika_link": {
         "name": "VERONIKA UHF Link",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0 
-            ]
+        "live": [
+            1
         ],
         "frequencies": [
             [
@@ -31,7 +27,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "fsk_demod": {
+                "module": "fsk_demod",
+                "parameters": {
                     "symbolrate": 9600,
                     "rrc_alpha": 0.5,
                     "enable_doppler": true,
@@ -39,8 +36,9 @@
                     "satellite_frequency": 436.680e6
                 }
             },
-            "frm":{
-                "ax25_decoder":{
+            "frm": {
+                "module": "ax25_decoder",
+                "parameters": {
                     "nrzi": true,
                     "g3ruh": true,
                     "min_sz": 10,

@@ -1,11 +1,12 @@
 #include "module_cloudsat_cpr.h"
-#include <fstream>
 #include "cpr_reader.h"
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
-#include "image/io.h"
 #include "image/image_lut.h"
+#include "image/io.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
 #define BUFFER_SIZE 8192
 
@@ -16,44 +17,30 @@ namespace cloudsat
 {
     namespace cpr
     {
-        CloudSatCPRDecoderModule::CloudSatCPRDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        CloudSatCPRDecoderModule::CloudSatCPRDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
+            fsfsm_enable_output = false;
         }
 
         void CloudSatCPRDecoderModule::process()
         {
-            filesize = getFilesize(d_input_file);
-            std::ifstream data_in(d_input_file, std::ios::binary);
-
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/CPR";
-
-            logger->info("Using input frames " + d_input_file);
-            logger->info("Decoding to " + directory);
-
-            time_t lastTime = 0;
 
             CPReader reader;
             uint8_t buffer[402];
 
             logger->info("Demultiplexing and deframing...");
 
-            while (!data_in.eof())
+            while (should_run())
             {
                 // Read buffer
-                data_in.read((char *)buffer, 402);
+                read_data((uint8_t *)buffer, 402);
 
                 reader.work(buffer);
-
-                progress = data_in.tellg();
-
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
-            data_in.close();
+            cleanup();
 
             logger->info("CPR Lines            : " + std::to_string(reader.lines));
 
@@ -84,24 +71,16 @@ namespace cloudsat
         {
             ImGui::Begin("CloudSat CPR Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
-        std::string CloudSatCPRDecoderModule::getID()
-        {
-            return "cloudsat_cpr";
-        }
+        std::string CloudSatCPRDecoderModule::getID() { return "cloudsat_cpr"; }
 
-        std::vector<std::string> CloudSatCPRDecoderModule::getParameters()
-        {
-            return {};
-        }
-
-        std::shared_ptr<ProcessingModule> CloudSatCPRDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> CloudSatCPRDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<CloudSatCPRDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace avhrr
-} // namespace noaa
+    } // namespace cpr
+} // namespace cloudsat

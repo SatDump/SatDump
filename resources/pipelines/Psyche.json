@@ -1,23 +1,17 @@
 {
     "psyche_hr": {
         "name": "Psyche High Rate",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [],
         "parameters": {},
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 368e3,
                     "rrc_alpha": 0.35,
@@ -26,7 +20,8 @@
                 }
             },
             "cadu": {
-                "ccsds_turbo_decoder": {
+                "module": "ccsds_turbo_decoder",
+                "parameters": {
                     "turbo_rate": "1/6",
                     "turbo_base": 1115,
                     "turbo_iters": 1

@@ -27,20 +27,15 @@ namespace metop
     namespace instruments
     {
         MetOpInstrumentsDecoderModule::MetOpInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            : ProcessingModule(input_file, output_file_hint, parameters), avhrr_reader(false, -1)
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters), avhrr_reader(false, -1)
         {
             write_hpt = parameters.contains("write_hpt") ? parameters["write_hpt"].get<bool>() : false;
             ignore_integrated_tle = parameters.contains("ignore_integrated_tle") ? parameters["ignore_integrated_tle"].get<bool>() : false;
+            fsfsm_enable_output = false;
         }
 
         void MetOpInstrumentsDecoderModule::process()
         {
-            filesize = getFilesize(d_input_file);
-            std::ifstream data_in(d_input_file, std::ios::binary);
-
-            logger->info("Using input frames " + d_input_file);
-
-            time_t lastTime = 0;
             uint8_t cadu[1024];
 
             // Demuxers
@@ -68,10 +63,10 @@ namespace metop
 
             std::vector<uint8_t> metop_scids;
 
-            while (!data_in.eof())
+            while (should_run())
             {
                 // Read buffer
-                data_in.read((char *)&cadu, 1024);
+                read_data(cadu, 1024);
 
                 // Parse this transport frame
                 ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
@@ -141,16 +136,9 @@ namespace metop
                         if (pkt.header.apid == 6)
                             admin_msg_reader.work(pkt);
                 }
-
-                progress = data_in.tellg();
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
-            data_in.close();
+            cleanup();
 
             int scid = satdump::most_common(metop_scids.begin(), metop_scids.end(), 0);
             metop_scids.clear();
@@ -602,16 +590,14 @@ namespace metop
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
         std::string MetOpInstrumentsDecoderModule::getID() { return "metop_instruments"; }
 
-        std::vector<std::string> MetOpInstrumentsDecoderModule::getParameters() { return {}; }
-
-        std::shared_ptr<ProcessingModule> MetOpInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> MetOpInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<MetOpInstrumentsDecoderModule>(input_file, output_file_hint, parameters);
         }

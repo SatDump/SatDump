@@ -1,20 +1,22 @@
 #include "module_stereo_instruments.h"
-#include <fstream>
-#include "common/ccsds/ccsds_tm/vcdu.h"
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
-#include "common/utils.h"
 #include "common/ccsds/ccsds_tm/demuxer.h"
+#include "common/ccsds/ccsds_tm/vcdu.h"
+#include "common/utils.h"
 #include "image/io.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
 #include "core/resources.h"
 
 namespace stereo
 {
     StereoInstrumentsDecoderModule::StereoInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-        : ProcessingModule(input_file, output_file_hint, parameters)
+        : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
     {
+        fsfsm_enable_output = false;
     }
 
     image::Image StereoInstrumentsDecoderModule::decompress_icer_tool(uint8_t *data, int dsize, int size)
@@ -63,12 +65,6 @@ namespace stereo
 
     void StereoInstrumentsDecoderModule::process()
     {
-        filesize = getFilesize(d_input_file);
-        std::ifstream data_in(d_input_file, std::ios::binary);
-
-        logger->info("Using input frames " + d_input_file);
-
-        time_t lastTime = 0;
         uint8_t cadu[1119];
 
         // std::ofstream output("file.ccsds");
@@ -82,10 +78,10 @@ namespace stereo
 
         secchi_reader = new secchi::SECCHIReader(d_parameters["icer_path"], directory + "/SECCHI");
 
-        while (!data_in.eof())
+        while (should_run())
         {
             // Read buffer
-            data_in.read((char *)&cadu, 1119);
+            read_data((uint8_t *)&cadu, 1119);
 
             // Parse this transport frame
             ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
@@ -132,12 +128,8 @@ namespace stereo
                     {
                         secchi_reader->work(pkt);
                     }
-                    else if (pkt.header.apid == 880)
-                    {
-                    }
-                    else if (pkt.header.apid == 624)
-                    {
-                    }
+                    else if (pkt.header.apid == 880) {}
+                    else if (pkt.header.apid == 624) {}
                     else if (pkt.header.apid == 0) // IDK
                     {
                     }
@@ -147,18 +139,11 @@ namespace stereo
                     }
                 }
             }
-
-            progress = data_in.tellg();
-            if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-            {
-                lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-            }
         }
 
         delete secchi_reader;
 
-        data_in.close();
+        cleanup();
 
         {
             logger->info("----------- S/WAVES");
@@ -197,23 +182,15 @@ namespace stereo
             ImGui::EndTable();
         }*/
 
-        ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+        drawProgressBar();
 
         ImGui::End();
     }
 
-    std::string StereoInstrumentsDecoderModule::getID()
-    {
-        return "stereo_instruments";
-    }
+    std::string StereoInstrumentsDecoderModule::getID() { return "stereo_instruments"; }
 
-    std::vector<std::string> StereoInstrumentsDecoderModule::getParameters()
-    {
-        return {};
-    }
-
-    std::shared_ptr<ProcessingModule> StereoInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<satdump::pipeline::ProcessingModule> StereoInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<StereoInstrumentsDecoderModule>(input_file, output_file_hint, parameters);
     }
-}
+} // namespace stereo

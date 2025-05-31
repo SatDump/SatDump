@@ -1,8 +1,9 @@
 #include "module_angels_argos.h"
-#include <fstream>
-#include "logger.h"
-#include <filesystem>
 #include "imgui/imgui.h"
+#include "logger.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
 #include "image/image.h"
 #include "image/io.h"
@@ -18,24 +19,19 @@ namespace angels
 {
     namespace argos
     {
-        AngelsArgosDecoderModule::AngelsArgosDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        AngelsArgosDecoderModule::AngelsArgosDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
+            fsfsm_enable_output = false;
         }
 
         void AngelsArgosDecoderModule::process()
         {
-            filesize = getFilesize(d_input_file);
-            std::ifstream data_in(d_input_file, std::ios::binary);
 
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
-
-            logger->info("Using input frames " + d_input_file);
-            logger->info("Decoding to " + directory);
-
-            time_t lastTime = 0;
 
             uint64_t argos_cadu = 0, ccsds = 0, argos_ccsds = 0;
             uint8_t cadu[1024];
@@ -49,10 +45,10 @@ namespace angels
             image::Image fft_image(8, 4096, 5000, 1);
             int lines = 0;
 
-            while (!data_in.eof())
+            while (should_run())
             {
                 // Read buffer
-                data_in.read((char *)&cadu, 1024);
+                read_data((uint8_t *)&cadu, 1024);
 
                 // Parse this transport frame
                 int vcid = cadu[5] % (int)pow(2, 6);
@@ -71,17 +67,9 @@ namespace angels
                     if (cnt == 5)
                         lines++;
                 }
-
-                progress = data_in.tellg();
-
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
-            data_in.close();
+            cleanup();
             // frames_out.close();
 
             fft_image.crop(0, 0, 4096, lines);
@@ -98,24 +86,16 @@ namespace angels
         {
             ImGui::Begin("Angels ARGOS Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
-        std::string AngelsArgosDecoderModule::getID()
-        {
-            return "angels_argos";
-        }
+        std::string AngelsArgosDecoderModule::getID() { return "angels_argos"; }
 
-        std::vector<std::string> AngelsArgosDecoderModule::getParameters()
-        {
-            return {};
-        }
-
-        std::shared_ptr<ProcessingModule> AngelsArgosDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> AngelsArgosDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<AngelsArgosDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace avhrr
-} // namespace metop
+    } // namespace argos
+} // namespace angels

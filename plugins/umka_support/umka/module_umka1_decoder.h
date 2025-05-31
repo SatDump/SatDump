@@ -1,15 +1,11 @@
 #pragma once
 
-#include "core/module.h"
+#include "pipeline/modules/base/filestream_to_filestream.h"
 
 namespace umka
 {
-    class UmKA1DecoderModule : public ProcessingModule
+    class UmKA1DecoderModule : public satdump::pipeline::base::FileStreamToFileStreamModule
     {
-    protected:
-        std::atomic<uint64_t> filesize;
-        std::atomic<uint64_t> progress;
-
     public:
         UmKA1DecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         void process();
@@ -18,7 +14,7 @@ namespace umka
     public:
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
-        static std::vector<std::string> getParameters();
+        static nlohmann::json getParams() { return {}; } // TODOREWORK
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
-}
+} // namespace umka

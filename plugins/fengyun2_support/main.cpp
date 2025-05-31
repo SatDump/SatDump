@@ -1,4 +1,3 @@
-#include "core/module.h"
 #include "core/plugin.h"
 #include "logger.h"
 
@@ -10,9 +9,9 @@ class FengYun2Support : public satdump::Plugin
 public:
     std::string getID() { return "fengyun2_support"; }
 
-    void init() { satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler); }
+    void init() { satdump::eventBus->register_handler<satdump::pipeline::RegisterModulesEvent>(registerPluginsHandler); }
 
-    static void registerPluginsHandler(const RegisterModulesEvent &evt)
+    static void registerPluginsHandler(const satdump::pipeline::RegisterModulesEvent &evt)
     {
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, fengyun_svissr::SVISSRDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, fengyun_svissr::SVISSRImageDecoderModule);

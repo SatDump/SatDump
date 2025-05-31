@@ -1,21 +1,22 @@
 #pragma once
 
-#include "core/module.h"
+#include "pipeline/modules/base/filestream_to_filestream.h"
 
-#include "instruments/modis/modis_reader.h"
 #include "../aqua/instruments/airs/airs_reader.h"
 #include "../aqua/instruments/amsu/amsu_a1_reader.h"
 #include "../aqua/instruments/amsu/amsu_a2_reader.h"
 #include "../aqua/instruments/ceres/ceres_reader.h"
 #include "../aura/instruments/omi/omi_reader.h"
+#include "instruments/modis/modis_reader.h"
 
 #include "../aqua/instruments/gbad/gbad_reader.h"
+#include "pipeline/modules/instrument_utils.h"
 
 namespace eos
 {
     namespace instruments
     {
-        class EOSInstrumentsDecoderModule : public ProcessingModule
+        class EOSInstrumentsDecoderModule : public satdump::pipeline::base::FileStreamToFileStreamModule
         {
         protected:
             enum eos_sat_t
@@ -27,9 +28,6 @@ namespace eos
 
             eos_sat_t d_satellite;
             bool d_modis_bowtie;
-
-            std::atomic<uint64_t> filesize;
-            std::atomic<uint64_t> progress;
 
             // Readers
             modis::MODISReader modis_reader;
@@ -59,8 +57,8 @@ namespace eos
         public:
             static std::string getID();
             virtual std::string getIDM() { return getID(); };
-            static std::vector<std::string> getParameters();
+            static nlohmann::json getParams() { return {}; } // TODOREWORK
             static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         };
-    } // namespace modis
+    } // namespace instruments
 } // namespace eos

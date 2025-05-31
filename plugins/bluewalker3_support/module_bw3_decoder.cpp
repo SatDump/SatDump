@@ -1,39 +1,33 @@
 #include "module_bw3_decoder.h"
-#include <fstream>
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
 #include "common/utils.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
 namespace bluewalker3
 {
-    BW3DecoderModule::BW3DecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                          d_cadu_size(parameters["cadu_size"].get<int>()),
-                                                                                                                          d_payload_size(parameters["payload_size"].get<int>())
+    BW3DecoderModule::BW3DecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters), d_cadu_size(parameters["cadu_size"].get<int>()),
+          d_payload_size(parameters["payload_size"].get<int>())
     {
+        fsfsm_enable_output = false;
     }
 
     void BW3DecoderModule::process()
     {
-        filesize = getFilesize(d_input_file);
-        std::ifstream data_in(d_input_file, std::ios::binary);
-
         std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/";
-
-        logger->info("Using input frames " + d_input_file);
-        logger->info("Decoding to " + directory);
-
-        time_t lastTime = 0;
 
         uint8_t *buffer = new uint8_t[d_cadu_size];
 
         std::vector<uint8_t> wip_pkt;
         std::vector<uint8_t> wip_pictures_stream;
 
-        while (!data_in.eof())
+        while (should_run())
         {
             // Read buffer
-            data_in.read((char *)buffer, d_cadu_size);
+            read_data((uint8_t *)buffer, d_cadu_size);
 
             uint8_t frame_type = buffer[5];
 
@@ -61,18 +55,10 @@ namespace bluewalker3
                     wip_pkt.insert(wip_pkt.end(), &buffer[21 + ptr], &buffer[21 + d_payload_size]);
                 }
             }
-
-            progress = data_in.tellg();
-
-            if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-            {
-                lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-            }
         }
 
         delete[] buffer;
-        data_in.close();
+        cleanup();
 
         uint8_t sliding_header[4] = {0, 0, 0, 0};
         std::vector<uint8_t> wip_until_hdr;
@@ -116,23 +102,15 @@ namespace bluewalker3
     {
         ImGui::Begin("BlueWalker-3 Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
-        ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+        drawProgressBar();
 
         ImGui::End();
     }
 
-    std::string BW3DecoderModule::getID()
-    {
-        return "bw3_decoder";
-    }
+    std::string BW3DecoderModule::getID() { return "bw3_decoder"; }
 
-    std::vector<std::string> BW3DecoderModule::getParameters()
-    {
-        return {};
-    }
-
-    std::shared_ptr<ProcessingModule> BW3DecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<satdump::pipeline::ProcessingModule> BW3DecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<BW3DecoderModule>(input_file, output_file_hint, parameters);
     }
-}
+} // namespace bluewalker3

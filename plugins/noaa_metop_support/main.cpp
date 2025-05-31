@@ -4,7 +4,6 @@
 #include "metop/instruments/iasi/iasi_img_calibrator.h"
 #include "noaa/instruments/hirs/hirs_calibrator.h"
 
-#include "core/module.h"
 #include "core/plugin.h"
 
 #include "metop/module_metop_ahrpt_decoder.h"
@@ -16,6 +15,7 @@
 #include "noaa/module_noaa_hrpt_decoder.h"
 #include "noaa/module_noaa_instruments.h"
 
+#include "pipeline/module.h"
 #include "products2/image/image_calibrator.h"
 
 class NOAAMetOpSupport : public satdump::Plugin
@@ -25,11 +25,11 @@ public:
 
     void init()
     {
-        satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
+        satdump::eventBus->register_handler<satdump::pipeline::RegisterModulesEvent>(registerPluginsHandler);
         satdump::eventBus->register_handler<satdump::products::RequestImageCalibratorEvent>(provideImageCalibratorHandler);
     }
 
-    static void registerPluginsHandler(const RegisterModulesEvent &evt)
+    static void registerPluginsHandler(const satdump::pipeline::RegisterModulesEvent &evt)
     {
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, metop::MetOpAHRPTDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, metop::MetOpDumpDecoderModule);

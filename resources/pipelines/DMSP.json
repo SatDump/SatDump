@@ -1,16 +1,9 @@
 {
     "dmsp_rtd": {
         "name": "DMSP RTD",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -47,7 +40,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 1.024e6,
                     "rrc_alpha": 0.5,
@@ -55,10 +49,10 @@
                 }
             },
             "frm": {
-                "dmsp_rtd_decoder": {}
+                "module": "dmsp_rtd_decoder"
             },
             "products": {
-                "dmsp_rtd_instruments": {}
+                "module": "dmsp_rtd_instruments"
             }
         }
     }

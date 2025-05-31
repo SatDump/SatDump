@@ -1,14 +1,15 @@
 #pragma once
 
-#include "core/module.h"
+#include "pipeline/module.h"
 
-#include "common/dsp/utils/real_to_complex.h"
-#include "common/dsp/utils/freq_shift.h"
 #include "common/dsp/filter/fir.h"
 #include "common/dsp/resamp/rational_resampler.h"
 #include "common/dsp/utils/complex_to_mag.h"
+#include "common/dsp/utils/freq_shift.h"
+#include "common/dsp/utils/real_to_complex.h"
 
 #include "image/image.h"
+#include "pipeline/modules/instrument_utils.h"
 
 #define APT_IMG_WIDTH 2080
 #define APT_IMG_OVERS 4
@@ -43,7 +44,7 @@ namespace noaa_apt
         int rchannel = -1;
     };
 
-    class NOAAAPTDecoderModule : public ProcessingModule
+    class NOAAAPTDecoderModule : public satdump::pipeline::ProcessingModule
     {
     protected:
         std::atomic<uint64_t> filesize;
@@ -69,6 +70,8 @@ namespace noaa_apt
         unsigned int textureID = 0;
         uint32_t *textureBuffer = nullptr;
 
+        int gl_line_cnt = 0;
+
         // Functions
         image::Image synchronize(int line_cnt);
 
@@ -81,13 +84,15 @@ namespace noaa_apt
         ~NOAAAPTDecoderModule();
         void process();
         void drawUI(bool window);
-        std::vector<ModuleDataType> getInputTypes() { return {DATA_FILE, DATA_STREAM}; }
-        std::vector<ModuleDataType> getOutputTypes() { return {DATA_FILE}; }
+        std::vector<satdump::pipeline::ModuleDataType> getInputTypes() { return {satdump::pipeline::DATA_FILE, satdump::pipeline::DATA_STREAM}; }
+        std::vector<satdump::pipeline::ModuleDataType> getOutputTypes() { return {satdump::pipeline::DATA_FILE}; }
+
+        nlohmann::json getModuleStats();
 
     public:
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
-        static std::vector<std::string> getParameters();
+        static nlohmann::json getParams() { return {}; } // TODOREWORK
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
-}
+} // namespace noaa_apt

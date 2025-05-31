@@ -1,20 +1,19 @@
 #include "module_meteor_xband_decoder.h"
-#include "logger.h"
-#include "imgui/imgui.h"
-#include "common/utils.h"
 #include "common/codings/differential/nrzm.h"
-#include "meteor_rec_deframer.h"
-#include "common/simple_deframer.h"
-#include "common/repack_bits_byte.h"
 #include "common/codings/soft_reader.h"
+#include "common/repack_bits_byte.h"
+#include "common/simple_deframer.h"
+#include "common/utils.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include "meteor_rec_deframer.h"
 
 #define BUFFER_SIZE 8192
 
 namespace meteor
 {
     MeteorXBandDecoderModule::MeteorXBandDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-        : ProcessingModule(input_file, output_file_hint, parameters),
-          constellation(1.0, 0.15, demod_constellation_size)
+        : ProcessingModule(input_file, output_file_hint, parameters), constellation(1.0, 0.15, demod_constellation_size)
     {
         d_instrument_mode = parseDumpType(parameters);
 
@@ -32,15 +31,9 @@ namespace meteor
             rpkt_buffer = new uint8_t[BUFFER_SIZE];
     }
 
-    std::vector<ModuleDataType> MeteorXBandDecoderModule::getInputTypes()
-    {
-        return {DATA_FILE, DATA_STREAM};
-    }
+    std::vector<ModuleDataType> MeteorXBandDecoderModule::getInputTypes() { return {DATA_FILE, DATA_STREAM}; }
 
-    std::vector<ModuleDataType> MeteorXBandDecoderModule::getOutputTypes()
-    {
-        return {DATA_FILE};
-    }
+    std::vector<ModuleDataType> MeteorXBandDecoderModule::getOutputTypes() { return {DATA_FILE}; }
 
     MeteorXBandDecoderModule::~MeteorXBandDecoderModule()
     {
@@ -57,15 +50,9 @@ namespace meteor
 
         for (int o = 0; o < 4; o++)
             for (int c = 0; c < 15040; c++)
-                (*final_frames)[o][c] =
-                ((kfrm[c * 4 + 0] >> (7 - o)) & 1) << 7 |
-                ((kfrm[c * 4 + 0] >> (3 - o)) & 1) << 6 |
-                ((kfrm[c * 4 + 1] >> (7 - o)) & 1) << 5 |
-                ((kfrm[c * 4 + 1] >> (3 - o)) & 1) << 4 |
-                ((kfrm[c * 4 + 2] >> (7 - o)) & 1) << 3 |
-                ((kfrm[c * 4 + 2] >> (3 - o)) & 1) << 2 |
-                ((kfrm[c * 4 + 3] >> (7 - o)) & 1) << 1 |
-                ((kfrm[c * 4 + 3] >> (3 - o)) & 1) << 0;
+                (*final_frames)[o][c] = ((kfrm[c * 4 + 0] >> (7 - o)) & 1) << 7 | ((kfrm[c * 4 + 0] >> (3 - o)) & 1) << 6 | ((kfrm[c * 4 + 1] >> (7 - o)) & 1) << 5 |
+                                        ((kfrm[c * 4 + 1] >> (3 - o)) & 1) << 4 | ((kfrm[c * 4 + 2] >> (7 - o)) & 1) << 3 | ((kfrm[c * 4 + 2] >> (3 - o)) & 1) << 2 |
+                                        ((kfrm[c * 4 + 3] >> (7 - o)) & 1) << 1 | ((kfrm[c * 4 + 3] >> (3 - o)) & 1) << 0;
     }
 
     void MeteorXBandDecoderModule::process()
@@ -77,12 +64,12 @@ namespace meteor
         if (input_data_type == DATA_FILE)
             data_in = std::ifstream(d_input_file, std::ios::binary);
         data_out = std::ofstream(d_output_file_hint + ".frm", std::ios::binary);
-        d_output_files.push_back(d_output_file_hint + ".frm");
+        d_output_file = d_output_file_hint + ".frm";
 
         logger->info("Using input data " + d_input_file);
         logger->info("Decoding to " + d_output_file_hint + ".frm");
 
-        SoftSymbolReader soft_reader(data_in, input_fifo, input_data_type, d_parameters);
+        satdump::SoftSymbolReader soft_reader(data_in, input_fifo, input_data_type, d_parameters);
 
         if (d_instrument_mode == DUMP_TYPE_MTVZA || d_instrument_mode == DUMP_TYPE_KMSS_BPSK)
         {
@@ -226,7 +213,8 @@ namespace meteor
                 {
                     lastTime = time(NULL);
                     std::string deframer_state = ""; // def->getState() == 0 ? "NOSYNC" : (def->getState() == 2 || def->getState() == 6 ? "SYNCING" : "SYNCED");
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, Deframer : " + deframer_state + ", Frames : " + std::to_string(frame_count));
+                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, Deframer : " + deframer_state +
+                                 ", Frames : " + std::to_string(frame_count));
                 }
             }
         }
@@ -279,21 +267,13 @@ namespace meteor
         }
         ImGui::EndGroup();
 
-        if (!streamingInput)
+        if (!d_is_streaming_input)
             ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         ImGui::End();
     }
 
-    std::string MeteorXBandDecoderModule::getID()
-    {
-        return "meteor_xband_decoder";
-    }
-
-    std::vector<std::string> MeteorXBandDecoderModule::getParameters()
-    {
-        return {};
-    }
+    std::string MeteorXBandDecoderModule::getID() { return "meteor_xband_decoder"; }
 
     std::shared_ptr<ProcessingModule> MeteorXBandDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {

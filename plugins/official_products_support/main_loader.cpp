@@ -1,11 +1,11 @@
-#include "core/module.h"
 #include "core/plugin.h"
 #include "logger.h"
 
 #include "core/config.h"
-#include "imgui/imgui_stdlib.h"
+
 #include "loader/archive_loader.h"
 
+#include "imgui/imgui_stdlib.h"
 #include "viewer2/viewer.h"
 
 namespace
