@@ -1,7 +1,8 @@
 #pragma once
 
-#include "acars_parser.h"
 #include "common/net/udp.h"
+
+#include "acars_parser.h"
 #include "decode_utils.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
 #include "pkt_structs.h"

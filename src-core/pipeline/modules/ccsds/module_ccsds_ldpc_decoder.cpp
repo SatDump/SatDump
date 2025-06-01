@@ -7,7 +7,6 @@
 #include "logger.h"
 #include "utils/binary.h"
 #include <cstdint>
-#include <unistd.h>
 
 namespace satdump
 {

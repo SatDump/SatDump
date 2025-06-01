@@ -1,5 +1,6 @@
 #include "shapefile.h"
 #include "utils/binary.h"
+#include <string>
 
 namespace shapefile
 {

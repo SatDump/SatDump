@@ -1,6 +1,8 @@
+#define SATDUMP_DLL_EXPORT 1
+
 #include "pipeline/module.h"
 #include "pipeline/pipeline.h"
-#define SATDUMP_DLL_EXPORT 1
+
 #include "core/config.h"
 #include "core/plugin.h"
 #include "core/resources.h"

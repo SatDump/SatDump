@@ -2,6 +2,7 @@
 #include "logger.h"
 #include "common/utils.h"
 #include "utils/http.h"
+#include <sstream>
 
 namespace satdump
 {

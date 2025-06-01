@@ -1,5 +1,6 @@
 #include "time.h"
 #include <iomanip>
+#include <sstream>
 
 namespace satdump
 {
