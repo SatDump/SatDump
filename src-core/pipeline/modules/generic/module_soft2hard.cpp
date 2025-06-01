@@ -28,7 +28,7 @@ namespace satdump
                 uint8_t byte_buffer[256];
                 int bytes_in_buf = 0;
 
-                diff::NRZMDiff diff;
+                //  diff::NRZMDiff diff;
 
                 while (should_run())
                 {
@@ -51,7 +51,7 @@ namespace satdump
 
                             if (bytes_in_buf == 256)
                             {
-                                diff.decode(byte_buffer, 256);
+                                // diff.decode(byte_buffer, 256);
 
                                 write_data(byte_buffer, 256);
 
@@ -75,7 +75,7 @@ namespace satdump
 
             std::string Soft2HardModule::getID() { return "soft2hard"; }
 
-            std::shared_ptr<ProcessingModule> Soft2HardModule::getInstance(nlohmann::json parameters, std::string input_file, std::string output_file_hint)
+            std::shared_ptr<ProcessingModule> Soft2HardModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
             {
                 return std::make_shared<Soft2HardModule>(input_file, output_file_hint, parameters);
             }

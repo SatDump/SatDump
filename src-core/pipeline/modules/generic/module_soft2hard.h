@@ -27,7 +27,7 @@ namespace satdump
                 static std::string getID();
                 virtual std::string getIDM() { return getID(); }
                 static nlohmann::json getParams() { return {}; }
-                static std::shared_ptr<ProcessingModule> getInstance(nlohmann::json parameters, std::string input_file, std::string output_file_hint);
+                static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
             };
         } // namespace generic
     } // namespace pipeline
