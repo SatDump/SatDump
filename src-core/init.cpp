@@ -33,7 +33,7 @@ namespace satdump
         logger->info(" ___/ / /_/ / /_/ /_/ / /_/ / / / / / / /_/ /");
         logger->info("/____/\\__,_/\\__/_____/\\__,_/_/ /_/ /_/ .___/ ");
         logger->info("                                    /_/      ");
-        logger->info("Starting SatDump v" + (std::string)SATDUMP_VERSION);
+        logger->info("Starting " + getSatDumpVersionName());
         logger->info("");
 
 #ifdef _WIN32
