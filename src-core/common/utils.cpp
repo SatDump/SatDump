@@ -196,6 +196,12 @@ std::string timestamp_to_string(double timestamp, bool local)
 
     time_t tttime = timestamp;
     std::tm *timeReadable = (local ? localtime(&tttime) : gmtime(&tttime));
+
+    if (timeReadable == nullptr)
+    {
+        return std::to_string(timestamp);
+    }
+
     std::stringstream timestamp_string;
     std::string timezone_string = "";
 
