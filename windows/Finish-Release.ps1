@@ -85,11 +85,5 @@ foreach($dll_to_copy in $dlls_to_copy)
     cp $dll_to_copy.FullName .
 }
 
-# If SDRPlay plugin is built, copy the sdrplay dll. It is loaded dynamically, so it will not be copied above
-if(Test-Path Release\plugins\sdrplay_sdr_support.dll -ErrorAction SilentlyContinue)
-{
-	cp $SourcePath\vcpkg\installed\$platform\bin\sdrplay_api.dll
-}
-
 cd ..\..
 Write-Output "Done!"
