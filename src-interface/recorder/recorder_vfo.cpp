@@ -1,14 +1,14 @@
 #include "recorder.h"
 
-#include "main_ui.h"
-#include "logger.h"
-#include "processing.h"
 #include "common/utils.h"
+#include "logger.h"
+#include "main_ui.h"
+#include "processing.h"
 #include "utils/time.h"
 
 namespace satdump
 {
-    void RecorderApplication::add_vfo_live(std::string id, std::string name, double freq, satdump::Pipeline vpipeline, nlohmann::json vpipeline_params)
+    void RecorderApplication::add_vfo_live(std::string id, std::string name, double freq, pipeline::Pipeline vpipeline, nlohmann::json vpipeline_params)
     {
         vfos_mtx.lock();
 
@@ -31,7 +31,7 @@ namespace satdump
 
             wipInfo.output_dir = output_dir;
 
-            wipInfo.live_pipeline = std::make_shared<LivePipeline>(vpipeline, vpipeline_params, output_dir);
+            wipInfo.live_pipeline = std::make_shared<pipeline::LivePipeline>(vpipeline, vpipeline_params, output_dir);
             splitter->add_vfo(id, get_samplerate(), frequency_hz - freq);
             wipInfo.live_pipeline->start(splitter->get_vfo_output(id), *wipInfo.lpool.get());
             splitter->set_vfo_enabled(id, true);
@@ -70,7 +70,9 @@ namespace satdump
                 wipInfo.decim_ptr->start();
             wipInfo.file_sink->start();
 
-            wipInfo.file_sink->start_recording(config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>() + "/" + prepareBasebandFileName(getTime(), get_samplerate() / decimation, freq), get_samplerate() / decimation);
+            wipInfo.file_sink->start_recording(config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>() + "/" +
+                                                   prepareBasebandFileName(getTime(), get_samplerate() / decimation, freq),
+                                               get_samplerate() / decimation);
 
             splitter->set_vfo_enabled(id, true);
 
@@ -90,15 +92,13 @@ namespace satdump
     void RecorderApplication::del_vfo(std::string id)
     {
         vfos_mtx.lock();
-        auto it = std::find_if(vfo_list.begin(), vfo_list.end(), [&id](VFOInfo &c)
-                               { return c.id == id; });
+        auto it = std::find_if(vfo_list.begin(), vfo_list.end(), [&id](VFOInfo &c) { return c.id == id; });
         if (it != vfo_list.end())
         {
             if (fft)
             {
                 std::string name = it->name;
-                auto it2 = std::find_if(fft_plot->vfo_freqs.begin(), fft_plot->vfo_freqs.end(), [&name](auto &c)
-                                        { return c.first == name; });
+                auto it2 = std::find_if(fft_plot->vfo_freqs.begin(), fft_plot->vfo_freqs.end(), [&name](auto &c) { return c.first == name; });
                 if (it2 != fft_plot->vfo_freqs.end())
                     fft_plot->vfo_freqs.erase(it2);
             }
@@ -122,16 +122,15 @@ namespace satdump
 
             if (it->selected_pipeline.name != "")
             {
-                if (config::main_cfg["user_interface"]["finish_processing_after_live"]["value"].get<bool>() && it->live_pipeline->getOutputFiles().size() > 0)
+                if (config::main_cfg["user_interface"]["finish_processing_after_live"]["value"].get<bool>() && it->live_pipeline->getOutputFile().size() > 0)
                 {
-                    Pipeline pipeline = it->selected_pipeline;
-                    std::string input_file = it->live_pipeline->getOutputFiles()[0];
-                    int start_level = pipeline.live_cfg.normal_live[pipeline.live_cfg.normal_live.size() - 1].first;
-                    std::string input_level = pipeline.steps[start_level].level_name;
+                    pipeline::Pipeline pipeline = it->selected_pipeline;
+                    std::string input_file = it->live_pipeline->getOutputFile();
+                    int start_level = pipeline.live_cfg.normal_live[pipeline.live_cfg.normal_live.size() - 1];
+                    std::string input_level = pipeline.steps[start_level].level;
                     std::string output_dir = it->output_dir;
                     nlohmann::json pipeline_params = it->pipeline_params;
-                    ui_thread_pool.push([=](int)
-                                        { processing::process(pipeline, input_level, input_file, output_dir, pipeline_params); });
+                    ui_thread_pool.push([=](int) { processing::process(pipeline, input_level, input_file, output_dir, pipeline_params); }); // TODOPIPELINE
                 }
             }
 
@@ -142,4 +141,4 @@ namespace satdump
                 fft_plot->vfo_freqs.clear();
         vfos_mtx.unlock();
     }
-}
+} // namespace satdump

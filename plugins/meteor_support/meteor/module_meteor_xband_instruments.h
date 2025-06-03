@@ -1,12 +1,15 @@
 #pragma once
 
-#include "core/module.h"
 #include "meteor_xband_types.h"
+#include "pipeline/module.h"
+#include "pipeline/modules/instrument_utils.h"
 
 namespace meteor
 {
     namespace instruments
     {
+        using namespace satdump::pipeline; // TODOREWORK
+
         class MeteorXBandInstrumentsDecoderModule : public ProcessingModule
         {
         protected:
@@ -30,8 +33,8 @@ namespace meteor
         public:
             static std::string getID();
             virtual std::string getIDM() { return getID(); };
-            static std::vector<std::string> getParameters();
+            static nlohmann::json getParams() { return {}; } // TODOREWORK
             static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         };
-    } // namespace amsu
-} // namespace Meteor
+    } // namespace instruments
+} // namespace meteor

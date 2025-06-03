@@ -1,16 +1,9 @@
 {
     "tropics_link": {
         "name": "TROPICS S-Band Dump",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -22,7 +15,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 2e6,
                     "rrc_alpha": 0.8,
@@ -35,7 +29,8 @@
                 }*/
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "oqpsk",
                     "cadu_size": 2072,
                     "viterbi_ber_thresold": 0.300,

@@ -1,15 +1,17 @@
 #define SATDUMP_DLL_EXPORT2 1
+
 #include "main_ui.h"
 #include "common/audio/audio_sink.h"
 #include "common/widgets/markdown_helper.h"
 #include "core/backend.h"
+#include "core/plugin.h"
+#include "core/resources.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_flags.h"
 #include "imgui_notify/imgui_notify.h"
 #include "notify_logger_sink.h"
 #include "offline.h"
 #include "processing.h"
-#include "core/resources.h"
 #include "satdump_vars.h"
 #include "settings.h"
 #include "status_logger_sink.h"
@@ -104,7 +106,7 @@ namespace satdump
                         float winheight = processing::ui_call_list->size() > 0 ? live_height / processing::ui_call_list->size() : live_height;
                         float currentPos = ImGui::GetCursorPos().y;
                         ImGui::PushStyleColor(ImGuiCol_TitleBg, ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive));
-                        for (std::shared_ptr<ProcessingModule> module : *processing::ui_call_list)
+                        for (std::shared_ptr<pipeline::ProcessingModule> module : *processing::ui_call_list)
                         {
                             ImGui::SetNextWindowPos({0, currentPos});
                             currentPos += winheight;

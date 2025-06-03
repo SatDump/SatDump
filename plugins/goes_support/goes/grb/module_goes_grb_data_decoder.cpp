@@ -1,13 +1,13 @@
 #include "module_goes_grb_data_decoder.h"
-#include <fstream>
 #include "common/ccsds/ccsds_aos/demuxer.h"
 #include "common/ccsds/ccsds_aos/vcdu.h"
-#include "logger.h"
-#include <filesystem>
+#include "data/payload_assembler.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
+#include "logger.h"
+#include <filesystem>
+#include <fstream>
 #include <iostream>
-#include "data/payload_assembler.h"
 
 // Return filesize
 uint64_t getFilesize(std::string filepath);
@@ -16,44 +16,20 @@ namespace goes
 {
     namespace grb
     {
-        GOESGRBDataDecoderModule::GOESGRBDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        GOESGRBDataDecoderModule::GOESGRBDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
+            fsfsm_enable_output = false;
         }
 
-        std::vector<ModuleDataType> GOESGRBDataDecoderModule::getInputTypes()
-        {
-            return {DATA_FILE, DATA_STREAM};
-        }
-
-        std::vector<ModuleDataType> GOESGRBDataDecoderModule::getOutputTypes()
-        {
-            return {DATA_FILE};
-        }
-
-        GOESGRBDataDecoderModule::~GOESGRBDataDecoderModule()
-        {
-        }
+        GOESGRBDataDecoderModule::~GOESGRBDataDecoderModule() {}
 
         void GOESGRBDataDecoderModule::process()
         {
-            std::ifstream data_in;
-
-            if (input_data_type == DATA_FILE)
-                filesize = getFilesize(d_input_file);
-            else
-                filesize = 0;
-            if (input_data_type == DATA_FILE)
-                data_in = std::ifstream(d_input_file, std::ios::binary);
-
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
-
-            logger->info("Using input frames " + d_input_file);
-            logger->info("Decoding to " + directory);
-
-            time_t lastTime = 0;
 
             uint8_t cadu[2048];
 
@@ -62,7 +38,7 @@ namespace goes
             ccsds::ccsds_aos::Demuxer demuxer_rhcp(2034, false);
             ccsds::ccsds_aos::Demuxer demuxer_lhcp(2034, false);
 
-            image::ImageSavingThread image_saving_th(input_data_type != DATA_FILE);
+            image::ImageSavingThread image_saving_th(input_data_type != satdump::pipeline::DATA_FILE);
 
             GRBFilePayloadAssembler assember_rhcp;
             GRBFilePayloadAssembler assember_lhcp;
@@ -70,13 +46,10 @@ namespace goes
             assember_rhcp.ignore_crc = assember_lhcp.ignore_crc = d_parameters.contains("ignore_crc") ? d_parameters["ignore_crc"].get<bool>() : false;
             assember_rhcp.processor = assember_lhcp.processor = std::make_shared<GRBDataProcessor>(directory, &image_saving_th);
 
-            while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
+            while (should_run())
             {
                 // Read buffer
-                if (input_data_type == DATA_FILE)
-                    data_in.read((char *)&cadu, 2048);
-                else
-                    input_fifo->read((uint8_t *)&cadu, 2048);
+                read_data((uint8_t *)&cadu, 2048);
 
                 // Parse this transport frame
                 ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
@@ -108,43 +81,25 @@ namespace goes
                         assember_lhcp.work(pkt);
                     }
                 }
-
-                if (input_data_type == DATA_FILE)
-                    progress = data_in.tellg();
-
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
-            data_in.close();
+            cleanup();
         }
 
         void GOESGRBDataDecoderModule::drawUI(bool window)
         {
             ImGui::Begin("GOES GRB Data Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
-            if (!streamingInput)
-                ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
-        std::string GOESGRBDataDecoderModule::getID()
-        {
-            return "goes_grb_data_decoder";
-        }
+        std::string GOESGRBDataDecoderModule::getID() { return "goes_grb_data_decoder"; }
 
-        std::vector<std::string> GOESGRBDataDecoderModule::getParameters()
-        {
-            return {};
-        }
-
-        std::shared_ptr<ProcessingModule> GOESGRBDataDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> GOESGRBDataDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<GOESGRBDataDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace avhrr
-} // namespace metop
+    } // namespace grb
+} // namespace goes

@@ -5,6 +5,7 @@
 #include "common/ccsds/ccsds_time.h"
 #include "common/tracking/tle.h"
 #include "common/utils.h"
+#include "core/resources.h"
 #include "imgui/imgui.h"
 #include "logger.h"
 #include "lrpt_msumr_reader.h"
@@ -12,12 +13,11 @@
 #include "nlohmann/json_utils.h"
 #include "products2/dataset.h"
 #include "products2/image_product.h"
-#include "core/resources.h"
+#include "utils/stats.h"
 #include <cstring>
 #include <ctime>
 #include <filesystem>
 #include <fstream>
-#include "utils/stats.h"
 
 #define BUFFER_SIZE 8192
 
@@ -394,9 +394,7 @@ namespace meteor
 
         std::string METEORMSUMRLRPTDecoderModule::getID() { return "meteor_msumr_lrpt"; }
 
-        std::vector<std::string> METEORMSUMRLRPTDecoderModule::getParameters() { return {}; }
-
-        std::shared_ptr<ProcessingModule> METEORMSUMRLRPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> METEORMSUMRLRPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<METEORMSUMRLRPTDecoderModule>(input_file, output_file_hint, parameters);
         }

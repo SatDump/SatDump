@@ -1,50 +1,46 @@
 #include "module_jason3_instruments.h"
-#include <fstream>
-#include "common/ccsds/ccsds_tm/vcdu.h"
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
-#include "common/utils.h"
 #include "common/ccsds/ccsds_tm/demuxer.h"
+#include "common/ccsds/ccsds_tm/vcdu.h"
+#include "common/utils.h"
 #include "image/io.h"
+#include "imgui/imgui.h"
+#include "logger.h"
 #include "utils/stats.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
 #include <thread>
 
-#include "nlohmann/json_utils.h"
-#include "products2/image_product.h"
-#include "products2/punctiform_product.h"
-#include "products2/dataset.h"
 #include "common/tracking/tle.h"
 #include "core/resources.h"
+#include "nlohmann/json_utils.h"
+#include "products2/dataset.h"
+#include "products2/image_product.h"
+#include "products2/punctiform_product.h"
 
 namespace jason3
 {
     namespace instruments
     {
         Jason3InstrumentsDecoderModule::Jason3InstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            : ProcessingModule(input_file, output_file_hint, parameters)
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
+            fsfsm_enable_output = false;
         }
 
         void Jason3InstrumentsDecoderModule::process()
         {
-            filesize = getFilesize(d_input_file);
-            std::ifstream data_in(d_input_file, std::ios::binary);
-
-            logger->info("Using input frames " + d_input_file);
-
-            time_t lastTime = 0;
             uint8_t cadu[1279];
 
             // Demuxers
             ccsds::ccsds_tm::Demuxer demuxer_vcid1(1101, false, 2, 4);
             ccsds::ccsds_tm::Demuxer demuxer_vcid2(1101, false, 2, 4);
 
-            while (!data_in.eof())
+            while (should_run())
             {
                 // Read buffer
-                data_in.read((char *)&cadu, 1279);
+                read_data((uint8_t *)&cadu, 1279);
 
                 // Parse this transport frame
                 ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
@@ -77,16 +73,9 @@ namespace jason3
                             lpt_aps_b_reader.work(pkt);
                     }
                 }
-
-                progress = data_in.tellg();
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
-            data_in.close();
+            cleanup();
 
             // Products dataset
             satdump::products::DataSet dataset;
@@ -377,24 +366,16 @@ namespace jason3
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
-        std::string Jason3InstrumentsDecoderModule::getID()
-        {
-            return "jason3_instruments";
-        }
+        std::string Jason3InstrumentsDecoderModule::getID() { return "jason3_instruments"; }
 
-        std::vector<std::string> Jason3InstrumentsDecoderModule::getParameters()
-        {
-            return {};
-        }
-
-        std::shared_ptr<ProcessingModule> Jason3InstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> Jason3InstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<Jason3InstrumentsDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace amsu
-} // namespace metop
+    } // namespace instruments
+} // namespace jason3

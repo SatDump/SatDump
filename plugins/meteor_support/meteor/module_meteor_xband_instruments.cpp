@@ -2,17 +2,17 @@
 #include "common/repack.h"
 #include "common/tracking/tle.h"
 #include "common/utils.h"
+#include "core/resources.h"
 #include "imgui/imgui.h"
 #include "logger.h"
 #include "meteor.h"
 #include "nlohmann/json_utils.h"
 #include "products2/dataset.h"
 #include "products2/image_product.h"
-#include "core/resources.h"
+#include "utils/stats.h"
+#include "utils/time.h"
 #include <filesystem>
 #include <fstream>
-#include "utils/time.h"
-#include "utils/stats.h"
 
 namespace meteor
 {
@@ -396,8 +396,6 @@ namespace meteor
         }
 
         std::string MeteorXBandInstrumentsDecoderModule::getID() { return "meteor_xband_instruments"; }
-
-        std::vector<std::string> MeteorXBandInstrumentsDecoderModule::getParameters() { return {}; }
 
         std::shared_ptr<ProcessingModule> MeteorXBandInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {

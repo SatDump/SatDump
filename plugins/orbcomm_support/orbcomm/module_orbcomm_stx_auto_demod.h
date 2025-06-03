@@ -1,12 +1,12 @@
 #pragma once
 
-#include "modules/demod/module_demod_base.h"
 #include "common/dsp/path/splitter.h"
+#include "pipeline/modules/demod/module_demod_base.h"
 #include "stx_demod_hier.h"
 
 namespace orbcomm
 {
-    class OrbcommSTXAutoDemodModule : public demod::BaseDemodModule
+    class OrbcommSTXAutoDemodModule : public satdump::pipeline::demod::BaseDemodModule
     {
     protected:
         const double d_center_frequency;
@@ -36,10 +36,7 @@ namespace orbcomm
                 splitter->add_vfo(id, d_samplerate, offset);
                 STXLink link;
                 link.id = id;
-                link.demod = std::make_shared<STXDemod>(splitter->get_vfo_output(id),
-                                                        frm_callback,
-                                                        d_samplerate,
-                                                        true);
+                link.demod = std::make_shared<STXDemod>(splitter->get_vfo_output(id), frm_callback, d_samplerate, true);
                 link.last_ping = time(0);
                 link.demod->start();
                 logger->info("Started!");
@@ -80,11 +77,12 @@ namespace orbcomm
         void process();
 
         void drawUI(bool window);
+        nlohmann::json getModuleStats();
 
     public:
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
-        static std::vector<std::string> getParameters();
+        static nlohmann::json getParams() { return {}; } // TODOREWORK
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
-}
+} // namespace orbcomm

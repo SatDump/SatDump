@@ -1,16 +1,9 @@
 {
     "proba1_dump": {
         "name": "Proba-1 Dump",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -26,7 +19,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 2e6,
                     "rrc_alpha": 0.5,
@@ -34,7 +28,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "bpsk_90",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.300,
@@ -45,7 +40,8 @@
                 }
             },
             "products": {
-                "proba_instruments": {
+                "module": "proba_instruments",
+                "parameters": {
                     "satellite": "proba1"
                 }
             }
@@ -53,16 +49,9 @@
     },
     "proba2_dump": {
         "name": "Proba-2 Dump",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -78,7 +67,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 2e6,
                     "rrc_alpha": 0.5,
@@ -86,7 +76,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "bpsk_90",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.300,
@@ -97,7 +88,8 @@
                 }
             },
             "products": {
-                "proba_instruments": {
+                "module": "proba_instruments",
+                "parameters": {
                     "satellite": "proba2"
                 }
             }
@@ -105,16 +97,9 @@
     },
     "probav_s_dump": {
         "name": "Proba-V S-Band Dump",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -130,7 +115,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 1.919e6,
                     "rrc_alpha": 0.5,
@@ -138,7 +124,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "bpsk_90",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.300,
@@ -149,7 +136,8 @@
                 }
             },
             "products": {
-                "proba_instruments": {
+                "module": "proba_instruments",
+                "parameters": {
                     "satellite": "probaV"
                 }
             }
@@ -166,7 +154,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 35e6,
                     "rrc_alpha": 0.5,
@@ -174,7 +163,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "oqpsk",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.300,
@@ -185,7 +175,8 @@
                 }
             },
             "products": {
-                "proba_instruments": {
+                "module": "proba_instruments",
+                "parameters": {
                     "satellite": "probaV_X"
                 }
             }
@@ -193,16 +184,9 @@
     },
     "pvcc_s_dump": {
         "name": "Proba-V-CC S-Band Dump",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -218,7 +202,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 2e6,
                     "rrc_alpha": 0.5,
@@ -226,7 +211,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "bpsk_90",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.300,
@@ -245,7 +231,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 50e6,
                     "rrc_alpha": 0.5,
@@ -253,7 +240,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "oqpsk",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.300,
@@ -264,7 +252,8 @@
                 }
             },
             "products": {
-                "proba_instruments": {
+                "module": "proba_instruments",
+                "parameters": {
                     "satellite": "probaV_X"
                 }
             }
@@ -272,16 +261,9 @@
     },
     "proba3_dump_pm": {
         "name": "Proba-3 Dump PM",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -289,11 +271,11 @@
                 2256.22e6
             ]
         ],
-        "parameters": {},
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "symbolrate": 220e3,
                     "agc_rate": 0.001,
                     "pll_bw": 0.01,
@@ -305,7 +287,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "bpsk_90",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.300,
@@ -322,16 +305,9 @@
     },
     "proba3_dump_qpsk": {
         "name": "Proba-3 Dump QPSK",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -343,7 +319,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 425e3,
                     "rrc_alpha": 0.5,
@@ -351,7 +328,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.300,

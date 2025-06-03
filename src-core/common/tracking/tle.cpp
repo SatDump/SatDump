@@ -11,6 +11,7 @@
 #include <curl/curl.h>
 #include "satdump_vars.h"
 #include "utils/http.h"
+#include <sstream>
 
 namespace satdump
 {

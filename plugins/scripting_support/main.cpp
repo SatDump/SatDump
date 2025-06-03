@@ -1,7 +1,7 @@
 #include "core/plugin.h"
 #include "logger.h"
 
-#include "core/pipeline.h"
+#include "pipeline/pipeline.h"
 
 #include "angelscript/scriptsatdump/bind_satdump.h"
 #include "angelscript/scriptsatdump/helper.h"
@@ -12,7 +12,7 @@
 
 bool scription_plugin_trigger_pipeline_done_processing = true;
 
-void pipeline_done_processing_callback(const satdump::events::PipelineDoneProcessingEvent &evt)
+void pipeline_done_processing_callback(const satdump::pipeline::events::PipelineDoneProcessingEvent &evt)
 {
     if (!scription_plugin_trigger_pipeline_done_processing)
         return;
@@ -56,7 +56,7 @@ public:
 
     void init()
     {
-        satdump::eventBus->register_handler<satdump::events::PipelineDoneProcessingEvent>(pipeline_done_processing_callback);
+        satdump::eventBus->register_handler<satdump::pipeline::events::PipelineDoneProcessingEvent>(pipeline_done_processing_callback);
         satdump::eventBus->register_handler<satdump::config::RegisterPluginConfigHandlersEvent>(registerConfigHandler);
     }
 

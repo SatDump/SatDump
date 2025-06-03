@@ -1,11 +1,11 @@
 {
     "saral_dump": {
         "name": "Saral X-Band Dump",
-        "frequencies": [],
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 16e6,
                     "rrc_alpha": 0.5,
@@ -13,7 +13,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.300,

@@ -1,16 +1,9 @@
 {
     "stratosat_tk1_uhf": {
         "name": "StratoSat-TK1 UHF",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "parameters": {
             "start_timestamp": {
@@ -35,7 +28,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "xfsk_burst_demod": {
+                "module": "xfsk_burst_demod",
+                "parameters": {
                     "symbolrate": 9600,
                     "enable_doppler": true,
                     "satellite_norad": 57167,
@@ -43,28 +37,22 @@
                 }
             },
             "frm": {
-                "geoscan_decoder": {
+                "module": "geoscan_decoder",
+                "parameters": {
                     "frame_length": 66,
                     "thresold": 4
                 }
             },
             "products": {
-                "geoscan_data_decoder": {}
+                "module": "geoscan_data_decoder"
             }
         }
     },
     "rtumirea1_uhf": {
         "name": "RTU-MIREA1 UHF",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "parameters": {
             "start_timestamp": {
@@ -93,7 +81,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "xfsk_burst_demod": {
+                "module": "xfsk_burst_demod",
+                "parameters": {
                     "symbolrate": 9600,
                     "enable_doppler": true,
                     "satellite_norad": 61785,
@@ -101,7 +90,8 @@
                 }
             },
             "frm": {
-                "geoscan_decoder": {
+                "module": "geoscan_decoder",
+                "parameters": {
                     "frame_length": 74,
                     "thresold": 6
                 }
@@ -110,16 +100,9 @@
     },
     "tusur_go_uhf": {
         "name": "TUSUR-GO UHF",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "parameters": {
             "start_timestamp": {
@@ -148,7 +131,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "xfsk_burst_demod": {
+                "module": "xfsk_burst_demod",
+                "parameters": {
                     "symbolrate": 9600,
                     "enable_doppler": true,
                     "satellite_norad": 61782,
@@ -156,7 +140,8 @@
                 }
             },
             "frm": {
-                "geoscan_decoder": {
+                "module": "geoscan_decoder",
+                "parameters": {
                     "frame_length": 74,
                     "thresold": 6
                 }
@@ -165,16 +150,9 @@
     },
     "vizard_ion_uhf": {
         "name": "VIZARD-ION UHF",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "parameters": {
             "start_timestamp": {
@@ -203,7 +181,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "xfsk_burst_demod": {
+                "module": "xfsk_burst_demod",
+                "parameters": {
                     "symbolrate": 9600,
                     "enable_doppler": true,
                     "satellite_norad": 61749,
@@ -211,7 +190,8 @@
                 }
             },
             "frm": {
-                "geoscan_decoder": {
+                "module": "geoscan_decoder",
+                "parameters": {
                     "frame_length": 74,
                     "thresold": 6
                 }
@@ -220,16 +200,9 @@
     },
     "colibri_s_uhf": {
         "name": "COLIBRI-S UHF",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "parameters": {
             "start_timestamp": {
@@ -258,7 +231,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "xfsk_burst_demod": {
+                "module": "xfsk_burst_demod",
+                "parameters": {
                     "symbolrate": 9600,
                     "enable_doppler": true,
                     "satellite_norad": 61746,
@@ -266,7 +240,8 @@
                 }
             },
             "frm": {
-                "geoscan_decoder": {
+                "module": "geoscan_decoder",
+                "parameters": {
                     "frame_length": 74,
                     "thresold": 6
                 }
@@ -275,16 +250,9 @@
     },
     "horizon_uhf": {
         "name": "HORIZON UHF",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "parameters": {
             "start_timestamp": {
@@ -313,7 +281,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "xfsk_burst_demod": {
+                "module": "xfsk_burst_demod",
+                "parameters": {
                     "symbolrate": 9600,
                     "enable_doppler": true,
                     "satellite_norad": 61755,
@@ -321,7 +290,8 @@
                 }
             },
             "frm": {
-                "geoscan_decoder": {
+                "module": "geoscan_decoder",
+                "parameters": {
                     "frame_length": 74,
                     "thresold": 6
                 }

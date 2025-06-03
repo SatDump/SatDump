@@ -1,21 +1,15 @@
 {
     "cluster_lr_link": {
         "name": "Cluster-IIFM S-Band Lowrate Link",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "resample_after_pll": true,
                     "symbolrate": 43.7e3,
                     "pll_bw": 0.01,
@@ -25,7 +19,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "bpsk_90",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.3,
@@ -40,25 +35,16 @@
     },
     "cluster_hr_link": {
         "name": "Cluster-IIFM S-Band Highrate Link",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ],
-            [
-                3,
-                0
-            ]
+        "live": [
+            1,
+            2,
+            3
         ],
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "symbolrate": 524.288e3,
                     "pll_bw": 0.002,
                     "rrc_alpha": 0.5,
@@ -67,7 +53,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "bpsk_90",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.3,
@@ -78,9 +65,9 @@
                     "rs_type": "rs239"
                 }
             },
-            "products":{ 
-                "cluster_instruments": {} 
-            } 
+            "products": {
+                "module": "cluster_instruments"
+            }
         }
     }
 }

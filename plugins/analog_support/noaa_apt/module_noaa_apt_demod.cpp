@@ -1,11 +1,11 @@
 #include "module_noaa_apt_demod.h"
-#include "common/dsp/filter/firdes.h"
-#include "core/config.h"
-#include "logger.h"
-#include "imgui/imgui.h"
-#include <volk/volk.h>
-#include "common/dsp/io/wav_writer.h"
 #include "common/audio/audio_sink.h"
+#include "common/dsp/filter/firdes.h"
+#include "common/dsp/io/wav_writer.h"
+#include "core/config.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include <volk/volk.h>
 
 namespace noaa_apt
 {
@@ -43,21 +43,19 @@ namespace noaa_apt
         qua = std::make_shared<dsp::QuadratureDemodBlock>(sdrpp_noise_reduction ? nr->output_stream : res->output_stream, dsp::hz_to_rad(d_symbolrate / 2, d_symbolrate));
     }
 
-    NOAAAPTDemodModule::~NOAAAPTDemodModule()
-    {
-    }
+    NOAAAPTDemodModule::~NOAAAPTDemodModule() {}
 
     void NOAAAPTDemodModule::process()
     {
-        if (input_data_type == DATA_FILE)
+        if (input_data_type == satdump::pipeline::DATA_FILE)
             filesize = file_source->getFilesize();
         else
             filesize = 0;
 
-        if (save_wav || output_data_type == DATA_FILE)
+        if (save_wav || output_data_type == satdump::pipeline::DATA_FILE)
         {
             data_out = std::ofstream(d_output_file_hint + ".wav", std::ios::binary);
-            d_output_files.push_back(d_output_file_hint + ".wav");
+            d_output_file = d_output_file_hint + ".wav";
         }
 
         logger->info("Using input baseband " + d_input_file);
@@ -77,11 +75,11 @@ namespace noaa_apt
         int16_t *output_wav_buffer = new int16_t[d_buffer_size * 100];
         uint64_t final_data_size = 0;
         dsp::WavWriter wave_writer(data_out);
-        if (save_wav || output_data_type == DATA_FILE)
+        if (save_wav || output_data_type == satdump::pipeline::DATA_FILE)
             wave_writer.write_header(d_symbolrate, 1);
 
         std::shared_ptr<audio::AudioSink> audio_sink;
-        if (input_data_type != DATA_FILE && audio::has_sink())
+        if (input_data_type != satdump::pipeline::DATA_FILE && audio::has_sink())
         {
             enable_audio = true;
             audio_sink = audio::get_default_sink();
@@ -116,19 +114,19 @@ namespace noaa_apt
             if (enable_audio && play_audio)
                 audio_sink->push_samples(output_wav_buffer, dat_size);
 
-            if (save_wav || output_data_type == DATA_FILE)
+            if (save_wav || output_data_type == satdump::pipeline::DATA_FILE)
             {
                 data_out.write((char *)output_wav_buffer, dat_size * sizeof(int16_t));
                 final_data_size += dat_size * sizeof(int16_t);
             }
-            if(output_data_type != DATA_FILE)
+            if (output_data_type != satdump::pipeline::DATA_FILE)
             {
                 output_fifo->write((uint8_t *)output_wav_buffer, dat_size * sizeof(int16_t));
             }
 
             qua->output_stream->flush();
 
-            if (input_data_type == DATA_FILE)
+            if (input_data_type == satdump::pipeline::DATA_FILE)
                 progress = file_source->getPosition();
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
@@ -142,7 +140,7 @@ namespace noaa_apt
             audio_sink->stop();
 
         // Finish up WAV
-        if (save_wav || output_data_type == DATA_FILE)
+        if (save_wav || output_data_type == satdump::pipeline::DATA_FILE)
         {
             wave_writer.finish_header(final_data_size);
             data_out.close();
@@ -151,7 +149,7 @@ namespace noaa_apt
 
         logger->info("Demodulation finished");
 
-        if (input_data_type == DATA_FILE)
+        if (input_data_type == satdump::pipeline::DATA_FILE)
             stop();
     }
 
@@ -186,7 +184,7 @@ namespace noaa_apt
                 ImGui::TextColored(style::theme.orange, "%.0f Hz", display_freq);
             }
             snr_plot.draw(snr, peak_snr); */
-            if (!streamingInput)
+            if (!d_is_streaming_input)
                 if (ImGui::Checkbox("Show FFT", &show_fft))
                     fft_splitter->set_enabled("fft", show_fft);
             if (enable_audio)
@@ -216,7 +214,7 @@ namespace noaa_apt
         }
         ImGui::EndGroup();
 
-        if (!streamingInput)
+        if (!d_is_streaming_input)
             ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         drawStopButton();
@@ -224,19 +222,10 @@ namespace noaa_apt
         drawFFT();
     }
 
-    std::string NOAAAPTDemodModule::getID()
-    {
-        return "noaa_apt_demod";
-    }
+    std::string NOAAAPTDemodModule::getID() { return "noaa_apt_demod"; }
 
-    std::vector<std::string> NOAAAPTDemodModule::getParameters()
-    {
-        std::vector<std::string> params;
-        return params;
-    }
-
-    std::shared_ptr<ProcessingModule> NOAAAPTDemodModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<satdump::pipeline::ProcessingModule> NOAAAPTDemodModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<NOAAAPTDemodModule>(input_file, output_file_hint, parameters);
     }
-}
+} // namespace noaa_apt

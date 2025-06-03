@@ -1,16 +1,16 @@
 #include "module_lucky7_demod.h"
 #include "common/dsp/filter/firdes.h"
-#include "logger.h"
-#include "imgui/imgui.h"
-#include <volk/volk.h>
-#include "utils/binary.h"
 #include "common/scrambling.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include "utils/binary.h"
+#include <volk/volk.h>
 
 #define FRM_SIZE 440
 
 namespace lucky7
 {
-    Lucky7DemodModule::Lucky7DemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : demod::BaseDemodModule(input_file, output_file_hint, parameters)
+    Lucky7DemodModule::Lucky7DemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : BaseDemodModule(input_file, output_file_hint, parameters)
     {
         name = "Lucky-7 Demodulator";
         show_freq = false;
@@ -115,13 +115,13 @@ namespace lucky7
 
     void Lucky7DemodModule::process()
     {
-        if (input_data_type == DATA_FILE)
+        if (input_data_type == satdump::pipeline::DATA_FILE)
             filesize = file_source->getFilesize();
         else
             filesize = 0;
 
         data_out = std::ofstream(d_output_file_hint + ".frm", std::ios::binary);
-        d_output_files.push_back(d_output_file_hint + ".frm");
+        d_output_file = d_output_file_hint + ".frm";
 
         logger->info("Using input baseband " + d_input_file);
         logger->info("Demodulating to " + d_output_file_hint + ".frm");
@@ -154,24 +154,30 @@ namespace lucky7
 
             fil->output_stream->flush();
 
-            if (input_data_type == DATA_FILE)
+            if (input_data_type == satdump::pipeline::DATA_FILE)
                 progress = file_source->getPosition();
-
-            // Update module stats
-            module_stats["snr"] = snr;
-            module_stats["peak_snr"] = peak_snr;
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, SNR : " + std::to_string(snr) + "dB," + " Peak SNR: " + std::to_string(peak_snr) + "dB");
+                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, SNR : " + std::to_string(snr) + "dB," +
+                             " Peak SNR: " + std::to_string(peak_snr) + "dB");
             }
         }
 
         logger->info("Demodulation finished");
 
-        if (input_data_type == DATA_FILE)
+        if (input_data_type == satdump::pipeline::DATA_FILE)
             stop();
+    }
+
+    nlohmann::json Lucky7DemodModule::getModuleStats()
+    {
+        nlohmann::json v;
+        v["progress"] = ((double)progress / (double)filesize);
+        v["snr"] = snr;
+        v["peak_snr"] = peak_snr;
+        return v;
     }
 
     void Lucky7DemodModule::stop()
@@ -183,7 +189,7 @@ namespace lucky7
         fil->stop();
         fil->output_stream->stopReader();
 
-        if (output_data_type == DATA_FILE)
+        if (output_data_type == satdump::pipeline::DATA_FILE)
             data_out.close();
     }
 
@@ -216,13 +222,13 @@ namespace lucky7
                 ImGui::TextColored(style::theme.green, UITO_C_STR(frm_cnt));
             }
 
-            if (!streamingInput)
+            if (!d_is_streaming_input)
                 if (ImGui::Checkbox("Show FFT", &show_fft))
                     fft_splitter->set_enabled("fft", show_fft);
         }
         ImGui::EndGroup();
 
-        if (!streamingInput)
+        if (!d_is_streaming_input)
             ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         drawStopButton();
@@ -232,20 +238,10 @@ namespace lucky7
         drawFFT();
     }
 
-    std::string Lucky7DemodModule::getID()
-    {
-        return "lucky7_demod";
-    }
+    std::string Lucky7DemodModule::getID() { return "lucky7_demod"; }
 
-    std::vector<std::string> Lucky7DemodModule::getParameters()
-    {
-        std::vector<std::string> params = {"corr_thresold"};
-        params.insert(params.end(), BaseDemodModule::getParameters().begin(), BaseDemodModule::getParameters().end());
-        return params;
-    }
-
-    std::shared_ptr<ProcessingModule> Lucky7DemodModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<satdump::pipeline::ProcessingModule> Lucky7DemodModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<Lucky7DemodModule>(input_file, output_file_hint, parameters);
     }
-}
+} // namespace lucky7

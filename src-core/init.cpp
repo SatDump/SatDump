@@ -1,11 +1,13 @@
 #define SATDUMP_DLL_EXPORT 1
-#include "init.h"
+
+#include "pipeline/module.h"
+#include "pipeline/pipeline.h"
+
 #include "core/config.h"
-#include "core/module.h"
-#include "core/pipeline.h"
 #include "core/plugin.h"
-#include "logger.h"
 #include "core/resources.h"
+#include "init.h"
+#include "logger.h"
 #include "satdump_vars.h"
 #include <filesystem>
 
@@ -31,7 +33,7 @@ namespace satdump
         logger->info(" ___/ / /_/ / /_/ /_/ / /_/ / / / / / / /_/ /");
         logger->info("/____/\\__,_/\\__/_____/\\__,_/_/ /_/ /_/ .___/ ");
         logger->info("                                    /_/      ");
-        logger->info("Starting SatDump v" + (std::string)SATDUMP_VERSION);
+        logger->info("Starting " + getSatDumpVersionName());
         logger->info("");
 
 #ifdef _WIN32
@@ -89,15 +91,18 @@ namespace satdump
         // Let plugins know we started
         eventBus->fire_event<config::RegisterPluginConfigHandlersEvent>({config::plugin_config_handlers});
 
-        registerModules();
+        // TODOREWORK
+        pipeline::registerModules();
 
         // Load pipelines
-        loadPipelines(resources::getResourcePath("pipelines"));
+        // TODOREWORK
+        // loadPipelines(resources::getResourcePath("pipelines"));
+        pipeline::loadPipelines(resources::getResourcePath("pipelines"));
 
         // List them
         logger->debug("Registered pipelines :");
-        for (Pipeline &pipeline : pipelines)
-            logger->debug(" - " + pipeline.name);
+        for (auto &pipeline : pipeline::pipelines)
+            logger->debug(" - " + pipeline.id);
 
 #ifdef USE_OPENCL
         // OpenCL

@@ -1,39 +1,36 @@
 #include "module_msugs.h"
-#include <fstream>
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
-#include "common/utils.h"
 #include "common/simple_deframer.h"
+#include "common/utils.h"
 #include "image/io.h"
+#include "imgui/imgui.h"
+#include "logger.h"
 #include "utils/stats.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
-#include "products2/image_product.h"
 #include "products2/dataset.h"
+#include "products2/image_product.h"
 
-#include "nlohmann/json_utils.h"
 #include "common/tracking/tle.h"
 #include "core/resources.h"
+#include "nlohmann/json_utils.h"
 
 namespace elektro_arktika
 {
     namespace msugs
     {
-        MSUGSDecoderModule::MSUGSDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        MSUGSDecoderModule::MSUGSDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
+            fsfsm_enable_output = false;
         }
 
         void MSUGSDecoderModule::process()
         {
-            filesize = getFilesize(d_input_file);
-            data_in = std::ifstream(d_input_file, std::ios::binary);
 
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MSU-GS";
 
-            logger->info("Using input frames " + d_input_file);
-            logger->info("Decoding to " + directory);
-
-            time_t lastTime = 0;
             uint8_t cadu[1024];
 
             def::SimpleDeframer deframerVIS1(0x0218a7a392dd9abf, 64, 121680, 10, true);
@@ -46,10 +43,10 @@ namespace elektro_arktika
 
             logger->info("Demultiplexing and deframing...");
 
-            while (!data_in.eof())
+            while (should_run())
             {
                 // Read buffer
-                data_in.read((char *)cadu, 1024);
+                read_data((uint8_t *)cadu, 1024);
 
                 int vcid = (cadu[5] >> 1) & 7;
 
@@ -91,18 +88,10 @@ namespace elektro_arktika
                             data_unknown.write((char *)frame.data(), frame.size());
                     }
                 }*/
-
-                progress = data_in.tellg();
-
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)data_in.tellg() / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
             // data_unknown.close();
-            data_in.close();
+            cleanup();
 
             // TODOREWORK satelliteID
             std::string sat_name = "ELEKTRO-L";
@@ -110,7 +99,7 @@ namespace elektro_arktika
             // Products dataset
             satdump::products::DataSet dataset;
             dataset.satellite_name = sat_name;
-            dataset.timestamp = satdump::get_median(vis1_reader.timestamps);
+            dataset.timestamp = time(0); // satdump::get_median(vis1_reader.timestamps);
 
             logger->info("----------- MSU-GS");
             logger->info("MSU-GS CH1 Lines        : " + std::to_string(vis1_reader.frames));
@@ -167,8 +156,8 @@ namespace elektro_arktika
                 //                    msuvis_products.has_timestamps = true; // TODOREWORK
                 //                    msuvis_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
                 //                    msuvis_products.set_timestamps(timestamps);
-                msuvis_product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/elektro_l3_msugs_vis2.json")),
-                                                           satdump::general_tle_registry->get_from_norad(44903), vis1_reader.timestamps);
+                // msuvis_product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/elektro_l3_msugs_vis2.json")),
+                //                                            satdump::general_tle_registry->get_from_norad(44903), vis1_reader.timestamps);
 
                 msuvis_product.images.push_back({0, "MSUGS-VIS-1", "1", vis1_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});
                 msuvis_product.images.push_back({1, "MSUGS-VIS-2", "2", vis2_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});
@@ -255,22 +244,14 @@ namespace elektro_arktika
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
-        std::string MSUGSDecoderModule::getID()
-        {
-            return "elektro_arktika_msugs";
-        }
+        std::string MSUGSDecoderModule::getID() { return "elektro_arktika_msugs"; }
 
-        std::vector<std::string> MSUGSDecoderModule::getParameters()
-        {
-            return {};
-        }
-
-        std::shared_ptr<ProcessingModule> MSUGSDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> MSUGSDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<MSUGSDecoderModule>(input_file, output_file_hint, parameters);
         }

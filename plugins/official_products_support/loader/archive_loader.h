@@ -7,6 +7,7 @@
 #include "imgui/imgui.h"
 #include <map>
 #include <set>
+#include <string>
 
 namespace satdump
 {

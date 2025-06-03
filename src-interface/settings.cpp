@@ -1,20 +1,21 @@
 #include "settings.h"
+#include "core/params.h"
+#include "core/plugin.h"
 #include "imgui/imgui.h"
 #include <string>
-#include "core/params.h"
 
 #include "core/config.h"
 
-#include "main_ui.h"
 #include "core/opencl.h"
+#include "main_ui.h"
 
-#include "init.h"
 #include "common/tracking/tle.h"
-#include "common/widgets/timed_message.h"
 #include "common/widgets/json_editor.h"
+#include "common/widgets/timed_message.h"
+#include "init.h"
 
-#include "core/style.h"
 #include "core/resources.h"
+#include "core/style.h"
 
 namespace satdump
 {
@@ -166,10 +167,13 @@ namespace satdump
                         style::beginDisabled();
                     if (ImGui::Button("Update###updateTLEs"))
                     {
-                        ui_thread_pool.push([](int)
-                                            {   tles_are_update = true;
-                                                updateTLEFile(satdump::user_path + "/satdump_tles.txt"); 
-                                                tles_are_update = false; });
+                        ui_thread_pool.push(
+                            [](int)
+                            {
+                                tles_are_update = true;
+                                updateTLEFile(satdump::user_path + "/satdump_tles.txt");
+                                tles_are_update = false;
+                            });
                     }
                     if (disable_update_button)
                         style::endDisabled();
@@ -249,10 +253,10 @@ namespace satdump
                 }
                 if (ImGui::CollapsingHeader("Default Pipeline Configs"))
                 {
-                    widgets::JSONTreeEditor(pipelines_json, "pipelines");
+                    widgets::JSONTreeEditor(pipeline::pipelines_json, "pipelines");
                     ImGui::SameLine();
                     if (ImGui::Button("Reset##pipelines"))
-                        pipelines_json = pipelines_system_json;
+                        pipeline::pipelines_json = pipeline::pipelines_system_json;
                 }
             }
 
@@ -288,7 +292,7 @@ namespace satdump
                 // Save config files
                 config::saveUserConfig();
                 if (advanced_mode)
-                    savePipelines();
+                    pipeline::savePipelines();
 
                 // Clean up
                 advanced_mode = getValueOrDefault(satdump::config::main_cfg["user_interface"]["advanced_mode"]["value"], false);
@@ -299,5 +303,5 @@ namespace satdump
             saved_message.draw();
             ImGui::TextColored(style::theme.yellow, "Note : Some settings will require SatDump to be restarted\nto take effect!");
         }
-    }
-}
+    } // namespace settings
+} // namespace satdump

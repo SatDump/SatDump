@@ -587,7 +587,8 @@ namespace goes
                 satdump::products::process_product_with_handler(&imager_product, disk_folder);
         }
 
-        GVARImageDecoderModule::GVARImageDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        GVARImageDecoderModule::GVARImageDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
             frame = new uint8_t[FRAME_SIZE];
             isImageInProgress = false;
@@ -600,11 +601,9 @@ namespace goes
             visibleImageReader.startNewFullDisk();
 
             imageFrameCount = 0;
+
+            fsfsm_enable_output = false;
         }
-
-        std::vector<ModuleDataType> GVARImageDecoderModule::getInputTypes() { return {DATA_FILE, DATA_STREAM}; }
-
-        std::vector<ModuleDataType> GVARImageDecoderModule::getOutputTypes() { return {DATA_FILE}; }
 
         GVARImageDecoderModule::~GVARImageDecoderModule()
         {
@@ -636,14 +635,7 @@ namespace goes
 
         void GVARImageDecoderModule::process()
         {
-            if (input_data_type == DATA_FILE)
-                filesize = getFilesize(d_input_file);
-            else
-                filesize = 0;
-            if (input_data_type == DATA_FILE)
-                data_in = std::ifstream(d_input_file, std::ios::binary);
-
-            if (input_data_type != DATA_FILE)
+            if (input_data_type != satdump::pipeline::DATA_FILE)
                 writeImagesAync = true;
 
             // Start thread
@@ -678,13 +670,10 @@ namespace goes
             // Series of consecutive imagery blocks are saved here
             std::vector<Block> frame_buffer;
 
-            while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
+            while (should_run())
             {
                 // Read a buffer
-                if (input_data_type == DATA_FILE)
-                    data_in.read((char *)frame, FRAME_SIZE);
-                else
-                    input_fifo->read((uint8_t *)frame, FRAME_SIZE);
+                read_data((uint8_t *)frame, FRAME_SIZE);
 
                 PrimaryBlockHeader block_header = get_header(frame);
 
@@ -784,19 +773,6 @@ namespace goes
 
                     frame_buffer.push_back(current_block);
                 }
-
-                if (input_data_type == DATA_FILE)
-                    progress = data_in.tellg();
-
-                // Update module stats
-                module_stats["full_disk_progress"] = approx_progess;
-
-                if (time(NULL) % 10 == 0 && last_frame_time != time(NULL))
-                {
-                    last_frame_time = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) +
-                                 "%%, Full Disk Progress : " + std::to_string(round(((float)approx_progess / 100.0f) * 1000.0f) / 10.0f) + "%%");
-                }
             }
 
             // Ensures we don't leave frames behind
@@ -805,8 +781,7 @@ namespace goes
                 process_frame_buffer(frame_buffer, image_time);
             }
 
-            if (input_data_type == DATA_FILE)
-                data_in.close();
+            cleanup();
 
             // TODO: Maybe don't write the sounder if it's empty?
 
@@ -826,6 +801,13 @@ namespace goes
 
             if (isImageInProgress)
                 saveReceivedImage(image_time);
+        }
+
+        nlohmann::json GVARImageDecoderModule::getModuleStats()
+        {
+            auto v = satdump::pipeline::base::FileStreamToFileStreamModule::getModuleStats();
+            v["full_disk_progress"] = approx_progess;
+            return v;
         }
 
         void GVARImageDecoderModule::drawUI(bool window)
@@ -865,17 +847,14 @@ namespace goes
             }
             ImGui::EndGroup();
 
-            if (!streamingInput)
-                ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
         std::string GVARImageDecoderModule::getID() { return "goes_gvar_image_decoder"; }
 
-        std::vector<std::string> GVARImageDecoderModule::getParameters() { return {}; }
-
-        std::shared_ptr<ProcessingModule> GVARImageDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> GVARImageDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<GVARImageDecoderModule>(input_file, output_file_hint, parameters);
         }

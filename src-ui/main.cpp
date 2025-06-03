@@ -1,7 +1,8 @@
-#include "core/resources.h"
 #include "backend.h"
 #include "common/cli_utils.h"
 #include "common/detect_header.h"
+#include "core/plugin.h"
+#include "core/resources.h"
 #include "core/style.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_filedrop.h"
@@ -13,6 +14,7 @@
 #include "nfd.h"
 #include "processing.h"
 #include "satdump_vars.h"
+#include <exception>
 #include <filesystem>
 #include <signal.h>
 #include <string>
@@ -112,7 +114,7 @@ int main(int argc, char *argv[])
     // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
 
-    window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)satdump::SATDUMP_VERSION).c_str(), nullptr, nullptr);
+    window = glfwCreateWindow(1000, 600, satdump::getSatDumpVersionName().c_str(), nullptr, nullptr);
     if (window == nullptr)
     {
         logger->warn("Could not init GLFW Window; falling back to OpenGL 2.1...");
@@ -177,9 +179,14 @@ int main(int argc, char *argv[])
     satdump::initSatdump(true);
 
     // Check if we need to start a pipeline
-    std::optional<satdump::Pipeline> pipeline = satdump::getPipelineFromName(downlink_pipeline);
-    if (!pipeline.has_value())
-        satdump::processing::is_processing = false;
+    try
+    {
+        satdump::pipeline::Pipeline pipeline = satdump::pipeline::getPipelineFromID(downlink_pipeline);
+        satdump::processing::is_processing = true;
+    }
+    catch (std::exception &)
+    {
+    }
 
     // See if we need to add arguments
     satdump::config::main_cfg["cli"] = {};

@@ -1,14 +1,14 @@
 #include "module_noaa_apt_decoder.h"
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
-#include "imgui/imgui_image.h"
+#include "common/tracking/tle.h"
 #include "common/utils.h"
-#include "nlohmann/json_utils.h"
 #include "image/io.h"
 #include "image/processing.h"
-#include "common/tracking/tle.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_image.h"
+#include "logger.h"
+#include "nlohmann/json_utils.h"
 #include "utils/stats.h"
+#include <filesystem>
 
 #include "common/dsp/filter/firdes.h"
 #include "core/resources.h"
@@ -16,15 +16,14 @@
 #include "common/wav.h"
 
 #include "common/calibration.h"
-#include "products2/image_product.h"
 #include "products2/dataset.h"
+#include "products2/image_product.h"
 
 #define MAX_STDDEV_VALID 2100
 
 namespace noaa_apt
 {
-    NOAAAPTDecoderModule::NOAAAPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-        : ProcessingModule(input_file, output_file_hint, parameters)
+    NOAAAPTDecoderModule::NOAAAPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
     {
         if (parameters.count("audio_samplerate") > 0)
             d_audio_samplerate = parameters["audio_samplerate"].get<long>();
@@ -72,7 +71,7 @@ namespace noaa_apt
 
     void NOAAAPTDecoderModule::process()
     {
-        if (input_data_type == DATA_FILE)
+        if (input_data_type == satdump::pipeline::DATA_FILE)
             filesize = getFilesize(d_input_file);
         else
             filesize = 0;
@@ -84,7 +83,7 @@ namespace noaa_apt
         int autodetected_sat = -1;
 
         std::ifstream data_in;
-        if (input_data_type == DATA_FILE)
+        if (input_data_type == satdump::pipeline::DATA_FILE)
         {
             wav::WavHeader hdr = wav::parseHeaderFromFileWav(d_input_file);
             if (!wav::isValidWav(hdr))
@@ -171,9 +170,9 @@ namespace noaa_apt
             const int buffer_size = 1024;
             int16_t *s16_buf = new int16_t[buffer_size];
             time_t lastTime = 0;
-            while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
+            while (input_data_type == satdump::pipeline::DATA_FILE ? !data_in.eof() : input_active.load())
             {
-                if (input_data_type == DATA_FILE)
+                if (input_data_type == satdump::pipeline::DATA_FILE)
                     data_in.read((char *)s16_buf, buffer_size * sizeof(int16_t));
                 else
                     input_fifo->read((uint8_t *)s16_buf, buffer_size * sizeof(int16_t));
@@ -190,7 +189,7 @@ namespace noaa_apt
                     input_stream->swap(buffer_size);
                 }
 
-                if (input_data_type == DATA_FILE)
+                if (input_data_type == satdump::pipeline::DATA_FILE)
                     progress = data_in.tellg();
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
@@ -224,7 +223,7 @@ namespace noaa_apt
         int image_i = 0;
         int last_line_cnt = 0;
         std::vector<uint16_t> imagebuf;
-        while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
+        while (input_data_type == satdump::pipeline::DATA_FILE ? !data_in.eof() : input_active.load())
         {
             int nsamp = ctm->output_stream->read();
 
@@ -259,7 +258,7 @@ namespace noaa_apt
                 last_line_cnt = line_cnt;
             }
 
-            module_stats["unsynced_lines"] = line_cnt;
+            gl_line_cnt = line_cnt;
         }
 
         // Stop everything
@@ -276,7 +275,7 @@ namespace noaa_apt
         if (feeder_thread.joinable())
             feeder_thread.join();
 
-        if (input_data_type == DATA_FILE)
+        if (input_data_type == satdump::pipeline::DATA_FILE)
             data_in.close();
 
         apt_status = PROCESSING;
@@ -350,8 +349,7 @@ namespace noaa_apt
                 for (int x = 0; x < APT_IMG_WIDTH; x++) // for (int x = 86; x < 86 + 909; x++)
                     wip_apt_image.set(l * APT_IMG_WIDTH + x, scale_val_r(wip_apt_image.get(l * APT_IMG_WIDTH + x), new_black, new_white));
 
-            int valid_temp1 = 0, valid_temp2 = 0, valid_temp3 = 0, valid_temp4 = 0, valid_patch = 0,
-                validn1_1 = 0, validn1_0 = 0;
+            int valid_temp1 = 0, valid_temp2 = 0, valid_temp3 = 0, valid_temp4 = 0, valid_patch = 0, validn1_1 = 0, validn1_0 = 0;
             for (unsigned int i = 0; i < wedges1.size(); i++)
             { // Calib wedges 1
                 auto &wed = wedges1[i];
@@ -882,25 +880,22 @@ namespace noaa_apt
                         {
                             calib_out["vars"]["perChannel"][c]["Spc"] = space_av >> 8;
                             calib_out["vars"]["perChannel"][c]["Blb"] = bb_a >> 2;
-                            calib_out["vars"]["perChannel"][c]["Nbb"] =
-                                temperature_to_radiance(calib_coefs["channels"][c]["A"].get<double>() + calib_coefs["channels"][c]["B"].get<double>() * tbb,
-                                                        calib_coefs["channels"][c]["Vc"].get<double>());
+                            calib_out["vars"]["perChannel"][c]["Nbb"] = temperature_to_radiance(calib_coefs["channels"][c]["A"].get<double>() + calib_coefs["channels"][c]["B"].get<double>() * tbb,
+                                                                                                calib_coefs["channels"][c]["Vc"].get<double>());
                         }
                         else if (c == channel_a1)
                         {
                             calib_out["vars"]["perChannel"][c]["Spc"] = space_av1 >> 8;
                             calib_out["vars"]["perChannel"][c]["Blb"] = bb_a1 >> 2;
-                            calib_out["vars"]["perChannel"][c]["Nbb"] =
-                                temperature_to_radiance(calib_coefs["channels"][c]["A"].get<double>() + calib_coefs["channels"][c]["B"].get<double>() * tbb,
-                                                        calib_coefs["channels"][c]["Vc"].get<double>());
+                            calib_out["vars"]["perChannel"][c]["Nbb"] = temperature_to_radiance(calib_coefs["channels"][c]["A"].get<double>() + calib_coefs["channels"][c]["B"].get<double>() * tbb,
+                                                                                                calib_coefs["channels"][c]["Vc"].get<double>());
                         }
                         else if (c == channel_b)
                         {
                             calib_out["vars"]["perChannel"][c]["Spc"] = space_bv >> 8;
                             calib_out["vars"]["perChannel"][c]["Blb"] = calib_wedge_ch2.back_scan >> 2;
-                            calib_out["vars"]["perChannel"][c]["Nbb"] =
-                                temperature_to_radiance(calib_coefs["channels"][c]["A"].get<double>() + calib_coefs["channels"][c]["B"].get<double>() * tbb,
-                                                        calib_coefs["channels"][c]["Vc"].get<double>());
+                            calib_out["vars"]["perChannel"][c]["Nbb"] = temperature_to_radiance(calib_coefs["channels"][c]["A"].get<double>() + calib_coefs["channels"][c]["B"].get<double>() * tbb,
+                                                                                                calib_coefs["channels"][c]["Vc"].get<double>());
                         }
                     }
                     avhrr_products.set_calibration("noaa_avhrr3", calib_out);
@@ -1005,21 +1000,18 @@ namespace noaa_apt
 
         apt_status = DONE;
         dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
-        d_output_files.push_back(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/dataset.json");
+    }
+
+    nlohmann::json NOAAAPTDecoderModule::getModuleStats()
+    {
+        nlohmann::json v;
+        v["unsynced_lines"] = gl_line_cnt;
+        return v;
     }
 
     image::Image NOAAAPTDecoderModule::synchronize(int line_cnt)
     {
-        const int sync_a[] = {0, 0, 0,
-                              255, 255, 0, 0,
-                              255, 255, 0, 0,
-                              255, 255, 0, 0,
-                              255, 255, 0, 0,
-                              255, 255, 0, 0,
-                              255, 255, 0, 0,
-                              255, 255, 0, 0,
-                              0, 0, 0, 0,
-                              0, 0, 0, 0};
+        const int sync_a[] = {0, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
         std::vector<int> final_sync_a;
         for (int i = 0; i < 39; i++)
@@ -1166,15 +1158,10 @@ namespace noaa_apt
             }
             /////////////////////////////////////
 
-            logger->trace("Wedge %d Pos %d Cor %d CAL %d %d %d %d %d %d %d %d CHV %d CH %d",
-                          line, best_pos, best_cor,
-                          wed.ref1, wed.ref2, wed.ref3, wed.ref4, wed.ref5, wed.ref6, wed.ref7, wed.ref8,
+            logger->trace("Wedge %d Pos %d Cor %d CAL %d %d %d %d %d %d %d %d CHV %d CH %d", line, best_pos, best_cor, wed.ref1, wed.ref2, wed.ref3, wed.ref4, wed.ref5, wed.ref6, wed.ref7, wed.ref8,
                           wed.channel, best_wedge);
-            logger->trace("StdDev %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",
-                          wed.std_dev[0], wed.std_dev[1], wed.std_dev[2], wed.std_dev[3], wed.std_dev[4],
-                          wed.std_dev[5], wed.std_dev[6], wed.std_dev[7], wed.std_dev[8], wed.std_dev[9],
-                          wed.std_dev[10], wed.std_dev[11], wed.std_dev[12], wed.std_dev[13], wed.std_dev[14],
-                          wed.std_dev[15]);
+            logger->trace("StdDev %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", wed.std_dev[0], wed.std_dev[1], wed.std_dev[2], wed.std_dev[3], wed.std_dev[4], wed.std_dev[5], wed.std_dev[6],
+                          wed.std_dev[7], wed.std_dev[8], wed.std_dev[9], wed.std_dev[10], wed.std_dev[11], wed.std_dev[12], wed.std_dev[13], wed.std_dev[14], wed.std_dev[15]);
 
             if (1 <= best_wedge && best_wedge <= 5)
                 wed.rchannel = best_wedge;
@@ -1248,24 +1235,16 @@ namespace noaa_apt
         }
         ImGui::EndGroup();
 
-        if (input_data_type == DATA_FILE)
+        if (input_data_type == satdump::pipeline::DATA_FILE)
             ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         ImGui::End();
     }
 
-    std::string NOAAAPTDecoderModule::getID()
-    {
-        return "noaa_apt_decoder";
-    }
+    std::string NOAAAPTDecoderModule::getID() { return "noaa_apt_decoder"; }
 
-    std::vector<std::string> NOAAAPTDecoderModule::getParameters()
-    {
-        return {};
-    }
-
-    std::shared_ptr<ProcessingModule> NOAAAPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<satdump::pipeline::ProcessingModule> NOAAAPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<NOAAAPTDecoderModule>(input_file, output_file_hint, parameters);
     }
-}
+} // namespace noaa_apt

@@ -1,16 +1,9 @@
 {
     "aqua_db": {
         "name": "Aqua DB",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -22,7 +15,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 7.5e6,
                     "rrc_alpha": 0.5,
@@ -35,10 +29,12 @@
                 }
             },
             "cadu": {
-                "aqua_db_decoder": {}
+                "module": "aqua_db_decoder",
+                "parameters": {}
             },
             "products": {
-                "eos_instruments": {
+                "module": "eos_instruments",
+                "parameters": {
                     "satellite": "aqua",
                     "modis_bowtie": true
                 }
@@ -47,7 +43,6 @@
     },
     "terra_db": {
         "name": "Terra DB",
-        "live": false,
         "frequencies": [
             [
                 "DB",
@@ -58,12 +53,14 @@
         "work": {
             "baseband": {},
             "soft": {
-                "terra_db_demod": {
+                "module": "terra_db_demod",
+                "parameters": {
                     "symbolrate": 13.125e6
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "bpsk_90",
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
@@ -77,7 +74,8 @@
                 }
             },
             "products": {
-                "eos_instruments": {
+                "module": "eos_instruments",
+                "parameters": {
                     "satellite": "terra",
                     "modis_bowtie": true
                 }
@@ -86,16 +84,9 @@
     },
     "aura_db": {
         "name": "Aura DB",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -107,7 +98,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 7.5e6,
                     "rrc_alpha": 0.5,
@@ -120,10 +112,11 @@
                 }
             },
             "cadu": {
-                "aqua_db_decoder": {}
+                "module": "aqua_db_decoder"
             },
             "products": {
-                "eos_instruments": {
+                "module": "eos_instruments",
+                "parameters": {
                     "satellite": "aura",
                     "modis_bowtie": false
                 }

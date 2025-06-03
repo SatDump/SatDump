@@ -1,23 +1,15 @@
 {
     "viasat3_tlm": {
         "name": "ViaSat-3 TLM",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
-        "frequencies": [],
-        "parameters": {},
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "resample_after_pll": true,
                     "symbolrate": 4e3,
                     "pll_bw": 0.01,
@@ -27,7 +19,8 @@
                 }
             },
             "frames": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 4096,
                     "ccsds": false,
@@ -42,23 +35,15 @@
     },
     "viasat3_tlm_12200": {
         "name": "ViaSat-3 12.2GHz TLM",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
-        "frequencies": [],
-        "parameters": {},
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "resample_after_pll": true,
                     "symbolrate": 4e3,
                     "pll_bw": 0.01,
@@ -68,7 +53,8 @@
                 }
             },
             "frames": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 4096,
                     "ccsds": false,

@@ -1,16 +1,9 @@
 {
     "inspiresat7_tlm": {
         "name": "INSPIRE-Sat7 TLM",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -26,7 +19,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 9.6e3,
                     "agc_rate": 2,
@@ -36,7 +30,8 @@
                 }
             },
             "frm": {
-                "ax25_decoder": {
+                "module": "ax25_decoder",
+                "parameters": {
                     "nrzi": true,
                     "g3ruh": true,
                     "min_sz": 10,
@@ -48,16 +43,9 @@
     },
     "spino_2400": {
         "name": "AMSAT-F Spino 2400bps",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "parameters": {
             "enable_doppler": {
@@ -76,7 +64,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "xfsk_burst_demod": {
+                "module": "xfsk_burst_demod",
+                "parameters": {
                     "symbolrate": 2400,
                     "enable_doppler": true,
                     "satellite_norad": 56211,
@@ -84,7 +73,7 @@
                 }
             },
             "frm": {
-                "spino_decoder": {}
+                "module": "spino_decoder"
                 // Custom AX.25 format, TBD
             }
         }

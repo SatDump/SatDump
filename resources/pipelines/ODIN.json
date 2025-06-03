@@ -1,8 +1,6 @@
 {
     "odin_dump": {
         "name": "ODIN Dump",
-        "live": false,
-        "frequencies": [],
         "parameters": {
             "samplerate": {
                 "value": 6e6
@@ -15,7 +13,8 @@
                 //     "symbolrate": 2.162e6,
                 //     "rrc_alpha": 0.25
                 // }
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 2.162e6,
                     "rrc_alpha": 0.35,

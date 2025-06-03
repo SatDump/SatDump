@@ -1,30 +1,26 @@
 #include "module_scisat1_instruments.h"
-#include <fstream>
-#include "common/ccsds/ccsds_tm/vcdu.h"
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
-#include "common/utils.h"
 #include "common/ccsds/ccsds_tm/demuxer.h"
+#include "common/ccsds/ccsds_tm/vcdu.h"
+#include "common/utils.h"
 #include "image/io.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
 namespace scisat1
 {
     namespace instruments
     {
         SciSat1InstrumentsDecoderModule::SciSat1InstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            : ProcessingModule(input_file, output_file_hint, parameters)
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
+            fsfsm_enable_output = false;
         }
 
         void SciSat1InstrumentsDecoderModule::process()
         {
-            filesize = getFilesize(d_input_file);
-            std::ifstream data_in(d_input_file, std::ios::binary);
-
-            logger->info("Using input frames " + d_input_file);
-
-            time_t lastTime = 0;
             uint8_t cadu[1199];
 
             // Demuxers
@@ -39,10 +35,10 @@ namespace scisat1
             // dataset.satellite_name = "PROBA-1";
             // dataset.timestamp = time(0); // avg_overflowless(avhrr_reader.timestamps);
 
-            while (!data_in.eof())
+            while (should_run())
             {
                 // Read buffer
-                data_in.read((char *)&cadu, 1199);
+                read_data((uint8_t *)&cadu, 1199);
 
                 // Parse this transport frame
                 ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
@@ -71,16 +67,9 @@ namespace scisat1
                     //{
                     // }
                 }
-
-                progress = data_in.tellg();
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
-            data_in.close();
+            cleanup();
 
             // FTS
             {
@@ -166,24 +155,16 @@ namespace scisat1
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
-        std::string SciSat1InstrumentsDecoderModule::getID()
-        {
-            return "scisat1_instruments";
-        }
+        std::string SciSat1InstrumentsDecoderModule::getID() { return "scisat1_instruments"; }
 
-        std::vector<std::string> SciSat1InstrumentsDecoderModule::getParameters()
-        {
-            return {};
-        }
-
-        std::shared_ptr<ProcessingModule> SciSat1InstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> SciSat1InstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<SciSat1InstrumentsDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace amsu
-} // namespace metop
+    } // namespace instruments
+} // namespace scisat1

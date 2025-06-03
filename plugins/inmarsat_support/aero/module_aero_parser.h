@@ -1,26 +1,22 @@
 #pragma once
 
-#include "core/module.h"
-#include "decode_utils.h"
-#include <fstream>
 #include "common/net/udp.h"
-#include "pkt_structs.h"
+
 #include "acars_parser.h"
+#include "decode_utils.h"
+#include "pipeline/modules/base/filestream_to_filestream.h"
+#include "pkt_structs.h"
 
 namespace inmarsat
 {
     namespace aero
     {
-        class AeroParserModule : public ProcessingModule
+        class AeroParserModule : public satdump::pipeline::base::FileStreamToFileStreamModule
         {
         protected:
             uint8_t *buffer;
 
             bool is_c_channel = false;
-
-            std::ifstream data_in;
-            std::atomic<uint64_t> filesize;
-            std::atomic<uint64_t> progress;
 
             std::mutex pkt_history_mtx;
             std::vector<nlohmann::json> pkt_history;
@@ -47,14 +43,12 @@ namespace inmarsat
             ~AeroParserModule();
             void process();
             void drawUI(bool window);
-            std::vector<ModuleDataType> getInputTypes();
-            std::vector<ModuleDataType> getOutputTypes();
 
         public:
             static std::string getID();
             virtual std::string getIDM() { return getID(); };
-            static std::vector<std::string> getParameters();
+            static nlohmann::json getParams() { return {}; } // TODOREWORK
             static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         };
-    }
-}
+    } // namespace aero
+} // namespace inmarsat

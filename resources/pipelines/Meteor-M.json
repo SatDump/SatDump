@@ -1,16 +1,9 @@
 {
     "meteor_hrpt": {
         "name": "METEOR HRPT",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -32,7 +25,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "symbolrate": 665400,
                     "pll_bw": 0.01,
                     "rrc_alpha": 0.5,
@@ -40,25 +34,18 @@
                 }
             },
             "cadu": {
-                "meteor_hrpt_decoder": {}
+                "module": "meteor_hrpt_decoder"
             },
             "products": {
-                "meteor_instruments": {}
+                "module": "meteor_instruments"
             }
         }
     },
     "meteor_m2_lrpt": {
         "name": "METEOR M2 LRPT 72k",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -97,7 +84,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 72e3,
                     "rrc_taps": 31,
@@ -106,12 +94,14 @@
                 }
             },
             "cadu": {
-                "meteor_lrpt_decoder": {
+                "module": "meteor_lrpt_decoder",
+                "parameters": {
                     "diff_decode": false
                 }
             },
             "products": {
-                "meteor_msumr_lrpt": {
+                "module": "meteor_msumr_lrpt",
+                "parameters": {
                     "m2x_mode": false,
                     "max_fill_lines": 50
                 }
@@ -120,16 +110,9 @@
     },
     "meteor_m2-x_lrpt": {
         "name": "METEOR M2-x LRPT 72k",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -174,7 +157,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 72e3,
                     "rrc_alpha": 0.5,
@@ -185,7 +169,8 @@
                 /*"meteor_lrpt_decoder": {
                     "diff_decode": true
                 }*/
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "oqpsk",
                     "nrzm": true,
                     "cadu_size": 8192,
@@ -199,7 +184,8 @@
                 }
             },
             "products": {
-                "meteor_msumr_lrpt": {
+                "module": "meteor_msumr_lrpt",
+                "parameters": {
                     "m2x_mode": true,
                     "max_fill_lines": 50
                 }
@@ -208,16 +194,9 @@
     },
     "meteor_m2-x_lrpt_80k": {
         "name": "METEOR M2-x LRPT 80k",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -256,7 +235,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 80e3,
                     "rrc_alpha": 0.5,
@@ -264,7 +244,8 @@
                 }
             },
             "cadu": {
-                "meteor_lrpt_decoder": {
+                "module": "meteor_lrpt_decoder",
+                "parameters": {
                     "m2x_mode": true,
                     "interleaved": true,
                     "diff_decode": true,
@@ -273,7 +254,8 @@
                 }
             },
             "products": {
-                "meteor_msumr_lrpt": {
+                "module": "meteor_msumr_lrpt",
+                "parameters": {
                     "m2x_mode": true,
                     "max_fill_lines": 50
                 }
@@ -283,8 +265,6 @@
     // TEST
     "meteor_m_mtvza_dump": {
         "name": "METEOR-M MTVZA Dump (Narrow BPSK)",
-        "live": false,
-        "frequencies": [],
         "parameters": {
             "satellite_number": {
                 "type": "options",
@@ -306,7 +286,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 15.36e6,
                     "rrc_taps": 31,
@@ -315,12 +296,14 @@
                 }
             },
             "frm": {
-                "meteor_xband_decoder": {
+                "module": "meteor_xband_decoder",
+                "parameters": {
                     "instrument_type": "mtvza"
                 }
             },
             "products": {
-                "meteor_xband_instruments": {
+                "module": "meteor_xband_instruments",
+                "parameters": {
                     "instrument_type": "mtvza"
                 }
             }
@@ -328,8 +311,6 @@
     },
     "meteor_m_kmss_qpsk_dump": {
         "name": "METEOR-M KMSS Dump (Wide QPSK)",
-        "live": false,
-        "frequencies": [],
         "parameters": {
             "satellite_number": {
                 "type": "options",
@@ -351,7 +332,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 61.4e6,
                     "rrc_taps": 31,
@@ -360,10 +342,11 @@
                 }
             },
             "frm": {
-                "meteor_qpsk_kmss_decoder": {}
+                "module": "meteor_qpsk_kmss_decoder"
             },
             "products": {
-                "meteor_xband_instruments": {
+                "module": "meteor_xband_instruments",
+                "parameters": {
                     "instrument_type": "kmss_bpsk"
                 }
             }
@@ -371,8 +354,6 @@
     },
     "meteor_m_kmss_bpsk_db": {
         "name": "METEOR-M KMSS DB (Wide BPSK)",
-        "live": false,
-        "frequencies": [],
         "parameters": {
             "satellite_number": {
                 "type": "options",
@@ -394,7 +375,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 61.44e6,
                     "rrc_taps": 31,
@@ -403,12 +385,14 @@
                 }
             },
             "frm": {
-                "meteor_xband_decoder": {
+                "module": "meteor_xband_decoder",
+                "parameters": {
                     "instrument_type": "kmss_bpsk"
                 }
             },
             "products": {
-                "meteor_xband_instruments": {
+                "module": "meteor_xband_instruments",
+                "parameters": {
                     "instrument_type": "kmss_bpsk"
                 }
             }

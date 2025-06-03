@@ -1,7 +1,7 @@
 #include "recorder.h"
 
-#include "main_ui.h"
 #include "logger.h"
+#include "main_ui.h"
 #include "processing.h"
 #include "utils/time.h"
 
@@ -183,11 +183,11 @@ namespace satdump
             try
             {
                 if (automated_live_output_dir)
-                    pipeline_output_dir = prepareAutomatedPipelineFolder(time(0), source_ptr->d_frequency, pipeline_selector.selected_pipeline.name);
+                    pipeline_output_dir = prepareAutomatedPipelineFolder(time(0), source_ptr->d_frequency, pipeline_selector.selected_pipeline.id);
                 else
                     pipeline_output_dir = pipeline_selector.outputdirselect.getPath();
 
-                live_pipeline = std::make_unique<LivePipeline>(pipeline_selector.selected_pipeline, pipeline_params, pipeline_output_dir);
+                live_pipeline = std::make_unique<pipeline::LivePipeline>(pipeline_selector.selected_pipeline, pipeline_params, pipeline_output_dir);
                 splitter->reset_output("live");
                 live_pipeline->start(splitter->get_output("live"), ui_thread_pool);
                 splitter->set_enabled("live", true);
@@ -216,14 +216,14 @@ namespace satdump
             live_pipeline->stop();
             is_stopping_processing = is_processing = false;
 
-            if (config::main_cfg["user_interface"]["finish_processing_after_live"]["value"].get<bool>() && live_pipeline->getOutputFiles().size() > 0)
+            if (config::main_cfg["user_interface"]["finish_processing_after_live"]["value"].get<bool>() && live_pipeline->getOutputFile().size() > 0)
             {
-                Pipeline pipeline = pipeline_selector.selected_pipeline;
-                std::string input_file = live_pipeline->getOutputFiles()[0];
-                int start_level = pipeline.live_cfg.normal_live[pipeline.live_cfg.normal_live.size() - 1].first;
-                std::string input_level = pipeline.steps[start_level].level_name;
-                ui_thread_pool.push([=](int)
-                                    { processing::process(pipeline, input_level, input_file, pipeline_output_dir, pipeline_params); });
+                pipeline::Pipeline pipeline = pipeline_selector.selected_pipeline;
+                std::string input_file = live_pipeline->getOutputFile();
+                logger->critical(input_file);
+                int start_level = pipeline.live_cfg.normal_live[pipeline.live_cfg.normal_live.size() - 1];
+                std::string input_level = pipeline.steps[start_level].level;
+                ui_thread_pool.push([=](int) { processing::process(pipeline, input_level, input_file, pipeline_output_dir, pipeline_params); });
             }
 
             live_pipeline.reset();
@@ -309,7 +309,7 @@ namespace satdump
                             if (this_tle.has_value())
                                 name = this_tle->name;
                             name += " - " + format_notated(dl.frequency, "Hz");
-                            add_vfo_live(id, name, dl.frequency, dl.pipeline_selector->selected_pipeline, dl.pipeline_selector->getParameters());
+                            // TODOPIPELINE           add_vfo_live(id, name, dl.frequency, dl.pipeline_selector->selected_pipeline, dl.pipeline_selector->getParameters());
                         }
 
                         if (dl.record)
@@ -398,4 +398,4 @@ namespace satdump
             };
         }
     }
-}
+} // namespace satdump

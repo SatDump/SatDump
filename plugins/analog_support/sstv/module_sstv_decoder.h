@@ -1,10 +1,11 @@
 #pragma once
 
-#include "core/module.h"
+#include "pipeline/module.h"
+#include "pipeline/modules/instrument_utils.h"
 
 namespace sstv
 {
-    class SSTVDecoderModule : public ProcessingModule
+    class SSTVDecoderModule : public satdump::pipeline::ProcessingModule
     {
     protected:
         std::atomic<uint64_t> filesize;
@@ -24,13 +25,13 @@ namespace sstv
         ~SSTVDecoderModule();
         void process();
         void drawUI(bool window);
-        std::vector<ModuleDataType> getInputTypes() { return {DATA_FILE, DATA_STREAM}; }
-        std::vector<ModuleDataType> getOutputTypes() { return {DATA_FILE}; }
+        std::vector<satdump::pipeline::ModuleDataType> getInputTypes() { return {satdump::pipeline::DATA_FILE, satdump::pipeline::DATA_STREAM}; }
+        std::vector<satdump::pipeline::ModuleDataType> getOutputTypes() { return {satdump::pipeline::DATA_FILE}; }
 
     public:
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
-        static std::vector<std::string> getParameters();
+        static nlohmann::json getParams() { return {}; } // TODOREWORK
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
 } // namespace sstv

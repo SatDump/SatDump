@@ -1,15 +1,15 @@
 #include "module_orbcomm_plotter.h"
-#include <fstream>
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
-#include "common/utils.h"
-#include "common/repack.h"
 #include "common/geodetic/ecef_to_eci.h"
 #include "common/geodetic/lla_xyz.h"
+#include "common/repack.h"
+#include "common/utils.h"
 #include "core/config.h"
-#include "utils/time.h"
+#include "imgui/imgui.h"
+#include "logger.h"
 #include "utils/color.h"
+#include "utils/time.h"
+#include <filesystem>
+#include <fstream>
 
 // We need access to libpredict internals!
 #include "libs/predict/predict.h"
@@ -22,7 +22,8 @@ extern "C"
 namespace
 {
     // Define GPS leap seconds
-    uint64_t leap_seconds[] = {46828800, 78364801, 109900802, 173059203, 252028804, 315187205, 346723206, 393984007, 425520008, 457056009, 504489610, 551750411, 599184012, 820108813, 914803214, 1025136015, 1119744016, 1167264017};
+    uint64_t leap_seconds[] = {46828800,  78364801,  109900802, 173059203, 252028804, 315187205, 346723206,  393984007,  425520008,
+                               457056009, 504489610, 551750411, 599184012, 820108813, 914803214, 1025136015, 1119744016, 1167264017};
     int leapLen = 18;
 
     // Test to see if a GPS second is a leap second
@@ -67,28 +68,16 @@ namespace
         return unixTime;
     }
 
-    time_t gps_time_to_unix(uint64_t gps_weeks, uint64_t gps_week_time)
-    {
-        return gps2unix(gps_weeks * 604800 + gps_week_time);
-    }
+    time_t gps_time_to_unix(uint64_t gps_weeks, uint64_t gps_week_time) { return gps2unix(gps_weeks * 604800 + gps_week_time); }
 
-}
+} // namespace
 
 namespace orbcomm
 {
     OrbcommPlotterModule::OrbcommPlotterModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-        : ProcessingModule(input_file, output_file_hint, parameters)
+        : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
     {
-    }
-
-    std::vector<ModuleDataType> OrbcommPlotterModule::getInputTypes()
-    {
-        return {DATA_FILE, DATA_STREAM};
-    }
-
-    std::vector<ModuleDataType> OrbcommPlotterModule::getOutputTypes()
-    {
-        return {DATA_FILE};
+        fsfsm_enable_output = false;
     }
 
     int orbcomm_fcs(uint8_t *data, int len)
@@ -118,13 +107,6 @@ namespace orbcomm
 
     void OrbcommPlotterModule::process()
     {
-        std::ifstream data_in;
-        if (input_data_type == DATA_FILE)
-            filesize = getFilesize(d_input_file);
-        else
-            filesize = 0;
-        if (input_data_type == DATA_FILE)
-            data_in = std::ifstream(d_input_file, std::ios::binary);
 
         std::ofstream data_out(d_output_file_hint + "_plotter.frm", std::ios::binary);
         logger->info("Using input frames " + d_input_file);
@@ -136,15 +118,10 @@ namespace orbcomm
 
         predict_observer_t *predict_obs = predict_create_observer("Main", qth_lat * DEG_TO_RAD, qth_lon * DEG_TO_RAD, qth_alt);
 
-        time_t lastTime = 0;
-
-        while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
+        while (should_run())
         {
             // Read buffer
-            if (input_data_type == DATA_FILE)
-                data_in.read((char *)frm, 600);
-            else
-                input_fifo->read((uint8_t *)frm, 600);
+            read_data((uint8_t *)frm, 600);
 
             data_out.write((char *)frm, 600);
 
@@ -215,11 +192,8 @@ namespace orbcomm
                         time_t ephem_time = gps_time_to_unix(week_number, time_of_week);
 
                         logger->info("SCID %d, Week Number %d, Time Of Week %d, Time %s - X %.3d Y %.3d Z %.3d - X %.3f Y %.3f Z %.3f - Lon %.1f, Lat %.1f, Alt %.1f - Az %.1f El %.1f Range %.1f",
-                                     scid + 70, week_number, time_of_week, satdump::timestamp_to_string(ephem_time).c_str(),
-                                     x_raw, y_raw, z_raw,
-                                     X_DOT, Y_DOT, Z_DOT,
-                                     lla.lon, lla.lat, lla.alt,
-                                     az, el, range);
+                                     scid + 70, week_number, time_of_week, satdump::timestamp_to_string(ephem_time).c_str(), x_raw, y_raw, z_raw, X_DOT, Y_DOT, Z_DOT, lla.lon, lla.lat, lla.alt, az,
+                                     el, range);
 
 #if 0
                         // Polar Plot!
@@ -251,8 +225,7 @@ namespace orbcomm
                         else
                             last_ephems.push_back(OrbComEphem{ephem_time, scid, (float)az, (float)el});
 
-                        std::sort(last_ephems.begin(), last_ephems.end(), [](const auto &v1, const auto &v2)
-                                  { return v1.time > v2.time; });
+                        std::sort(last_ephems.begin(), last_ephems.end(), [](const auto &v1, const auto &v2) { return v1.time > v2.time; });
 
                         all_ephem_points_mtx.unlock();
                     }
@@ -284,16 +257,9 @@ namespace orbcomm
                     }
                 }
             }
-
-            progress = data_in.tellg();
-            if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-            {
-                lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-            }
         }
 
-        data_in.close();
+        cleanup();
     }
 
     inline float az_el_to_plot_x(float plot_size, float radius, float az, float el) { return sin(az * DEG_TO_RAD) * plot_size * radius * ((90.0 - el) / 90.0); }
@@ -317,9 +283,7 @@ namespace orbcomm
         {
             int d_pplot_size = (should_be_a_window ? 400 : 200) * ui_scale; // ImGui::GetWindowContentRegionMax().x;
             ImDrawList *draw_list = ImGui::GetWindowDrawList();
-            draw_list->AddRectFilled(ImGui::GetCursorScreenPos(),
-                                     ImVec2(ImGui::GetCursorScreenPos().x + d_pplot_size, ImGui::GetCursorScreenPos().y + d_pplot_size),
-                                     style::theme.widget_bg);
+            draw_list->AddRectFilled(ImGui::GetCursorScreenPos(), ImVec2(ImGui::GetCursorScreenPos().x + d_pplot_size, ImGui::GetCursorScreenPos().y + d_pplot_size), style::theme.widget_bg);
 
             // Draw the "target-like" plot with elevation rings
             float radius = 0.45;
@@ -327,26 +291,14 @@ namespace orbcomm
             float radius2 = d_pplot_size * radius * (6.0 / 9.0);
             float radius3 = d_pplot_size * radius * (9.0 / 9.0);
 
-            draw_list->AddCircle({ImGui::GetCursorScreenPos().x + (d_pplot_size / 2),
-                                  ImGui::GetCursorScreenPos().y + (d_pplot_size / 2)},
-                                 radius1, style::theme.green, 0, 2);
-            draw_list->AddCircle({ImGui::GetCursorScreenPos().x + (d_pplot_size / 2),
-                                  ImGui::GetCursorScreenPos().y + (d_pplot_size / 2)},
-                                 radius2, style::theme.green, 0, 2);
-            draw_list->AddCircle({ImGui::GetCursorScreenPos().x + (d_pplot_size / 2),
-                                  ImGui::GetCursorScreenPos().y + (d_pplot_size / 2)},
-                                 radius3, style::theme.green, 0, 2);
+            draw_list->AddCircle({ImGui::GetCursorScreenPos().x + (d_pplot_size / 2), ImGui::GetCursorScreenPos().y + (d_pplot_size / 2)}, radius1, style::theme.green, 0, 2);
+            draw_list->AddCircle({ImGui::GetCursorScreenPos().x + (d_pplot_size / 2), ImGui::GetCursorScreenPos().y + (d_pplot_size / 2)}, radius2, style::theme.green, 0, 2);
+            draw_list->AddCircle({ImGui::GetCursorScreenPos().x + (d_pplot_size / 2), ImGui::GetCursorScreenPos().y + (d_pplot_size / 2)}, radius3, style::theme.green, 0, 2);
 
-            draw_list->AddLine({ImGui::GetCursorScreenPos().x + (d_pplot_size / 2),
-                                ImGui::GetCursorScreenPos().y},
-                               {ImGui::GetCursorScreenPos().x + (d_pplot_size / 2),
-                                ImGui::GetCursorScreenPos().y + d_pplot_size},
-                               style::theme.green, 2);
-            draw_list->AddLine({ImGui::GetCursorScreenPos().x,
-                                ImGui::GetCursorScreenPos().y + (d_pplot_size / 2)},
-                               {ImGui::GetCursorScreenPos().x + d_pplot_size,
-                                ImGui::GetCursorScreenPos().y + (d_pplot_size / 2)},
-                               style::theme.green, 2);
+            draw_list->AddLine({ImGui::GetCursorScreenPos().x + (d_pplot_size / 2), ImGui::GetCursorScreenPos().y},
+                               {ImGui::GetCursorScreenPos().x + (d_pplot_size / 2), ImGui::GetCursorScreenPos().y + d_pplot_size}, style::theme.green, 2);
+            draw_list->AddLine({ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y + (d_pplot_size / 2)},
+                               {ImGui::GetCursorScreenPos().x + d_pplot_size, ImGui::GetCursorScreenPos().y + (d_pplot_size / 2)}, style::theme.green, 2);
 
             all_ephem_points_mtx.lock();
             for (auto &ephem : all_ephem_points)
@@ -436,18 +388,10 @@ namespace orbcomm
         ImGui::End();
     }
 
-    std::string OrbcommPlotterModule::getID()
-    {
-        return "orbcomm_plotter";
-    }
+    std::string OrbcommPlotterModule::getID() { return "orbcomm_plotter"; }
 
-    std::vector<std::string> OrbcommPlotterModule::getParameters()
-    {
-        return {};
-    }
-
-    std::shared_ptr<ProcessingModule> OrbcommPlotterModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<satdump::pipeline::ProcessingModule> OrbcommPlotterModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<OrbcommPlotterModule>(input_file, output_file_hint, parameters);
     }
-}
+} // namespace orbcomm

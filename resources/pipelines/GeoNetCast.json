@@ -1,26 +1,16 @@
 {
     "geonetcast": {
         "name": "GeoNetCast",
-        "live": true,
-        "live_cfg": {
+        "live": {
             "pkt_size": 9400,
             "default": [
-                [
-                    1,
-                    0
-                ]
+                1
             ],
             "server": [
-                [
-                    1,
-                    0
-                ]
+                1
             ],
             "client": [
-                [
-                    2,
-                    0
-                ]
+                2
             ]
         },
         "parameters": {
@@ -34,7 +24,8 @@
         "work": {
             "baseband": {},
             "bbframe": {
-                "dvbs2_demod": {
+                "module": "dvbs2_demod",
+                "parameters": {
                     "symbolrate": 30e6,
                     "rrc_alpha": 0.2,
                     "pll_bw": 0.01,
@@ -46,7 +37,8 @@
                 }
             },
             "products": {
-                "geonetcast_decoder": {
+                "module": "geonetcast_decoder",
+                "parameters": {
                     "ts_input": false,
                     "process_goes_abi": false
                 }

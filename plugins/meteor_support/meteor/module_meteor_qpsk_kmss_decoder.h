@@ -1,14 +1,13 @@
 #pragma once
 
-#include "core/module.h"
-#include <complex>
-#include <thread>
-#include <fstream>
-#include "deframer.h"
 #include "common/widgets/constellation.h"
+#include "pipeline/module.h"
+#include <fstream>
 
 namespace meteor
 {
+    using namespace satdump::pipeline; // TODOREWORK
+
     class MeteorQPSKKmssDecoderModule : public ProcessingModule
     {
     protected:
@@ -44,7 +43,7 @@ namespace meteor
     public:
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
-        static std::vector<std::string> getParameters();
+        static nlohmann::json getParams() { return {}; } // TODOREWORK
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
 } // namespace meteor
