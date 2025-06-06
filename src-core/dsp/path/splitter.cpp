@@ -6,9 +6,8 @@ namespace satdump
     {
         template <typename T>
         SplitterBlock<T>::SplitterBlock()
-            : Block(std::is_same_v<T, complex_t> ? "splitter_cc" : "splitter_ff",
-                    {{"in", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}},
-                    {{"out", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}})
+            : Block(std::is_same_v<T, complex_t> ? "splitter_cc" : "splitter_ff", {{"in", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}},
+                    {/*{"out", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}*/})
         {
         }
 
@@ -32,6 +31,7 @@ namespace satdump
                 return true;
             }
 
+            vfos_mtx.lock();
             for (auto &o : outputs)
             {
                 DSPBuffer oblk = DSPBuffer::newBufferSamples<T>(iblk.max_size);
@@ -39,6 +39,7 @@ namespace satdump
                 oblk.size = iblk.size;
                 o.fifo->wait_enqueue(oblk);
             }
+            vfos_mtx.unlock();
 
             iblk.free();
 
@@ -47,5 +48,5 @@ namespace satdump
 
         template class SplitterBlock<complex_t>;
         template class SplitterBlock<float>;
-    }
-}
+    } // namespace ndsp
+} // namespace satdump

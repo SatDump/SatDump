@@ -2,9 +2,11 @@
 #include "common/widgets/stepped_slider.h"
 #include "core/style.h"
 #include "dsp/block.h"
+#include "dsp/const/const_disp.h"
 #include "dsp/device/dev.h"
 #include "imgui/imgui.h"
 #include "logger.h"
+#include <memory>
 
 namespace satdump
 {
@@ -25,7 +27,10 @@ namespace satdump
             //     }
             // }
 
+            splitter = std::make_shared<ndsp::SplitterBlock<complex_t>>();
+
             fftp = std::make_shared<ndsp::FFTPanBlock>();
+            fftp->set_input(splitter->add_output("main_fft"), 0);
             fftp->avg_num = 1;
 
             fft_plot = std::make_shared<widgets::FFTPlot>(fftp->output_fft_buff, 65536, -150, 150, 10);
@@ -37,6 +42,9 @@ namespace satdump
             waterfall_plot->set_rate(30, 20);
 
             fftp->on_fft = [this](float *p) { waterfall_plot->push_fft(p); };
+
+            // TMP
+            const_disp = std::make_shared<ndsp::ConstellationDisplayBlock>();
         }
 
         NewRecHandler::~NewRecHandler() {}
@@ -95,9 +103,10 @@ namespace satdump
                     fftp->set_fft_settings(65536, dev->getStreamSamplerate(0, false), 30);
                     fftp->avg_num = 1;
 
-                    fftp->link(dev.get(), 0, 0, 16); //        fftp->inputs[0] = dev->outputs[0];
+                    splitter->link(dev.get(), 0, 0, 16); //        fftp->inputs[0] = dev->outputs[0];
 
                     dev->start();
+                    splitter->start();
                     fftp->start();
 
                     options_displayer_test.clear();
@@ -113,6 +122,7 @@ namespace satdump
                 if (ImGui::Button("Stop"))
                 {
                     dev->stop(true);
+                    splitter->stop();
                     fftp->stop();
 
                     options_displayer_test.clear();
@@ -142,6 +152,27 @@ namespace satdump
             {
                 waterfall_plot->scale_min = fft_plot->scale_min;
                 waterfall_plot->scale_max = fft_plot->scale_max;
+            }
+
+            ImGui::Separator();
+            const_disp->constel.draw();
+
+            if (ImGui::Button("Add Const"))
+            {
+                const_disp->set_input(splitter->add_output("tmp_const"), 0);
+                const_disp->start();
+            }
+
+            if (ImGui::Button("Del Const"))
+            {
+                splitter->del_output("tmp_const", true);
+                const_disp->stop();
+            }
+
+            if (deviceRunning)
+            {
+                float ratio = (float)dev->get_outputs()[0].fifo->size_approx() / (float)dev->get_outputs()[0].fifo->max_capacity();
+                ImGui::ProgressBar(ratio);
             }
         }
 
