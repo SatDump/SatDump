@@ -5,8 +5,7 @@
 #include <filesystem>
 #include <fstream>
 
-#include "jpeg_img.h"
-#include "raw_img.h"
+#include "img_payload.h"
 
 namespace uvsq
 {
@@ -25,12 +24,12 @@ namespace uvsq
         std::string jpeg_dir = directory + "/JPEG";
         if (!std::filesystem::exists(jpeg_dir))
             std::filesystem::create_directories(jpeg_dir);
-        JPEGImgDecoder jpeg_dec(jpeg_dir);
+        ImgPayloadDecoder jpeg_dec(0, jpeg_dir);
 
         std::string raw_dir = directory + "/RAW";
         if (!std::filesystem::exists(raw_dir))
             std::filesystem::create_directories(raw_dir);
-        RawImgDecoder raw_dec(raw_dir);
+        ImgPayloadDecoder raw_dec(1, raw_dir);
 
         std::ofstream data_ou(directory + "/others.cadu", std::ios::binary);
 
