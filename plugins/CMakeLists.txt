@@ -164,6 +164,12 @@ if(PLUGIN_BLUEWALKER3 OR PLUGINS_ALL)
   add_subdirectory(bluewalker3_support)
 endif()
 
+option(PLUGIN_UVSQ "Enable the UVSQ support plugin" OFF)
+
+if(PLUGIN_UVSQ OR PLUGINS_ALL)
+  add_subdirectory(uvsq_support)
+endif()
+
 option(PLUGIN_ANALOG
        "Enable the support plugin for analog protocols such as NOAA APT" OFF)
 

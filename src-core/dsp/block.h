@@ -38,12 +38,14 @@ namespace satdump
          * are rendered in a flowchart
          * @param type of the data/samples expected on this IO
          * @param fifo the actual fifo to connect to other blocks
+         * @param blkdata optional data the blocks can chose to hold in IQ
          */
         struct BlockIO
         {
             std::string name;
             BlockIOType type;
             std::shared_ptr<DspBufferFifo> fifo = nullptr;
+            std::shared_ptr<void> blkdata = nullptr;
 
             // TODOREWORK DOCUMENT
             uint64_t samplerate = 0;
