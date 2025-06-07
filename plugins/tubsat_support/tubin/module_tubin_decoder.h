@@ -1,16 +1,13 @@
 #pragma once
 
-#include "core/module.h"
 #include "common/codings/crc/crc_generic.h"
+#include "pipeline/modules/base/filestream_to_filestream.h"
 
 namespace tubin
 {
-    class TUBINDecoderModule : public ProcessingModule
+    class TUBINDecoderModule : public satdump::pipeline::base::FileStreamToFileStreamModule
     {
     protected:
-        std::atomic<uint64_t> filesize;
-        std::atomic<uint64_t> progress;
-
         bool d_check_crc;
 
         codings::crc::GenericCRC crc_check = codings::crc::GenericCRC(16, 4129, 0xFFFF, 0x0000, false, false);
@@ -27,7 +24,7 @@ namespace tubin
     public:
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
-        static std::vector<std::string> getParameters();
+        static nlohmann::json getParams() { return {}; } // TODOREWORK
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
-}
+} // namespace tubin

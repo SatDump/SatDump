@@ -6,7 +6,7 @@
 
 namespace satdump
 {
-    namespace proj
+    namespace projection
     {
         NormalLineRaytracer::NormalLineRaytracer(nlohmann::json cfg) : SatelliteRaytracerSatTrack(cfg)
         {

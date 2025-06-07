@@ -1,8 +1,8 @@
 #pragma once
 
 #include "abi_products.h"
-#include "common/image/image.h"
-#include "common/image/image_saving_thread.h"
+#include "image/image.h"
+#include "image/image_saving_thread.h"
 
 namespace goes
 {

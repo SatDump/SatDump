@@ -7,7 +7,7 @@ namespace fengyun3
         MWRIReader::MWRIReader()
         {
             for (int i = 0; i < 10; i++)
-                channels[i].create(266);
+                channels[i].resize(266);
 
             lines = 0;
         }
@@ -15,7 +15,7 @@ namespace fengyun3
         MWRIReader::~MWRIReader()
         {
             for (int i = 0; i < 10; i++)
-                channels[i].destroy();
+                channels[i].clear();
         }
 
         void MWRIReader::work(std::vector<uint8_t> &packet)
@@ -66,7 +66,7 @@ namespace fengyun3
 
         image::Image MWRIReader::getChannel(int channel)
         {
-            return image::Image(channels[channel].buf, 16, 266, lines, 1);
+            return image::Image(channels[channel].data(), 16, 266, lines, 1);
         }
     } // namespace virr
 } // namespace fengyun

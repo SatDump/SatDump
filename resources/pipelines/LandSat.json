@@ -1,9 +1,6 @@
 {
     "landsat_ldcm_tlm": {
         "name": "LandSat 8/9 S-band",
-        "live": false,
-        "live_cfg": [],
-        "frequencies": [],
         "parameters": {
             "samplerate": {
                 "value": 6e6
@@ -12,7 +9,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 1.067e6,
                     "rrc_alpha": 0.5,
@@ -20,7 +18,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "oqpsk",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.300,
@@ -39,7 +38,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 220.4e6,
                     "rrc_alpha": 0.5,
@@ -47,7 +47,8 @@
                 }
             },
             "cadu": {
-                "ccsds_ldpc_decoder": {
+                "module": "ccsds_ldpc_decoder",
+                "parameters": {
                     "constellation": "oqpsk",
                     "ldpc_rate": "7/8",
                     "ldpc_iterations": 10,
@@ -57,7 +58,7 @@
                 }
             },
             "products": {
-                "ldcm_instruments": {}
+                "module": "ldcm_instruments"
             }
         }
     }

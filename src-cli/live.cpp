@@ -1,15 +1,15 @@
 #include "live.h"
-#include "common/dsp_source_sink/dsp_sample_source.h"
-#include "core/live_pipeline.h"
-#include <signal.h>
-#include "logger.h"
-#include "init.h"
 #include "common/cli_utils.h"
-#include <filesystem>
+#include "common/dsp/fft/fft_pan.h"
 #include "common/dsp/path/splitter.h"
 #include "common/dsp/path/splitter_vfo.h"
-#include "common/dsp/fft/fft_pan.h"
+#include "common/dsp_source_sink/dsp_sample_source.h"
+#include "init.h"
+#include "logger.h"
+#include "pipeline/live_pipeline.h"
 #include "webserver.h"
+#include <filesystem>
+#include <signal.h>
 
 // Catch CTRL+C to exit live properly!
 bool live_should_exit = false;
@@ -18,6 +18,8 @@ void sig_handler_live(int signo)
     if (signo == SIGINT || signo == SIGTERM)
         live_should_exit = true;
 }
+
+// TODOREWORK the timeout and stats are partially broken here now!
 
 int main_live(int argc, char *argv[])
 {
@@ -53,7 +55,7 @@ int main_live(int argc, char *argv[])
             std::filesystem::create_directories(output_file);
 
         // Get pipeline
-        std::optional<satdump::Pipeline> pipeline = satdump::getPipelineFromName(downlink_pipeline);
+        std::optional<satdump::pipeline::Pipeline> pipeline = satdump::pipeline::getPipelineFromID(downlink_pipeline);
 
         if (!pipeline.has_value())
         {
@@ -62,7 +64,7 @@ int main_live(int argc, char *argv[])
         }
 
         // Init pipeline
-        std::unique_ptr<satdump::LivePipeline> live_pipeline = std::make_unique<satdump::LivePipeline>(pipeline.value(), parameters, output_file);
+        std::unique_ptr<satdump::pipeline::LivePipeline> live_pipeline = std::make_unique<satdump::pipeline::LivePipeline>(pipeline.value(), parameters, output_file);
 
         ctpl::thread_pool live_thread_pool(8);
 
@@ -81,11 +83,7 @@ int main_live(int argc, char *argv[])
         if (parameters.contains("http_server"))
         {
             std::string http_addr = parameters["http_server"].get<std::string>();
-            webserver::handle_callback = [&live_pipeline]()
-            {
-                live_pipeline->updateModuleStats();
-                return live_pipeline->stats.dump(4);
-            };
+            webserver::handle_callback = [&live_pipeline]() { return live_pipeline->getModulesStats().dump(4); };
             logger->info("Start webserver on %s", http_addr.c_str());
             webserver::start(http_addr);
         }
@@ -205,7 +203,7 @@ int main_live(int argc, char *argv[])
                 return 1;
             }
 
-            std::map<std::string, std::shared_ptr<satdump::LivePipeline>> all_pipelines;
+            std::map<std::string, std::shared_ptr<satdump::pipeline::LivePipeline>> all_pipelines;
             ctpl::thread_pool live_thread_pool(128);
 
             for (auto cfg : multi_cfg.items())
@@ -222,7 +220,7 @@ int main_live(int argc, char *argv[])
                     exit(1);
                 }
 
-                std::optional<satdump::Pipeline> pipeline = satdump::getPipelineFromName(vpipeline);
+                std::optional<satdump::pipeline::Pipeline> pipeline = satdump::pipeline::getPipelineFromID(vpipeline);
                 vparams["baseband_format"] = "cf32";
                 vparams["buffer_size"] = dsp::STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
                 vparams["start_timestamp"] = (double)time(0);     // Some pipelines need this
@@ -232,7 +230,7 @@ int main_live(int argc, char *argv[])
                 if (!std::filesystem::exists(path))
                     std::filesystem::create_directories(path);
 
-                std::shared_ptr<satdump::LivePipeline> live_pipeline = std::make_shared<satdump::LivePipeline>(pipeline.value(), vparams, path);
+                std::shared_ptr<satdump::pipeline::LivePipeline> live_pipeline = std::make_shared<satdump::pipeline::LivePipeline>(pipeline.value(), vparams, path);
 
                 bool server_mode = vparams.contains("server_address") || vparams.contains("server_port");
 
@@ -254,8 +252,7 @@ int main_live(int argc, char *argv[])
                     nlohmann::json stats;
                     for (auto &e : all_pipelines)
                     {
-                        e.second->updateModuleStats();
-                        stats[e.first] = e.second->stats;
+                        stats[e.first] = e.second->getModulesStats();
                     }
                     return stats.dump(4);
                 };
@@ -308,7 +305,7 @@ int main_live(int argc, char *argv[])
         else
         {
             // Get pipeline
-            std::optional<satdump::Pipeline> pipeline = satdump::getPipelineFromName(downlink_pipeline);
+            std::optional<satdump::pipeline::Pipeline> pipeline = satdump::pipeline::getPipelineFromID(downlink_pipeline);
 
             if (!pipeline.has_value())
             {
@@ -320,7 +317,7 @@ int main_live(int argc, char *argv[])
             parameters["baseband_format"] = "cf32";
             parameters["buffer_size"] = dsp::STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
             parameters["start_timestamp"] = (double)time(0);     // Some pipelines need this
-            std::unique_ptr<satdump::LivePipeline> live_pipeline = std::make_unique<satdump::LivePipeline>(pipeline.value(), parameters, output_file);
+            std::unique_ptr<satdump::pipeline::LivePipeline> live_pipeline = std::make_unique<satdump::pipeline::LivePipeline>(pipeline.value(), parameters, output_file);
 
             ctpl::thread_pool live_thread_pool(8);
 
@@ -329,6 +326,8 @@ int main_live(int argc, char *argv[])
             std::unique_ptr<dsp::SplitterBlock> splitter;
             std::unique_ptr<dsp::FFTPanBlock> fft;
             bool webserver_already_set = false;
+
+            nlohmann::json live_pipeline_stats;
 
             // Attempt to start the source and pipeline
             try
@@ -354,12 +353,12 @@ int main_live(int argc, char *argv[])
                     splitter->start();
                     fft->start();
 
-                    webserver::handle_callback = [&live_pipeline, &fft, fft_size]()
+                    webserver::handle_callback = [&live_pipeline, &fft, fft_size, &live_pipeline_stats]()
                     {
-                        live_pipeline->updateModuleStats();
+                        live_pipeline_stats = live_pipeline->getModulesStats();
                         for (int i = 0; i < fft_size; i++)
-                            live_pipeline->stats["fft_values"][i] = fft->output_stream->writeBuf[i];
-                        return live_pipeline->stats.dump(4);
+                            live_pipeline_stats["fft_values"][i] = fft->output_stream->writeBuf[i];
+                        return live_pipeline_stats.dump(4);
                     };
 
                     webserver_already_set = true;
@@ -378,11 +377,7 @@ int main_live(int argc, char *argv[])
             {
                 std::string http_addr = parameters["http_server"].get<std::string>();
                 if (!webserver_already_set)
-                    webserver::handle_callback = [&live_pipeline]()
-                    {
-                        live_pipeline->updateModuleStats();
-                        return live_pipeline->stats.dump(4);
-                    };
+                    webserver::handle_callback = [&live_pipeline]() { return live_pipeline->getModulesStats().dump(4); };
                 logger->info("Start webserver on %s", http_addr.c_str());
                 webserver::start(http_addr);
             }
@@ -404,7 +399,7 @@ int main_live(int argc, char *argv[])
                         break;
                     }
 
-                    live_pipeline->stats["timeout_left"] = timeout - elapsed_time;
+                    live_pipeline_stats["timeout_left"] = timeout - elapsed_time;
                 }
 
                 if (live_should_exit)
@@ -425,15 +420,14 @@ int main_live(int argc, char *argv[])
             }
             live_pipeline->stop();
 
-            if ((parameters.contains("finish_processing") ? parameters["finish_processing"].get<bool>() : false) &&
-                !server_mode)
+            if ((parameters.contains("finish_processing") ? parameters["finish_processing"].get<bool>() : false) && !server_mode)
             {
-                if (live_pipeline->getOutputFiles().size() > 0 || std::filesystem::exists(output_file + "/dataset.json"))
+                if (live_pipeline->getOutputFile().size() > 0 || std::filesystem::exists(output_file + "/dataset.json"))
                 {
-                    std::optional<satdump::Pipeline> pipeline = satdump::getPipelineFromName(downlink_pipeline);
-                    std::string input_file = live_pipeline->getOutputFiles().size() > 0 ? live_pipeline->getOutputFiles()[0] : (output_file + "/dataset.json");
-                    int start_level = pipeline->live_cfg.normal_live[pipeline->live_cfg.normal_live.size() - 1].first;
-                    std::string input_level = pipeline->steps[start_level].level_name;
+                    std::optional<satdump::pipeline::Pipeline> pipeline = satdump::pipeline::getPipelineFromID(downlink_pipeline);
+                    std::string input_file = live_pipeline->getOutputFile().size() > 0 ? live_pipeline->getOutputFile() : (output_file + "/dataset.json");
+                    int start_level = pipeline->live_cfg.normal_live[pipeline->live_cfg.normal_live.size() - 1];
+                    std::string input_level = pipeline->steps[start_level].level;
 
                     logger->critical(input_level);
 

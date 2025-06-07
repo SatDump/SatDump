@@ -1,14 +1,14 @@
 #include "module_terra_db_demod.h"
 #include "common/dsp/filter/firdes.h"
-#include "logger.h"
 #include "imgui/imgui.h"
+#include "logger.h"
 
 // Return filesize
 uint64_t getFilesize(std::string filepath);
 
 namespace terra
 {
-    TerraDBDemodModule::TerraDBDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : demod::BaseDemodModule(input_file, output_file_hint, parameters)
+    TerraDBDemodModule::TerraDBDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : BaseDemodModule(input_file, output_file_hint, parameters)
     {
         // Buffers
         sym_buffer = new int8_t[d_buffer_size * 2];
@@ -29,22 +29,19 @@ namespace terra
         rec = std::make_shared<dsp::MMClockRecoveryBlock<complex_t>>(pll->output_stream, ((float)final_samplerate / (float)d_symbolrate) / 2.0f, pow(0.001, 2) / 4.0, 0.5f, 0.001, 0.0001f);
     }
 
-    TerraDBDemodModule::~TerraDBDemodModule()
-    {
-        delete[] sym_buffer;
-    }
+    TerraDBDemodModule::~TerraDBDemodModule() { delete[] sym_buffer; }
 
     void TerraDBDemodModule::process()
     {
-        if (input_data_type == DATA_FILE)
+        if (input_data_type == satdump::pipeline::DATA_FILE)
             filesize = file_source->getFilesize();
         else
             filesize = 0;
 
-        if (output_data_type == DATA_FILE)
+        if (output_data_type == satdump::pipeline::DATA_FILE)
         {
             data_out = std::ofstream(d_output_file_hint + ".soft", std::ios::binary);
-            d_output_files.push_back(d_output_file_hint + ".soft");
+            d_output_file = d_output_file_hint + ".soft";
         }
 
         logger->info("Using input baseband " + d_input_file);
@@ -88,24 +85,33 @@ namespace terra
 
             rec->output_stream->flush();
 
-            if (output_data_type == DATA_FILE)
+            if (output_data_type == satdump::pipeline::DATA_FILE)
                 data_out.write((char *)sym_buffer, dat_size);
             else
                 output_fifo->write((uint8_t *)sym_buffer, dat_size);
 
-            if (input_data_type == DATA_FILE)
+            if (input_data_type == satdump::pipeline::DATA_FILE)
                 progress = file_source->getPosition();
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0f) / 10.0f) + "%%, SNR : " + std::to_string(snr) + "dB," + " Peak SNR: " + std::to_string(peak_snr) + "dB");
+                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0f) / 10.0f) + "%%, SNR : " + std::to_string(snr) + "dB," +
+                             " Peak SNR: " + std::to_string(peak_snr) + "dB");
             }
         }
 
         logger->info("Demodulation finished");
 
-        if (input_data_type == DATA_FILE)
+        if (input_data_type == satdump::pipeline::DATA_FILE)
             stop();
+    }
+
+    nlohmann::json TerraDBDemodModule::getModuleStats()
+    {
+        nlohmann::json v;
+        v["snr"] = snr;
+        v["peak_snr"] = peak_snr;
+        return v;
     }
 
     void TerraDBDemodModule::stop()
@@ -118,22 +124,14 @@ namespace terra
         rec->stop();
         rec->output_stream->stopReader();
 
-        if (output_data_type == DATA_FILE)
+        if (output_data_type == satdump::pipeline::DATA_FILE)
             data_out.close();
     }
 
-    std::string TerraDBDemodModule::getID()
-    {
-        return "terra_db_demod";
-    }
+    std::string TerraDBDemodModule::getID() { return "terra_db_demod"; }
 
-    std::vector<std::string> TerraDBDemodModule::getParameters()
-    {
-        return BaseDemodModule::getParameters();
-    }
-
-    std::shared_ptr<ProcessingModule> TerraDBDemodModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<satdump::pipeline::ProcessingModule> TerraDBDemodModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<TerraDBDemodModule>(input_file, output_file_hint, parameters);
     }
-}
+} // namespace terra

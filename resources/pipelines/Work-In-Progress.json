@@ -5,7 +5,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 5e6,
                     "rrc_alpha": 0.5,
@@ -20,7 +21,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "8psk",
                     "symbolrate": 9000000,
                     "agc_rate": 0.00001,
@@ -39,7 +41,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 77.5e6,
                     "rrc_alpha": 0.35,
@@ -47,7 +50,8 @@
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "cadu_size": 8304,
                     "nrzm": true,
@@ -60,16 +64,9 @@
     },
     "smap_s_link": {
         "name": "SMAP S-Band Link",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -85,7 +82,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 590e3,
                     "rrc_alpha": 0.5,
@@ -93,7 +91,8 @@
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 10232,
                     "derandomize": true,
@@ -106,16 +105,9 @@
     },
     "cheops_link": {
         "name": "CHEOPS S-Band Dump",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -127,7 +119,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 1.142e6,
                     "rrc_alpha": 0.5,
@@ -135,7 +128,8 @@
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "d_oqpsk_method_2": true,
                     "cadu_size": 10232,
@@ -157,7 +151,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 2.295e6,
                     "rrc_alpha": 0.5,
@@ -165,7 +160,8 @@
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "cadu_size": 9872,
                     "nrzm": true,
@@ -180,21 +176,15 @@
     "grace_fo_link": {
         "name": "Grace-FO Dump",
         "samplerate": 20e6,
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 1.5e6,
                     "rrc_alpha": 0.5,
@@ -202,7 +192,8 @@
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "oqpsk_method3": true,
                     "cadu_size": 10232,
@@ -227,7 +218,8 @@
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "cadu_size": 8192,
                     "nrzm": true,
@@ -239,17 +231,14 @@
     },
     "eumetcast_africa": {
         "name": "EUMETCAST Africa",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ]
+        "live": [
+            1
         ],
         "work": {
             "baseband": {},
             "bbframe": {
-                "dvbs2_demod": {
+                "module": "dvbs2_demod",
+                "parameters": {
                     "symbolrate": 9.892e6,
                     "rrc_alpha": 0.2,
                     "pll_bw": 0.01,
@@ -264,16 +253,9 @@
     },
     "smos_tlm": {
         "name": "SMOS TLM",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -285,7 +267,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 838878,
                     "rrc_alpha": 0.5,
@@ -293,7 +276,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.250,
@@ -308,22 +292,16 @@
     },
     "neossat_dump": {
         "name": "NEOSSAT Dump",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "samplerate": 6e6,
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 2e6,
                     "rrc_alpha": 0.5,
@@ -331,7 +309,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.250,
@@ -347,16 +326,9 @@
     },
     "ops_sat_s_link": {
         "name": "OPS-SAT S-Band Link",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -368,7 +340,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 1e6,
                     "rrc_alpha": 0.15,
@@ -376,7 +349,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "cadu_size": 8952,
                     "viterbi_ber_thresold": 0.300,
@@ -391,16 +365,9 @@
     },
     "swot_tlm": {
         "name": "SWOT S-Band TLM",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -416,7 +383,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 932e3,
                     "rrc_alpha": 0.5,
@@ -424,7 +392,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "oqpsk",
                     "cadu_size": 10232,
                     "nrzm": true,
@@ -439,23 +408,17 @@
     },
     "tiahne1_tlm": {
         "name": "Tiahne-1 TLM",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [],
         "parameters": {},
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "resample_after_pll": true,
                     "symbolrate": 64e3,
                     "pll_bw": 0.01,
@@ -465,7 +428,8 @@
                 }
             },
             "frames": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 8192,
                     "ccsds": false,
@@ -480,16 +444,9 @@
     },
     "paz_s_tlm": {
         "name": "PAZ S-band telemetry",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -505,7 +462,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 1e6,
                     "rrc_alpha": 0.5,
@@ -513,7 +471,8 @@
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 8952,
                     "derandomize": true,
@@ -525,16 +484,9 @@
     },
     "gcom_s_band": {
         "name": "GCOM S-Band link",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -550,7 +502,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 500e3,
                     "rrc_alpha": 0.35,
@@ -558,7 +511,8 @@
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "oqpsk",
                     "cadu_size": 2048,
                     "derandomize": true,
@@ -571,12 +525,8 @@
     },
     "cosmos_2518_sband": {
         "name": "Cosmos-2518 S-Band link",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ]
+        "live": [
+            1
         ],
         "frequencies": [],
         "parameters": {
@@ -587,7 +537,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 16e3,
                     "rrc_alpha": 0.35,
@@ -599,18 +550,15 @@
     },
     "chinese_spaceplane_sband": {
         "name": "Chinese Spaceplane S-Band link",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ]
+        "live": [
+            1
         ],
         "frequencies": [],
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 3.06e6,
                     "rrc_alpha": 0.35,

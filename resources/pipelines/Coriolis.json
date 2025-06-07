@@ -1,16 +1,9 @@
 {
     "coriolis_db": {
         "name": "Coriolis S-Band Tactical DB",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -26,7 +19,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 512e3,
                     "rrc_alpha": 0.5,
@@ -34,7 +28,8 @@
                 }
             },
             "frm": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "ccsds": false,
                     "constellation": "bpsk",
                     "cadu_size": 8192,
@@ -46,7 +41,7 @@
                 }
             },
             "products": {
-                "coriolis_windsat": {}
+                "module": "coriolis_windsat"
             }
         }
     }

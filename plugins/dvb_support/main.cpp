@@ -1,7 +1,6 @@
+#include "common/cpu_features.h"
 #include "core/plugin.h"
 #include "logger.h"
-#include "core/module.h"
-#include "common/cpu_features.h"
 
 #include "dvbs/module_dvbs_demod.h"
 #include "dvbs2/module_dvbs2_demod.h"
@@ -10,10 +9,7 @@
 class DVBSupport : public satdump::Plugin
 {
 public:
-    std::string getID()
-    {
-        return "dvb_support";
-    }
+    std::string getID() { return "dvb_support"; }
 
     void init()
     {
@@ -24,13 +20,14 @@ public:
             return;
         }
 #endif
-        satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
+
+        satdump::eventBus->register_handler<satdump::pipeline::RegisterModulesEvent>(registerPluginsHandler);
     }
 
-    static void registerPluginsHandler(const RegisterModulesEvent &evt)
+    static void registerPluginsHandler(const satdump::pipeline::RegisterModulesEvent &evt)
     {
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, dvb::DVBSDemodModule);
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, dvb::DVBS2DemodModule);
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, satdump::pipeline::dvb::DVBSDemodModule);
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, satdump::pipeline::dvb::DVBS2DemodModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, dvbs2::S2TStoTCPModule);
     }
 };

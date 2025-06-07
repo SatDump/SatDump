@@ -5,7 +5,7 @@
 #include "common/dsp/demod/constellation.h"
 #include "codings/dvb-s2/s2_scrambling.h"
 #include "codings/dvb-s2/s2_deinterleaver.h"
-#include "common/utils.h"
+#include "utils/binary.h"
 
 /*
 DVB-S2 PLL, meant to frequency & phase-recover
@@ -29,8 +29,8 @@ namespace dvbs2
             for (int i = 59; i >= 0; i--)
             {
                 bool markerBit, testBit;
-                markerBit = getBit<uint64_t>(marker, i);
-                testBit = getBit<uint64_t>(totest, i);
+                markerBit = satdump::getBit<uint64_t>(marker, i);
+                testBit = satdump::getBit<uint64_t>(totest, i);
                 if (markerBit != testBit)
                     errors++;
             }

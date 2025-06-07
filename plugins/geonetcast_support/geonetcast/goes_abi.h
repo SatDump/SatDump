@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include "common/image/image.h"
+#include "image/image.h"
 
 namespace geonetcast
 {

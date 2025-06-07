@@ -2,7 +2,7 @@
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
-#include "common/utils.h"
+#include "utils/format.h"
 #include <vector>
 #include <string>
 #include <cstdint>
@@ -298,7 +298,7 @@ namespace RImGui
         else
             current_instance->ui_elements.push_back({UI_ELEMENT_TEXT,
                                                      current_instance->current_id++,
-                                                     0, 0, svformat(fmt, args...)});
+                                                     0, 0, satdump::svformat(fmt, args...)});
     }
 
     inline bool Button(const char *label, ImVec2 size = ImVec2(0, 0))

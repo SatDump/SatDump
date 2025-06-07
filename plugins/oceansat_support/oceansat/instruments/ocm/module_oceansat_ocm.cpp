@@ -1,11 +1,12 @@
 #include "module_oceansat_ocm.h"
-#include <fstream>
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
 #include "../../oceansat.h"
-#include "products2/image_product.h"
+#include "imgui/imgui.h"
+#include "logger.h"
 #include "products2/dataset.h"
+#include "products2/image_product.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
 // Return filesize
 uint64_t getFilesize(std::string filepath);
@@ -14,39 +15,28 @@ namespace oceansat
 {
     namespace ocm
     {
-        OceansatOCMDecoderModule::OceansatOCMDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        OceansatOCMDecoderModule::OceansatOCMDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
+            fsfsm_enable_output = false;
         }
 
         void OceansatOCMDecoderModule::process()
         {
-            filesize = getFilesize(d_input_file);
-            std::ifstream data_in(d_input_file, std::ios::binary);
 
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/OCM";
 
-            logger->info("Using input frames " + d_input_file);
-
-            time_t lastTime = 0;
             uint8_t buffer[92220];
 
-            while (!data_in.eof())
+            while (should_run())
             {
                 // Read buffer
-                data_in.read((char *)buffer, 92220);
+                read_data((uint8_t *)buffer, 92220);
 
                 ocm_reader.work(buffer);
-
-                progress = data_in.tellg();
-
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
-            data_in.close();
+            cleanup();
 
             logger->info("----------- OCM");
             logger->info("Lines : " + std::to_string(ocm_reader.lines));
@@ -197,24 +187,16 @@ namespace oceansat
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
-        std::string OceansatOCMDecoderModule::getID()
-        {
-            return "oceansat_ocm";
-        }
+        std::string OceansatOCMDecoderModule::getID() { return "oceansat_ocm"; }
 
-        std::vector<std::string> OceansatOCMDecoderModule::getParameters()
-        {
-            return {};
-        }
-
-        std::shared_ptr<ProcessingModule> OceansatOCMDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> OceansatOCMDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<OceansatOCMDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace avhrr
-} // namespace noaa
+    } // namespace ocm
+} // namespace oceansat

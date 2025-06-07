@@ -11,7 +11,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 10e6,
                     "rrc_alpha": 0.5,
@@ -19,7 +20,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "oqpsk",
                     "cadu_size": 10112,
                     "viterbi_ber_thresold": 0.300,
@@ -32,7 +34,7 @@
                 }
             },
             "products": {
-                "gcom1_instruments": {}
+                "module": "gcom1_instruments"
             }
         }
     },
@@ -42,7 +44,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 69.416e6,
                     "rrc_alpha": 0.5,
@@ -50,7 +53,8 @@
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     //  "qpsk_swap_diff": true,
                     // "qpsk_swap_iq": true,

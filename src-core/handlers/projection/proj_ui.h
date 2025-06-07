@@ -10,7 +10,7 @@ namespace satdump
         // TODOREWORK allow setting proj as well, and redo this better...
         class ProjectionConfigUI
         {
-        private:
+        public:
             int projections_image_width = 2048;
             int projections_image_height = 1024;
 
@@ -56,10 +56,8 @@ namespace satdump
                     cfg["type"] = "equirec";
                     cfg["offset_x"] = projections_equirectangular_tl_lon;
                     cfg["offset_y"] = projections_equirectangular_tl_lat;
-                    cfg["scalar_x"] = (projections_equirectangular_br_lon - projections_equirectangular_tl_lon) /
-                                      double(projections_image_width);
-                    cfg["scalar_y"] = (projections_equirectangular_br_lat - projections_equirectangular_tl_lat) /
-                                      double(projections_image_height);
+                    cfg["scalar_x"] = (projections_equirectangular_br_lon - projections_equirectangular_tl_lon) / double(projections_image_width);
+                    cfg["scalar_y"] = (projections_equirectangular_br_lat - projections_equirectangular_tl_lat) / double(projections_image_height);
                 }
                 else if (projections_current_selected_proj == 1)
                 {
@@ -98,16 +96,16 @@ namespace satdump
                 }*/
 
                 // Automatic projection settings!
-                /*   if (projection_auto_scale_mode)
-                   {
-                       cfg["scale_x"] = projection_autoscale_x;
-                       cfg["scale_y"] = projection_autoscale_y;
-                   }
-                   else
-                   {*/
-                cfg["width"] = projections_image_width;
-                cfg["height"] = projections_image_height;
-                //}
+                if (projection_auto_scale_mode)
+                {
+                    cfg["scale_x"] = projection_autoscale_x;
+                    cfg["scale_y"] = projection_autoscale_y;
+                }
+                else
+                {
+                    cfg["width"] = projections_image_width;
+                    cfg["height"] = projections_image_height;
+                }
 
                 return cfg;
             }
@@ -180,6 +178,17 @@ namespace satdump
                     ImGui::InputFloat("Azimuth##tpers", &projections_tpers_azi);
                     ImGui::Spacing();
                     ImGui::InputFloat("Scale##tpers", &projections_tpers_scale);
+                }
+
+                if (projections_current_selected_proj == 0 || projections_current_selected_proj == 2)
+                {
+                    ImGui::Checkbox("Auto Mode###pojautomode", &projection_auto_mode);
+                    ImGui::Checkbox("Auto Scale Mode##projautoscalemode", &projection_auto_scale_mode);
+                    if (projection_auto_scale_mode)
+                    {
+                        ImGui::InputDouble("Scale X (m/px)##projscalexauto", &projection_autoscale_x);
+                        ImGui::InputDouble("Scale Y (m/px)##projscalexauto", &projection_autoscale_y);
+                    }
                 }
             }
         };

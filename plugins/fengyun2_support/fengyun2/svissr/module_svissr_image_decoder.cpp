@@ -1,9 +1,14 @@
 #include "module_svissr_image_decoder.h"
+#include "common/codings/differential/nrzs.h"
 #include "common/utils.h"
+#include "core/resources.h"
+#include "image/io.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
 #include "logger.h"
 #include "products2/image_product.h"
+#include "utils/stats.h"
+#include <cstdint>
 #include <filesystem>
 
 #define FRAME_SIZE 44356
@@ -159,7 +164,8 @@ namespace fengyun_svissr
         writingImage = false;
     }
 
-    SVISSRImageDecoderModule::SVISSRImageDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+    SVISSRImageDecoderModule::SVISSRImageDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
     {
         frame = new uint8_t[FRAME_SIZE * 2];
 
@@ -169,12 +175,10 @@ namespace fengyun_svissr
         apply_correction = parameters.contains("apply_correction") ? parameters["apply_correction"].get<bool>() : false;
         backwardScan = false;
 
+        fsfsm_enable_output = false;
+
         vissrImageReader.reset();
     }
-
-    std::vector<ModuleDataType> SVISSRImageDecoderModule::getInputTypes() { return {DATA_FILE, DATA_STREAM}; }
-
-    std::vector<ModuleDataType> SVISSRImageDecoderModule::getOutputTypes() { return {DATA_FILE}; }
 
     SVISSRImageDecoderModule::~SVISSRImageDecoderModule()
     {
@@ -189,13 +193,6 @@ namespace fengyun_svissr
 
     void SVISSRImageDecoderModule::process()
     {
-        if (input_data_type == DATA_FILE)
-            filesize = getFilesize(d_input_file);
-        else
-            filesize = 0;
-        if (input_data_type == DATA_FILE)
-            data_in = std::ifstream(d_input_file, std::ios::binary);
-
         std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/IMAGE";
 
         if (!std::filesystem::exists(directory))
@@ -204,14 +201,12 @@ namespace fengyun_svissr
         logger->info("Using input frames " + d_input_file);
         logger->info("Decoding to " + directory);
 
-        time_t lastTime = 0;
-
         uint8_t last_status[20];
         memset(last_status, 0, 20);
 
         valid_lines = 0;
 
-        bool is_live = input_data_type != DATA_FILE;
+        bool is_live = input_data_type != satdump::pipeline::DATA_FILE;
 
         if (is_live)
         {
@@ -219,13 +214,10 @@ namespace fengyun_svissr
             images_queue_thread = std::thread(&SVISSRImageDecoderModule::image_saving_thread_f, this);
         }
 
-        while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
+        while (should_run())
         {
             // Read a buffer
-            if (input_data_type == DATA_FILE)
-                data_in.read((char *)frame, FRAME_SIZE);
-            else
-                input_fifo->read((uint8_t *)frame, FRAME_SIZE);
+            read_data((uint8_t *)frame, FRAME_SIZE);
 
             // Do the actual work
             {
@@ -314,7 +306,7 @@ namespace fengyun_svissr
                 // std::cout << counter << std::endl;
 
                 // Try to detect a new scan
-                uint8_t is_back = most_common(&last_status[0], &last_status[20], 0);
+                uint8_t is_back = satdump::most_common(&last_status[0], &last_status[20], 0);
 
                 // Ensures the counter doesn't lock during rollback
                 // Situation:
@@ -341,7 +333,7 @@ namespace fengyun_svissr
                     buffer->image4 = vissrImageReader.getImageIR4();
                     buffer->image5 = vissrImageReader.getImageVIS();
 
-                    buffer->scid = most_common(scid_stats.begin(), scid_stats.end(), 0);
+                    buffer->scid = satdump::most_common(scid_stats.begin(), scid_stats.end(), 0);
                     scid_stats.clear();
 
                     // TODOREWORK majority law would be incredibly useful here, but needs N-element
@@ -380,23 +372,9 @@ namespace fengyun_svissr
 
                 approx_progess = round(((float)counter / 2500.0f) * 1000.0f) / 10.0f;
             }
-
-            if (input_data_type == DATA_FILE)
-                progress = data_in.tellg();
-
-            // Update module stats
-            module_stats["full_disk_progress"] = approx_progess;
-
-            if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-            {
-                lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) +
-                             "%%, Full Disk Progress : " + std::to_string(round(((float)approx_progess / 100.0f) * 1000.0f) / 10.0f) + "%%");
-            }
         }
 
-        if (input_data_type == DATA_FILE)
-            data_in.close();
+        cleanup();
 
         if (is_live)
         {
@@ -411,7 +389,7 @@ namespace fengyun_svissr
             buffer->image4 = vissrImageReader.getImageIR4();
             buffer->image5 = vissrImageReader.getImageVIS();
 
-            buffer->scid = most_common(scid_stats.begin(), scid_stats.end(), 0);
+            buffer->scid = satdump::most_common(scid_stats.begin(), scid_stats.end(), 0);
             scid_stats.clear();
 
             // TODOREWORK majority law would be incredibly useful here, but needs N-element
@@ -445,7 +423,7 @@ namespace fengyun_svissr
             buffer->image4 = vissrImageReader.getImageIR4();
             buffer->image5 = vissrImageReader.getImageVIS();
 
-            buffer->scid = most_common(scid_stats.begin(), scid_stats.end(), 0);
+            buffer->scid = satdump::most_common(scid_stats.begin(), scid_stats.end(), 0);
             scid_stats.clear();
 
             // TODOREWORK majority law would be incredibly useful here, but needs N-element
@@ -460,6 +438,13 @@ namespace fengyun_svissr
 
             writeImages(*buffer);
         }
+    }
+
+    nlohmann::json SVISSRImageDecoderModule::getModuleStats()
+    {
+        auto v = satdump::pipeline::base::FileStreamToFileStreamModule::getModuleStats();
+        v["full_disk_progress"] = approx_progess;
+        return v;
     }
 
     void SVISSRImageDecoderModule::drawUI(bool window)
@@ -519,17 +504,14 @@ namespace fengyun_svissr
         }
         ImGui::EndGroup();
 
-        if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+        drawProgressBar();
 
         ImGui::End();
     }
 
     std::string SVISSRImageDecoderModule::getID() { return "fengyun_svissr_image_decoder"; }
 
-    std::vector<std::string> SVISSRImageDecoderModule::getParameters() { return {"satname"}; }
-
-    std::shared_ptr<ProcessingModule> SVISSRImageDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<satdump::pipeline::ProcessingModule> SVISSRImageDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<SVISSRImageDecoderModule>(input_file, output_file_hint, parameters);
     }

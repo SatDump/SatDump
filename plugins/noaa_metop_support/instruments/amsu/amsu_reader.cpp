@@ -2,7 +2,7 @@
 
 #include "common/ccsds/ccsds_time.h"
 #include "common/utils.h"
-#include "resources.h"
+#include "core/resources.h"
 #include "common/calibration.h"
 
 namespace noaa_metop

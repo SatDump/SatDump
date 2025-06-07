@@ -5,7 +5,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 30.72e6,
                     "rrc_alpha": 0.5,
@@ -13,7 +14,8 @@
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 8192,
                     "derandomize": true,
@@ -22,7 +24,8 @@
                 }
             },
             "products": {
-                "elektro_arktika_msugs": {
+                "module": "elektro_arktika_msugs",
+                "parameters": {
                     "msugs_offset": 400
                 }
             }
@@ -34,7 +37,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 30.72e6,
                     "rrc_alpha": 0.5,
@@ -42,7 +46,8 @@
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 8192,
                     "derandomize": true,
@@ -51,7 +56,8 @@
                 }
             },
             "products": {
-                "elektro_arktika_msugs": {
+                "module": "elektro_arktika_msugs",
+                "parameters": {
                     "msugs_offset": 0
                 }
             }
@@ -59,38 +65,19 @@
     },
     "elektro_lrit": {
         "name": "ELEKTRO-L LRIT",
-        "live": true,
-        "live_cfg": {
+        "live": {
             "pkt_size": 10240, // 1024 * 10
             "default": [
-                [
-                    1,
-                    0
-                ],
-                [
-                    2,
-                    0
-                ],
-                [
-                    3,
-                    0
-                ]
+                1,
+                2,
+                3
             ],
             "server": [
-                [
-                    1,
-                    0
-                ],
-                [
-                    2,
-                    0
-                ]
+                1,
+                2
             ],
             "client": [
-                [
-                    3,
-                    0
-                ]
+                3
             ]
         },
         "frequencies": [
@@ -103,7 +90,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 294000,
                     "rrc_alpha": 0.5,
@@ -112,7 +100,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
@@ -124,44 +113,25 @@
                 }
             },
             "products": {
-                "elektro_lrit_data_decoder": {}
+                "module": "elektro_lrit_data_decoder"
             }
         }
     },
     "elektro_hrit": {
         "name": "ELEKTRO-L HRIT",
-        "live": true,
-        "live_cfg": {
+        "live": {
             "pkt_size": 10240, // 1024 * 10
             "default": [
-                [
-                    1,
-                    0
-                ],
-                [
-                    2,
-                    0
-                ],
-                [
-                    3,
-                    0
-                ]
+                1,
+                2,
+                3
             ],
             "server": [
-                [
-                    1,
-                    0
-                ],
-                [
-                    2,
-                    0
-                ]
+                1,
+                2
             ],
             "client": [
-                [
-                    3,
-                    0
-                ]
+                3
             ]
         },
         "frequencies": [
@@ -174,7 +144,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 1.15e6,
                     "rrc_alpha": 0.5,
@@ -183,7 +154,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "oqpsk",
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
@@ -195,22 +167,16 @@
                 }
             },
             "products": {
-                "elektro_lrit_data_decoder": {}
+                "module": "elektro_lrit_data_decoder",
+                "parameters": {}
             }
         }
     },
     "elektro_ggak": {
         "name": "ELEKTRO-L GGAK",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -222,14 +188,16 @@
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "symbolrate": 5e3,
                     "pll_bw": 0.01,
                     "rrc_alpha": 0.5
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 1792,
                     "derandomize": false,
@@ -241,16 +209,9 @@
     },
     "arktika_ggak": {
         "name": "ARKTIKA-M GGAK",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -262,14 +223,16 @@
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "symbolrate": 5e3,
                     "pll_bw": 0.01,
                     "rrc_alpha": 0.5
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 1792,
                     "derandomize": false,

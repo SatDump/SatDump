@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include "common/image/image.h"
+#include "image/image.h"
 
 namespace oceansat
 {

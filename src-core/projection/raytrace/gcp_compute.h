@@ -9,7 +9,7 @@
 
 namespace satdump
 {
-    namespace proj
+    namespace projection
     {
         /**
          * @brief Calculate GCPs from a raytracer (or not, as needed) needed to

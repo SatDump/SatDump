@@ -3,7 +3,7 @@
 #include "common/ccsds/ccsds.h"
 #include <map>
 #include <array>
-#include "common/image/image.h"
+#include "image/image.h"
 
 namespace fengyun3
 {

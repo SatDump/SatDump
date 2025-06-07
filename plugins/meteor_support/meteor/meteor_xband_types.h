@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/exception.h"
+#include "nlohmann/json.hpp"
 
 namespace meteor
 {
@@ -19,4 +20,4 @@ namespace meteor
         else
             throw satdump_exception("Invalid METEOR instrument type!");
     }
-}
+} // namespace meteor

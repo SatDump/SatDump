@@ -2,6 +2,7 @@
 #include "logger.h"
 #include "core/plugin.h"
 #include "common/utils.h"
+#include "utils/time.h"
 
 namespace satdump
 {

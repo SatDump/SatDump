@@ -78,6 +78,10 @@ namespace satdump
         {
             std::vector<std::string> otypes = {itype};
 
+            // Only leave default unit if it actually is valid!
+            if (itype == "")
+                otypes.clear();
+
             // logger->trace("Unit Conversions Request : " + itype);
 
             if (itype == CALIBRATION_ID_REFLECTIVE_RADIANCE)

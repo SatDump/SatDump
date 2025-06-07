@@ -1,26 +1,20 @@
 #pragma once
 
-#include "core/module.h"
-#include <complex>
-#include <thread>
-#include <fstream>
-#include "deframer.h"
 #include "common/widgets/constellation.h"
+#include "deframer.h"
+#include "pipeline/modules/base/filestream_to_filestream.h"
 
 namespace meteor
 {
-    class METEORHRPTDecoderModule : public ProcessingModule
+    using namespace satdump::pipeline; // TODOREWORK
+
+    class METEORHRPTDecoderModule : public satdump::pipeline::base::FileStreamToFileStreamModule
     {
     protected:
         std::shared_ptr<CADUDeframer> def;
 
+        int frame_count = 0;
         int8_t *soft_buffer;
-
-        std::ifstream data_in;
-        std::ofstream data_out;
-
-        std::atomic<uint64_t> filesize;
-        std::atomic<uint64_t> progress;
 
         // UI Stuff
         widgets::ConstellationViewer constellation;
@@ -30,13 +24,13 @@ namespace meteor
         ~METEORHRPTDecoderModule();
         void process();
         void drawUI(bool window);
-        std::vector<ModuleDataType> getInputTypes();
-        std::vector<ModuleDataType> getOutputTypes();
+
+        nlohmann::json getModuleStats();
 
     public:
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
-        static std::vector<std::string> getParameters();
+        static nlohmann::json getParams() { return {}; } // TODOREWORK
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
 } // namespace meteor

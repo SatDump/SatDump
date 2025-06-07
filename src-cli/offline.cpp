@@ -1,11 +1,11 @@
 #include "offline.h"
+#include "common/cli_utils.h"
 #include "common/detect_header.h"
 #include "init.h"
-#include "common/cli_utils.h"
-#include "core/pipeline.h"
-#include <filesystem>
-#include "nlohmann/json.hpp"
 #include "logger.h"
+#include "nlohmann/json.hpp"
+#include "pipeline/pipeline.h"
+#include <filesystem>
 
 int main_offline(int argc, char *argv[])
 {
@@ -47,22 +47,17 @@ int main_offline(int argc, char *argv[])
         std::filesystem::create_directories(output_file);
 
     // Get pipeline
-    std::optional<satdump::Pipeline> pipeline = satdump::getPipelineFromName(downlink_pipeline);
 
-    if (pipeline.has_value())
+    try
     {
-      //  try
-        {
-            pipeline.value().run(input_file, output_file, parameters, input_level);
-        }
-    //    catch (std::exception &e)
-        {
-     //       logger->error("Fatal error running pipeline : " + std::string(e.what()));
-            return 1;
-        }
+        satdump::pipeline::Pipeline pipeline = satdump::pipeline::getPipelineFromID(downlink_pipeline);
+        pipeline.run(input_file, output_file, parameters, input_level);
     }
-    else
-        logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
+    catch (std::exception &e)
+    {
+        logger->error("Fatal error running pipeline : " + std::string(e.what()));
+        return 1;
+    }
 
     return 0;
 }

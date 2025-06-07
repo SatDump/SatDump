@@ -1,14 +1,14 @@
-#include "common/projection/projs2/proj_json.h"
+#include "projection/standard/proj_json.h"
 #include "formats.h"
 #include "products2/image_product.h"
 #include "common/repack.h"
 #include "logger.h"
-#include "common/image/io.h"
+#include "image/io.h"
 #include "common/calibration.h"
 #include "common/utils.h"
 
 #include "nlohmann/json_utils.h"
-#include "resources.h"
+#include "core/resources.h"
 
 namespace nat2pro
 {

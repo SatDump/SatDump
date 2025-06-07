@@ -6,6 +6,7 @@
 #include "core/style.h"
 #include "common/imgui_utils.h"
 #include "common/tracking/rotator/rotcl_handler.h"
+#include "utils/time.h"
 
 namespace satdump
 {

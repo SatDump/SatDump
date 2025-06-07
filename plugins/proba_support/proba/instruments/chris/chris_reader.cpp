@@ -8,7 +8,8 @@
 #include <filesystem>
 #include "common/repack.h"
 #include "../crc.h"
-#include "common/image/io.h"
+#include "image/io.h"
+#include "utils/stats.h"
 
 #define ALL_MODE 2
 #define WATER_MODE 3
@@ -90,7 +91,7 @@ namespace proba
 
             if ((count_marker > 50 && count_marker < 70) || (count_marker > 500 && count_marker < 520) || (count_marker > 700 && count_marker < 720))
             {
-                mode = most_common(modeMarkers.begin(), modeMarkers.end(), 0);
+                mode = satdump::most_common(modeMarkers.begin(), modeMarkers.end(), 0);
 
                 if (mode == WATER_MODE || mode == CHLOROPHYL_MODE || mode == LAND_MODE)
                 {

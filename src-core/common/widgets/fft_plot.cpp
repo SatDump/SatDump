@@ -3,8 +3,8 @@
 #include <string>
 #include "common/dsp_source_sink/format_notated.h"
 #include "core/style.h"
-#include "resources.h"
-#include "common/image/text.h"
+#include "core/resources.h"
+#include "image/text.h"
 
 namespace widgets
 {

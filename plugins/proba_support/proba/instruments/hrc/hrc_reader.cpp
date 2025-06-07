@@ -1,8 +1,8 @@
 #include "hrc_reader.h"
 #include "logger.h"
 #include "../crc.h"
-#include "common/image/io.h"
-#include "common/image/processing.h"
+#include "image/io.h"
+#include "image/processing.h"
 
 namespace proba
 {

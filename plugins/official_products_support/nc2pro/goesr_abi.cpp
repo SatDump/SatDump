@@ -1,16 +1,17 @@
 #include "common/utils.h"
 
 #include "common/calibration.h"
-#include "common/image/image.h"
+#include "image/image.h"
 #include "hdf5_utils.h"
 #include "logger.h"
 #include "products2/image_product.h"
 #include <H5LTpublic.h>
 #include <array>
 #include <filesystem>
+#include "utils/string.h"
 
 #include "nlohmann/json_utils.h"
-#include "resources.h"
+#include "core/resources.h"
 
 #include "core/exception.h"
 
@@ -141,10 +142,10 @@ namespace nc2pro
 
         std::vector<std::string> files_to_parse;
         {
-            auto ori_splt = splitString(std::filesystem::path(nc_file).stem().string(), '_');
+            auto ori_splt = satdump::splitString(std::filesystem::path(nc_file).stem().string(), '_');
             if (ori_splt.size() != 6)
                 throw satdump_exception("Invalid GOES-R filename!");
-            auto ori_splt2 = splitString(ori_splt[1], '-');
+            auto ori_splt2 = satdump::splitString(ori_splt[1], '-');
             if (ori_splt2.size() != 4 || ori_splt2[3].size() != 5)
                 throw satdump_exception("Invalid GOES-R filename!");
 
@@ -158,11 +159,11 @@ namespace nc2pro
 
                 {
                     std::string cleanname = std::filesystem::path(path).stem().string();
-                    auto splt = splitString(cleanname, '_');
+                    auto splt = satdump::splitString(cleanname, '_');
 
                     if (splt.size() == 6 && ori_splt[0] == splt[0] && ori_splt[2] == splt[2] && ori_splt[3] == splt[3])
                     {
-                        auto splt2 = splitString(splt[1], '-');
+                        auto splt2 = satdump::splitString(splt[1], '-');
 
                         if (splt2.size() == 4 && ori_splt2[0] == splt2[0] && ori_splt2[1] == splt2[1] && ori_splt2[2] == splt2[2] && ori_splt2[3].size() == 5 && ori_splt2[3][0] == splt2[3][0] &&
                             ori_splt2[3][1] == splt2[3][1] && ori_splt2[3][2] == splt2[3][2])

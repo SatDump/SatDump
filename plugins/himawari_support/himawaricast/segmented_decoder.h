@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cmath>
-#include "common/image/image.h"
+#include "image/image.h"
 #include <vector>
 #include <string>
 #include <map>

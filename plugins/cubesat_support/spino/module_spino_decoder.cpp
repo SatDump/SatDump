@@ -1,49 +1,27 @@
 #include "module_spino_decoder.h"
-#include "logger.h"
-#include "imgui/imgui.h"
-#include "common/utils.h"
 #include "common/codings/crc/crc_generic.h"
+#include "common/utils.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include <cstdint>
 
 #define BUFFER_SIZE 256
 
 namespace spino
 {
-    SpinoDecoderModule::SpinoDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+    SpinoDecoderModule::SpinoDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
     {
         input_buffer = new int8_t[BUFFER_SIZE];
+        fsfsm_file_ext = ".frm";
     }
 
-    SpinoDecoderModule::~SpinoDecoderModule()
-    {
-        delete[] input_buffer;
-    }
-
-    std::vector<ModuleDataType> SpinoDecoderModule::getInputTypes()
-    {
-        return {DATA_FILE, DATA_STREAM};
-    }
-
-    std::vector<ModuleDataType> SpinoDecoderModule::getOutputTypes()
-    {
-        return {DATA_FILE};
-    }
+    SpinoDecoderModule::~SpinoDecoderModule() { delete[] input_buffer; }
 
     void SpinoDecoderModule::process()
     {
-        if (input_data_type == DATA_FILE)
-            filesize = getFilesize(d_input_file);
-        else
-            filesize = 0;
-        if (input_data_type == DATA_FILE)
-            data_in = std::ifstream(d_input_file, std::ios::binary);
-
-        data_out = std::ofstream(d_output_file_hint + ".frm", std::ios::binary);
-        d_output_files.push_back(d_output_file_hint + ".frm");
 
         std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/";
-
-        logger->info("Using input frames " + d_input_file);
-        logger->info("Decoding to " + d_output_file_hint + ".frm");
 
         uint8_t bits_buf[BUFFER_SIZE];
 
@@ -57,14 +35,10 @@ namespace spino
 
         codings::crc::GenericCRC crc_ccitt(16, 0x1021, 0x0000, 0x0000, false, false);
 
-        time_t lastTime = 0;
-        while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
+        while (should_run())
         {
             // Read buffer
-            if (input_data_type == DATA_FILE)
-                data_in.read((char *)input_buffer, BUFFER_SIZE);
-            else
-                input_fifo->read((uint8_t *)input_buffer, BUFFER_SIZE);
+            read_data((uint8_t *)input_buffer, BUFFER_SIZE);
 
             // Slice
             for (int i = 0; i < BUFFER_SIZE; i++)
@@ -109,7 +83,7 @@ namespace spino
                                 buffer_sz[5] = pkt_sz & 0xFF;
 
                                 wip_frame.insert(wip_frame.begin(), buffer_sz, buffer_sz + 6);
-                                data_out.write((char *)wip_frame.data(), wip_frame.size());
+                                write_data((uint8_t *)wip_frame.data(), wip_frame.size());
                                 logger->info(size);
                                 frm_cnt++;
                             }
@@ -128,19 +102,18 @@ namespace spino
                     wip_frame.clear();
                 }
             }
-
-            progress = data_in.tellg();
-
-            if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-            {
-                lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, Frames " + std::to_string(frm_cnt));
-            }
         }
 
         logger->info("Decoding finished");
 
-        data_in.close();
+        cleanup();
+    }
+
+    nlohmann::json SpinoDecoderModule::getModuleStats()
+    {
+        auto v = satdump::pipeline::base::FileStreamToFileStreamModule::getModuleStats();
+        v["frm_cnt"] = frm_cnt;
+        return v;
     }
 
     void SpinoDecoderModule::drawUI(bool window)
@@ -154,24 +127,15 @@ namespace spino
             ImGui::TextColored(style::theme.green, UITO_C_STR(frm_cnt));
         }
 
-        if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+        drawProgressBar();
 
         ImGui::End();
     }
 
-    std::string SpinoDecoderModule::getID()
-    {
-        return "spino_decoder";
-    }
+    std::string SpinoDecoderModule::getID() { return "spino_decoder"; }
 
-    std::vector<std::string> SpinoDecoderModule::getParameters()
-    {
-        return {};
-    }
-
-    std::shared_ptr<ProcessingModule> SpinoDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<satdump::pipeline::ProcessingModule> SpinoDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<SpinoDecoderModule>(input_file, output_file_hint, parameters);
     }
-} // namespace noaa
+} // namespace spino

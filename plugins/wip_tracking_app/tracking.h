@@ -5,6 +5,8 @@
 
 #include "libs/predict/predict.h"
 
+#include "testgl.h"
+
 namespace satdump
 {
     struct Station
@@ -28,6 +30,8 @@ namespace satdump
         struct ObjectPosition
         {
         };
+
+        OpenGLScene *scene = nullptr;
 
     public:
         predict_orbital_elements_t *satellite_object = nullptr;

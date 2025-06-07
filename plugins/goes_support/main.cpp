@@ -1,5 +1,4 @@
 #include "core/config.h"
-#include "core/module.h"
 #include "core/plugin.h"
 
 #include "goes/grb/module_goes_grb_cadu_extractor.h"
@@ -23,14 +22,14 @@ public:
 
     void init()
     {
-        satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
+        satdump::eventBus->register_handler<satdump::pipeline::RegisterModulesEvent>(registerPluginsHandler);
         satdump::eventBus->register_handler<satdump::config::RegisterPluginConfigHandlersEvent>(registerConfigHandler);
         satdump::eventBus->register_handler<satdump::products::RequestImageCalibratorEvent>(provideImageCalibratorHandler);
         satdump::eventBus->register_handler<goes::hrit::GOESLRITDataDecoderModule::DCPUpdateEvent>(goes::hrit::GOESLRITDataDecoderModule::updateDCPs);
         goes::hrit::initDcsConfig();
     }
 
-    static void registerPluginsHandler(const RegisterModulesEvent &evt)
+    static void registerPluginsHandler(const satdump::pipeline::RegisterModulesEvent &evt)
     {
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, goes::gvar::GVARDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, goes::gvar::GVARImageDecoderModule);

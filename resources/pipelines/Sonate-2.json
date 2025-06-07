@@ -4,7 +4,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 2.048e6,
                     "rrc_alpha": 0.35,
@@ -12,7 +13,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "cadu_size": 16416,
                     "viterbi_ber_thresold": 0.300,

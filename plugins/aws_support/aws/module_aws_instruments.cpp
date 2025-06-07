@@ -1,15 +1,17 @@
 #include "module_aws_instruments.h"
-#include <fstream>
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
-#include "common/utils.h"
-#include "products2/image_product.h"
 #include "common/ccsds/ccsds_tm/demuxer.h"
 #include "common/ccsds/ccsds_tm/vcdu.h"
-#include "products2/dataset.h"
-#include "resources.h"
+#include "common/utils.h"
+#include "core/resources.h"
+#include "imgui/imgui.h"
+#include "logger.h"
 #include "nlohmann/json_utils.h"
+#include "products2/dataset.h"
+#include "products2/image_product.h"
+#include "utils/stats.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
 #include "common/tracking/tle.h"
 
@@ -18,18 +20,13 @@
 
 namespace aws
 {
-    AWSInstrumentsDecoderModule::AWSInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+    AWSInstrumentsDecoderModule::AWSInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
     {
     }
 
     void AWSInstrumentsDecoderModule::process()
     {
-        filesize = getFilesize(d_input_file);
-        std::ifstream data_in(d_input_file, std::ios::binary);
-
-        logger->info("Using input frames " + d_input_file);
-
-        time_t lastTime = 0;
         uint8_t cadu[1279];
 
         logger->info("Demultiplexing and deframing...");
@@ -39,10 +36,10 @@ namespace aws
 
         std::vector<uint8_t> aws_scids;
 
-        while (!data_in.eof())
+        while (should_run())
         {
             // Read buffer
-            data_in.read((char *)cadu, 1279);
+            read_data((uint8_t *)cadu, 1279);
 
             // Parse this transport frame
             ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
@@ -68,19 +65,11 @@ namespace aws
                     else if (pkt.header.apid == 51)
                         navatt_reader.work(pkt);
             }
-
-            progress = data_in.tellg();
-
-            if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-            {
-                lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-            }
         }
 
-        data_in.close();
+        cleanup();
 
-        int scid = most_common(aws_scids.begin(), aws_scids.end(), 0);
+        int scid = satdump::most_common(aws_scids.begin(), aws_scids.end(), 0);
         aws_scids.clear();
 
         std::string sat_name = "Unknown AWS";
@@ -94,9 +83,9 @@ namespace aws
         // Products dataset
         satdump::products::DataSet dataset;
         dataset.satellite_name = sat_name;
-        dataset.timestamp = get_median(mwr_reader.timestamps);
+        dataset.timestamp = satdump::get_median(mwr_reader.timestamps);
         if (dataset.timestamp == -1)
-            dataset.timestamp = get_median(mwr_dump_reader.timestamps);
+            dataset.timestamp = satdump::get_median(mwr_dump_reader.timestamps);
 
         std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
 
@@ -109,25 +98,7 @@ namespace aws
 
         // TODOREWORK
         double mwr_freqs[19] = {
-            50.3e9,
-            52.8e9,
-            53.246e9,
-            53.596e9,
-            54.4e9,
-            54.94e9,
-            55.5e9,
-            57.290344e9,
-            89e9,
-            165.5e9,
-            176.311e9,
-            178.811e9,
-            180.311e9,
-            181.511e9,
-            182.311e9,
-            325.15e9,
-            325.15e9,
-            325.15e9,
-            325.15e9,
+            50.3e9, 52.8e9, 53.246e9, 53.596e9, 54.4e9, 54.94e9, 55.5e9, 57.290344e9, 89e9, 165.5e9, 176.311e9, 178.811e9, 180.311e9, 181.511e9, 182.311e9, 325.15e9, 325.15e9, 325.15e9, 325.15e9,
         };
 
         // Channels are aligned by groups. 1 to 8 / 9 / 10 to 15 / 16 to 19
@@ -160,12 +131,7 @@ namespace aws
 
             for (int i = 0; i < 19; i++)
             {
-                mwr_products.images.push_back({i,
-                                               "MWR-" + std::to_string(i + 1),
-                                               std::to_string(i + 1),
-                                               mwr_reader.getChannel(i),
-                                               16,
-                                               tran[i]});
+                mwr_products.images.push_back({i, "MWR-" + std::to_string(i + 1), std::to_string(i + 1), mwr_reader.getChannel(i), 16, tran[i]});
                 mwr_products.set_channel_frequency(i, mwr_freqs[i]);
             }
 
@@ -196,12 +162,7 @@ namespace aws
 
             for (int i = 0; i < 19; i++)
             {
-                mwr_dump_product.images.push_back({i,
-                                                   "MWR-" + std::to_string(i + 1),
-                                                   std::to_string(i + 1),
-                                                   mwr_dump_reader.getChannel(i),
-                                                   16,
-                                                   tran[i]});
+                mwr_dump_product.images.push_back({i, "MWR-" + std::to_string(i + 1), std::to_string(i + 1), mwr_dump_reader.getChannel(i), 16, tran[i]});
                 mwr_dump_product.set_channel_frequency(i, mwr_freqs[i]);
             }
 
@@ -247,23 +208,15 @@ namespace aws
             ImGui::EndTable();
         }
 
-        ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+        drawProgressBar();
 
         ImGui::End();
     }
 
-    std::string AWSInstrumentsDecoderModule::getID()
-    {
-        return "aws_instruments";
-    }
+    std::string AWSInstrumentsDecoderModule::getID() { return "aws_instruments"; }
 
-    std::vector<std::string> AWSInstrumentsDecoderModule::getParameters()
-    {
-        return {};
-    }
-
-    std::shared_ptr<ProcessingModule> AWSInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<satdump::pipeline::ProcessingModule> AWSInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<AWSInstrumentsDecoderModule>(input_file, output_file_hint, parameters);
     }
-}
+} // namespace aws

@@ -1,5 +1,5 @@
 #include "sddc_sdr.h"
-#include "resources.h"
+#include "core/resources.h"
 
 /*
 I am totally not sure if any of the control stuff or Gain / etc is done properly,

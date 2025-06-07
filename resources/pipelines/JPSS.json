@@ -1,8 +1,6 @@
 {
     "npp_hrd": {
         "name": "Suomi NPP / JPSS-1 HRD",
-        "live": false,
-        "frequencies": [],
         "parameters": {
             "samplerate": {
                 "value": 25e6
@@ -17,7 +15,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 15e6,
                     "rrc_alpha": 0.5,
@@ -25,7 +24,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
@@ -38,7 +38,8 @@
                 }
             },
             "products": {
-                "jpss_instruments": {
+                "module": "jpss_instruments",
+                "parameters": {
                     "npp_mode": true,
                     "use_ephemeris": true
                 }
@@ -47,8 +48,6 @@
     },
     "jpss_hrd": {
         "name": "JPSS-2/3/4 HRD",
-        "live": false,
-        "frequencies": [],
         "parameters": {
             "samplerate": {
                 "value": 40e6
@@ -63,7 +62,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 25e6,
                     "rrc_alpha": 0.5,
@@ -71,7 +71,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "oqpsk",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.300,
@@ -84,7 +85,8 @@
                 }
             },
             "products": {
-                "jpss_instruments": {
+                "module": "jpss_instruments",
+                "parameters": {
                     "npp_mode": false,
                     "use_ephemeris": true
                 }
@@ -93,16 +95,9 @@
     },
     "jpss_tlm": {
         "name": "JPSS-2/3/4 Telemetry",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -113,15 +108,17 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 1.6e6,
                     "rrc_alpha": 0.5,
                     "pll_bw": 0.002
                 }
             },
-            "frm": {
-                "ccsds_conv_concat_decoder": {
+            "cadu": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "oqpsk",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.300,

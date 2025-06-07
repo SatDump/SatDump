@@ -2,9 +2,9 @@
 #include "core/style.h"
 #include "logger.h"
 #include "imgui/imgui_image.h"
-#include "resources.h"
-#include "common/image/image.h"
-#include "common/image/io.h"
+#include "core/resources.h"
+#include "image/image.h"
+#include "image/io.h"
 #include <filesystem>
 
 #if defined(_WIN32)

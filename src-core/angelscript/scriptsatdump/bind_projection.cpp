@@ -21,13 +21,13 @@ namespace satdump
                 CScriptProjection()
                 {
                     refCount = 1;
-                    p = new proj::Projection();
+                    p = new projection::Projection();
                 }
 
-                CScriptProjection(proj::Projection i)
+                CScriptProjection(projection::Projection i)
                 {
                     refCount = 1;
-                    p = new proj::Projection();
+                    p = new projection::Projection();
                     *p = i;
                 }
 
@@ -64,7 +64,7 @@ namespace satdump
                 mutable int refCount;
 
             public:
-                proj::Projection *p;
+                projection::Projection *p;
 
             public:
                 bool init(bool fwd, bool inv) { return p->init(fwd, inv); }
@@ -85,8 +85,8 @@ namespace satdump
 
         namespace pro
         {
-            CScriptImage *reprojectImage(CScriptImage *img, CScriptProjection *p) { return new CScriptImage(proj::reprojectImage(*img->img, *p->p)); }
-            CScriptImage *reprojectImageJ(CScriptImage *img, CScriptJson *p) { return new CScriptImage(proj::reprojectImage(*img->img, *p->j)); }
+            CScriptImage *reprojectImage(CScriptImage *img, CScriptProjection *p) { return new CScriptImage(projection::reprojectImage(*img->img, *p->p)); }
+            CScriptImage *reprojectImageJ(CScriptImage *img, CScriptJson *p) { return new CScriptImage(projection::reprojectImage(*img->img, *p->j)); }
         } // namespace pro
 
         void registerProj(asIScriptEngine *engine)

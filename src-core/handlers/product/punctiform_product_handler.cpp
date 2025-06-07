@@ -5,7 +5,7 @@
 
 #include "imgui/implot/implot.h" // TODOREWORK
 
-#include "common/image/io.h" // TODOREWORK
+#include "image/io.h" // TODOREWORK
 #include "products2/punctiform/product_dotmap.h"
 
 namespace satdump

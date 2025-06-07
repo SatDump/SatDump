@@ -1,6 +1,7 @@
 #include "autotrack.h"
 #include "logger.h"
 #include "common/utils.h"
+#include "utils/time.h"
 
 AutoTrackApp::AutoTrackApp(nlohmann::json settings, nlohmann::json parameters, std::string output_folder)
     : d_settings(settings), d_parameters(parameters), d_output_folder(output_folder)
@@ -178,7 +179,7 @@ AutoTrackApp::AutoTrackApp(nlohmann::json settings, nlohmann::json parameters, s
 
     // Finally, start
     auto_scheduler.start();
-    auto_scheduler.setEngaged(true, getTime());
+    auto_scheduler.setEngaged(true, satdump::getTime());
 
     ///////////////////////////////////////////////////////////////////////////////////
     ///////////////// WebServer

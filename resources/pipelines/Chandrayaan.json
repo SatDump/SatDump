@@ -1,23 +1,15 @@
 {
     "chandrayaan3_link_1k": {
         "name": "Chandrayaan-3 1k Link",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
-        "frequencies": [],
-        "parameters": {},
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "resample_after_pll": true,
                     "symbolrate": 1e3,
                     "pll_bw": 0.01,
@@ -28,7 +20,8 @@
                 }
             },
             "frames": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 1816,
                     "nrzm": false,
@@ -41,23 +34,15 @@
     },
     "chandrayaan3_link_4k": {
         "name": "Chandrayaan-3 4k Link",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
-        "frequencies": [],
-        "parameters": {},
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "resample_after_pll": true,
                     "symbolrate": 4e3,
                     "pll_bw": 0.01,
@@ -68,7 +53,8 @@
                 }
             },
             "frames": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 1816,
                     "nrzm": false,
@@ -81,23 +67,15 @@
     },
     "chandrayaan3_link_2k": {
         "name": "Chandrayaan-3 2k Link",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
-        "frequencies": [],
-        "parameters": {},
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "resample_after_pll": true,
                     "symbolrate": 2e3,
                     "pll_bw": 0.01,
@@ -108,7 +86,8 @@
                 }
             },
             "frames": {
-                "ccsds_turbo_decoder": {
+                "module": "ccsds_turbo_decoder",
+                "parameters": {
                     "turbo_rate": "1/2",
                     "turbo_base": 223,
                     "turbo_iters": 10
@@ -119,23 +98,17 @@
     },
     "chandrayaan3_link_8k": {
         "name": "Chandrayaan-3 8k Link",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [],
         "parameters": {},
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "resample_after_pll": true,
                     "symbolrate": 8e3,
                     "pll_bw": 0.01,
@@ -146,7 +119,8 @@
                 }
             },
             "frames": {
-                "ccsds_turbo_decoder": {
+                "module": "ccsds_turbo_decoder",
+                "parameters": {
                     "turbo_rate": "1/2",
                     "turbo_base": 223,
                     "turbo_iters": 10

@@ -1,6 +1,6 @@
 #include "suvi_reader.h"
-#include "common/image/image.h"
-#include "common/image/io.h"
+#include "image/image.h"
+#include "image/io.h"
 
 namespace goes
 {

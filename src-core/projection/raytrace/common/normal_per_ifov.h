@@ -4,7 +4,7 @@
 
 namespace satdump
 {
-    namespace proj
+    namespace projection
     {
         class NormalPerIFOVRaytracerOld : public SatelliteRaytracerSatTrack
         {

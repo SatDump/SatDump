@@ -43,7 +43,7 @@
 
 namespace satdump
 {
-    namespace proj
+    namespace projection
     {
         // Ground Control Point
         struct GCP

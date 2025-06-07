@@ -1,25 +1,16 @@
 {
     "inmarsat_std_c": {
         "name": "Inmarsat STD-C",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ],
-            [
-                3,
-                0
-            ]
+        "live": [
+            1,
+            2,
+            3
         ],
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "agc_rate": 0.1,
                     "symbolrate": 1200,
@@ -29,10 +20,12 @@
                 }
             },
             "frm": {
-                "inmarsat_stdc_decoder": {}
+                "module": "inmarsat_stdc_decoder",
+                "parameters": {}
             },
             "msg": {
-                "inmarsat_stdc_parser": {
+                "module": "inmarsat_stdc_parser",
+                "parameters": {
                     "save_files": true,
                     "station_id": ""
                     //,"udp_sinks": {
@@ -48,31 +41,23 @@
     // Aero-P
     "inmarsat_aero_6": {
         "name": "Inmarsat Aero 0.6k (WIP)",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ],
-            [
-                3,
-                0
-            ]
+        "live": [
+            1,
+            2,
+            3
         ],
         "work": {
             "baseband": {},
             "soft": {
-                "sdpsk_demod": {
+                "module": "sdpsk_demod",
+                "parameters": {
                     "symbolrate": 600,
                     "rrc_alpha": 0.4
                 }
             },
             "frm": {
-                "inmarsat_aero_decoder": {
+                "module": "inmarsat_aero_decoder",
+                "parameters": {
                     "oqpsk": false,
                     "dummy_bits": 0,
                     "inter_cols": 6,
@@ -80,7 +65,8 @@
                 }
             },
             "msg": {
-                "inmarsat_aero_parser": {
+                "module": "inmarsat_aero_parser",
+                "parameters": {
                     "save_files": true,
                     "station_id": ""
                     //,"udp_sinks": {
@@ -95,31 +81,23 @@
     },
     "inmarsat_aero_12": {
         "name": "Inmarsat Aero 1.2k (WIP)",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ],
-            [
-                3,
-                0
-            ]
+        "live": [
+            1,
+            2,
+            3
         ],
         "work": {
             "baseband": {},
             "soft": {
-                "sdpsk_demod": {
+                "module": "sdpsk_demod",
+                "parameters": {
                     "symbolrate": 1200,
                     "rrc_alpha": 0.4
                 }
             },
             "frm": {
-                "inmarsat_aero_decoder": {
+                "module": "inmarsat_aero_decoder",
+                "parameters": {
                     "oqpsk": false,
                     "dummy_bits": 0,
                     "inter_cols": 9,
@@ -127,7 +105,8 @@
                 }
             },
             "msg": {
-                "inmarsat_aero_parser": {
+                "module": "inmarsat_aero_parser",
+                "parameters": {
                     "save_files": true,
                     "station_id": ""
                     //,"udp_sinks": {
@@ -142,25 +121,16 @@
     },
     "inmarsat_aero_105": {
         "name": "Inmarsat Aero 10.5k (WIP)",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ],
-            [
-                3,
-                0
-            ]
+        "live": [
+            1,
+            2,
+            3
         ],
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "agc_rate": 0.2,
                     "symbolrate": 5.25e3, //10.5e3,
@@ -169,7 +139,8 @@
                 }
             },
             "frm": {
-                "inmarsat_aero_decoder": {
+                "module": "inmarsat_aero_decoder",
+                "parameters": {
                     "oqpsk": true,
                     "dummy_bits": 178,
                     "inter_cols": 78,
@@ -177,7 +148,8 @@
                 }
             },
             "msg": {
-                "inmarsat_aero_parser": {
+                "module": "inmarsat_aero_parser",
+                "parameters": {
                     "save_files": true,
                     "station_id": ""
                     //,"udp_sinks": {
@@ -193,25 +165,16 @@
     // Aero-C
     "inmarsat_aero_84": {
         "name": "Inmarsat Aero 8.4k",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ],
-            [
-                3,
-                0
-            ]
+        "live": [
+            1,
+            2,
+            3
         ],
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "agc_rate": 0.2,
                     "symbolrate": 4.2e3,
@@ -220,7 +183,8 @@
                 }
             },
             "frm": {
-                "inmarsat_aero_decoder": {
+                "module": "inmarsat_aero_decoder",
+                "parameters": {
                     "is_c": true,
                     "oqpsk": true,
                     "dummy_bits": 0,
@@ -230,7 +194,8 @@
                 }
             },
             "msg": {
-                "inmarsat_aero_parser": {
+                "module": "inmarsat_aero_parser",
+                "parameters": {
                     "is_c": true,
                     "save_files": true,
                     "station_id": ""

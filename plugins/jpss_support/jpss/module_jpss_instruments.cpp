@@ -1,41 +1,38 @@
 #include "module_jpss_instruments.h"
-#include <fstream>
-#include "common/ccsds/ccsds_aos/vcdu.h"
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
-#include "common/utils.h"
-#include "jpss.h"
-#include "common/image/bowtie.h"
-#include "common/ccsds/ccsds_aos/demuxer.h"
-#include "resources.h"
 #include "common/calibration.h"
-#include "nlohmann/json_utils.h"
-#include "common/image/io.h"
+#include "common/ccsds/ccsds_aos/demuxer.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
+#include "common/utils.h"
+#include "core/resources.h"
+#include "image/bowtie.h"
+#include "image/io.h"
+#include "imgui/imgui.h"
 #include "instruments/viirs/viirs_viewang.h"
+#include "jpss.h"
+#include "logger.h"
+#include "nlohmann/json_utils.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
-#include "products2/image_product.h"
-#include "products2/dataset.h"
 #include "common/tracking/tle.h"
+#include "products2/dataset.h"
+#include "products2/image_product.h"
+#include "utils/stats.h"
 
 namespace jpss
 {
     namespace instruments
     {
         JPSSInstrumentsDecoderModule::JPSSInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            : ProcessingModule(input_file, output_file_hint, parameters),
-              npp_mode(parameters["npp_mode"].get<bool>())
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters), npp_mode(parameters["npp_mode"].get<bool>())
         {
+            fsfsm_enable_output = false;
         }
 
         void JPSSInstrumentsDecoderModule::process()
         {
-            filesize = getFilesize(d_input_file);
-            std::ifstream data_in(d_input_file, std::ios::binary);
 
-            logger->info("Using input frames " + d_input_file);
-
-            time_t lastTime = 0;
             uint8_t cadu[1279]; // Oversized for NPP, but not a big deal
 
             int mpdu_size = npp_mode ? 884 : 1094;
@@ -50,19 +47,17 @@ namespace jpss
 
             std::vector<uint8_t> jpss_scids;
 
-            while (!data_in.eof())
+            while (should_run())
             {
                 // Read buffer
-                data_in.read((char *)&cadu, npp_mode ? 1024 : 1279);
+                read_data((uint8_t *)&cadu, npp_mode ? 1024 : 1279);
 
                 // Parse this transport frame
                 ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
-                if (vcdu.spacecraft_id == SNPP_SCID ||
-                    vcdu.spacecraft_id == JPSS1_SCID ||
-                    vcdu.spacecraft_id == JPSS2_SCID /*||
-                    vcdu.spacecraft_id == JPSS3_SCID ||
-                    vcdu.spacecraft_id == JPSS4_SCID*/
+                if (vcdu.spacecraft_id == SNPP_SCID || vcdu.spacecraft_id == JPSS1_SCID || vcdu.spacecraft_id == JPSS2_SCID /*||
+                                                                                           vcdu.spacecraft_id == JPSS3_SCID ||
+                                                                                           vcdu.spacecraft_id == JPSS4_SCID*/
                 )
                     jpss_scids.push_back(vcdu.spacecraft_id);
 
@@ -129,18 +124,11 @@ namespace jpss
                             viirs_reader_dnb[i].feed(pkt);
                     }
                 }
-
-                progress = data_in.tellg();
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
-            data_in.close();
+            cleanup();
 
-            int scid = most_common(jpss_scids.begin(), jpss_scids.end(), 0);
+            int scid = satdump::most_common(jpss_scids.begin(), jpss_scids.end(), 0);
             jpss_scids.clear();
 
             std::string sat_name = "Unknown JPSS";
@@ -166,7 +154,7 @@ namespace jpss
             // Products dataset
             satdump::products::DataSet dataset;
             dataset.satellite_name = sat_name;
-            dataset.timestamp = get_median(atms_reader.timestamps);
+            dataset.timestamp = satdump::get_median(atms_reader.timestamps);
 
             std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
 
@@ -310,10 +298,10 @@ namespace jpss
                     proj_cfg["ephemeris"] = att_ephem.getEphem();
                 viirs_products.set_proj_cfg_tle_timestamps(proj_cfg, satellite_tle, viirs_reader_imaging[0].timestamps); // All the same now. Merge to a single "timestamps"?
 
-                auto points_viirs_normal_ch = viirs::calculateVIIRSViewAnglePoints(false, getValueOrDefault(norm_cfg["is_n20"], false),
-                                                                                   norm_cfg["scan_angle"], getValueOrDefault(norm_cfg["roll_offset"], 0.0));
-                auto points_viirs_dnb_ch = viirs::calculateVIIRSViewAnglePoints(true, getValueOrDefault(dnb_cfg["is_n20"], false),
-                                                                                dnb_cfg["scan_angle"], getValueOrDefault(dnb_cfg["roll_offset"], 0.0));
+                auto points_viirs_normal_ch =
+                    viirs::calculateVIIRSViewAnglePoints(false, getValueOrDefault(norm_cfg["is_n20"], false), norm_cfg["scan_angle"], getValueOrDefault(norm_cfg["roll_offset"], 0.0));
+                auto points_viirs_dnb_ch =
+                    viirs::calculateVIIRSViewAnglePoints(true, getValueOrDefault(dnb_cfg["is_n20"], false), dnb_cfg["scan_angle"], getValueOrDefault(dnb_cfg["roll_offset"], 0.0));
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -324,10 +312,8 @@ namespace jpss
                         viirs_image = image::bowtie::correctGenericBowTie(viirs_image, 1, viirs_reader_imaging[i].channelSettings.zoneHeight, alpha, beta);
                         viirs_imaging_status[i] = SAVING;
 
-                        viirs_products.images.push_back({i, "VIIRS-I" + std::to_string(i + 1),
-                                                         "i" + std::to_string(i + 1),
-                                                         viirs_image, 16,
-                                                         satdump::ChannelTransform().init_affine_interpx(1, 1, 0, 0, points_viirs_normal_ch)});
+                        viirs_products.images.push_back(
+                            {i, "VIIRS-I" + std::to_string(i + 1), "i" + std::to_string(i + 1), viirs_image, 16, satdump::ChannelTransform().init_affine_interpx(1, 1, 0, 0, points_viirs_normal_ch)});
                     }
                     viirs_imaging_status[i] = DONE;
                 }
@@ -341,9 +327,7 @@ namespace jpss
                         viirs_image = image::bowtie::correctGenericBowTie(viirs_image, 1, viirs_reader_moderate[i].channelSettings.zoneHeight, alpha, beta);
                         viirs_moderate_status[i] = SAVING;
 
-                        viirs_products.images.push_back({i + 5, "VIIRS-M" + std::to_string(i + 1),
-                                                         "m" + std::to_string(i + 1),
-                                                         viirs_image, 16,
+                        viirs_products.images.push_back({i + 5, "VIIRS-M" + std::to_string(i + 1), "m" + std::to_string(i + 1), viirs_image, 16,
                                                          satdump::ChannelTransform().init_affine_interpx(2, 2, 0, 0, points_viirs_normal_ch)});
                     }
                     viirs_moderate_status[i] = DONE;
@@ -354,30 +338,23 @@ namespace jpss
                 {
                     logger->info("DNB...");
 
-                    viirs_products.images.push_back({21, "VIIRS-DNB",
-                                                     "dnb",
-                                                     viirs_reader_dnb[0].getImage(), 16,
-                                                     satdump::ChannelTransform().init_affine_interpx(1, 2, 0, 1, points_viirs_dnb_ch)});
+                    viirs_products.images.push_back({21, "VIIRS-DNB", "dnb", viirs_reader_dnb[0].getImage(), 16, satdump::ChannelTransform().init_affine_interpx(1, 2, 0, 1, points_viirs_dnb_ch)});
                 }
 
                 if (viirs_reader_dnb[1].segments.size() > 0)
                 {
                     logger->info("DNB MGS...");
 
-                    viirs_products.images.push_back({22, "VIIRS-DNB-MGS",
-                                                     "dnbmgs",
-                                                     viirs_reader_dnb[1].getImage(), 16,
-                                                     satdump::ChannelTransform().init_affine_interpx(1, 2, 0, 1, points_viirs_dnb_ch)});
+                    viirs_products.images.push_back(
+                        {22, "VIIRS-DNB-MGS", "dnbmgs", viirs_reader_dnb[1].getImage(), 16, satdump::ChannelTransform().init_affine_interpx(1, 2, 0, 1, points_viirs_dnb_ch)});
                 }
 
                 if (viirs_reader_dnb[2].segments.size() > 0)
                 {
                     logger->info("DNB LGS...");
 
-                    viirs_products.images.push_back({23, "VIIRS-DNB-LGS",
-                                                     "dnblgs",
-                                                     viirs_reader_dnb[2].getImage(), 16,
-                                                     satdump::ChannelTransform().init_affine_interpx(1, 2, 0, 1, points_viirs_dnb_ch)});
+                    viirs_products.images.push_back(
+                        {23, "VIIRS-DNB-LGS", "dnblgs", viirs_reader_dnb[2].getImage(), 16, satdump::ChannelTransform().init_affine_interpx(1, 2, 0, 1, points_viirs_dnb_ch)});
                 }
                 viirs_dnb_status = DONE;
 
@@ -459,7 +436,7 @@ namespace jpss
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
@@ -598,19 +575,11 @@ namespace jpss
             viirs_reader_imaging[5 - 1].differentialDecode(viirs_reader_moderate[15 - 1], 2);
         }
 
-        std::string JPSSInstrumentsDecoderModule::getID()
-        {
-            return "jpss_instruments";
-        }
+        std::string JPSSInstrumentsDecoderModule::getID() { return "jpss_instruments"; }
 
-        std::vector<std::string> JPSSInstrumentsDecoderModule::getParameters()
-        {
-            return {};
-        }
-
-        std::shared_ptr<ProcessingModule> JPSSInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> JPSSInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<JPSSInstrumentsDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace amsu
-} // namespace metop
+    } // namespace instruments
+} // namespace jpss

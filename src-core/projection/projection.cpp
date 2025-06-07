@@ -2,12 +2,12 @@
 #include "logger.h"
 
 #include "common/geodetic/vincentys_calculations.h" // TODOREWORK MOVE OUT
-#include "common/projection/projs2/proj_json.h"
+#include "projection/standard/proj_json.h"
 #include "raytrace/gcp_compute.h"
 
 namespace satdump
 {
-    namespace proj
+    namespace projection
     {
         Projection::Projection() {}
 

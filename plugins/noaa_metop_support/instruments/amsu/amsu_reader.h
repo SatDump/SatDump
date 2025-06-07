@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "common/image/image.h"
+#include "image/image.h"
 #include "common/ccsds/ccsds.h"
 #include "common/simple_deframer.h"
 #include "nlohmann/json.hpp"

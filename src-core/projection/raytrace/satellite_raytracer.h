@@ -9,7 +9,7 @@
 
 namespace satdump
 {
-    namespace proj
+    namespace projection
     {
         /**
          * @brief Generic base class for satellite raytracers.

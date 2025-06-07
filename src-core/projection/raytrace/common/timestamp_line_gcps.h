@@ -4,7 +4,7 @@
 
 namespace satdump
 {
-    namespace proj
+    namespace projection
     { // TODOREWORK rename?
         class TimestampLineGCPsRaytracer : public SatelliteRaytracer
         {

@@ -1,26 +1,18 @@
 {
     "off2pro": {
         "name": "Data Stores / Archives Formats (NOAA/EUMETSAT/CMA/NASA), Experimental",
-        "live": false,
         "work": {
             "file": {},
             "products": {
-                "off2pro": {}
+                "module": "off2pro"
             }
         }
     },
     "sstv_decoder": {
         "name": "SSTV Decoder",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "parameters": {
             "sstv_mode": {
@@ -39,12 +31,14 @@
         "work": {
             "baseband": {},
             "audio_wav": {
-                "generic_analog_demod": {
+                "module": "generic_analog_demod",
+                "parameters": {
                     "symbolrate": 12e3
                 }
             },
             "products": {
-                "sstv_decoder": {
+                "module": "sstv_decoder",
+                "parameters": {
                     "audio_samplerate": 48e3
                 }
             }
@@ -53,16 +47,9 @@
     ///////////////////////////////////////////////////////////////
     "saral_l_band": {
         "name": "Saral L-Band",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -74,7 +61,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 400e3,
                     "rrc_alpha": 0.5,
@@ -82,7 +70,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
@@ -94,22 +83,15 @@
                 }
             },
             "products": {
-                "saral_argos": {}
+                "module": "saral_argos"
             }
         }
     },
     "angels_l_band": {
         "name": "ANGELS L-Band",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -121,7 +103,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 400e3,
                     "rrc_alpha": 0.5,
@@ -129,7 +112,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
@@ -141,22 +125,15 @@
                 }
             },
             "products": {
-                "angels_argos": {}
+                "module": "angels_argos"
             }
         }
     },
     "gazelle_l_band": {
         "name": "OTB-3/Gazelle L-Band",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -168,7 +145,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 1e6,
                     "rrc_alpha": 0.5,
@@ -176,7 +154,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
@@ -192,7 +171,6 @@
     },
     "yunhai_ahrpt": {
         "name": "Yunhai AHRPT - Encrypted",
-        "live": false,
         "frequencies": [
             [
                 "DB",
@@ -203,7 +181,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 4e6,
                     "rrc_alpha": 0.5,
@@ -211,7 +190,8 @@
                 }
             },
             "cadu": {
-                "fengyun_ahrpt_decoder": {
+                "module": "fengyun_ahrpt_decoder",
+                "parameters": {
                     "viterbi_outsync_after": 20,
                     "viterbi_ber_thresold": 0.250,
                     "invert_second_viterbi": false
@@ -221,17 +201,14 @@
     },
     "syracuse3b_tlm": {
         "name": "Syracuse 3B TLM",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ]
+        "live": [
+            1
         ],
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "symbolrate": 156e3,
                     "pll_bw": 0.005,
                     "pll_max_offset": 0.5,
@@ -245,16 +222,9 @@
     },
     "scisat1_dump": {
         "name": "SciSat-1 Dump",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -265,7 +235,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 2e6,
                     "rrc_alpha": 0.5,
@@ -273,7 +244,8 @@
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "cadu_size": 9592,
                     "rs_i": 5,
@@ -282,14 +254,12 @@
                 }
             },
             "products": {
-                "scisat1_instruments": {}
+                "module": "scisat1_instruments"
             }
         }
     },
     "CALIPSO": {
         "name": "Calipso S band Dump",
-        "live": false,
-        "live_cfg": [],
         "frequencies": [
             [
                 "Main",
@@ -304,7 +274,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 0.839e6,
                     "rrc_alpha": 0.5,
@@ -312,7 +283,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "cadu_size": 10232,
                     "viterbi_ber_thresold": 0.300,
@@ -326,16 +298,9 @@
     },
     "youthsat_dump": {
         "name": "YouthSat Dump",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             /*[
@@ -346,7 +311,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 1.56e6,
                     "rrc_alpha": 0.5,
@@ -354,7 +320,8 @@
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 8192,
                     "rs_i": 0
@@ -366,16 +333,9 @@
     },
     "pretty_s_dump": {
         "name": "PRETTY S-Band Dump",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             /*[
@@ -386,7 +346,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 0.5e6,
                     "rrc_alpha": 0.5,
@@ -401,7 +362,8 @@
                     "rs_i": 0
                     //,"rs_type": "rs223"
                 }*/
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "iq_invert": true,
                     "cadu_size": 16352,

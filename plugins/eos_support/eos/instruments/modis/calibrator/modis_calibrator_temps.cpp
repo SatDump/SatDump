@@ -3,7 +3,7 @@
 #include "modis_engcoefs.h"
 #include "modis_defs.h"
 #include "logger.h"
-#include "common/utils.h"
+#include "utils/stats.h"
 
 namespace eos
 {
@@ -26,7 +26,7 @@ namespace eos
                         if (d_vars[scan2].contains("bb_temp"))
                             v_DN.push_back(d_vars[scan2]["bb_temp"][thermistor]);
 
-                    int mDN = most_common(v_DN.begin(), v_DN.end(), 0);
+                    int mDN = satdump::most_common(v_DN.begin(), v_DN.end(), 0);
                     if (abs(DN - mDN) > 200)
                         DN = mDN;
 #endif
@@ -97,7 +97,7 @@ namespace eos
                         if (d_vars[scan2].contains("mir_temp"))
                             v_MIR.push_back(d_vars[scan2]["mir_temp"][i]);
 
-                    int mMIR = most_common(v_MIR.begin(), v_MIR.end(), 0);
+                    int mMIR = satdump::most_common(v_MIR.begin(), v_MIR.end(), 0);
                     if (abs(MIR - mMIR) > 200)
                         MIR = mMIR;
 #endif
@@ -188,7 +188,7 @@ namespace eos
                         if (d_vars[scan2].contains("inst_temp") && d_vars[scan2]["inst_temp"][i] != 0)
                             v_INS.push_back(d_vars[scan2]["inst_temp"][i]);
 
-                    int mINS = v_INS.size() == 0 ? 0 : most_common(v_INS.begin(), v_INS.end(), 0);
+                    int mINS = v_INS.size() == 0 ? 0 : satdump::most_common(v_INS.begin(), v_INS.end(), 0);
                     if (mINS != 0 && abs(INS - mINS) > 200)
                         INS = mINS;
 #endif
@@ -243,10 +243,10 @@ namespace eos
                     v_LWHTR_ON.push_back(d_vars[scan2]["fp_temp_info"][2]);
                     v_SMHTR_ON.push_back(d_vars[scan2]["fp_temp_info"][3]);
                 }
-                bool FP_T1SET = most_common(v_FP_T1SET.begin(), v_FP_T1SET.end(), 0);
-                bool FP_T3SET = most_common(v_FP_T3SET.begin(), v_FP_T3SET.end(), 0);
-                bool LWHTR_ON = most_common(v_LWHTR_ON.begin(), v_LWHTR_ON.end(), 0);
-                bool SMHTR_ON = most_common(v_SMHTR_ON.begin(), v_SMHTR_ON.end(), 0);
+                bool FP_T1SET = satdump::most_common(v_FP_T1SET.begin(), v_FP_T1SET.end(), 0);
+                bool FP_T3SET = satdump::most_common(v_FP_T3SET.begin(), v_FP_T3SET.end(), 0);
+                bool LWHTR_ON = satdump::most_common(v_LWHTR_ON.begin(), v_LWHTR_ON.end(), 0);
+                bool SMHTR_ON = satdump::most_common(v_SMHTR_ON.begin(), v_SMHTR_ON.end(), 0);
 #else
                 bool FP_T1SET = d_vars[scan]["fp_temp_info"][0];
                 bool FP_T3SET = d_vars[scan]["fp_temp_info"][1];
@@ -270,10 +270,10 @@ namespace eos
                     v_FP4.push_back(d_vars[scan2]["fp_temp"][3]);
                 }
 
-                int mFP1 = most_common(v_FP1.begin(), v_FP1.end(), 0);
-                int mFP2 = most_common(v_FP2.begin(), v_FP2.end(), 0);
-                int mFP3 = most_common(v_FP3.begin(), v_FP3.end(), 0);
-                int mFP4 = most_common(v_FP4.begin(), v_FP4.end(), 0);
+                int mFP1 = satdump::most_common(v_FP1.begin(), v_FP1.end(), 0);
+                int mFP2 = satdump::most_common(v_FP2.begin(), v_FP2.end(), 0);
+                int mFP3 = satdump::most_common(v_FP3.begin(), v_FP3.end(), 0);
+                int mFP4 = satdump::most_common(v_FP4.begin(), v_FP4.end(), 0);
 
                 if (FP1 == 0 || FP1 == 4095 || abs(FP1 - mFP1) > 200)
                     FP1 = mFP1;

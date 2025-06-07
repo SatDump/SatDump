@@ -1,50 +1,46 @@
 #include "module_noaa_instruments.h"
-#include <fstream>
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
+#include "common/repack.h"
+#include "common/tracking/tle.h"
 #include "common/utils.h"
+#include "core/resources.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include "products2/dataset.h"
 #include "products2/image_product.h"
 #include "products2/punctiform_product.h"
-#include "products2/dataset.h"
-#include "resources.h"
-#include "common/projection/timestamp_filtering.h"
-#include "common/tracking/tle.h"
+#include "utils/stats.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
 namespace noaa
 {
     namespace instruments
     {
         NOAAInstrumentsDecoderModule::NOAAInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            : ProcessingModule(input_file, output_file_hint, parameters),
-              is_gac(parameters.count("gac_mode") > 0 ? parameters["gac_mode"].get<bool>() : 0),
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters), is_gac(parameters.count("gac_mode") > 0 ? parameters["gac_mode"].get<bool>() : 0),
               is_dsb(parameters.count("dsb_mode") > 0 ? parameters["dsb_mode"].get<bool>() : 0),
               avhrr_reader(is_gac, parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1),
               hirs_reader(parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1),
               sem_reader(parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1),
               telemetry_reader(parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1)
         {
+            fsfsm_enable_output = false;
         }
 
         void NOAAInstrumentsDecoderModule::process()
         {
-            filesize = getFilesize(d_input_file);
-            std::ifstream data_in(d_input_file, std::ios::binary);
-
-            logger->info("Using input frames " + d_input_file);
-
             std::vector<int> spacecraft_ids;
-            time_t lastTime = 0;
 
             if (!is_dsb)
             {
                 uint16_t buffer[11090] = {0};
 
-                while (!data_in.eof())
+                while (should_run())
                 {
                     if (!is_gac)
                     {
-                        data_in.read((char *)&buffer[0], 11090 * 2);
+                        read_data((uint8_t *)&buffer[0], 11090 * 2);
                         avhrr_reader.work_noaa(buffer); // avhrr
 
                         { // getting the TIP/AIP out
@@ -80,7 +76,7 @@ namespace noaa
                     else
                     {
                         uint8_t rawWords[4159];
-                        data_in.read((char *)rawWords, 4159);
+                        read_data((uint8_t *)rawWords, 4159);
                         repackBytesTo10bits(rawWords, 4159, buffer);
 
                         avhrr_reader.work_noaa(buffer); // avhrr
@@ -109,17 +105,12 @@ namespace noaa
                         }
                     }
                     spacecraft_ids.push_back(((buffer[6] & 0x078) >> 3) & 0x000F);
+                }
 
-                    progress = data_in.tellg();
-                    if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                    {
-                        lastTime = time(NULL);
-                        logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                    }
-                } // done with the frames
-                data_in.close();
+                // done with the frames
+                cleanup();
 
-                int scid = most_common(spacecraft_ids.begin(), spacecraft_ids.end(), 0);
+                int scid = satdump::most_common(spacecraft_ids.begin(), spacecraft_ids.end(), 0);
                 spacecraft_ids.clear();
                 int norad = 0;
                 std::string sat_name = "Unknown NOAA";
@@ -142,7 +133,7 @@ namespace noaa
                 // Products dataset
                 satdump::products::DataSet dataset;
                 dataset.satellite_name = sat_name;
-                dataset.timestamp = get_median(avhrr_reader.timestamps);
+                dataset.timestamp = satdump::get_median(avhrr_reader.timestamps);
 
                 std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
 
@@ -166,7 +157,8 @@ namespace noaa
                         int minutes = (noaa15_age % 3600) / 60;
                         int hours = (noaa15_age % 86400) / 3600;
                         int days = noaa15_age / 86400;
-                        logger->warn("Congratulations for receiving NOAA 15 on HRPT! It has been %d days, %d hours, %d minutes and %d seconds since it has been launched.", days, hours, minutes, seconds);
+                        logger->warn("Congratulations for receiving NOAA 15 on HRPT! It has been %d days, %d hours, %d minutes and %d seconds since it has been launched.", days, hours, minutes,
+                                     seconds);
                         if (dataset.timestamp > 0)
                         {
                             time_t tttime = dataset.timestamp;
@@ -406,24 +398,17 @@ namespace noaa
             {
                 std::vector<uint8_t> scid_list;
                 uint8_t buffer[104];
-                while (!data_in.eof())
+                while (should_run())
                 {
-                    data_in.read((char *)&buffer[0], 104);
+                    read_data((uint8_t *)&buffer[0], 104);
                     hirs_reader.work(buffer);
                     sem_reader.work(buffer);
                     telemetry_reader.work(buffer);
                     scid_list.push_back(buffer[2] & 0b00001111);
-
-                    progress = data_in.tellg();
-                    if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                    {
-                        lastTime = time(NULL);
-                        logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                    }
                 }
 
                 // ID
-                uint8_t scid = most_common(scid_list.begin(), scid_list.end(), 0);
+                uint8_t scid = satdump::most_common(scid_list.begin(), scid_list.end(), 0);
                 scid_list.clear();
                 int norad = 0;
                 std::string sat_name = "Unknown NOAA";
@@ -446,7 +431,7 @@ namespace noaa
                 // Products dataset
                 satdump::products::DataSet dataset;
                 dataset.satellite_name = sat_name;
-                dataset.timestamp = get_median(hirs_reader.timestamps);
+                dataset.timestamp = satdump::get_median(hirs_reader.timestamps);
 
                 std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
 
@@ -628,24 +613,16 @@ namespace noaa
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
-        std::string NOAAInstrumentsDecoderModule::getID()
-        {
-            return "noaa_instruments";
-        }
+        std::string NOAAInstrumentsDecoderModule::getID() { return "noaa_instruments"; }
 
-        std::vector<std::string> NOAAInstrumentsDecoderModule::getParameters()
-        {
-            return {};
-        }
-
-        std::shared_ptr<ProcessingModule> NOAAInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> NOAAInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<NOAAInstrumentsDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace amsu
+    } // namespace instruments
 } // namespace noaa

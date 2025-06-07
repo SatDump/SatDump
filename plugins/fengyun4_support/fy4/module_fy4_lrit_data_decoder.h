@@ -1,19 +1,16 @@
 #pragma once
 
-#include "core/module.h"
-#include "data/lrit_data.h"
 #include "common/lrit/lrit_file.h"
+#include "data/lrit_data.h"
+#include "pipeline/modules/base/filestream_to_filestream.h"
 
 namespace fy4
 {
     namespace lrit
     {
-        class FY4LRITDataDecoderModule : public ProcessingModule
+        class FY4LRITDataDecoderModule : public satdump::pipeline::base::FileStreamToFileStreamModule
         {
         protected:
-            std::atomic<uint64_t> filesize;
-            std::atomic<uint64_t> progress;
-
             std::string directory;
 
             enum CustomFileParams
@@ -47,14 +44,12 @@ namespace fy4
             ~FY4LRITDataDecoderModule();
             void process();
             void drawUI(bool window);
-            std::vector<ModuleDataType> getInputTypes();
-            std::vector<ModuleDataType> getOutputTypes();
 
         public:
             static std::string getID();
             virtual std::string getIDM() { return getID(); };
-            static std::vector<std::string> getParameters();
+            static nlohmann::json getParams() { return {}; } // TODOREWORK
             static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         };
-    } // namespace avhrr
-} // namespace metop
+    } // namespace lrit
+} // namespace fy4

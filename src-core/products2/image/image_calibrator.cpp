@@ -1,5 +1,5 @@
 #include "image_calibrator.h"
-#include "common/image/meta.h"
+#include "image/meta.h"
 #include "core/plugin.h"
 
 #include "common/lrit/generic_xrit_calibrator.h"

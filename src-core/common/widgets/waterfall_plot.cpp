@@ -2,7 +2,7 @@
 #include "imgui/imgui_internal.h"
 #include <string>
 #include "imgui/imgui_image.h"
-#include "resources.h"
+#include "core/resources.h"
 #include "logger.h"
 
 namespace widgets

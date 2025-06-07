@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include "common/utils.h"
 #include <fstream>
+#include <vector>
 
 /*
 Basic Shapefile parser, based on https://support.esri.com/en/white-paper/279.

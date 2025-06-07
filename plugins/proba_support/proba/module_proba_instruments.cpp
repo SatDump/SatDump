@@ -1,21 +1,22 @@
 #include "module_proba_instruments.h"
-#include <fstream>
-#include "common/ccsds/ccsds_tm/vcdu.h"
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
-#include "common/utils.h"
 #include "common/ccsds/ccsds_tm/demuxer.h"
-#include "products2/dataset.h"
+#include "common/ccsds/ccsds_tm/vcdu.h"
+#include "common/utils.h"
 #include "core/exception.h"
-#include "common/image/io.h"
+#include "image/io.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include "products2/dataset.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
 namespace proba
 {
     namespace instruments
     {
         PROBAInstrumentsDecoderModule::PROBAInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            : ProcessingModule(input_file, output_file_hint, parameters)
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
             if (parameters["satellite"] == "proba1")
                 d_satellite = PROBA_1;
@@ -25,16 +26,12 @@ namespace proba
                 d_satellite = PROBA_V;
             else
                 throw satdump_exception("Proba Instruments Decoder : Proba satellite \"" + parameters["satellite"].get<std::string>() + "\" is not valid!");
+            fsfsm_enable_output = false;
         }
 
         void PROBAInstrumentsDecoderModule::process()
         {
-            filesize = getFilesize(d_input_file);
-            std::ifstream data_in(d_input_file, std::ios::binary);
 
-            logger->info("Using input frames " + d_input_file);
-
-            time_t lastTime = 0;
             uint8_t cadu[1279];
 
             // Demuxers
@@ -101,10 +98,10 @@ namespace proba
                 gps_ascii_reader = std::make_unique<gps_ascii::GPSASCII>(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/gps_logs.txt");
             }
 
-            while (!data_in.eof())
+            while (should_run())
             {
                 // Read buffer
-                data_in.read((char *)&cadu, 1279);
+                read_data((uint8_t *)&cadu, 1279);
 
                 // Parse this transport frame
                 ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
@@ -235,16 +232,9 @@ namespace proba
                         }
                     }
                 }
-
-                progress = data_in.tellg();
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
-            data_in.close();
+            cleanup();
 
             // CHRIS
             if (d_satellite == PROBA_1)
@@ -428,24 +418,16 @@ namespace proba
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
-        std::string PROBAInstrumentsDecoderModule::getID()
-        {
-            return "proba_instruments";
-        }
+        std::string PROBAInstrumentsDecoderModule::getID() { return "proba_instruments"; }
 
-        std::vector<std::string> PROBAInstrumentsDecoderModule::getParameters()
-        {
-            return {};
-        }
-
-        std::shared_ptr<ProcessingModule> PROBAInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> PROBAInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<PROBAInstrumentsDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace amsu
-} // namespace metop
+    } // namespace instruments
+} // namespace proba

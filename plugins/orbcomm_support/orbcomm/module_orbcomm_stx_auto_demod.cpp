@@ -1,9 +1,9 @@
 #include "module_orbcomm_stx_auto_demod.h"
-#include "logger.h"
-#include "imgui/imgui.h"
-#include <volk/volk.h>
 #include "common/dsp_source_sink/format_notated.h"
 #include "common/repack.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include <volk/volk.h>
 
 inline double calcFreq(int f, bool small = true)
 {
@@ -56,7 +56,7 @@ namespace orbcomm
             {
                 uint8_t *frm = &frms[fi * 600];
 
-                if (output_data_type == DATA_FILE)
+                if (output_data_type == satdump::pipeline::DATA_FILE)
                     data_out.write((char *)frm, 600);
                 else
                     output_fifo->write((uint8_t *)frm, 600);
@@ -112,13 +112,11 @@ namespace orbcomm
         add_stx_link(137.6625e6);
     }
 
-    OrbcommSTXAutoDemodModule::~OrbcommSTXAutoDemodModule()
-    {
-    }
+    OrbcommSTXAutoDemodModule::~OrbcommSTXAutoDemodModule() {}
 
     void OrbcommSTXAutoDemodModule::process()
     {
-        if (input_data_type == DATA_FILE)
+        if (input_data_type == satdump::pipeline::DATA_FILE)
         {
             filesize = file_source->getFilesize();
             throw satdump_exception("The Orbcomm Auto STX Demodulator is live-only!");
@@ -126,10 +124,10 @@ namespace orbcomm
         else
             filesize = 0;
 
-        if (output_data_type == DATA_FILE)
+        if (output_data_type == satdump::pipeline::DATA_FILE)
         {
             data_out = std::ofstream(d_output_file_hint + ".frm", std::ios::binary);
-            d_output_files.push_back(d_output_file_hint + ".frm");
+            d_output_file = d_output_file_hint + ".frm";
         }
 
         logger->info("Using input baseband " + d_input_file);
@@ -156,13 +154,6 @@ namespace orbcomm
             freqs_to_push_mtx.unlock();
 
             stx_link_lst_mtx.lock();
-            // Update module stats
-            for (auto &freq : stx_link_lst)
-            {
-                module_stats[freq.first]["snr"] = freq.second.demod->getSNR();
-                module_stats[freq.first]["deframer_state"] = freq.second.demod->getDefState();
-            }
-
             for (auto &freq : stx_link_lst)
             {
                 if (time(0) - freq.second.last_ping > 3600 * 24)
@@ -177,7 +168,7 @@ namespace orbcomm
 
             std::this_thread::sleep_for(std::chrono::seconds(1));
 
-            if (input_data_type == DATA_FILE)
+            if (input_data_type == satdump::pipeline::DATA_FILE)
                 progress = file_source->getPosition();
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
@@ -189,8 +180,24 @@ namespace orbcomm
 
         logger->info("Demodulation finished");
 
-        if (input_data_type == DATA_FILE)
+        if (input_data_type == satdump::pipeline::DATA_FILE)
             stop();
+    }
+
+    nlohmann::json OrbcommSTXAutoDemodModule::getModuleStats()
+    {
+        nlohmann::json v;
+        v["progress"] = ((double)progress / (double)filesize);
+        stx_link_lst_mtx.lock();
+        // Update module stats
+        for (auto &freq : stx_link_lst)
+        {
+            v[freq.first]["snr"] = freq.second.demod->getSNR();
+            v[freq.first]["deframer_state"] = freq.second.demod->getDefState();
+        }
+        stx_link_lst_mtx.unlock();
+
+        return v;
     }
 
     void OrbcommSTXAutoDemodModule::stop()
@@ -204,7 +211,7 @@ namespace orbcomm
             freq.second.demod->stop();
         logger->trace("Demodulators stopped");
 
-        if (output_data_type == DATA_FILE)
+        if (output_data_type == satdump::pipeline::DATA_FILE)
             data_out.close();
     }
 
@@ -266,7 +273,7 @@ namespace orbcomm
         }
         ImGui::EndGroup();
 
-        if (!streamingInput)
+        if (!d_is_streaming_input)
             ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         drawStopButton();
@@ -276,19 +283,10 @@ namespace orbcomm
         drawFFT();
     }
 
-    std::string OrbcommSTXAutoDemodModule::getID()
-    {
-        return "orbcomm_stx_auto_demod";
-    }
+    std::string OrbcommSTXAutoDemodModule::getID() { return "orbcomm_stx_auto_demod"; }
 
-    std::vector<std::string> OrbcommSTXAutoDemodModule::getParameters()
-    {
-        std::vector<std::string> params;
-        return params;
-    }
-
-    std::shared_ptr<ProcessingModule> OrbcommSTXAutoDemodModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<satdump::pipeline::ProcessingModule> OrbcommSTXAutoDemodModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<OrbcommSTXAutoDemodModule>(input_file, output_file_hint, parameters);
     }
-}
+} // namespace orbcomm

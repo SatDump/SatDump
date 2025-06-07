@@ -1,8 +1,8 @@
 #include "product_dotmap.h"
-#include "common/image/io.h"
-#include "common/image/meta.h"
+#include "image/io.h"
+#include "image/meta.h"
 #include "logger.h"
-#include "resources.h"
+#include "core/resources.h"
 
 namespace satdump
 {

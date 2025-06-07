@@ -1,30 +1,32 @@
 #include "module_fy3_instruments.h"
-#include <fstream>
 #include "common/ccsds/ccsds_aos/demuxer.h"
 #include "common/ccsds/ccsds_aos/vcdu.h"
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
-#include "common/image/bowtie.h"
-#include "common/utils.h"
-#include "products2/image_product.h"
-#include "products2/dataset.h"
 #include "common/simple_deframer.h"
+#include "common/tracking/tle.h"
+#include "common/utils.h"
+#include "core/exception.h"
+#include "core/resources.h"
 #include "fengyun3.h"
-#include "resources.h"
+#include "image/bowtie.h"
+#include "image/io.h"
+#include "imgui/imgui.h"
 #include "instruments/mersi_histmatch.h"
 #include "instruments/mersi_offset_interleaved.h"
+#include "logger.h"
 #include "nlohmann/json_utils.h"
-#include "core/exception.h"
-#include "common/image/io.h"
-#include "common/tracking/tle.h"
+#include "products2/dataset.h"
+#include "products2/image_product.h"
+#include "utils/stats.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
 namespace fengyun3
 {
     namespace instruments
     {
         FY3InstrumentsDecoderModule::FY3InstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            : ProcessingModule(input_file, output_file_hint, parameters),
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters),
               d_mersi_bowtie(d_parameters.contains("mersi_bowtie") ? d_parameters["mersi_bowtie"].get<bool>() : false),
               d_mersi_histmatch(d_parameters.contains("mersi_histmatch") ? d_parameters["mersi_histmatch"].get<bool>() : false)
         {
@@ -61,16 +63,12 @@ namespace fengyun3
                 d_write_c10 = parameters["write_c10"].get<bool>();
             else
                 d_write_c10 = false;
+
+            fsfsm_enable_output = false;
         }
 
         void FY3InstrumentsDecoderModule::process()
         {
-            filesize = getFilesize(d_input_file);
-            std::ifstream data_in(d_input_file, std::ios::binary);
-
-            logger->info("Using input frames " + d_input_file);
-
-            time_t lastTime = 0;
             uint8_t cadu[1024];
 
             // Init stuff per-sat
@@ -151,21 +149,16 @@ namespace fengyun3
 
             is_init = true;
 
-            while (!data_in.eof())
+            while (should_run())
             {
                 // Read buffer
-                data_in.read((char *)&cadu, 1024);
+                read_data((uint8_t *)&cadu, 1024);
 
                 // Parse this transport frame
                 ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
-                if (vcdu.spacecraft_id == FY3_A_SCID ||
-                    vcdu.spacecraft_id == FY3_B_SCID ||
-                    vcdu.spacecraft_id == FY3_C_SCID ||
-                    vcdu.spacecraft_id == FY3_D_SCID ||
-                    vcdu.spacecraft_id == FY3_E_SCID ||
-                    vcdu.spacecraft_id == FY3_F_SCID ||
-                    vcdu.spacecraft_id == FY3_G_SCID)
+                if (vcdu.spacecraft_id == FY3_A_SCID || vcdu.spacecraft_id == FY3_B_SCID || vcdu.spacecraft_id == FY3_C_SCID || vcdu.spacecraft_id == FY3_D_SCID || vcdu.spacecraft_id == FY3_E_SCID ||
+                    vcdu.spacecraft_id == FY3_F_SCID || vcdu.spacecraft_id == FY3_G_SCID)
                     fy_scids.push_back(vcdu.spacecraft_id);
 
                 if (d_satellite == FY_AB)
@@ -420,22 +413,14 @@ namespace fengyun3
                         //        mwts3_reader.work(pkt);
                     }
                 }
-
-                progress = data_in.tellg();
-
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
-            data_in.close();
+            cleanup();
 
             if (d_dump_mersi)
                 mersi_bin.close();
 
-            int scid = most_common(fy_scids.begin(), fy_scids.end(), 0);
+            int scid = satdump::most_common(fy_scids.begin(), fy_scids.end(), 0);
             fy_scids.clear();
 
             std::string sat_name = "Unknown FengYun-3";
@@ -474,17 +459,17 @@ namespace fengyun3
             satdump::products::DataSet dataset;
             dataset.satellite_name = sat_name;
             if ((d_satellite == FY_AB || d_satellite == FY_3C) && d_downlink == AHRPT)
-                dataset.timestamp = get_median(virr_reader.timestamps);
+                dataset.timestamp = satdump::get_median(virr_reader.timestamps);
             else if (d_satellite == FY_AB && d_downlink == MPT)
-                dataset.timestamp = get_median(mersi1_reader.timestamps);
+                dataset.timestamp = satdump::get_median(mersi1_reader.timestamps);
             else if (d_satellite == FY_3D)
-                dataset.timestamp = get_median(mersi2_reader.timestamps);
+                dataset.timestamp = satdump::get_median(mersi2_reader.timestamps);
             else if (d_satellite == FY_3E)
-                dataset.timestamp = get_median(mersill_reader.timestamps);
+                dataset.timestamp = satdump::get_median(mersill_reader.timestamps);
             else if (d_satellite == FY_3F)
-                dataset.timestamp = get_median(mersi3_reader.timestamps);
+                dataset.timestamp = satdump::get_median(mersi3_reader.timestamps);
             else if (d_satellite == FY_3G)
-                dataset.timestamp = get_median(mersirm_reader.timestamps);
+                dataset.timestamp = satdump::get_median(mersirm_reader.timestamps);
 
             std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
 
@@ -599,12 +584,12 @@ namespace fengyun3
 
                 if (d_write_c10)
                 {
-                    virr_to_c10->close(get_median(virr_reader.timestamps), scid);
+                    virr_to_c10->close(satdump::get_median(virr_reader.timestamps), scid);
                     delete virr_to_c10;
                 }
 
                 if (d_downlink == AHRPT)
-                    dataset.timestamp = get_median(virr_reader.timestamps); // Re-set dataset timestamp since we just adjusted it
+                    dataset.timestamp = satdump::get_median(virr_reader.timestamps); // Re-set dataset timestamp since we just adjusted it
 
                 virr_products.save(directory);
                 dataset.products_list.push_back("VIRR");
@@ -634,27 +619,9 @@ namespace fengyun3
 
                 // Channel offsets relative to Ch1
                 int offset[20] = {
-                    0,
-                    8,
-                    0,
-                    24,
-                    0,
+                    0,  8, 0,   24,  0,
 
-                    16,
-                    0,
-                    -16,
-                    -16,
-                    -8,
-                    16,
-                    24,
-                    8,
-                    -8,
-                    16,
-                    -16,
-                    40,
-                    -32,
-                    32,
-                    -24,
+                    16, 0, -16, -16, -8, 16, 24, 8, -8, 16, -16, 40, -32, 32, -24,
                 };
 
                 for (int i = 0; i < 20; i++)
@@ -704,32 +671,9 @@ namespace fengyun3
 
                 // Channel offsets relative to Ch1
                 int offset[25] = {
-                    0,
-                    8,
-                    0,
-                    24,
-                    -8,
-                    16,
+                    0,  8,  0,   24,  -8, 16,
 
-                    16,
-                    32,
-                    -32,
-                    -24,
-                    32,
-                    0,
-                    8,
-                    -16,
-                    -8,
-                    16,
-                    24,
-                    8,
-                    -8,
-                    16,
-                    -16,
-                    32,
-                    32,
-                    -32,
-                    -24,
+                    16, 32, -32, -24, 32, 0,  8, -16, -8, 16, 24, 8, -8, 16, -16, 32, 32, -32, -24,
                 };
 
                 for (int i = 0; i < 25; i++)
@@ -777,32 +721,9 @@ namespace fengyun3
 
                 // Channel offsets relative to Ch1
                 int offset[25] = {
-                    0,
-                    8,
-                    0,
-                    24,
-                    -8,
-                    16,
+                    0,  8,  0,   24,  -8, 16,
 
-                    16,
-                    32,
-                    -32,
-                    -24,
-                    32,
-                    0,
-                    8,
-                    -16,
-                    -8,
-                    16,
-                    24,
-                    8,
-                    -8,
-                    16,
-                    -16,
-                    32,
-                    32,
-                    -32,
-                    -24,
+                    16, 32, -32, -24, 32, 0,  8, -16, -8, 16, 24, 8, -8, 16, -16, 32, 32, -32, -24,
                 };
 
                 for (int i = 0; i < 25; i++)
@@ -852,25 +773,9 @@ namespace fengyun3
 
                 // Channel offsets relative to Ch1
                 int offset[18] = {
-                    0,
-                    16,
+                    0, 16,
 
-                    0,
-                    -16,
-                    32,
-                    8,
-                    16,
-                    -24,
-                    16,
-                    16,
-                    16,
-                    16,
-                    16,
-                    16,
-                    16,
-                    16,
-                    16,
-                    16,
+                    0, -16, 32, 8, 16, -24, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
                 };
 
                 for (int i = 0; i < 18; i++)
@@ -922,14 +827,7 @@ namespace fengyun3
 
                 // Channel offsets relative to Ch1
                 int offset[8] = {
-                    0,
-                    rotate ? -2 : 2,
-                    rotate ? -4 : 4,
-                    rotate ? -2 : 2,
-                    0,
-                    rotate ? -7 : 7,
-                    rotate ? -2 : 2,
-                    rotate ? 2 : -1,
+                    0, rotate ? -2 : 2, rotate ? -4 : 4, rotate ? -2 : 2, 0, rotate ? -7 : 7, rotate ? -2 : 2, rotate ? 2 : -1,
                 };
 
                 for (int i = 0; i < 8; i++)
@@ -1416,24 +1314,16 @@ namespace fengyun3
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
-        std::string FY3InstrumentsDecoderModule::getID()
-        {
-            return "fy3_instruments";
-        }
+        std::string FY3InstrumentsDecoderModule::getID() { return "fy3_instruments"; }
 
-        std::vector<std::string> FY3InstrumentsDecoderModule::getParameters()
-        {
-            return {"satellite", "mersi_bowtie"};
-        }
-
-        std::shared_ptr<ProcessingModule> FY3InstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> FY3InstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<FY3InstrumentsDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace modis
-} // namespace eos
+    } // namespace instruments
+} // namespace fengyun3

@@ -1,6 +1,6 @@
 #include <vector>
 #include <string>
-#include "common/image/image.h"
+#include "image/image.h"
 
 namespace satdump
 {

@@ -1,23 +1,15 @@
 {
     "dscovr_tlm": {
         "name": "DSCOVR TLM Link",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
-        "frequencies": [],
-        "parameters": {},
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     // "resample_after_pll": true,
                     "symbolrate": 40e3,
                     "pll_bw": 0.002,
@@ -27,7 +19,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "bpsk_90",
                     "cadu_size": 10112,
                     "viterbi_ber_thresold": 0.390,
@@ -40,29 +33,22 @@
                 }
             },
             "products": {
-                "dscovr_instruments": {}
+                "module": "dscovr_instruments",
+                "parameters": {}
             }
         }
     },
     "dscovr_hr": {
         "name": "DSCOVR High-Rate Link",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
-        "frequencies": [],
-        "parameters": {},
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     // "resample_after_pll": true,
                     "symbolrate": 276e3,
                     "pll_bw": 0.002,
@@ -72,7 +58,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "bpsk_90",
                     "cadu_size": 10112,
                     "viterbi_ber_thresold": 0.340,
@@ -85,7 +72,7 @@
                 }
             },
             "products": {
-                "dscovr_instruments": {}
+                "module": "dscovr_instruments"
             }
         }
     }

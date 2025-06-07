@@ -1,22 +1,16 @@
 {
     "peregrine_x_tlm": {
         "name": "Peregrine X-Band TLM",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "parameters": {},
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "resample_after_pll": true,
                     "symbolrate": 13e3,
                     "pll_bw": 0.01,
@@ -34,7 +28,8 @@
                     "rs_type": "rs239",
                     "rs_usecheck": true
                 }*/
-                "ccsds_ldpc_decoder": {
+                "module": "ccsds_ldpc_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "ldpc_rate": "7/8",
                     "ldpc_iterations": 10

@@ -10,7 +10,7 @@
 #include <direct.h>
 #endif
 
-#include "common/image/io.h"
+#include "image/io.h"
 
 namespace satdump
 {

@@ -1,12 +1,8 @@
 {
     "orbcomm_stx": {
         "name": "Orbcomm STX",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ]
+        "live": [
+            1
         ],
         "frequencies": [
             [
@@ -17,7 +13,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "orbcomm_stx_demod": {
+                "module": "orbcomm_stx_demod",
+                "parameters": {
                     "symbolrate": 4.8e3
                 }
             }
@@ -25,17 +22,14 @@
     },
     "orbcomm_stx_auto": {
         "name": "Orbcomm STX Auto",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ]
+        "live": [
+            1
         ],
         "work": {
             "baseband": {},
             "frm": {
-                "orbcomm_stx_auto_demod": {
+                "module": "orbcomm_stx_auto_demod",
+                "parameters": {
                     "frequency": 137.5e6
                 }
             }
@@ -43,26 +37,20 @@
     },
     "orbcomm_stx_auto_plotter": {
         "name": "Orbcomm STX Auto Plotter",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "work": {
             "baseband": {},
             "frm": {
-                "orbcomm_stx_auto_demod": {
+                "module": "orbcomm_stx_auto_demod",
+                "parameters": {
                     "frequency": 137.5e6
                 }
             },
             "products": {
-                "orbcomm_plotter": {}
+                "module": "orbcomm_plotter"
             }
         }
     }

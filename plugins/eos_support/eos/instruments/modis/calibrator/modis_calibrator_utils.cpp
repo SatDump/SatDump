@@ -2,7 +2,7 @@
 #include "modis_defs.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
-#include "resources.h"
+#include "core/resources.h"
 
 namespace eos
 {

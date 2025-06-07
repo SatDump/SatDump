@@ -8,7 +8,7 @@
 #include <array>
 #include <map>
 #include "common/ccsds/ccsds.h"
-#include "common/image/image.h"
+#include "image/image.h"
 #include "lrpt/segment.h"
 
 namespace meteor

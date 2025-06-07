@@ -3,10 +3,11 @@
 #include <filesystem>
 #include "imgui/imgui_image.h"
 #include "lrit_header.h"
-#include "common/image/jpeg_utils.h"
+#include "image/jpeg_utils.h"
 #include "DecompWT/CompressWT.h"
 #include "DecompWT/CompressT4.h"
-#include "common/image/io.h"
+#include "image/io.h"
+#include "utils/string.h"
 
 namespace elektro
 {
@@ -193,7 +194,7 @@ namespace elektro
                 {
                     SegmentIdentificationHeader segment_id_header = file.getHeader<SegmentIdentificationHeader>();
 
-                    std::vector<std::string> header_parts = splitString(current_filename, '_');
+                    std::vector<std::string> header_parts = satdump::splitString(current_filename, '_');
 
                     // for (std::string part : header_parts)
                     //     logger->trace(part);

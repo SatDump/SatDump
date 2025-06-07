@@ -1,29 +1,21 @@
 #include "module_elektro_lrit_data_decoder.h"
-#include <fstream>
-#include "logger.h"
-#include <filesystem>
+#include "common/lrit/lrit_demux.h"
+#include "common/utils.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
-#include "common/utils.h"
-#include "common/lrit/lrit_demux.h"
+#include "logger.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
 namespace elektro
 {
     namespace lrit
     {
-        ELEKTROLRITDataDecoderModule::ELEKTROLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                      productizer("msu_gs", false, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
+        ELEKTROLRITDataDecoderModule::ELEKTROLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters), productizer("msu_gs", false, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
         {
-        }
-
-        std::vector<ModuleDataType> ELEKTROLRITDataDecoderModule::getInputTypes()
-        {
-            return {DATA_FILE, DATA_STREAM};
-        }
-
-        std::vector<ModuleDataType> ELEKTROLRITDataDecoderModule::getOutputTypes()
-        {
-            return {DATA_FILE};
+            fsfsm_enable_output = false;
         }
 
         ELEKTROLRITDataDecoderModule::~ELEKTROLRITDataDecoderModule()
@@ -41,24 +33,10 @@ namespace elektro
 
         void ELEKTROLRITDataDecoderModule::process()
         {
-            std::ifstream data_in;
-
-            if (input_data_type == DATA_FILE)
-                filesize = getFilesize(d_input_file);
-            else
-                filesize = 0;
-            if (input_data_type == DATA_FILE)
-                data_in = std::ifstream(d_input_file, std::ios::binary);
-
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
-
-            logger->info("Using input frames " + d_input_file);
-            logger->info("Decoding to " + directory);
-
-            time_t lastTime = 0;
 
             uint8_t cadu[1024];
 
@@ -68,8 +46,7 @@ namespace elektro
 
             this->directory = directory;
 
-            lrit_demux.onParseHeader =
-                [](::lrit::LRITFile &file) -> void
+            lrit_demux.onParseHeader = [](::lrit::LRITFile &file) -> void
             {
                 // Check if this is image data
                 if (file.hasHeader<::lrit::ImageStructureRecord>())
@@ -100,30 +77,18 @@ namespace elektro
             if (!std::filesystem::exists(directory + "/IMAGES/Unknown"))
                 std::filesystem::create_directories(directory + "/IMAGES/Unknown");
 
-            while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
+            while (should_run())
             {
                 // Read buffer
-                if (input_data_type == DATA_FILE)
-                    data_in.read((char *)&cadu, 1024);
-                else
-                    input_fifo->read((uint8_t *)&cadu, 1024);
+                read_data((uint8_t *)&cadu, 1024);
 
                 std::vector<::lrit::LRITFile> files = lrit_demux.work(cadu);
 
                 for (auto &file : files)
                     processLRITFile(file);
-
-                if (input_data_type == DATA_FILE)
-                    progress = data_in.tellg();
-
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
-            data_in.close();
+            cleanup();
 
             for (auto &segmentedDecoder : segmentedDecoders)
                 if (segmentedDecoder.second.image_id != "")
@@ -194,25 +159,16 @@ namespace elektro
             }
             ImGui::EndTabBar();
 
-            if (!streamingInput)
-                ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
-        std::string ELEKTROLRITDataDecoderModule::getID()
-        {
-            return "elektro_lrit_data_decoder";
-        }
+        std::string ELEKTROLRITDataDecoderModule::getID() { return "elektro_lrit_data_decoder"; }
 
-        std::vector<std::string> ELEKTROLRITDataDecoderModule::getParameters()
-        {
-            return {};
-        }
-
-        std::shared_ptr<ProcessingModule> ELEKTROLRITDataDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> ELEKTROLRITDataDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<ELEKTROLRITDataDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace avhrr
-} // namespace metop
+    } // namespace lrit
+} // namespace elektro

@@ -1,7 +1,7 @@
 #include "ascat_reader.h"
 #include "common/ccsds/ccsds_time.h"
-#include <cmath>
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 
 namespace metop
@@ -23,33 +23,6 @@ namespace metop
         {
             for (int i = 0; i < 6; i++)
                 channels[i].clear();
-        }
-
-        double parse_uint_to_float(uint16_t sample)
-        {
-            // Details of this format from pyascatreader.cpp
-            bool s = (sample >> 15) & 0x1;
-            unsigned int e = (sample >> 7) & 0xff;
-            unsigned int f = (sample) & 0x7f;
-
-            double value = 0;
-
-            if (e == 255)
-            {
-                value = 0.0;
-            }
-            else if (e == 0)
-            {
-                if (f == 0)
-                    value = 0.0;
-                else
-                    value = (s ? -1.0 : 1.0) * pow(2.0, -126.0) * (double)f / 128.0;
-            }
-            else
-            {
-                value = (s ? -1.0 : 1.0) * pow(2.0, double(e - 127)) * ((double)f / 128.0 + 1.0);
-            }
-            return value;
         }
 
         void ASCATReader::work(ccsds::CCSDSPacket &packet)
@@ -106,14 +79,8 @@ namespace metop
             }
         }
 
-        image::Image ASCATReader::getChannelImg(int channel)
-        {
-            return image::Image(channels_img[channel].data(), 16, 256, lines[channel], 1);
-        }
+        image::Image ASCATReader::getChannelImg(int channel) { return image::Image(channels_img[channel].data(), 16, 256, lines[channel], 1); }
 
-        std::vector<std::vector<float>> ASCATReader::getChannel(int channel)
-        {
-            return channels[channel];
-        }
-    } // namespace avhrr
+        std::vector<std::vector<float>> ASCATReader::getChannel(int channel) { return channels[channel]; }
+    } // namespace ascat
 } // namespace metop

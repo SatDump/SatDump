@@ -79,6 +79,24 @@ namespace satdump
              */
             std::string get_product_source() { return contents["product_source"].get<std::string>(); }
 
+            /**
+             * @brief Set product ID, optional. This is meant to, for example, differentiate several identical instruments.
+             * @param id product ID
+             */
+            void set_product_id(std::string id) { contents["product_id"] = id; }
+
+            /**
+             * @brief Check if a product ID is present
+             * @return true if present
+             */
+            bool has_product_id() { return contents.contains("product_id"); }
+
+            /**
+             * @brief Get the product ID
+             * @return the ID
+             */
+            std::string get_product_id() { return contents["product_id"].get<std::string>(); }
+
         public:
             /**
              * @brief Save the product. Depending on the type this will save

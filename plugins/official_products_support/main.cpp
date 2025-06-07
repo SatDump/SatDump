@@ -1,37 +1,30 @@
 #include "core/plugin.h"
 #include "logger.h"
-#include "core/module.h"
 
 #include "off2pro/module_off2pro.h"
 
-#include "nc2pro/fci_nc_calibrator.h"
 #include "nc2pro/abi_nc_calibrator.h"
+#include "nc2pro/fci_nc_calibrator.h"
 
 //////////
 
-#include "nat2pro/mhs_nat_calibrator.h"
-#include "nat2pro/msg_nat_calibrator.h"
 #include "nat2pro/amsu_nat_calibrator.h"
 #include "nat2pro/avhrr_nat_calibrator.h"
+#include "nat2pro/mhs_nat_calibrator.h"
+#include "nat2pro/msg_nat_calibrator.h"
 
 class OfficalProductsSupport : public satdump::Plugin
 {
 public:
-    std::string getID()
-    {
-        return "official_products_support";
-    }
+    std::string getID() { return "official_products_support"; }
 
     void init()
     {
-        satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
+        satdump::eventBus->register_handler<satdump::pipeline::RegisterModulesEvent>(registerPluginsHandler);
         satdump::eventBus->register_handler<satdump::products::RequestImageCalibratorEvent>(provideImageCalibratorHandler);
     }
 
-    static void registerPluginsHandler(const RegisterModulesEvent &evt)
-    {
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, off2pro::Off2ProModule);
-    }
+    static void registerPluginsHandler(const satdump::pipeline::RegisterModulesEvent &evt) { REGISTER_MODULE_EXTERNAL(evt.modules_registry, off2pro::Off2ProModule); }
 
     static void provideImageCalibratorHandler(const satdump::products::RequestImageCalibratorEvent &evt)
     {

@@ -1,7 +1,7 @@
 int main(int /*argc*/, char *argv[]) {}
 #if 0
 #include "common/geodetic/vincentys_calculations.h"
-#include "common/image/io.h"
+#include "image/io.h"
 #include "common/map/map_drawer.h"
 #include "common/projection/gcp_compute/gcp_compute.h"
 #include "common/projection/projs/equirectangular.h"
@@ -12,7 +12,7 @@ int main(int /*argc*/, char *argv[]) {}
 #include "logger.h"
 #include "nlohmann/json_utils.h"
 #include "products/image_products.h"
-#include "resources.h"
+#include "core/resources.h"
 
 #include "common/projection/warp/warp_bkd.h"
 

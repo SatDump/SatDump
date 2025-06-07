@@ -1,11 +1,11 @@
 #include "reproject_img.h"
-#include "common/image/meta.h"
+#include "image/meta.h"
 #include "projection/projection.h"
 #include "projection/reprojector.h"
 
 namespace satdump
 {
-    namespace proj
+    namespace projection
     {
         image::Image reprojectImage(image::Image &input, nlohmann::json target_prj, float *progress)
         {

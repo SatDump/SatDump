@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/image/image.h"
+#include "image/image.h"
 #include "imgui/imgui.h"
 #include <functional>
 #include <mutex>

@@ -1,64 +1,65 @@
-#include "logger.h"
-#include "init.h"
-#include "common/utils.h"
 #include "common/dsp_source_sink/format_notated.h"
+#include "common/utils.h"
+#include "init.h"
+#include "logger.h"
+#include "utils/time.h"
 
-#include "common/dsp/filter/fir.h"
+#include "common/dsp/clock_recovery/clock_recovery_mm.h"
 #include "common/dsp/filter/fft_filter.h"
+#include "common/dsp/filter/fir.h"
 #include "common/dsp/filter/firdes.h"
 #include "common/dsp/pll/costas_loop.h"
-#include "common/dsp/utils/agc.h"
-#include "common/dsp/clock_recovery/clock_recovery_mm.h"
-#include "common/dsp/utils/freq_shift.h"
 #include "common/dsp/resamp/smart_resampler.h"
+#include "common/dsp/utils/agc.h"
+#include "common/dsp/utils/freq_shift.h"
 
-#define benchmarkBlock(T_IN, T_OUT, T_BLK, DURATION, BLOCKNAME, MULTIPICATOR, ...)                                   \
-    {                                                                                                                \
-        std::shared_ptr<dsp::stream<T_IN>> input_stream = std::make_shared<dsp::stream<T_IN>>();                     \
-                                                                                                                     \
-        T_BLK *block_to_test = new T_BLK(input_stream, __VA_ARGS__);                                                 \
-                                                                                                                     \
-        bool should_run = true;                                                                                      \
-        auto producer = [input_stream, &should_run]()                                                                \
-        {                                                                                                            \
-            while (should_run)                                                                                       \
-            {                                                                                                        \
-                for (int i = 0; i < 8192 * 4; i++)                                                                   \
-                    input_stream->writeBuf[i] = T_IN(i / 1e5);                                                       \
-                input_stream->swap(8192 * 4);                                                                        \
-            }                                                                                                        \
-        };                                                                                                           \
-                                                                                                                     \
-        std::thread producer_th(producer);                                                                           \
-                                                                                                                     \
-        block_to_test->start();                                                                                      \
-                                                                                                                     \
-        double received = 0;                                                                                         \
-        double start_time = getTime();                                                                               \
-        double end_time = getTime();                                                                                 \
-        while ((end_time - start_time) < DURATION)                                                                   \
-        {                                                                                                            \
-            int v = block_to_test->output_stream->read();                                                            \
-            received += v;                                                                                           \
-                                                                                                                     \
-            end_time = getTime();                                                                                    \
-                                                                                                                     \
-            block_to_test->output_stream->flush();                                                                   \
-        }                                                                                                            \
-                                                                                                                     \
-        should_run = false;                                                                                          \
-        block_to_test->stop();                                                                                       \
-        input_stream->stopReader();                                                                                  \
-        input_stream->stopWriter();                                                                                  \
-                                                                                                                     \
-        if (producer_th.joinable())                                                                                  \
-            producer_th.join();                                                                                      \
-                                                                                                                     \
-        double throughput = received / (end_time - start_time);                                                      \
-        throughput *= MULTIPICATOR;                                                                                  \
-        logger->warn((std::string) "Performance (" + BLOCKNAME + ") %s", format_notated(throughput, "S/s").c_str()); \
-                                                                                                                     \
-        delete block_to_test;                                                                                        \
+#define benchmarkBlock(T_IN, T_OUT, T_BLK, DURATION, BLOCKNAME, MULTIPICATOR, ...)                                                                                                                     \
+    {                                                                                                                                                                                                  \
+        std::shared_ptr<dsp::stream<T_IN>> input_stream = std::make_shared<dsp::stream<T_IN>>();                                                                                                       \
+                                                                                                                                                                                                       \
+        T_BLK *block_to_test = new T_BLK(input_stream, __VA_ARGS__);                                                                                                                                   \
+                                                                                                                                                                                                       \
+        bool should_run = true;                                                                                                                                                                        \
+        auto producer = [input_stream, &should_run]()                                                                                                                                                  \
+        {                                                                                                                                                                                              \
+            while (should_run)                                                                                                                                                                         \
+            {                                                                                                                                                                                          \
+                for (int i = 0; i < 8192 * 4; i++)                                                                                                                                                     \
+                    input_stream->writeBuf[i] = T_IN(i / 1e5);                                                                                                                                         \
+                input_stream->swap(8192 * 4);                                                                                                                                                          \
+            }                                                                                                                                                                                          \
+        };                                                                                                                                                                                             \
+                                                                                                                                                                                                       \
+        std::thread producer_th(producer);                                                                                                                                                             \
+                                                                                                                                                                                                       \
+        block_to_test->start();                                                                                                                                                                        \
+                                                                                                                                                                                                       \
+        double received = 0;                                                                                                                                                                           \
+        double start_time = satdump::getTime();                                                                                                                                                        \
+        double end_time = satdump::getTime();                                                                                                                                                          \
+        while ((end_time - start_time) < DURATION)                                                                                                                                                     \
+        {                                                                                                                                                                                              \
+            int v = block_to_test->output_stream->read();                                                                                                                                              \
+            received += v;                                                                                                                                                                             \
+                                                                                                                                                                                                       \
+            end_time = satdump::getTime();                                                                                                                                                             \
+                                                                                                                                                                                                       \
+            block_to_test->output_stream->flush();                                                                                                                                                     \
+        }                                                                                                                                                                                              \
+                                                                                                                                                                                                       \
+        should_run = false;                                                                                                                                                                            \
+        block_to_test->stop();                                                                                                                                                                         \
+        input_stream->stopReader();                                                                                                                                                                    \
+        input_stream->stopWriter();                                                                                                                                                                    \
+                                                                                                                                                                                                       \
+        if (producer_th.joinable())                                                                                                                                                                    \
+            producer_th.join();                                                                                                                                                                        \
+                                                                                                                                                                                                       \
+        double throughput = received / (end_time - start_time);                                                                                                                                        \
+        throughput *= MULTIPICATOR;                                                                                                                                                                    \
+        logger->warn((std::string) "Performance (" + BLOCKNAME + ") %s", format_notated(throughput, "S/s").c_str());                                                                                   \
+                                                                                                                                                                                                       \
+        delete block_to_test;                                                                                                                                                                          \
     }
 
 #include "dsp/agc/agc.h"
@@ -96,8 +97,8 @@ void benchmarkNDSPBlock(std::shared_ptr<satdump::ndsp::Block> ptr, int duration,
     ptr->start();
 
     double received = 0;
-    double start_time = getTime();
-    double end_time = getTime();
+    double start_time = satdump::getTime();
+    double end_time = satdump::getTime();
     auto p2 = [&]()
     {
         while (true)
@@ -110,7 +111,7 @@ void benchmarkNDSPBlock(std::shared_ptr<satdump::ndsp::Block> ptr, int duration,
 
             received += iblk.size;
 
-            end_time = getTime();
+            end_time = satdump::getTime();
 
             iblk.free();
         }

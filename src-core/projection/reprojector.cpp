@@ -2,9 +2,9 @@
 
 #include "logger.h"
 #include "core/exception.h"
-#include "common/image/meta.h"
+#include "image/meta.h"
 
-#include "common/projection/projs2/proj_json.h"
+#include "projection/standard/proj_json.h"
 
 #include "projection/warp/warp.h"
 
@@ -14,7 +14,7 @@
 
 namespace satdump
 {
-    namespace proj
+    namespace projection
     {
         inline void transposePixel(image::Image &in, image::Image &out, double ix, double iy, int ox, int oy)
         {

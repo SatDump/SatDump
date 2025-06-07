@@ -13,8 +13,8 @@
 #include "logger.h"
 #include "init.h"
 #include "products2/image_product.h"
-#include "common/image/io.h"
-#include "common/image/processing.h"
+#include "image/io.h"
+#include "image/processing.h"
 
 #include "products2/image/product_expression.h"
 #include "products2/image/image_calibrator.h"
@@ -27,7 +27,7 @@
 
 #include "common/projection/projs2/proj_json.h"
 
-#include "common/image/meta.h"
+#include "image/meta.h"
 
 #include "common/projection/warp/warp.h"
 #include "common/projection/warp/warp_bkd.h"

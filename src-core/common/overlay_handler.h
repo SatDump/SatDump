@@ -5,7 +5,7 @@
 #include "common/map/map_drawer.h"
 #include "nlohmann/json_utils.h"
 #include "logger.h"
-#include "resources.h"
+#include "core/resources.h"
 #include "common/widgets/stepped_slider.h"
 
 struct OverlayCache

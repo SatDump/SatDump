@@ -1,16 +1,9 @@
 {
     "tubin_x_dump": {
         "name": "TUBIN X-Band Dump",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "parameters": {
             "check_crc": {
@@ -23,7 +16,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 12.3e6,
                     "rrc_alpha": 0.25,
@@ -31,7 +25,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "cadu_size": 4416,
                     "viterbi_ber_thresold": 0.300,
@@ -41,7 +36,8 @@
                 }
             },
             "products": {
-                "tubin_decoder": {
+                "module": "tubin_decoder",
+                "parameters": {
                     "check_crc": true
                 }
             }

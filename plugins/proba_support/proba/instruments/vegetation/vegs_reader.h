@@ -2,7 +2,7 @@
 
 #include "common/ccsds/ccsds.h"
 #include <vector>
-#include "common/image/image.h"
+#include "image/image.h"
 
 namespace proba
 {

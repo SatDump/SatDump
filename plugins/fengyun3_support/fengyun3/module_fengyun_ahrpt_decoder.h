@@ -1,13 +1,12 @@
 #pragma once
 
-#include "core/module.h"
 #include "common/codings/deframing/bpsk_ccsds_deframer.h"
-#include <fstream>
 #include "common/codings/viterbi/viterbi_3_4.h"
+#include "pipeline/modules/base/filestream_to_filestream.h"
 
 namespace fengyun3
 {
-    class FengyunAHRPTDecoderModule : public ProcessingModule
+    class FengyunAHRPTDecoderModule : public satdump::pipeline::base::FileStreamToFileStreamModule
     {
     protected:
         int d_viterbi_outsync_after;
@@ -30,11 +29,6 @@ namespace fengyun3
         // Diff decoder input and output
         uint8_t *diff_out;
 
-        std::ifstream data_in;
-        std::ofstream data_out;
-        std::atomic<uint64_t> filesize;
-        std::atomic<uint64_t> progress;
-
         viterbi::Viterbi3_4 viterbi1, viterbi2;
         deframing::BPSK_CCSDS_Deframer deframer;
 
@@ -49,13 +43,13 @@ namespace fengyun3
         ~FengyunAHRPTDecoderModule();
         void process();
         void drawUI(bool window);
-        std::vector<ModuleDataType> getInputTypes();
-        std::vector<ModuleDataType> getOutputTypes();
+
+        nlohmann::json getModuleStats();
 
     public:
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
-        static std::vector<std::string> getParameters();
+        static nlohmann::json getParams() { return {}; } // TODOREWORK
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
-} // namespace fengyun
+} // namespace fengyun3

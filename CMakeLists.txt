@@ -141,6 +141,14 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+# Get the current branch
+execute_process(
+    COMMAND git rev-parse --abbrev-ref HEAD
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    OUTPUT_VARIABLE GIT_HAS_BRANCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 # Get the latest abbreviated commit hash of current branch
 execute_process(
     COMMAND git log -1 --format=%h
@@ -156,6 +164,13 @@ if(GIT_HAS_TAG STREQUAL "undefined" OR GIT_HAS_TAG STREQUAL "nightly")
 else()
     message("-- Commit has tag (${GIT_HAS_TAG}). Assume release build")
     set(SATDUMP_VERSION "${PROJECT_VERSION}")
+endif()
+
+# Set branch
+if(GIT_HAS_BRANCH STREQUAL "master")
+    set(SATDUMP_VERSION_TAG "")
+else()
+    set(SATDUMP_VERSION_TAG "${GIT_HAS_BRANCH}")
 endif()
 
 # Used for error messages

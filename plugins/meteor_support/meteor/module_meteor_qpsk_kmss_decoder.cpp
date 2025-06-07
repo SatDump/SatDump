@@ -1,20 +1,19 @@
 #include "module_meteor_qpsk_kmss_decoder.h"
-#include "logger.h"
-#include "imgui/imgui.h"
-#include "common/utils.h"
 #include "common/codings/differential/qpsk_diff.h"
-#include "meteor_rec_deframer.h"
-#include "common/simple_deframer.h"
-#include "common/repack_bits_byte.h"
 #include "common/codings/soft_reader.h"
+#include "common/repack_bits_byte.h"
+#include "common/simple_deframer.h"
+#include "common/utils.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include "meteor_rec_deframer.h"
 
 #define BUFFER_SIZE (1024 * 8)
 
 namespace meteor
 {
     MeteorQPSKKmssDecoderModule::MeteorQPSKKmssDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-        : ProcessingModule(input_file, output_file_hint, parameters),
-          constellation(1.0, 0.15, demod_constellation_size)
+        : ProcessingModule(input_file, output_file_hint, parameters), constellation(1.0, 0.15, demod_constellation_size)
     {
         soft_buffer = new int8_t[BUFFER_SIZE];
         bit_buffer = new uint8_t[BUFFER_SIZE / 2];
@@ -29,15 +28,9 @@ namespace meteor
         rpkt_buffer_2 = new uint8_t[12288 * 160];
     }
 
-    std::vector<ModuleDataType> MeteorQPSKKmssDecoderModule::getInputTypes()
-    {
-        return {DATA_FILE, DATA_STREAM};
-    }
+    std::vector<ModuleDataType> MeteorQPSKKmssDecoderModule::getInputTypes() { return {DATA_FILE, DATA_STREAM}; }
 
-    std::vector<ModuleDataType> MeteorQPSKKmssDecoderModule::getOutputTypes()
-    {
-        return {DATA_FILE};
-    }
+    std::vector<ModuleDataType> MeteorQPSKKmssDecoderModule::getOutputTypes() { return {DATA_FILE}; }
 
     MeteorQPSKKmssDecoderModule::~MeteorQPSKKmssDecoderModule()
     {
@@ -106,15 +99,9 @@ namespace meteor
             uint8_t final_frames[4][15040];
             for (int o = 0; o < 4; o++)
                 for (int c = 0; c < 15040; c++)
-                    final_frames[o][c] =
-                        ((kfrm[c * 4 + 0] >> (7 - o)) & 1) << 7 |
-                        ((kfrm[c * 4 + 0] >> (3 - o)) & 1) << 6 |
-                        ((kfrm[c * 4 + 1] >> (7 - o)) & 1) << 5 |
-                        ((kfrm[c * 4 + 1] >> (3 - o)) & 1) << 4 |
-                        ((kfrm[c * 4 + 2] >> (7 - o)) & 1) << 3 |
-                        ((kfrm[c * 4 + 2] >> (3 - o)) & 1) << 2 |
-                        ((kfrm[c * 4 + 3] >> (7 - o)) & 1) << 1 |
-                        ((kfrm[c * 4 + 3] >> (3 - o)) & 1) << 0;
+                    final_frames[o][c] = ((kfrm[c * 4 + 0] >> (7 - o)) & 1) << 7 | ((kfrm[c * 4 + 0] >> (3 - o)) & 1) << 6 | ((kfrm[c * 4 + 1] >> (7 - o)) & 1) << 5 |
+                                         ((kfrm[c * 4 + 1] >> (3 - o)) & 1) << 4 | ((kfrm[c * 4 + 2] >> (7 - o)) & 1) << 3 | ((kfrm[c * 4 + 2] >> (3 - o)) & 1) << 2 |
+                                         ((kfrm[c * 4 + 3] >> (7 - o)) & 1) << 1 | ((kfrm[c * 4 + 3] >> (3 - o)) & 1) << 0;
 
             if (type == 1)
             {
@@ -154,12 +141,12 @@ namespace meteor
         if (input_data_type == DATA_FILE)
             data_in = std::ifstream(d_input_file, std::ios::binary);
         data_out = std::ofstream(d_output_file_hint + ".frm", std::ios::binary);
-        d_output_files.push_back(d_output_file_hint + ".frm");
+        d_output_file = d_output_file_hint + ".frm";
 
         logger->info("Using input data " + d_input_file);
         logger->info("Decoding to " + d_output_file_hint + ".frm");
 
-        SoftSymbolReader soft_reader(data_in, input_fifo, input_data_type, d_parameters);
+        satdump::SoftSymbolReader soft_reader(data_in, input_fifo, input_data_type, d_parameters);
 
         diff::QPSKDiff diff;
         RepackBitsByte repack_1;
@@ -202,8 +189,7 @@ namespace meteor
                 {
                     for (int x = 6; x >= 0; x -= 2)
                     {
-                        bit_buffer[bit2pos++] = ((((uint8_t *)soft_buffer)[i] >> (x + 1)) & 1) << 1 |
-                                                ((((uint8_t *)soft_buffer)[i] >> (x + 0)) & 1);
+                        bit_buffer[bit2pos++] = ((((uint8_t *)soft_buffer)[i] >> (x + 1)) & 1) << 1 | ((((uint8_t *)soft_buffer)[i] >> (x + 0)) & 1);
                     }
                 }
             }
@@ -284,7 +270,8 @@ namespace meteor
             {
                 lastTime = time(NULL);
                 std::string deframer_state = ""; // def->getState() == 0 ? "NOSYNC" : (def->getState() == 2 || def->getState() == 6 ? "SYNCING" : "SYNCED");
-                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, Deframer : " + deframer_state + ", Frames : " + std::to_string(frame_count));
+                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, Deframer : " + deframer_state +
+                             ", Frames : " + std::to_string(frame_count));
             }
         }
 
@@ -336,21 +323,13 @@ namespace meteor
         }
         ImGui::EndGroup();
 
-        if (!streamingInput)
+        if (!d_is_streaming_input)
             ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         ImGui::End();
     }
 
-    std::string MeteorQPSKKmssDecoderModule::getID()
-    {
-        return "meteor_qpsk_kmss_decoder";
-    }
-
-    std::vector<std::string> MeteorQPSKKmssDecoderModule::getParameters()
-    {
-        return {};
-    }
+    std::string MeteorQPSKKmssDecoderModule::getID() { return "meteor_qpsk_kmss_decoder"; }
 
     std::shared_ptr<ProcessingModule> MeteorQPSKKmssDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {

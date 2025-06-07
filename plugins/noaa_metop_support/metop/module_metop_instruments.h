@@ -1,27 +1,25 @@
 #pragma once
 
-#include "core/module.h"
+#include "../instruments/amsu/amsu_reader.h"
 #include "../instruments/avhrr/avhrr_reader.h"
 #include "../instruments/mhs/mhs_reader.h"
-#include "instruments/ascat/ascat_reader.h"
-#include "instruments/iasi/iasi_reader.h"
-#include "instruments/iasi/iasi_imaging_reader.h"
-#include "../instruments/amsu/amsu_reader.h"
-#include "instruments/gome/gome_reader.h"
-#include "instruments/sem/sem_reader.h"
 #include "instruments/admin_msg/admin_msg_reader.h"
+#include "instruments/ascat/ascat_reader.h"
 #include "instruments/avhrr/avhrr_to_hpt.h"
+#include "instruments/gome/gome_reader.h"
+#include "instruments/iasi/iasi_imaging_reader.h"
+#include "instruments/iasi/iasi_reader.h"
+#include "instruments/sem/sem_reader.h"
+#include "pipeline/modules/base/filestream_to_filestream.h"
+#include "pipeline/modules/instrument_utils.h"
 
 namespace metop
 {
     namespace instruments
     {
-        class MetOpInstrumentsDecoderModule : public ProcessingModule
+        class MetOpInstrumentsDecoderModule : public satdump::pipeline::base::FileStreamToFileStreamModule
         {
         protected:
-            std::atomic<uint64_t> filesize;
-            std::atomic<uint64_t> progress;
-
             bool write_hpt = false;
 
             bool ignore_integrated_tle = false;
@@ -57,8 +55,14 @@ namespace metop
         public:
             static std::string getID();
             virtual std::string getIDM() { return getID(); };
-            static std::vector<std::string> getParameters();
-            static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
+            static nlohmann::json getParams()
+            {
+                nlohmann::json v; // TODOREWORk
+                v["write_hpt"] = false;
+                v["ignore_integrated_tle"] = false;
+                return v;
+            }
+            static std::shared_ptr<satdump::pipeline::ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         };
-    } // namespace amsu
+    } // namespace instruments
 } // namespace metop

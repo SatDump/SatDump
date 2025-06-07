@@ -1,11 +1,16 @@
 {
     "sentinel6_dump": {
         "name": "Sentinel-6 Dump",
-        "samplerate": 20e6,
+        "parameters": {
+            "samplerate": {
+                "value": 20e6
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 75e6,
                     "rrc_alpha": 0.5,
@@ -13,7 +18,8 @@
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "cadu_size": 10232,
                     "nrzm": false,
@@ -26,16 +32,9 @@
     },
     "sentinel6_tlm": {
         "name": "Sentinel 6 S-Band TLM",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -51,7 +50,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 500e3,
                     "rrc_alpha": 0.6,
@@ -59,7 +59,8 @@
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "oqpsk",
                     "cadu_size": 10232,
                     "nrzm": false,

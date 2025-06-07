@@ -3,7 +3,7 @@
 #include "core/plugin.h"
 
 // TODOREWORK
-#include "common/projection/timestamp_filtering.h"
+#include "projection/raytrace/timestamp_filtering.h"
 
 //
 #include "common/manual_line.h"
@@ -13,7 +13,7 @@
 
 namespace satdump
 {
-    namespace proj
+    namespace projection
     {
         // TODOREWORK Are we keeping this?
         void try_interpolate_timestamps(std::vector<double> &timestamps, nlohmann::json &cfg)

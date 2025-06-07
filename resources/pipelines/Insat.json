@@ -1,14 +1,9 @@
 {
     "insat_3d_imager": {
         "name": "Insat-3D Imager",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ]
+        "live": [
+            1
         ],
-        "frequencies": [],
         "parameters": {
             "samplerate": {
                 "value": 10e6
@@ -17,7 +12,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 3.928e6,
                     "rrc_alpha": 0.5,

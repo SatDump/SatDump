@@ -1,17 +1,17 @@
 #include "product_expression.h"
-#include "common/image/image.h"
-#include "common/image/meta.h"
+#include "image/image.h"
+#include "image/meta.h"
 #include "libs/muparser/muParser.h"
 #include "logger.h"
 
-#include "common/utils.h"
+#include "utils/string.h"
 #include "products2/image/image_calibrator.h"
 
-#include "common/image/io.h"
+#include "image/io.h"
 
-#include "common/projection/projs/equirectangular.h"
+#include "projection/utils/equirectangular.h"
 #include "projection/projection.h"
-#include "resources.h"
+#include "core/resources.h"
 
 namespace satdump
 {
@@ -25,9 +25,9 @@ namespace satdump
                 image::Image img;
                 size_t *x;
                 size_t *y;
-                proj::Projection p;
+                projection::Projection p;
                 geodetic::geodetic_coords_t pos;
-                geodetic::projection::EquirectangularProjection ep;
+                projection::EquirectangularProjection ep;
                 int ox, oy;
             };
 

@@ -1,19 +1,20 @@
 #include "module_stdc_parser.h"
-#include <fstream>
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
 #include "common/utils.h"
-#include "pkt_parser.h"
-#include "msg_parser.h"
 #include "egc_parser.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include "msg_parser.h"
+#include "pkt_parser.h"
 #include "satdump_vars.h"
+#include <filesystem>
+#include <fstream>
 
 namespace inmarsat
 {
     namespace stdc
     {
-        STDCParserModule::STDCParserModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        STDCParserModule::STDCParserModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
             buffer = new uint8_t[FRAME_SIZE_BYTES * 4];
             memset(buffer, 0, FRAME_SIZE_BYTES * 4);
@@ -35,22 +36,11 @@ namespace inmarsat
 
             if (parameters.contains("station_id"))
                 d_station_id = parameters["station_id"].get<std::string>();
+
+            fsfsm_enable_output = false;
         }
 
-        std::vector<ModuleDataType> STDCParserModule::getInputTypes()
-        {
-            return {DATA_FILE, DATA_STREAM};
-        }
-
-        std::vector<ModuleDataType> STDCParserModule::getOutputTypes()
-        {
-            return {DATA_FILE};
-        }
-
-        STDCParserModule::~STDCParserModule()
-        {
-            delete[] buffer;
-        }
+        STDCParserModule::~STDCParserModule() { delete[] buffer; }
 
         std::string timestampToTod(time_t time_v)
         {
@@ -69,12 +59,13 @@ namespace inmarsat
                     try
                     {
                         nlohmann::json msg2 = msg;
-                        if (d_station_id != ""){
+                        if (d_station_id != "")
+                        {
                             msg2["source"]["station_id"] = d_station_id;
                             msg2["source"]["app"]["name"] = "SatDump";
                             msg2["source"]["app"]["version"] = (std::string)satdump::SATDUMP_VERSION;
                         }
-                        
+
                         std::string m = msg2.dump();
                         c->send((uint8_t *)m.data(), m.size());
                     }
@@ -116,15 +107,6 @@ namespace inmarsat
 
         void STDCParserModule::process()
         {
-            if (input_data_type == DATA_FILE)
-                filesize = getFilesize(d_input_file);
-            else
-                filesize = 0;
-            if (input_data_type == DATA_FILE)
-                data_in = std::ifstream(d_input_file, std::ios::binary);
-
-            logger->info("Using input frames " + d_input_file);
-
             STDPacketParser pkt_parser;
             MessageParser msg_parser;
             EGCMessageParser egc_parser;
@@ -220,14 +202,10 @@ namespace inmarsat
                 }
             };
 
-            time_t lastTime = 0;
-            while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
+            while (should_run())
             {
                 // Read a buffer
-                if (input_data_type == DATA_FILE)
-                    data_in.read((char *)buffer, FRAME_SIZE_BYTES);
-                else
-                    input_fifo->read((uint8_t *)buffer, FRAME_SIZE_BYTES);
+                read_data((uint8_t *)buffer, FRAME_SIZE_BYTES);
 
                 last_pkt_count = buffer[2] << 8 | buffer[3];
 
@@ -240,21 +218,11 @@ namespace inmarsat
                 {
                     logger->error("Error processing STD-C frame %s", e.what());
                 }
-
-                if (input_data_type == DATA_FILE)
-                    progress = data_in.tellg();
-
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
             egc_parser.force_finish();
 
-            if (input_data_type == DATA_FILE)
-                data_in.close();
+            cleanup();
         }
 
         void STDCParserModule::drawUI(bool window)
@@ -271,12 +239,11 @@ namespace inmarsat
             ImGui::SameLine();
             ImGui::TextColored(style::theme.green, "%d", last_pkt_count);
 
-            if (input_data_type == DATA_FILE)
-                ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
 
-            if (input_data_type != DATA_FILE)
+            if (input_data_type != satdump::pipeline::DATA_FILE)
             {
                 ImGui::Begin("STD-C Packets", NULL, ImGuiWindowFlags_HorizontalScrollbar);
 
@@ -412,19 +379,11 @@ namespace inmarsat
             }
         }
 
-        std::string STDCParserModule::getID()
-        {
-            return "inmarsat_stdc_parser";
-        }
+        std::string STDCParserModule::getID() { return "inmarsat_stdc_parser"; }
 
-        std::vector<std::string> STDCParserModule::getParameters()
-        {
-            return {};
-        }
-
-        std::shared_ptr<ProcessingModule> STDCParserModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> STDCParserModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<STDCParserModule>(input_file, output_file_hint, parameters);
         }
-    }
-}
+    } // namespace stdc
+} // namespace inmarsat

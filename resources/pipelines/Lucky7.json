@@ -1,12 +1,8 @@
 {
     "lucky7_link": {
         "name": "Lucky-7 UHF Link",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ]
+        "live": [
+            1
         ],
         "frequencies": [
             [
@@ -31,7 +27,8 @@
         "work": {
             "baseband": {},
             "frm": {
-                "lucky7_demod": {
+                "module": "lucky7_demod",
+                "parameters": {
                     "symbolrate": 4800,
                     "custom_samplerate": 48e3,
                     "corr_thresold": 60,
@@ -41,7 +38,7 @@
                 }
             },
             "products": {
-                "lucky7_decoder": {}
+                "module": "lucky7_decoder"
             }
         }
     }

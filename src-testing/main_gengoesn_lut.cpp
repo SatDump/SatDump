@@ -10,12 +10,12 @@
  * Don't judge the code you might see in there! :)
  **********************************************************************/
 
-#include "common/image/brightness_contrast.h"
-#include "common/image/hue_saturation.h"
-#include "common/image/image.h"
-#include "common/image/io.h"
+#include "image/brightness_contrast.h"
+#include "image/hue_saturation.h"
+#include "image/image.h"
+#include "image/io.h"
 #include "logger.h"
-#include "resources.h"
+#include "core/resources.h"
 
 image::Image applyLut(image::Image image3, image::Image image5)
 {

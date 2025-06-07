@@ -1,40 +1,36 @@
 #include "module_gcom1_instruments.h"
-#include <fstream>
-#include "common/ccsds/ccsds_aos/vcdu.h"
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
-#include "common/utils.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
+#include "common/utils.h"
+#include "imgui/imgui.h"
+#include "logger.h"
 #include "products2/dataset.h"
 #include "products2/image_product.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
 namespace gcom1
 {
     namespace instruments
     {
         GCOM1InstrumentsDecoderModule::GCOM1InstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            : ProcessingModule(input_file, output_file_hint, parameters)
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
+            fsfsm_enable_output = false;
         }
 
         void GCOM1InstrumentsDecoderModule::process()
         {
-            filesize = getFilesize(d_input_file);
-            std::ifstream data_in(d_input_file, std::ios::binary);
-
-            logger->info("Using input frames " + d_input_file);
-
-            time_t lastTime = 0;
             uint8_t cadu[1264];
 
             // Demuxers
             ccsds::ccsds_aos::Demuxer demuxer_vcid17(1092, false);
 
-            while (!data_in.eof())
+            while (should_run())
             {
                 // Read buffer
-                data_in.read((char *)&cadu, 1264);
+                read_data((uint8_t *)&cadu, 1264);
 
                 // Parse this transport frame
                 ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
@@ -51,16 +47,9 @@ namespace gcom1
                             amsr2_reader.work(pkt);
                     }
                 }
-
-                progress = data_in.tellg();
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
-            data_in.close();
+            cleanup();
 
             std::string sat_name = "GCOM-W1";
             int norad = 38337;
@@ -132,24 +121,16 @@ namespace gcom1
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
-        std::string GCOM1InstrumentsDecoderModule::getID()
-        {
-            return "gcom1_instruments";
-        }
+        std::string GCOM1InstrumentsDecoderModule::getID() { return "gcom1_instruments"; }
 
-        std::vector<std::string> GCOM1InstrumentsDecoderModule::getParameters()
-        {
-            return {};
-        }
-
-        std::shared_ptr<ProcessingModule> GCOM1InstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> GCOM1InstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<GCOM1InstrumentsDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace amsu
-} // namespace metop
+    } // namespace instruments
+} // namespace gcom1

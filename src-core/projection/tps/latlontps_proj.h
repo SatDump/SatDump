@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "common/projection/projs/tps_transform.h"
+#include "projection/utils/tps_transform.h"
 #include "common/geodetic/geodetic_coordinates.h"
 
 namespace satdump

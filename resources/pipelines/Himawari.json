@@ -1,12 +1,8 @@
 {
     "himawaricast": {
         "name": "HimawariCast",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ]
+        "live": [
+            1
         ],
         "parameters": {
             "ts_input": {
@@ -19,7 +15,8 @@
         "work": {
             "baseband": {},
             "bbframe": {
-                "dvbs2_demod": {
+                "module": "dvbs2_demod",
+                "parameters": {
                     "symbolrate": 2586148,
                     "rrc_alpha": 0.2,
                     "pll_bw": 0.01,
@@ -31,7 +28,8 @@
                 }
             },
             "products": {
-                "himawaricast_data_decoder": {
+                "module": "himawaricast_data_decoder",
+                "parameters": {
                     "ts_input": false
                 }
             }

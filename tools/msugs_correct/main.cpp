@@ -11,7 +11,7 @@
  **********************************************************************/
 
 #include "logger.h"
-#include "common/image/image.h"
+#include "image/image.h"
 #include "common/projection/projs/tps_transform.h"
 
 image::Image<uint8_t> correct_msugs_channel(std::vector<satdump::projection::GCP> &gcps1, std::vector<satdump::projection::GCP> &gcps2, image::Image<uint8_t> image)

@@ -4,7 +4,7 @@
  * @file product_dotmap.h
  */
 
-#include "common/image/image.h"
+#include "image/image.h"
 #include "products2/punctiform_product.h"
 
 namespace satdump

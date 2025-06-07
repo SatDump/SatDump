@@ -1,0 +1,53 @@
+{
+    "gpm_core_dump": {
+        "name": "GPM Core Dump",
+        "live": [
+            1,
+            2
+        ],
+        "frequencies": [
+            [
+                "Main",
+                2287.5e6
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "psk_demod",
+                "parameters": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 2.304e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                // "module": "ccsds_conv_concat_decoder",
+                // "parameters": {
+                //     "constellation": "oqpsk",
+                //     "cadu_size": 10232,
+                //     "viterbi_ber_thresold": 0.300,
+                //     "viterbi_outsync_after": 20,
+                //     "derandomize": true,
+                //     "nrzm": true,
+                //     "rs_i": 5,
+                //     "rs_type": "rs223",
+                //     "rs_usecheck": true
+                // }
+                "module": "soft2hard"
+                // "module": "ccsds_simple_psk_decoder",
+                // "parameters": {
+                //     "constellation": "bpsk",
+                //     "cadu_size": 9952,
+                //     "nrzm": true,
+                //     "derandomize": true,
+                //     "rs_i": 5,
+                //     "rs_fill_bytes": 7,
+                //     "rs_type": "rs223"
+                // }
+            },
+            "products": {}
+        }
+    }
+}

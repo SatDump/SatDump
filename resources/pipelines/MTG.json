@@ -1,17 +1,14 @@
 {
     "mtg_s_band_link": {
         "name": "MTG S-band TLM link",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ]
+        "live": [
+            1
         ],
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "resample_after_pll": true,
                     "symbolrate": 16.38e3,
                     "pll_bw": 0.01,

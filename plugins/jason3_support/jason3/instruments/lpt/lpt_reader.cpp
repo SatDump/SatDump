@@ -1,6 +1,6 @@
 #define cimg_use_jpeg
 #include "lpt_reader.h"
-#include "resources.h"
+#include "core/resources.h"
 // #include "tle.h"
 #include "../timestamp.h"
 

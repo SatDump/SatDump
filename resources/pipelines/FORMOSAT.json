@@ -1,16 +1,9 @@
 {
-   "formosat7_s_dump": {
+    "formosat7_s_dump": {
         "name": "FORMOSAT-7/COSMIC-2 S-Band dump",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -21,42 +14,37 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
-			"constellation": "bpsk",
-                    	"symbolrate": 2.048e6,
-                    	"rrc_alpha": 0.5,
-                    	"agc_rate": 0.03,
-			"rrc_taps": 31,
-			"pll_bw": 0.003
+                "module": "psk_demod",
+                "parameters": {
+                    "constellation": "bpsk",
+                    "symbolrate": 2.048e6,
+                    "rrc_alpha": 0.5,
+                    "agc_rate": 0.03,
+                    "rrc_taps": 31,
+                    "pll_bw": 0.003
                 }
-	    },
-		"cadu": {
-			"ccsds_simple_psk_decoder": {
-				"constellation": "bpsk",
-				"ccsds": true,
-				"cadu_size": 10232,
-				"nrzm": true,
-				"derandomize": true,
-				"asm": "0x1acffc1d",
-				"rs_type": "rs223",
-				"rs_i": 5,
-				"rs_usecheck": true
-			}
-		}
+            },
+            "cadu": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
+                    "constellation": "bpsk",
+                    "ccsds": true,
+                    "cadu_size": 10232,
+                    "nrzm": true,
+                    "derandomize": true,
+                    "asm": "0x1acffc1d",
+                    "rs_type": "rs223",
+                    "rs_i": 5,
+                    "rs_usecheck": true
+                }
+            }
         }
     },
     "formosat5_s_dump": {
         "name": "FORMOSAT-5 S-Band dump",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -68,7 +56,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 1.6e6,
                     "rrc_alpha": 0.5,
@@ -76,7 +65,8 @@
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 10232,
                     "rs_i": 5,

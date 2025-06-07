@@ -1,38 +1,31 @@
 #include "module_lucky7_decoder.h"
-#include "logger.h"
-#include "imgui/imgui.h"
 #include "common/utils.h"
-#include "common/image/io.h"
+#include "image/io.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include <cstdint>
 
 namespace lucky7
 {
-    Lucky7DecoderModule::Lucky7DecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+    Lucky7DecoderModule::Lucky7DecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
     {
         frame_buffer = new uint8_t[35];
+        fsfsm_enable_output = false;
     }
 
-    Lucky7DecoderModule::~Lucky7DecoderModule()
-    {
-        delete[] frame_buffer;
-    }
+    Lucky7DecoderModule::~Lucky7DecoderModule() { delete[] frame_buffer; }
 
     void Lucky7DecoderModule::process()
     {
-        filesize = getFilesize(d_input_file);
-        std::ifstream data_in(d_input_file, std::ios::binary);
-
         std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/";
-
-        logger->info("Using input frames " + d_input_file);
-        logger->info("Decoding to " + directory);
 
         std::map<int, ImagePayload> wip_image_payloads;
 
-        time_t lastTime = 0;
-        while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
+        while (should_run())
         {
             // Read buffer
-            data_in.read((char *)frame_buffer, 35);
+            read_data((uint8_t *)frame_buffer, 35);
 
             if (frame_buffer[1] == 0x00) // TLM
             {
@@ -62,19 +55,11 @@ namespace lucky7
             else if ((frame_buffer[1] & 0x20) == 0x20) // Dosimetry?
             {
             }
-
-            progress = data_in.tellg();
-
-            if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-            {
-                lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-            }
         }
 
         logger->info("Decoding finished");
 
-        data_in.close();
+        cleanup();
 
         for (auto imgp : wip_image_payloads)
         {
@@ -92,24 +77,15 @@ namespace lucky7
     {
         ImGui::Begin("Lucky-7 Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
-        if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+        drawProgressBar();
 
         ImGui::End();
     }
 
-    std::string Lucky7DecoderModule::getID()
-    {
-        return "lucky7_decoder";
-    }
+    std::string Lucky7DecoderModule::getID() { return "lucky7_decoder"; }
 
-    std::vector<std::string> Lucky7DecoderModule::getParameters()
-    {
-        return {};
-    }
-
-    std::shared_ptr<ProcessingModule> Lucky7DecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<satdump::pipeline::ProcessingModule> Lucky7DecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<Lucky7DecoderModule>(input_file, output_file_hint, parameters);
     }
-} // namespace noaa
+} // namespace lucky7

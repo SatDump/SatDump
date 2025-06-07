@@ -1,15 +1,13 @@
 #pragma once
 
-#include "core/module.h"
-#include <complex>
-#include <thread>
-#include <fstream>
 #include "common/codings/deframing/bpsk_ccsds_deframer.h"
 #include "common/widgets/constellation.h"
+#include "pipeline/module.h"
+#include <fstream>
 
 namespace noaa
 {
-    class NOAAGACDecoderModule : public ProcessingModule
+    class NOAAGACDecoderModule : public satdump::pipeline::ProcessingModule
     {
     protected:
         const bool backward;
@@ -34,13 +32,15 @@ namespace noaa
         ~NOAAGACDecoderModule();
         void process();
         void drawUI(bool window);
-        std::vector<ModuleDataType> getInputTypes();
-        std::vector<ModuleDataType> getOutputTypes();
+        std::vector<satdump::pipeline::ModuleDataType> getInputTypes();
+        std::vector<satdump::pipeline::ModuleDataType> getOutputTypes();
+
+        nlohmann::json getModuleStats();
 
     public:
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
-        static std::vector<std::string> getParameters();
+        static nlohmann::json getParams() { return {}; } // TODOREWORK
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
 } // namespace noaa

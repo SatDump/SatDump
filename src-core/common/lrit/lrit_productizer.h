@@ -1,10 +1,10 @@
 #pragma once
 
-#include <string>
-#include "common/image/image.h"
+#include "image/image.h"
 #include "lrit_file.h"
-#include <thread>
 #include <mutex>
+#include <string>
+#include <thread>
 
 namespace lrit
 {
@@ -30,15 +30,15 @@ namespace lrit
         LRITProductizer(std::string instrument_id, bool sweep_x, std::string cache_path);
         ~LRITProductizer();
 
-        void saveImage(image::Image img,
-                       int bit_depth,
-                       std::string directory,
-                       std::string satellite,
-                       std::string satshort,
-                       std::string channel,
-                       time_t timestamp,
-                       std::string region = "",
-                       ImageNavigationRecord *navigationHdr = nullptr,
+        void saveImage(image::Image img,                               //
+                       int bit_depth,                                  //
+                       std::string directory,                          //
+                       std::string satellite,                          //
+                       std::string satshort,                           //
+                       std::string channel,                            //
+                       time_t timestamp,                               //
+                       std::string region = "",                        //
+                       ImageNavigationRecord *navigationHdr = nullptr, //
                        ImageDataFunctionRecord *calibHdr = nullptr);
 
         void setInstrumentID(std::string id) { instrument_id = id; }
@@ -46,4 +46,4 @@ namespace lrit
         // Calibration WILL vary between sats
         // std::function<void(satdump::products::ImageProduct *, ImageDataFunctionRecord *)> appendCalibrationToProductFunc;
     };
-}
+} // namespace lrit

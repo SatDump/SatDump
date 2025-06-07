@@ -1,20 +1,13 @@
 #pragma once
 
-#include "core/module.h"
-#include <complex>
-#include <fstream>
+#include "pipeline/modules/base/filestream_to_filestream.h"
 
 namespace metop
 {
-    class MetOpDumpDecoderModule : public ProcessingModule
+    class MetOpDumpDecoderModule : public satdump::pipeline::base::FileStreamToFileStreamModule
     {
     protected:
         uint8_t *buffer;
-
-        std::ifstream data_in;
-        std::ofstream data_out;
-        std::atomic<uint64_t> filesize;
-        std::atomic<uint64_t> progress;
 
         bool locked = false;
         int errors[4];
@@ -28,13 +21,12 @@ namespace metop
         ~MetOpDumpDecoderModule();
         void process();
         void drawUI(bool window);
-        std::vector<ModuleDataType> getInputTypes();
-        std::vector<ModuleDataType> getOutputTypes();
+        nlohmann::json getModuleStats();
 
     public:
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
-        static std::vector<std::string> getParameters();
-        static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
+        static nlohmann::json getParams() { return {}; } // TODOREWORK
+        static std::shared_ptr<satdump::pipeline::ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
-} // namespace meteor
+} // namespace metop

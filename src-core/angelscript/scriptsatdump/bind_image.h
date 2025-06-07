@@ -1,7 +1,7 @@
 #pragma once
 
 #include "angelscript/angelscript.h"
-#include "common/image/image.h"
+#include "image/image.h"
 namespace satdump
 {
     namespace script

@@ -1,38 +1,26 @@
 #include "module_dmsp_rtd_instruments.h"
-#include "logger.h"
-#include "imgui/imgui.h"
-#include <volk/volk.h>
-#include "common/utils.h"
 #include "common/repack.h"
-#include "products2/image_product.h"
+#include "common/utils.h"
+#include "imgui/imgui.h"
+#include "logger.h"
 #include "products2/dataset.h"
+#include "products2/image_product.h"
+#include <cstdint>
 #include <filesystem>
+#include <volk/volk.h>
 
 namespace dmsp
 {
-    DMSPInstrumentsModule::DMSPInstrumentsModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+    DMSPInstrumentsModule::DMSPInstrumentsModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
     {
+        fsfsm_enable_output = false;
     }
 
-    std::vector<ModuleDataType> DMSPInstrumentsModule::getInputTypes()
-    {
-        return {DATA_FILE};
-    }
-
-    std::vector<ModuleDataType> DMSPInstrumentsModule::getOutputTypes()
-    {
-        return {DATA_FILE};
-    }
-
-    DMSPInstrumentsModule::~DMSPInstrumentsModule()
-    {
-    }
+    DMSPInstrumentsModule::~DMSPInstrumentsModule() {}
 
     void DMSPInstrumentsModule::process()
     {
-        filesize = getFilesize(d_input_file);
-        data_in = std::ifstream(d_input_file, std::ios::binary);
-
         int sat_num = 0;
 
         try
@@ -66,28 +54,17 @@ namespace dmsp
 
         uint8_t rtd_words[19];
 
-        time_t lastTime = 0;
-        while (!data_in.eof())
+        while (should_run())
         {
             // Read a buffer
-            data_in.read((char *)rtd_frame, 19);
+            read_data((uint8_t *)rtd_frame, 19);
 
             shift_array_left(&rtd_frame[0], 19, 6, rtd_words);
 
             ols_reader.work(rtd_frame, rtd_words);
-
-            if (input_data_type == DATA_FILE)
-                progress = data_in.tellg();
-
-            if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-            {
-                lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-            }
         }
 
-        if (input_data_type == DATA_FILE)
-            data_in.close();
+        cleanup();
 
         // Products dataset
         satdump::products::DataSet dataset;
@@ -145,24 +122,15 @@ namespace dmsp
             ImGui::EndTable();
         }
 
-        if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+        drawProgressBar();
 
         ImGui::End();
     }
 
-    std::string DMSPInstrumentsModule::getID()
-    {
-        return "dmsp_rtd_instruments";
-    }
+    std::string DMSPInstrumentsModule::getID() { return "dmsp_rtd_instruments"; }
 
-    std::vector<std::string> DMSPInstrumentsModule::getParameters()
-    {
-        return {};
-    }
-
-    std::shared_ptr<ProcessingModule> DMSPInstrumentsModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<satdump::pipeline::ProcessingModule> DMSPInstrumentsModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<DMSPInstrumentsModule>(input_file, output_file_hint, parameters);
     }
-} // namespace noaa
+} // namespace dmsp

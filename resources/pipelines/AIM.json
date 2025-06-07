@@ -1,16 +1,9 @@
 {
     "aim_dump": {
         "name": "AIM Dump",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -21,7 +14,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 3.2e6,
                     "rrc_alpha": 0.5,
@@ -29,7 +23,8 @@
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 9952,
                     "nrzm": true,
@@ -40,7 +35,7 @@
                 }
             },
             "products": {
-                "aim_instruments": {}
+                "module": "aim_instruments"
             }
         }
     }
