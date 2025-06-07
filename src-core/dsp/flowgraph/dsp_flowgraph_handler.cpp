@@ -156,6 +156,7 @@ namespace satdump
             flowgraph.node_internal_registry.insert(
                 {"hilbert_fc", {"Utils/Hilbert Transform", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::HilbertBlock>()); }}});
   
+            flowgraph.node_internal_registry.insert(
                 {"splitter_cc", {"Utils/Splitter CC", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::SplitterBlock<complex_t>>()); }}});
 
 
