@@ -3,7 +3,7 @@
 #include "core/config.h"
 #include "core/style.h"
 #include "dsp/block.h"
-#include "dsp/const/const_disp.h"
+#include "dsp/displays/const_disp.h"
 #include "dsp/device/dev.h"
 #include "dsp/io/iq_sink.h"
 #include "imgui/imgui.h"
