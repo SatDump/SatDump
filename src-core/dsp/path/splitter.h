@@ -16,6 +16,13 @@ namespace satdump
             int p_noutputs = 0;
             std::mutex vfos_mtx;
 
+        public:
+            struct IOInfo
+            {
+                std::string id;
+                bool forward_terminator;
+            };
+
         private:
             bool work();
 
@@ -58,7 +65,7 @@ namespace satdump
                         for (int i = 0; i < p_noutputs; i++)
                         {
                             BlockIO o = {{"out" + std::to_string(i + 1), std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}};
-                            o.blkdata = std::make_shared<std::string>(std::to_string(i + 1));
+                            o.blkdata = std::make_shared<IOInfo>(IOInfo{std::to_string(i + 1)});
                             o.fifo = std::make_shared<DspBufferFifo>(4); // TODOREWORK
                             Block::outputs.push_back(o);
                         }
@@ -71,12 +78,12 @@ namespace satdump
             }
 
         public:
-            BlockIO &add_output(std::string id)
+            BlockIO &add_output(std::string id, bool forward_terminator = true)
             {
                 std::lock_guard<std::mutex> lock_mtx(vfos_mtx);
 
                 BlockIO o = {{id, std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}};
-                o.blkdata = std::make_shared<std::string>(id);
+                o.blkdata = std::make_shared<IOInfo>(IOInfo{id, forward_terminator});
                 o.fifo = std::make_shared<DspBufferFifo>(4); // TODOREWORK
                 Block::outputs.push_back(o);
                 return outputs[outputs.size() - 1];
@@ -87,7 +94,7 @@ namespace satdump
                 std::lock_guard<std::mutex> lock_mtx(vfos_mtx);
 
                 for (int i = 0; i < outputs.size(); i++)
-                    if (*((std::string *)outputs[i].blkdata.get()) == id)
+                    if (((IOInfo *)outputs[i].blkdata.get())->id == id)
                     {
                         if (send_terminator)
                             (outputs.begin() + i)->fifo->wait_enqueue(DSPBuffer::newBufferTerminator());

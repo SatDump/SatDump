@@ -25,8 +25,16 @@ namespace satdump
             if (iblk.isTerminator())
             {
                 if (iblk.terminatorShouldPropagate())
+                {
+                    vfos_mtx.lock();
                     for (auto &o : outputs)
-                        o.fifo->wait_enqueue(DSPBuffer::newBufferTerminator());
+                    {
+                        IOInfo *i = ((IOInfo *)o.blkdata.get());
+                        if (i->forward_terminator)
+                            o.fifo->wait_enqueue(DSPBuffer::newBufferTerminator());
+                    }
+                    vfos_mtx.unlock();
+                }
                 iblk.free();
                 return true;
             }
@@ -34,6 +42,8 @@ namespace satdump
             vfos_mtx.lock();
             for (auto &o : outputs)
             {
+                IOInfo *i = ((IOInfo *)o.blkdata.get());
+
                 DSPBuffer oblk = DSPBuffer::newBufferSamples<T>(iblk.max_size);
                 memcpy(oblk.getSamples<T>(), iblk.getSamples<T>(), iblk.size * sizeof(T));
                 oblk.size = iblk.size;
