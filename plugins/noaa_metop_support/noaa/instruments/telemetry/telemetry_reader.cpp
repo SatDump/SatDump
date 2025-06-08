@@ -15,6 +15,7 @@ namespace noaa
             for (int i=0; i<256; i++) {digital2_buf[i]=-1;}
             for (int i=0; i<10; i++) {dau1_buf[i]=-1;}
             for (int i=0; i<10; i++) {dau2_buf[i]=-1;}
+            for (int i=0; i<16; i++) {satcu_buf[i]=-1;}
         }
 
         TelemetryReader::~TelemetryReader()
@@ -42,6 +43,94 @@ namespace noaa
             else
                 timestamp = -1;
 
+            // push telem rows to JSON
+            if(!(mf%320)) {
+                last_timestamp = timestamp - 32;
+                timestamp_320.push_back(last_timestamp);
+                analog1.push_back(analog1_buf);
+                for(int i=0; i<320; i++)
+                {
+                    analog1_buf[i]=-1;
+                }
+            }
+            if(!(mf%160)) {
+                last_timestamp = timestamp - 16;
+                timestamp_160.push_back(last_timestamp);
+
+                // Analog Subcom (16 sec)
+                analog2.push_back(analog2_buf);
+                for(int i=0; i<160; i++)
+                {
+                    analog2_buf[i]=-1;
+                }
+
+                // Analog Subcom-2 (16 sec)
+                analog4.push_back(analog4_buf);
+                for(int i=0; i<128; i++)
+                {
+                    analog4_buf[i]=-1;
+                }
+
+                // Solar Array Telemetry (SATCU)
+                timestamp_satcu.push_back(last_timestamp);
+                for(int i=0; i<16; i++)
+                {
+                    satcu_buf[i] = analog4_buf[128+i];
+                    analog4_buf[128+i]=-1;
+                }
+                satcu.push_back(satcu_buf);
+                timestamp_satcu.push_back(last_timestamp + 8);
+                for(int i=0; i<16; i++)
+                {
+                    satcu_buf[i] = analog4_buf[144+i];
+                    analog4_buf[144+i]=-1;
+                }
+                satcu.push_back(satcu_buf);
+            }
+            if(!(mf%32)) {
+                last_timestamp = timestamp - 3.2;
+                timestamp_32.push_back(last_timestamp);
+
+                // Digital "B" Subcom-1
+                digital1.push_back(digital1_buf);
+                for(int i=0; i<256; i++)
+                {
+                    digital1_buf[i]=-1;
+                }
+
+                // Digital "B" Subcom-2
+                digital2.push_back(digital2_buf);
+                for(int i=0; i<256; i++)
+                {
+                    digital2_buf[i]=-1;
+                }
+            }
+            if(!(mf%10)) {
+                last_timestamp = timestamp - 1;
+                timestamp_10.push_back(last_timestamp);
+
+                // Analog Subcom (1 sec)
+                analog3.push_back(analog3_buf);
+                for(int i=0; i<10; i++)
+                {
+                    analog3_buf[i]=-1;
+                }
+
+                // DAU-1
+                dau1.push_back(dau1_buf);
+                for(int i=0; i<10; i++)
+                {
+                    dau1_buf[i]=-1;
+                }
+
+                // DAU-2
+                dau2.push_back(dau2_buf);
+                for(int i=0; i<10; i++)
+                {
+                    dau2_buf[i]=-1;
+                }
+            }
+
             // get values from TIP frame
             uint8_t digital1 = buffer[8];
             uint8_t analog1 = buffer[9];
@@ -51,94 +140,6 @@ namespace noaa
             uint8_t analog4 = buffer[13];
             uint8_t dau1 = buffer[14];
             uint8_t dau2 = buffer[15];
-
-            // push telem rows to JSON
-            if(!(mf%320)) {
-                last_timestamp = timestamp - 32;
-                telemetry["Analog 32 Second Subcom"]["timestamp"].push_back(last_timestamp);
-                for(int i=0; i<320; i++)
-                {
-                    telemetry["Analog 32 Second Subcom"]["word " + std::to_string(i)].push_back(analog1_buf[i]);
-                    analog1_buf[i]=-1;
-                }
-            }
-            if(!(mf%160)) {
-                last_timestamp = timestamp - 16;
-                // AVHRR Scan Motor Current (maybe only for NOAA-15)
-                telemetry["AVHRR Scan Motor Current"].push_back({last_timestamp,analog2_buf[55]});
-                telemetry["AVHRR Scan Motor Current"].push_back({last_timestamp + 8,analog2_buf[135]});
-
-                // Analog Subcom (16 sec)
-                telemetry["Analog 16 Second Subcom"]["timestamp"].push_back(last_timestamp);
-                for(int i=0; i<160; i++)
-                {
-                    telemetry["Analog 16 Second Subcom"]["word " + std::to_string(i)].push_back(analog2_buf[i]);
-                    analog2_buf[i]=-1;
-                }
-
-                // Analog Subcom-2 (16 sec)
-                telemetry["Analog 16 Second Subcom 2"]["timestamp"].push_back(last_timestamp);
-                for(int i=0; i<128; i++)
-                {
-                    telemetry["Analog 16 Second Subcom 2"]["word " + std::to_string(i)].push_back(analog4_buf[i]);
-                    analog4_buf[i]=-1;
-                }
-
-                // Solar Array Telemetry (SATCU)
-                telemetry["Solar array"]["timestamp"].push_back(last_timestamp);
-                telemetry["Solar array"]["timestamp"].push_back(last_timestamp + 8);
-                for(int i=0; i<16; i++)
-                {
-                    telemetry["Solar array"]["word " + std::to_string(i)].push_back(analog4_buf[128+i]);
-                    telemetry["Solar array"]["word " + std::to_string(i)].push_back(analog4_buf[144+i]);
-                    analog4_buf[128+i]=-1;
-                    analog4_buf[144+i]=-1;
-                }
-            }
-            if(!(mf%32)) {
-                last_timestamp = timestamp - 3.2;
-                // Digital "B" Subcom-1
-                telemetry["Digital Subcom 1"]["timestamp"].push_back(last_timestamp);
-                for(int i=0; i<256; i++)
-                {
-                    telemetry["Digital Subcom 1"]["word " + std::to_string(i)].push_back(digital1_buf[i]);
-                    digital1_buf[i]=-1;
-                }
-
-                // Digital "B" Subcom-2
-                telemetry["Digital Subcom 2"]["timestamp"].push_back(last_timestamp);
-                for(int i=0; i<256; i++)
-                {
-                    telemetry["Digital Subcom 2"]["word " + std::to_string(i)].push_back(digital2_buf[i]);
-                    digital2_buf[i]=-1;
-                }
-            }
-            if(!(mf%10)) {
-                last_timestamp = timestamp - 1;
-                // Analog Subcom (1 sec)
-                telemetry["Analog 1 Second Subcom"]["timestamp"].push_back(last_timestamp);
-                for(int i=0; i<10; i++)
-                {
-                    telemetry["Analog 1 Second Subcom"]["word " + std::to_string(i)].push_back(analog3_buf[i]);
-                    analog3_buf[i]=-1;
-                }
-
-                // DAU-1
-                telemetry["DAU-1"]["timestamp"].push_back(last_timestamp);
-                for(int i=0; i<10; i++)
-                {
-                    telemetry["DAU-1"]["word " + std::to_string(i)].push_back(dau1_buf[i]);
-                    dau1_buf[i]=-1;
-                }
-
-                // DAU-2
-                telemetry["DAU-2"]["timestamp"].push_back(last_timestamp);
-                for(int i=0; i<10; i++)
-                {
-                    telemetry["DAU-2"]["word " + std::to_string(i)].push_back(dau2_buf[i]);
-                    dau2_buf[i]=-1;
-                }
-            }
 
             // fill row buffers
             analog1_buf[mf%320] = analog1;
@@ -154,8 +155,114 @@ namespace noaa
             dau2_buf[mf%10] = dau2;
         }
 
-        nlohmann::json TelemetryReader::dump_telemetry()
+        double n15_calibration(int value)
         {
+            if(value < 0)
+            {
+                return -1;
+            }
+
+            // put value in range 0-1
+            double x = (double)value/256;
+
+            return 2.997558e-01 * pow(x,2.0) + 2.986854e+02 * x - 3.791725e-08;
+        }
+
+        nlohmann::json TelemetryReader::dump_telemetry(bool is_n15)
+        {
+            // push telem rows to JSON
+            // AVHRR Scan Motor Current (NOAA-15 only)
+            if(is_n15)
+            {
+                for(int frame=0; frame < timestamp_160.size(); frame++)
+                {
+                    telemetry["AVHRR Scan Motor Current"].push_back({timestamp_160[frame],n15_calibration(analog2[frame][55])});
+                    telemetry["AVHRR Scan Motor Current"].push_back({timestamp_160[frame] + 8,n15_calibration(analog2[frame][135])});
+                }
+            }
+
+            // Analog Subcom (32 sec)
+            for(int frame=0; frame < analog1.size(); frame++)
+            {
+                //printf("debug %i", frame);
+                telemetry["Analog 32 Second Subcom"]["timestamp"].push_back(timestamp_320[frame]);
+                for(int i=0; i<320; i++)
+                {
+                    telemetry["Analog 32 Second Subcom"]["word " + std::to_string(i)].push_back(analog1[frame][i]);
+                }
+            }
+
+            // Analog Subcom (16 sec)
+            for(int frame=0; frame < analog2.size(); frame++)
+            {
+                telemetry["Analog 16 Second Subcom"]["timestamp"].push_back(timestamp_160[frame]);
+                for(int i=0; i<160; i++)
+                {
+                    telemetry["Analog 16 Second Subcom"]["word " + std::to_string(i)].push_back(analog2[frame][i]);
+                }
+            }
+
+            // Analog Subcom-2 (16 sec)
+            for(int frame=0; frame < analog4.size(); frame++)
+            {
+                telemetry["Analog 16 Second Subcom 2"]["timestamp"].push_back(timestamp_160[frame]);
+                for(int i=0; i<128; i++)
+                {
+                    telemetry["Analog 16 Second Subcom 2"]["word " + std::to_string(i)].push_back(analog4[frame][i]);
+                }
+            }
+
+            for(int frame=0; frame < timestamp_satcu.size(); frame++)
+            {
+                // Solar Array Telemetry (SATCU)
+                telemetry["Solar array"]["timestamp"].push_back(timestamp_satcu[frame]);
+                for(int i=0; i<16; i++)
+                {
+                    telemetry["Solar array"]["word " + std::to_string(i)].push_back(satcu[frame][i]);
+                }
+            }
+
+            for(int frame=0; frame < timestamp_10.size(); frame++)
+            {
+
+                // Analog Subcom (1 sec)
+                telemetry["Analog 1 Second Subcom"]["timestamp"].push_back(timestamp_10[frame]);
+                for(int i=0; i<10; i++)
+                {
+                    telemetry["Analog 1 Second Subcom"]["word " + std::to_string(i)].push_back(analog3[frame][i]);
+                }
+
+                // DAU-1
+                telemetry["DAU-1"]["timestamp"].push_back(timestamp_10[frame]);
+                for(int i=0; i<10; i++)
+                {
+                    telemetry["DAU-1"]["word " + std::to_string(i)].push_back(dau1[frame][i]);
+                }
+
+                // DAU-2
+                telemetry["DAU-2"]["timestamp"].push_back(timestamp_10[frame]);
+                for(int i=0; i<10; i++)
+                {
+                    telemetry["DAU-2"]["word " + std::to_string(i)].push_back(dau2[frame][i]);
+                }
+            }
+
+            for(int frame=0; frame < timestamp_32.size(); frame++) {
+                // Digital "B" Subcom-1
+                telemetry["Digital Subcom 1"]["timestamp"].push_back(timestamp_32[frame]);
+                for(int i=0; i<256; i++)
+                {
+                    telemetry["Digital Subcom 1"]["word " + std::to_string(i)].push_back(digital1[frame][i]);
+                }
+
+                // Digital "B" Subcom-2
+                telemetry["Digital Subcom 2"]["timestamp"].push_back(timestamp_32[frame]);
+                for(int i=0; i<256; i++)
+                {
+                    telemetry["Digital Subcom 2"]["word " + std::to_string(i)].push_back(digital2[frame][i]);
+                }
+            }
+
             return telemetry;
         }
     }

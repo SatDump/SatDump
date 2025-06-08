@@ -306,7 +306,11 @@ namespace noaa
                     if (!std::filesystem::exists(directory))
                         std::filesystem::create_directory(directory);
 
-                    saveJsonFile(directory + "/telem.json", telemetry_reader.dump_telemetry());
+                    if(scid == 7)
+                    {
+                        logger->info("Satellite is NOAA 15, saving AVHRR current telem");
+                    }
+                    saveJsonFile(directory + "/telem.json", telemetry_reader.dump_telemetry(scid == 7));
                     telemetry_status = DONE;
                 }
 
@@ -555,7 +559,11 @@ namespace noaa
                     if (!std::filesystem::exists(directory))
                         std::filesystem::create_directory(directory);
 
-                    saveJsonFile(directory + "/telem.json", telemetry_reader.dump_telemetry());
+                    if(scid == 8)
+                    {
+                        logger->info("Satellite is NOAA 15, saving AVHRR current telem");
+                    }
+                    saveJsonFile(directory + "/telem.json", telemetry_reader.dump_telemetry(scid == 8));
                     telemetry_status = DONE;
                 }
                 dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
