@@ -8,7 +8,7 @@
 
 namespace satdump
 {
-    namespace proj
+    namespace projection
     {
         /**
          * @brief Standard timestamp + line raytracer

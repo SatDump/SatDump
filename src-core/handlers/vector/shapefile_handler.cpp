@@ -28,14 +28,14 @@ namespace satdump
                 logger->critical("JSON : \n%s\n", dbf_file.dump(4).c_str());
             }
 
-            if (!config::main_cfg["user"]["shapefile_defaults"][std::filesystem::path(shapefile_name).stem().string()].is_null())
-                setConfig(config::main_cfg["user"]["shapefile_defaults"][std::filesystem::path(shapefile_name).stem().string()]);
+            if (!satdump_cfg.main_cfg["user"]["shapefile_defaults"][std::filesystem::path(shapefile_name).stem().string()].is_null())
+                setConfig(satdump_cfg.main_cfg["user"]["shapefile_defaults"][std::filesystem::path(shapefile_name).stem().string()]);
         }
 
         ShapefileHandler::~ShapefileHandler()
         {
-            config::main_cfg["user"]["shapefile_defaults"][std::filesystem::path(shapefile_name).stem().string()] = getConfig();
-            config::saveUserConfig();
+            satdump_cfg.main_cfg["user"]["shapefile_defaults"][std::filesystem::path(shapefile_name).stem().string()] = getConfig();
+            satdump_cfg.saveUser();
         }
 
         void ShapefileHandler::drawMenu()

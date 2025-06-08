@@ -1,6 +1,6 @@
 #include "dataset.h"
 #include "nlohmann/json_utils.h"
-#include "common/utils.h"
+#include "utils/http.h"
 #include "core/exception.h"
 
 namespace satdump

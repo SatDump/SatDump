@@ -101,14 +101,6 @@
             "description": "descriptions/DayCloudConv.md"
         },
         {
-            "name": "Clouds Underlay (Merge)",
-            "description": "descriptions/CloudUnderlay.md"
-        },
-        {
-            "name": "Clouds Underlay (Isolate)",
-            "description": "descriptions/CloudUnderlay.md"
-        },
-        {
             "name": "MCIR",
             "expression": "cch4=(4, emissive_radiance, 120.000000, 20.000000); bm=equp(maps/nasa_hd.jpg); cch4 * (cch4) + (1-cch4) * bm(0), cch4 * (cch4) + (1-cch4) * bm(1), cch4 * (cch4) + (1-cch4) * bm(2)",
             "description": "descriptions/MCIR.md"
@@ -156,8 +148,11 @@
             "description": "descriptions/NDWI.md"
         },
         {
-            "name": "Night Fog Difference"
-            // TODOREWORK
+            "name": "Night Fog Difference",
+            "expression": "a=(4, brightness_temperature, 230, 310);b=(3b, brightness_temperature, 230, 310);lut=lut(lut/cal/fog_btd.png);lut((a-b-(-0.2))/0.4, 0, 0),lut((a-b-(-0.2))/0.4, 0, 1),lut((a-b-(-0.2))/0.4, 0, 2)",
+            "image": {
+                "geo_correct": true
+            }
         },
         {
             "name": "Split Window Difference",

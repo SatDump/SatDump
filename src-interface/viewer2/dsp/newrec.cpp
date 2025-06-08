@@ -1,10 +1,15 @@
 #include "newrec.h"
 #include "common/widgets/stepped_slider.h"
+#include "core/config.h"
 #include "core/style.h"
 #include "dsp/block.h"
+#include "dsp/const/const_disp.h"
 #include "dsp/device/dev.h"
+#include "dsp/io/iq_sink.h"
 #include "imgui/imgui.h"
 #include "logger.h"
+#include "utils/time.h"
+#include <memory>
 
 namespace satdump
 {
@@ -25,7 +30,10 @@ namespace satdump
             //     }
             // }
 
+            splitter = std::make_shared<ndsp::SplitterBlock<complex_t>>();
+
             fftp = std::make_shared<ndsp::FFTPanBlock>();
+            fftp->set_input(splitter->add_output("main_fft"), 0);
             fftp->avg_num = 1;
 
             fft_plot = std::make_shared<widgets::FFTPlot>(fftp->output_fft_buff, 65536, -150, 150, 10);
@@ -37,6 +45,10 @@ namespace satdump
             waterfall_plot->set_rate(30, 20);
 
             fftp->on_fft = [this](float *p) { waterfall_plot->push_fft(p); };
+
+            // TMP
+            const_disp = std::make_shared<ndsp::ConstellationDisplayBlock>();
+            iq_sink = std::make_shared<ndsp::IQSinkBlock>();
         }
 
         NewRecHandler::~NewRecHandler() {}
@@ -92,16 +104,22 @@ namespace satdump
             {
                 if (ImGui::Button("Start"))
                 {
-                    fftp->set_fft_settings(65536, 10e6, 30);
+                    taskq.push(
+                        [this]()
+                        {
+                            fftp->set_fft_settings(65536, dev->getStreamSamplerate(0, false), 30);
+                            fftp->avg_num = 1;
 
-                    fftp->link(dev.get(), 0, 0, 16); //        fftp->inputs[0] = dev->outputs[0];
+                            splitter->link(dev.get(), 0, 0, 100); //        fftp->inputs[0] = dev->outputs[0];
 
-                    dev->start();
-                    fftp->start();
+                            dev->start();
+                            splitter->start();
+                            fftp->start();
 
-                    options_displayer_test.clear();
-                    options_displayer_test.add_options(dev->get_cfg_list());
-                    options_displayer_test.set_values(dev->get_cfg());
+                            options_displayer_test.clear();
+                            options_displayer_test.add_options(dev->get_cfg_list());
+                            options_displayer_test.set_values(dev->get_cfg());
+                        });
 
                     deviceRunning = true;
                 }
@@ -111,12 +129,17 @@ namespace satdump
 
                 if (ImGui::Button("Stop"))
                 {
-                    dev->stop(true);
-                    fftp->stop();
+                    taskq.push(
+                        [this]()
+                        {
+                            dev->stop(true);
+                            splitter->stop();
+                            fftp->stop();
 
-                    options_displayer_test.clear();
-                    options_displayer_test.add_options(dev->get_cfg_list());
-                    options_displayer_test.set_values(dev->get_cfg());
+                            options_displayer_test.clear();
+                            options_displayer_test.add_options(dev->get_cfg_list());
+                            options_displayer_test.set_values(dev->get_cfg());
+                        });
 
                     deviceRunning = false;
                 }
@@ -141,6 +164,77 @@ namespace satdump
             {
                 waterfall_plot->scale_min = fft_plot->scale_min;
                 waterfall_plot->scale_max = fft_plot->scale_max;
+            }
+
+            ImGui::Separator();
+            const_disp->constel.draw();
+
+            if (!const_present)
+            {
+                if (ImGui::Button("Add Const"))
+                {
+                    taskq.push(
+                        [this]()
+                        {
+                            const_disp->set_input(splitter->add_output("tmp_const", false), 0);
+                            const_disp->start();
+                        });
+                    const_present = true;
+                }
+            }
+            else
+            {
+                if (ImGui::Button("Del Const"))
+                {
+                    taskq.push(
+                        [this]()
+                        {
+                            splitter->del_output("tmp_const", true);
+                            const_disp->stop();
+                        });
+                    const_present = false;
+                }
+            }
+
+            float ratio = 0;
+            if (deviceRunning)
+                ratio = (float)dev->get_outputs()[0].fifo->size_approx() / (float)dev->get_outputs()[0].fifo->max_capacity();
+            ImGui::ProgressBar(ratio);
+
+            if (!recording)
+            {
+                if (ImGui::Button("Rec Start"))
+                {
+                    taskq.push(
+                        [this]()
+                        {
+                            std::string recording_path = satdump_cfg.main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>();
+                            iq_sink->set_cfg("filepath", recording_path);
+                            iq_sink->set_cfg("autogen", true);
+                            iq_sink->set_cfg("samplerate", dev->getStreamSamplerate(0, false));
+                            iq_sink->set_cfg("frequency", dev->getStreamFrequency(0, false));
+                            iq_sink->set_cfg("timestamp", getTime());
+                            iq_sink->set_cfg("format", "cs8");
+                            iq_sink->set_input(splitter->add_output("tmp_record", false), 0);
+                            iq_sink->start();
+                        });
+                    recording = true;
+                }
+            }
+            else
+            {
+                ImGui::Text("Size : %lu", iq_sink->total_written_raw);
+
+                if (ImGui::Button("Rec Stop"))
+                {
+                    taskq.push(
+                        [this]()
+                        {
+                            splitter->del_output("tmp_record", true);
+                            iq_sink->stop();
+                        });
+                    recording = false;
+                }
             }
         }
 

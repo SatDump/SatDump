@@ -1,12 +1,12 @@
 #include "recorder.h"
-#include "core/config.h"
 #include "common/utils.h"
-#include "core/style.h"
-#include "logger.h"
-#include "imgui/imgui_stdlib.h"
-#include "core/pipeline.h"
-#include "common/widgets/stepped_slider.h"
 #include "common/widgets/frequency_input.h"
+#include "common/widgets/stepped_slider.h"
+#include "core/config.h"
+#include "core/plugin.h"
+#include "core/style.h"
+#include "imgui/imgui_stdlib.h"
+#include "logger.h"
 #include <math.h>
 
 #include "main_ui.h"
@@ -15,16 +15,15 @@
 
 #include "processing.h"
 
-#include "resources.h"
+#include "core/resources.h"
 
 namespace satdump
 {
-    RecorderApplication::RecorderApplication()
-        : Application("recorder"), pipeline_selector(true)
+    RecorderApplication::RecorderApplication() : Application("recorder"), pipeline_selector(true)
     {
-        automated_live_output_dir = config::main_cfg["satdump_directories"]["live_processing_autogen"]["value"].get<bool>();
-        processing_modules_floating_windows = config::main_cfg["user_interface"]["recorder_floating_windows"]["value"].get<bool>();
-        remaining_disk_space_time = config::main_cfg["user_interface"]["remaining_disk_space_time"]["value"].get<int>();
+        automated_live_output_dir = satdump_cfg.main_cfg["satdump_directories"]["live_processing_autogen"]["value"].get<bool>();
+        processing_modules_floating_windows = satdump_cfg.main_cfg["user_interface"]["recorder_floating_windows"]["value"].get<bool>();
+        remaining_disk_space_time = satdump_cfg.main_cfg["user_interface"]["remaining_disk_space_time"]["value"].get<int>();
 
         load_rec_path_data();
         dsp::registerAllSources();
@@ -37,9 +36,9 @@ namespace satdump
         }
 
         // First, check to see if a source was passed via command line
-        if (satdump::config::main_cfg.contains("cli") && satdump::config::main_cfg["cli"].contains("source"))
+        if (satdump::satdump_cfg.main_cfg.contains("cli") && satdump::satdump_cfg.main_cfg["cli"].contains("source"))
         {
-            auto &cli_settings = satdump::config::main_cfg["cli"];
+            auto &cli_settings = satdump::satdump_cfg.main_cfg["cli"];
             std::string source = cli_settings["source"];
             for (int i = 0; i < (int)sources.size(); i++)
             {
@@ -64,9 +63,9 @@ namespace satdump
         }
 
         // If not, or it failed to open, revert to last used SDR
-        if (sdr_select_id == -1 && config::main_cfg["user"]["recorder_sdr_settings"].contains("last_used_sdr"))
+        if (sdr_select_id == -1 && satdump_cfg.main_cfg["user"]["recorder_sdr_settings"].contains("last_used_sdr"))
         {
-            std::string last_used_sdr = config::main_cfg["user"]["recorder_sdr_settings"]["last_used_sdr"].get<std::string>();
+            std::string last_used_sdr = satdump_cfg.main_cfg["user"]["recorder_sdr_settings"]["last_used_sdr"].get<std::string>();
             for (int i = 0; i < (int)sources.size(); i++)
             {
                 if (sources[i].name != last_used_sdr)
@@ -140,12 +139,11 @@ namespace satdump
         fft_plot->frequency = frequency_hz;
         waterfall_plot = std::make_shared<widgets::WaterfallPlot>(fft_sizes_lut[0], 500);
 
-        fft->on_fft = [this](float *v)
-        { waterfall_plot->push_fft(v); };
+        fft->on_fft = [this](float *v) { waterfall_plot->push_fft(v); };
 
         // Load config
-        if (config::main_cfg["user"].contains("recorder_state"))
-            deserialize_config(config::main_cfg["user"]["recorder_state"]);
+        if (satdump_cfg.main_cfg["user"].contains("recorder_state"))
+            deserialize_config(satdump_cfg.main_cfg["user"]["recorder_state"]);
 
         file_sink->set_output_sample_type(baseband_format);
         fft_plot->set_size(fft_size);
@@ -153,9 +151,9 @@ namespace satdump
         waterfall_plot->set_rate(fft_rate, waterfall_rate);
 
         // Attempt to apply provided CLI settings
-        if (satdump::config::main_cfg.contains("cli"))
+        if (satdump_cfg.main_cfg.contains("cli"))
         {
-            auto &cli_settings = satdump::config::main_cfg["cli"];
+            auto &cli_settings = satdump_cfg.main_cfg["cli"];
             if (source_ptr)
             {
                 if (cli_settings.contains("samplerate"))
@@ -177,49 +175,48 @@ namespace satdump
         }
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////
-        eventBus->register_handler<RecorderSetFrequencyEvent>([this](const RecorderSetFrequencyEvent &evt)
-                                                              { set_frequency(evt.frequency); });
+        eventBus->register_handler<RecorderSetFrequencyEvent>([this](const RecorderSetFrequencyEvent &evt) { set_frequency(evt.frequency); });
 
-        eventBus->register_handler<RecorderStartDeviceEvent>([this](const RecorderStartDeviceEvent &)
-                                                             { start(); });
-        eventBus->register_handler<RecorderStopDeviceEvent>([this](const RecorderStopDeviceEvent &)
-                                                            { stop(); });
-        eventBus->register_handler<RecorderSetDeviceSamplerateEvent>([this](const RecorderSetDeviceSamplerateEvent &evt)
-                                                                     { source_ptr->set_samplerate(evt.samplerate); });
-        eventBus->register_handler<RecorderSetDeviceDecimationEvent>([this](const RecorderSetDeviceDecimationEvent &evt)
-                                                                     { current_decimation = evt.decimation; });
-        eventBus->register_handler<RecorderSetDeviceLoOffsetEvent>([this](const RecorderSetDeviceLoOffsetEvent &evt)
-                                                                   { xconverter_frequency = evt.offset; });
+        eventBus->register_handler<RecorderStartDeviceEvent>([this](const RecorderStartDeviceEvent &) { start(); });
+        eventBus->register_handler<RecorderStopDeviceEvent>([this](const RecorderStopDeviceEvent &) { stop(); });
+        eventBus->register_handler<RecorderSetDeviceSamplerateEvent>([this](const RecorderSetDeviceSamplerateEvent &evt) { source_ptr->set_samplerate(evt.samplerate); });
+        eventBus->register_handler<RecorderSetDeviceDecimationEvent>([this](const RecorderSetDeviceDecimationEvent &evt) { current_decimation = evt.decimation; });
+        eventBus->register_handler<RecorderSetDeviceLoOffsetEvent>([this](const RecorderSetDeviceLoOffsetEvent &evt) { xconverter_frequency = evt.offset; });
 
-        eventBus->register_handler<RecorderStartProcessingEvent>([this](const RecorderStartProcessingEvent &evt)
-                                                                 { pipeline_selector.select_pipeline(evt.pipeline_id); start_processing(); });
-        eventBus->register_handler<RecorderStopProcessingEvent>([this](const RecorderStopProcessingEvent &)
-                                                                { stop_processing(); });
+        eventBus->register_handler<RecorderStartProcessingEvent>(
+            [this](const RecorderStartProcessingEvent &evt)
+            {
+                pipeline_selector.select_pipeline(evt.pipeline_id);
+                start_processing();
+            });
+        eventBus->register_handler<RecorderStopProcessingEvent>([this](const RecorderStopProcessingEvent &) { stop_processing(); });
 
-        eventBus->register_handler<RecorderSetFFTSettingsEvent>([this](const RecorderSetFFTSettingsEvent &evt)
-                                                                {
-                                                                    if (evt.fft_min != -1)
-                                                                        fft_plot->scale_min = waterfall_plot->scale_min = evt.fft_min;
-                                                                    if (evt.fft_max != -1)
-                                                                        fft_plot->scale_max = waterfall_plot->scale_max = evt.fft_max;
-                                                                    if (evt.fft_avgn != -1)
-                                                                        fft->avg_num = evt.fft_avgn;
-                                                                    if(evt.fft_size != -1 || evt.fft_rate != -1 || evt.waterfall_rate!=-1) 
-                                                                    {
-                                                                        if (evt.fft_size != -1)
-                                                                            fft_size = evt.fft_size;
-                                                                        if (evt.fft_rate != -1)
-                                                                            fft_rate = evt.fft_rate;
-                                                                        if (evt.waterfall_rate != -1)
-                                                                            waterfall_rate = evt.waterfall_rate;
-                                                                        fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
-                                                                        waterfall_plot->set_rate(fft_rate, waterfall_rate);
-                                                                        waterfall_plot->set_size(fft_size);
-                                                                        fft_plot->set_size(fft_size);
-                                                                        for (int i = 0; i < (int)fft_sizes_lut.size(); i++)
-                                                                            if (fft_sizes_lut[i] == fft_size)
-                                                                                selected_fft_size = i;
-                                                                    } });
+        eventBus->register_handler<RecorderSetFFTSettingsEvent>(
+            [this](const RecorderSetFFTSettingsEvent &evt)
+            {
+                if (evt.fft_min != -1)
+                    fft_plot->scale_min = waterfall_plot->scale_min = evt.fft_min;
+                if (evt.fft_max != -1)
+                    fft_plot->scale_max = waterfall_plot->scale_max = evt.fft_max;
+                if (evt.fft_avgn != -1)
+                    fft->avg_num = evt.fft_avgn;
+                if (evt.fft_size != -1 || evt.fft_rate != -1 || evt.waterfall_rate != -1)
+                {
+                    if (evt.fft_size != -1)
+                        fft_size = evt.fft_size;
+                    if (evt.fft_rate != -1)
+                        fft_rate = evt.fft_rate;
+                    if (evt.waterfall_rate != -1)
+                        waterfall_rate = evt.waterfall_rate;
+                    fft->set_fft_settings(fft_size, get_samplerate(), fft_rate);
+                    waterfall_plot->set_rate(fft_rate, waterfall_rate);
+                    waterfall_plot->set_size(fft_size);
+                    fft_plot->set_size(fft_size);
+                    for (int i = 0; i < (int)fft_sizes_lut.size(); i++)
+                        if (fft_sizes_lut[i] == fft_size)
+                            selected_fft_size = i;
+                }
+            });
     }
 
     RecorderApplication::~RecorderApplication()
@@ -345,8 +342,7 @@ namespace satdump
                     if (current_decimation < 1)
                         current_decimation = 1;
 
-                    
-                    bool disableLO = config::main_cfg["user_interface"]["lock_xconverter_input"]["value"];
+                    bool disableLO = satdump_cfg.main_cfg["user_interface"]["lock_xconverter_input"]["value"];
                     if (assume_started && !disableLO)
                         style::endDisabled();
 
@@ -356,13 +352,12 @@ namespace satdump
 
                     if (ImGui::InputDouble("MHz (LO offset)##downupconverter", &xconverter_frequency))
                         set_frequency(frequency_hz);
-                    
+
                     if (pushed_color_xconv)
                         ImGui::PopStyleColor();
 
                     if (assume_started && disableLO)
                         style::endDisabled();
-
 
                     ImGui::Spacing();
                     ImGui::Separator();
@@ -390,14 +385,15 @@ namespace satdump
 
                 if (ImGui::CollapsingHeader("FFT", tracking_started_cli ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_DefaultOpen))
                 {
-                    if (ImGui::Combo("FFT Size", &selected_fft_size, "131072\0"
-                                                                     "65536\0"
-                                                                     "32768\0"
-                                                                     "16384\0"
-                                                                     "8192\0"
-                                                                     "4096\0"
-                                                                     "2048\0"
-                                                                     "1024\0"))
+                    if (ImGui::Combo("FFT Size", &selected_fft_size,
+                                     "131072\0"
+                                     "65536\0"
+                                     "32768\0"
+                                     "16384\0"
+                                     "8192\0"
+                                     "4096\0"
+                                     "2048\0"
+                                     "1024\0"))
                     {
                         fft_size = fft_sizes_lut[selected_fft_size];
 
@@ -485,7 +481,9 @@ namespace satdump
                     // Preset Menu
                     if (pipeline_selector.selected_pipeline.preset.frequencies.size() > 0)
                     {
-                        if (ImGui::BeginCombo("Freq###presetscombo", pipeline_selector.selected_pipeline.preset.frequencies[pipeline_preset_id].second == frequency_hz ? pipeline_selector.selected_pipeline.preset.frequencies[pipeline_preset_id].first.c_str() : ""))
+                        if (ImGui::BeginCombo("Freq###presetscombo", pipeline_selector.selected_pipeline.preset.frequencies[pipeline_preset_id].second == frequency_hz
+                                                                         ? pipeline_selector.selected_pipeline.preset.frequencies[pipeline_preset_id].first.c_str()
+                                                                         : ""))
                         {
                             for (int n = 0; n < (int)pipeline_selector.selected_pipeline.preset.frequencies.size(); n++)
                             {
@@ -526,8 +524,7 @@ namespace satdump
                     else
                     {
                         if (ImGui::Button("Stop##stopprocessing"))
-                            ui_thread_pool.push([=](int)
-                                                { stop_processing(); });
+                            ui_thread_pool.push([=](int) { stop_processing(); });
                     }
 
                     error.draw();
@@ -550,7 +547,7 @@ namespace satdump
 
                     uint64_t file_written = file_sink->get_written();
                     uint64_t estimated_available = 0;
-                    if(file_written <= disk_available)
+                    if (file_written <= disk_available)
                         estimated_available = disk_available - file_written;
 
                     if (file_written < 1e9)
@@ -563,13 +560,16 @@ namespace satdump
                     int timeleft;
                     switch (baseband_format)
                     {
-                    case dsp::CF_32: case dsp::CS_32:
+                    case dsp::CF_32:
+                    case dsp::CS_32:
                         timeleft = estimated_available / (8 * get_samplerate());
                         break;
-                    case dsp::CS_16: case dsp::WAV_16:
+                    case dsp::CS_16:
+                    case dsp::WAV_16:
                         timeleft = estimated_available / (4 * get_samplerate());
                         break;
-                    case dsp::CS_8: case dsp::CU_8:
+                    case dsp::CS_8:
+                    case dsp::CU_8:
                         timeleft = estimated_available / (2 * get_samplerate());
                         break;
                     default:
@@ -663,9 +663,9 @@ namespace satdump
                             ImGui::SeparatorText(vfo.name.c_str());
                             ImGui::PopStyleColor();
                             ImGui::BulletText("Frequency: %s", format_notated(vfo.freq, "Hz").c_str());
-                            if (vfo.selected_pipeline.name != "")
+                            if (vfo.selected_pipeline.id != "")
                             {
-                                ImGui::BulletText("Pipeline: %s", vfo.selected_pipeline.readable_name.c_str());
+                                ImGui::BulletText("Pipeline: %s", vfo.selected_pipeline.name.c_str());
                                 ImGui::BulletText("Directory: %s", vfo.output_dir.c_str());
                             }
                             else if (vfo.file_sink)
@@ -689,7 +689,7 @@ namespace satdump
                         int idp = 0;
                         for (int n = 0; n < (int)pipelines.size(); n++)
                         {
-                            if ("meteor_m2-x_lrpt" == pipelines[n].name)
+                            if ("meteor_m2-x_lrpt" == pipelines[n].id)
                                 idp = n;
                         }
 
@@ -733,7 +733,9 @@ namespace satdump
                 ImGui::SetNextWindowSizeConstraints(ImVec2((right_width + offset * ui_scale), 50), ImVec2((right_width + offset * ui_scale), wf_size));
                 ImGui::SetNextWindowSize(ImVec2((right_width + offset * ui_scale), show_waterfall ? waterfall_ratio * wf_size : wf_size));
                 ImGui::SetNextWindowPos(ImVec2(left_width, 25 * ui_scale));
-                if (ImGui::Begin("#fft", &t, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+                if (ImGui::Begin("#fft", &t,
+                                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoScrollbar |
+                                     ImGuiWindowFlags_NoScrollWithMouse))
                 {
                     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 9 * ui_scale);
                     fft_plot->draw({float(wfft_widht), fft_height});
@@ -743,9 +745,9 @@ namespace satdump
                     {
                         ImVec2 mouse_pos = ImGui::GetMousePos();
                         float ratio = (mouse_pos.x - left_width - 16 * ui_scale) / (right_width - 9 * ui_scale) - 0.5;
-                        ImGui::SetTooltip("%s", ((ratio >= 0 ? "" : "- ") + format_notated(abs(ratio) * get_samplerate(), "Hz\n") +
-                                                 format_notated(source_ptr->get_frequency() + ratio * get_samplerate(), "Hz"))
-                                                    .c_str());
+                        ImGui::SetTooltip(
+                            "%s",
+                            ((ratio >= 0 ? "" : "- ") + format_notated(abs(ratio) * get_samplerate(), "Hz\n") + format_notated(source_ptr->get_frequency() + ratio * get_samplerate(), "Hz")).c_str());
                     }
                 }
                 ImGui::EndChild();
@@ -774,7 +776,7 @@ namespace satdump
                         float winwidth = live_pipeline->modules.size() > 0 ? live_width / live_pipeline->modules.size() : live_width;
                         float currentPos = 0;
                         ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImGui::GetStyleColorVec4(ImGuiCol_TitleBg));
-                        for (std::shared_ptr<ProcessingModule> &module : live_pipeline->modules)
+                        for (std::shared_ptr<pipeline::ProcessingModule> &module : live_pipeline->modules)
                         {
                             ImGui::SetNextWindowPos({currentPos, y_pos});
                             ImGui::SetNextWindowSize({(float)winwidth, (float)live_height});
@@ -803,7 +805,7 @@ namespace satdump
                             float winwidth = vfo.live_pipeline->modules.size() > 0 ? live_width / vfo.live_pipeline->modules.size() : live_width;
                             float currentPos = 0;
                             ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImGui::GetStyleColorVec4(ImGuiCol_TitleBg));
-                            for (std::shared_ptr<ProcessingModule> &module : vfo.live_pipeline->modules)
+                            for (std::shared_ptr<pipeline::ProcessingModule> &module : vfo.live_pipeline->modules)
                             {
                                 ImGui::SetNextWindowPos({currentPos, y_pos});
                                 ImGui::SetNextWindowSize({(float)winwidth, (float)live_height});
@@ -828,7 +830,7 @@ namespace satdump
         {
             if (processing_modules_floating_windows)
             {
-                for (std::shared_ptr<ProcessingModule> &module : live_pipeline->modules)
+                for (std::shared_ptr<pipeline::ProcessingModule> &module : live_pipeline->modules)
                     module->drawUI(true);
             }
             else
@@ -839,7 +841,7 @@ namespace satdump
                 float winwidth = live_pipeline->modules.size() > 0 ? live_width / live_pipeline->modules.size() : live_width;
                 float currentPos = 0;
                 ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImGui::GetStyleColorVec4(ImGuiCol_TitleBg));
-                for (std::shared_ptr<ProcessingModule> &module : live_pipeline->modules)
+                for (std::shared_ptr<pipeline::ProcessingModule> &module : live_pipeline->modules)
                 {
                     ImGui::SetNextWindowPos({currentPos, y_pos});
                     ImGui::SetNextWindowSize({(float)winwidth, (float)live_height});
@@ -881,4 +883,4 @@ namespace satdump
             }
         }
     }
-};
+}; // namespace satdump

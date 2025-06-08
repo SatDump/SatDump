@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/calibration.h"
-#include "common/utils.h"
+#include "utils/stats.h"
 #include "nlohmann/json.hpp"
 #include "nlohmann/json_utils.h"
 #include "products2/image/image_calibrator.h"
@@ -99,8 +99,8 @@ namespace meteor
                     hot_temps.push_back(hott);
                 }
 
-                auto coldm = most_common(cold_temps.begin(), cold_temps.end(), 0);
-                auto hotm = most_common(hot_temps.begin(), hot_temps.end(), 0);
+                auto coldm = satdump::most_common(cold_temps.begin(), cold_temps.end(), 0);
+                auto hotm = satdump::most_common(hot_temps.begin(), hot_temps.end(), 0);
                 for (int i = 0; i < max_lcnt; i++)
                 {
                     if (abs(coldm - cold_temps[i]) > 5)
@@ -168,9 +168,9 @@ namespace meteor
 
 #include "logger.h"
 #include <fstream>
-#include "common/image/io.h"
+#include "image/io.h"
 
-#include "common/image/processing.h"
+#include "image/processing.h"
 #include "common/utils.h"
 
 int main(int argc, char *argv[])
@@ -362,13 +362,13 @@ int main(int argc, char *argv[])
 /*
 Full C code
 
-#include "common/image/image.h"
-#include "common/image/io.h"
-#include "common/image/meta.h"
+#include "image/image.h"
+#include "image/io.h"
+#include "image/meta.h"
 #include "logger.h"
 #include <fstream>
 
-#include "common/image/processing.h"
+#include "image/processing.h"
 #include "common/utils.h"
 #include "products2/image/product_expression.h"
 #include "products2/image_product.h"

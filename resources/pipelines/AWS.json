@@ -1,16 +1,9 @@
 {
     "aws_pfm": {
         "name": "AWS PFM L-Band",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -32,7 +25,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 1785000,
                     "rrc_alpha": 0.45,
@@ -40,7 +34,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "cadu_size": 10232,
                     "nrzm": false,
@@ -52,7 +47,8 @@
                 }
             },
             "products": {
-                "aws_instruments": {
+                "module": "aws_instruments",
+                "parameters": {
                     "use_ephemeris": true
                 }
             }

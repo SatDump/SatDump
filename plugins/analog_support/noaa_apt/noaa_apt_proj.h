@@ -6,7 +6,7 @@
 
 namespace noaa_apt
 {
-    class NOAA_APT_SatProj : public satdump::proj::SatelliteRaytracerSatTrack
+    class NOAA_APT_SatProj : public satdump::projection::SatelliteRaytracerSatTrack
     {
     protected:
         std::vector<double> timestamps;
@@ -24,7 +24,7 @@ namespace noaa_apt
 
     public:
         NOAA_APT_SatProj(nlohmann::json cfg)
-            : satdump::proj::SatelliteRaytracerSatTrack(cfg)
+            : satdump::projection::SatelliteRaytracerSatTrack(cfg)
         {
             timestamps = cfg["timestamps"].get<std::vector<double>>();
 

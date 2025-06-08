@@ -1,11 +1,11 @@
-#include "core/module.h"
 #include "core/plugin.h"
 #include "logger.h"
 
 #include "core/config.h"
-#include "imgui/imgui_stdlib.h"
+
 #include "loader/archive_loader.h"
 
+#include "imgui/imgui_stdlib.h"
 #include "viewer2/viewer.h"
 
 namespace
@@ -25,9 +25,9 @@ public:
         satdump::eventBus->register_handler<satdump::config::RegisterPluginConfigHandlersEvent>(registerConfigHandler);
         satdump::eventBus->register_handler<satdump::viewer::ViewerApplication::RenderLoadMenuElementsEvent>(renderViewerLoaderButton);
 
-        if (satdump::config::main_cfg.contains("plugin_settings") && satdump::config::main_cfg["plugin_settings"].contains("official_products"))
-            if (satdump::config::main_cfg["plugin_settings"]["official_products"].contains("enable_loader"))
-                _enable_loader = satdump::config::main_cfg["plugin_settings"]["official_products"]["enable_loader"];
+        if (satdump::satdump_cfg.main_cfg.contains("plugin_settings") && satdump::satdump_cfg.main_cfg["plugin_settings"].contains("official_products"))
+            if (satdump::satdump_cfg.main_cfg["plugin_settings"]["official_products"].contains("enable_loader"))
+                _enable_loader = satdump::satdump_cfg.main_cfg["plugin_settings"]["official_products"]["enable_loader"];
     }
 
     static void registerConfigHandler(const satdump::config::RegisterPluginConfigHandlersEvent &evt)
@@ -42,9 +42,9 @@ public:
         {
             _loader = std::make_unique<satdump::ArchiveLoader>();
 
-            if (satdump::config::main_cfg.contains("plugin_settings") && satdump::config::main_cfg["plugin_settings"].contains("official_products"))
+            if (satdump::satdump_cfg.main_cfg.contains("plugin_settings") && satdump::satdump_cfg.main_cfg["plugin_settings"].contains("official_products"))
             {
-                auto &cfg = satdump::config::main_cfg["plugin_settings"]["official_products"];
+                auto &cfg = satdump::satdump_cfg.main_cfg["plugin_settings"]["official_products"];
                 if (cfg.contains("eumetsat_credentials_key"))
                     _loader->eumetsat_user_consumer_credential = cfg["eumetsat_credentials_key"];
                 if (cfg.contains("eumetsat_credentials_secret"))
@@ -74,8 +74,8 @@ public:
     {
         if (_loader == nullptr)
             return;
-        satdump::config::main_cfg["plugin_settings"]["official_products"] = {};
-        auto &cfg = satdump::config::main_cfg["plugin_settings"]["official_products"];
+        satdump::satdump_cfg.main_cfg["plugin_settings"]["official_products"] = {};
+        auto &cfg = satdump::satdump_cfg.main_cfg["plugin_settings"]["official_products"];
         cfg["eumetsat_credentials_key"] = _loader->eumetsat_user_consumer_credential;
         cfg["eumetsat_credentials_secret"] = _loader->eumetsat_user_consumer_secret;
         cfg["enable_loader"] = _enable_loader;

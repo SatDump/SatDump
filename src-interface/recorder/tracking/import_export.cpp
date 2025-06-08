@@ -22,7 +22,7 @@ namespace satdump
             sdr_sources_str += this_source.first + '\0';
         }
         sdr_sources_str += '\0';
-        output_directory.setPath(config::main_cfg["satdump_directories"]["live_processing_path"]["value"]);
+        output_directory.setPath(satdump_cfg.main_cfg["satdump_directories"]["live_processing_path"]["value"]);
     }
 
     bool TrackingImportExport::draw_export()
@@ -97,24 +97,24 @@ namespace satdump
             exported_config["parameters"]["source_id"] = source_id;
         if (fft_enable)
         {
-            exported_config["parameters"]["fft_size"] = getValueOrDefault(config::main_cfg["user"]["recorder_state"]["fft_size"], 8192);
-            exported_config["parameters"]["fft_rate"] = getValueOrDefault(config::main_cfg["user"]["recorder_state"]["fft_rate"], 120);
-            exported_config["parameters"]["fft_avgn"] = getValueOrDefault(config::main_cfg["user"]["recorder_state"]["fft_avgn"], 10.0f);
-            exported_config["parameters"]["fft_min"] = getValueOrDefault(config::main_cfg["user"]["recorder_state"]["fft_min"], -110.0f);
-            exported_config["parameters"]["fft_max"] = getValueOrDefault(config::main_cfg["user"]["recorder_state"]["fft_max"], 0.0f);
+            exported_config["parameters"]["fft_size"] = getValueOrDefault(satdump_cfg.main_cfg["user"]["recorder_state"]["fft_size"], 8192);
+            exported_config["parameters"]["fft_rate"] = getValueOrDefault(satdump_cfg.main_cfg["user"]["recorder_state"]["fft_rate"], 120);
+            exported_config["parameters"]["fft_avgn"] = getValueOrDefault(satdump_cfg.main_cfg["user"]["recorder_state"]["fft_avgn"], 10.0f);
+            exported_config["parameters"]["fft_min"] = getValueOrDefault(satdump_cfg.main_cfg["user"]["recorder_state"]["fft_min"], -110.0f);
+            exported_config["parameters"]["fft_max"] = getValueOrDefault(satdump_cfg.main_cfg["user"]["recorder_state"]["fft_max"], 0.0f);
         }
 
         // Loose settings
-        exported_config["finish_processing"] = config::main_cfg["user_interface"]["finish_processing_after_live"]["value"];
+        exported_config["finish_processing"] = satdump_cfg.main_cfg["user_interface"]["finish_processing_after_live"]["value"];
         exported_config["output_folder"] = output_directory.getPath();
         if (!http_server.empty())
             exported_config["http_server"] = http_server;
 
         // QTH
         exported_config["qth"] = {};
-        exported_config["qth"]["lat"] = config::main_cfg["satdump_general"]["qth_lat"]["value"];
-        exported_config["qth"]["lon"] = config::main_cfg["satdump_general"]["qth_lon"]["value"];
-        exported_config["qth"]["alt"] = config::main_cfg["satdump_general"]["qth_alt"]["value"];
+        exported_config["qth"]["lat"] = satdump_cfg.main_cfg["satdump_general"]["qth_lat"]["value"];
+        exported_config["qth"]["lon"] = satdump_cfg.main_cfg["satdump_general"]["qth_lon"]["value"];
+        exported_config["qth"]["alt"] = satdump_cfg.main_cfg["satdump_general"]["qth_alt"]["value"];
 
         // Tracking
         exported_config["tracking"] = {};

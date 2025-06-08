@@ -1,19 +1,16 @@
 #pragma once
 
-#include "core/module.h"
-
 #include "instruments/cips/cips_reader.h"
+#include "pipeline/modules/base/filestream_to_filestream.h"
+#include "pipeline/modules/instrument_utils.h"
 
 namespace aim
 {
     namespace instruments
     {
-        class AIMInstrumentsDecoderModule : public ProcessingModule
+        class AIMInstrumentsDecoderModule : public satdump::pipeline::base::FileStreamToFileStreamModule
         {
         protected:
-            std::atomic<uint64_t> filesize;
-            std::atomic<uint64_t> progress;
-
             // Readers
             cips::CIPSReader cips_readers[4];
 
@@ -28,8 +25,8 @@ namespace aim
         public:
             static std::string getID();
             virtual std::string getIDM() { return getID(); };
-            static std::vector<std::string> getParameters();
+            static nlohmann::json getParams() { return {}; } // TODOREWORK
             static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         };
-    } // namespace amsu
-} // namespace metop
+    } // namespace instruments
+} // namespace aim

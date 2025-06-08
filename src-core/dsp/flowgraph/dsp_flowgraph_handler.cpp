@@ -5,6 +5,7 @@
 #include "dsp/fft/fft_pan.h"
 #include "dsp/filter/rrc.h"
 #include "dsp/io/file_source.h"
+#include "dsp/path/splitter.h"
 #include "dsp/utils/cyclostationary_analysis.h"
 #include "dsp/utils/freq_shift.h"
 #include "imgui/imnodes/imnodes.h"
@@ -25,6 +26,7 @@
 #include "dsp/utils/real_to_complex.h"
 
 #include "nlohmann/json_utils.h"
+#include <complex.h>
 #include <memory>
 
 // #include "dsp/device/airspy/airspy_dev.h"
@@ -122,6 +124,9 @@ namespace satdump
 
             flowgraph.node_internal_registry.insert(
                 {"real_to_complex_fc", {"Utils/Real to Complex", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::RealToComplexBlock>()); }}});
+
+            flowgraph.node_internal_registry.insert(
+                {"splitter_cc", {"Utils/Splitter CC", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::SplitterBlock<complex_t>>()); }}});
 
             //   flowgraph.node_internal_registry.insert({"airspy_dev_cc", {"Airspy Dev", [=](const ndsp::Flowgraph *f)
             //                                                              { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::AirspyDevBlock>()); }}});

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/image/image.h"
+#include "image/image.h"
 #include "projection/thinplatespline.h"
 #include <memory>
 #include <algorithm>
@@ -14,8 +14,8 @@ namespace satdump
         Initialize the Thin Plate Spline transform we need for warping
         imagery.
         */
-        std::shared_ptr<proj::VizGeorefSpline2D> initTPSTransform(WarpOperation &op);
-        std::shared_ptr<proj::VizGeorefSpline2D> initTPSTransform(std::vector<proj::GCP> gcps, int shift_lon, int shift_lat);
+        std::shared_ptr<projection::VizGeorefSpline2D> initTPSTransform(WarpOperation &op);
+        std::shared_ptr<projection::VizGeorefSpline2D> initTPSTransform(std::vector<projection::GCP> gcps, int shift_lon, int shift_lat);
 
         /*
         More or less internal structs that holds the required area to
@@ -56,7 +56,7 @@ namespace satdump
         {
         private:
             WarpCropSettings crop_set;
-            std::shared_ptr<proj::VizGeorefSpline2D> tps;
+            std::shared_ptr<projection::VizGeorefSpline2D> tps;
 
         private:
             // Slower, generic CPU implementation
@@ -83,7 +83,7 @@ namespace satdump
             void update(bool skip_tps = false);
 
             // Set TPS externally if it was already processed
-            void set_tps(std::shared_ptr<proj::VizGeorefSpline2D> tps)
+            void set_tps(std::shared_ptr<projection::VizGeorefSpline2D> tps)
             {
                 this->tps = tps;
             }

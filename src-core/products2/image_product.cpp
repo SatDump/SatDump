@@ -1,9 +1,10 @@
 #include "image_product.h"
-#include "logger.h"
 #include "core/config.h"
-#include "common/utils.h"
-#include "common/image/io.h"
-#include "common/image/image_utils.h"
+#include "core/exception.h"
+#include "image/image_utils.h"
+#include "image/io.h"
+#include "logger.h"
+#include "utils/http.h"
 
 #ifdef __ANDROID__
 #include <android_native_app_glue.h>
@@ -24,7 +25,7 @@ namespace satdump
             std::string image_format;
             try
             {
-                image_format = satdump::config::main_cfg["satdump_general"]["product_format"]["value"];
+                image_format = satdump_cfg.getValueFromSatDumpGeneral<std::string>("product_format");
             }
             catch (std::exception &e)
             {
@@ -37,14 +38,9 @@ namespace satdump
             for (int64_t c = 0; c < (int64_t)images.size(); c++)
             {
                 savemtx.lock();
-                if (images[c].filename.find(".png") == std::string::npos &&
-                    images[c].filename.find(".jpeg") == std::string::npos &&
-                    images[c].filename.find(".jpg") == std::string::npos &&
-                    images[c].filename.find(".j2k") == std::string::npos &&
-                    images[c].filename.find(".tiff") == std::string::npos &&
-                    images[c].filename.find(".tif") == std::string::npos &&
-                    images[c].filename.find(".qoi") == std::string::npos &&
-                    images[c].filename.find(".pbm") == std::string::npos)
+                if (images[c].filename.find(".png") == std::string::npos && images[c].filename.find(".jpeg") == std::string::npos && images[c].filename.find(".jpg") == std::string::npos &&
+                    images[c].filename.find(".j2k") == std::string::npos && images[c].filename.find(".tiff") == std::string::npos && images[c].filename.find(".tif") == std::string::npos &&
+                    images[c].filename.find(".qoi") == std::string::npos && images[c].filename.find(".pbm") == std::string::npos)
                     images[c].filename += "." + image_format;
                 else if (!d_no_not_save_images)
                     logger->trace("Image format was specified in product call. Not supposed to happen!");
@@ -72,8 +68,7 @@ namespace satdump
             {
                 int size = ceil(sqrt(images.size()));
                 logger->debug("Using size %d", size);
-                image::Image image_all = image::make_manyimg_composite(size, size, images.size(), [this](int c)
-                                                                       { return images[c].image; });
+                image::Image image_all = image::make_manyimg_composite(size, size, images.size(), [this](int c) { return images[c].image; });
                 image::save_img(image_all, directory + "/" + images[0].filename);
                 savemtx.lock();
                 contents["img_matrix_size"] = size;
@@ -198,10 +193,11 @@ namespace satdump
 
                 images.push_back(img_holder);
             }
+
+            if (images.size() == 0)
+                throw satdump_exception("ImageProduct with no images. Shouldn't happen!");
         }
 
-        ImageProduct::~ImageProduct()
-        {
-        }
-    }
-}
+        ImageProduct::~ImageProduct() {}
+    } // namespace products
+} // namespace satdump

@@ -95,9 +95,9 @@ public:
 
     static void save()
     {
-        satdump::config::main_cfg["plugin_settings"]["remote_sdr_support"] = nlohmann::json::array();
+        satdump::satdump_cfg.main_cfg["plugin_settings"]["remote_sdr_support"] = nlohmann::json::array();
         for (auto &server : additional_servers)
-            satdump::config::main_cfg["plugin_settings"]["remote_sdr_support"].push_back({{"ip", server.first}, {"port", server.second}});
+            satdump::satdump_cfg.main_cfg["plugin_settings"]["remote_sdr_support"].push_back({{"ip", server.first}, {"port", server.second}});
     }
 
 public:
@@ -110,7 +110,7 @@ public:
     {
         satdump::eventBus->register_handler<dsp::RegisterDSPSampleSourcesEvent>(registerSources);
         satdump::eventBus->register_handler<satdump::config::RegisterPluginConfigHandlersEvent>(registerConfigHandler);
-        for (auto &server : satdump::config::main_cfg["plugin_settings"]["remote_sdr_support"])
+        for (auto &server : satdump::satdump_cfg.main_cfg["plugin_settings"]["remote_sdr_support"])
             additional_servers.push_back({server["ip"], server["port"]});
     }
 

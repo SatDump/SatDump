@@ -3,11 +3,11 @@
 #include "project.h"
 #include "common/cli_utils.h"
 
-#include "common/image/image.h"
+#include "image/image.h"
 
 #include "common/projection/reprojector.h"
-#include "resources.h"
-#include "common/image/image_utils.h"
+#include "core/resources.h"
+#include "image/image_utils.h"
 #include "common/overlay_handler.h"
 
 #include "common/projection/reprojector_backend_utils.h"

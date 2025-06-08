@@ -5,6 +5,7 @@
 #include "common/ccsds/ccsds_time.h"
 #include "common/tracking/tle.h"
 #include "common/utils.h"
+#include "core/resources.h"
 #include "imgui/imgui.h"
 #include "logger.h"
 #include "lrpt_msumr_reader.h"
@@ -12,7 +13,7 @@
 #include "nlohmann/json_utils.h"
 #include "products2/dataset.h"
 #include "products2/image_product.h"
-#include "resources.h"
+#include "utils/stats.h"
 #include <cstring>
 #include <ctime>
 #include <filesystem>
@@ -200,7 +201,7 @@ namespace meteor
             logger->info("Writing images.... (Can take a while)");
 
             // Identify satellite, and apply per-sat settings...
-            int msumr_serial_number = most_common(msumr_ids.begin(), msumr_ids.end(), -1);
+            int msumr_serial_number = satdump::most_common(msumr_ids.begin(), msumr_ids.end(), -1);
             msumr_ids.clear();
             logger->trace("MSU-MR ID %d", msumr_serial_number);
 
@@ -310,14 +311,14 @@ namespace meteor
             }
 
             msumr_products.images.swap(msumr_images);
-            createMSUMRProduct(msumr_products, get_median(msureader.timestamps), norad, msumr_serial_number, calib_cfg, lrpt_channels, msureader.timestamps, sat_name);
+            createMSUMRProduct(msumr_products, satdump::get_median(msureader.timestamps), norad, msumr_serial_number, calib_cfg, lrpt_channels, msureader.timestamps, sat_name);
             msumr_products.save(directory);
             msumr_products.images.clear(); // Free up memory
 
             // Products dataset
             satdump::products::DataSet dataset;
             dataset.satellite_name = sat_name;
-            dataset.timestamp = get_median(msureader.timestamps);
+            dataset.timestamp = satdump::get_median(msureader.timestamps);
             dataset.products_list.push_back("MSU-MR");
 
             if (d_parameters.contains("fill_missing") && d_parameters["fill_missing"])
@@ -373,7 +374,7 @@ namespace meteor
                     if (img.size() > 0)
                         filled_products.images.push_back({i, "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, 10});
                 }
-                createMSUMRProduct(filled_products, get_median(msureader.timestamps), norad, msumr_serial_number, calib_cfg, lrpt_channels, msureader.timestamps, sat_name);
+                createMSUMRProduct(filled_products, satdump::get_median(msureader.timestamps), norad, msumr_serial_number, calib_cfg, lrpt_channels, msureader.timestamps, sat_name);
                 filled_products.save(fill_directory);
                 dataset.products_list.push_back("MSU-MR (Filled)");
             }
@@ -393,9 +394,7 @@ namespace meteor
 
         std::string METEORMSUMRLRPTDecoderModule::getID() { return "meteor_msumr_lrpt"; }
 
-        std::vector<std::string> METEORMSUMRLRPTDecoderModule::getParameters() { return {}; }
-
-        std::shared_ptr<ProcessingModule> METEORMSUMRLRPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> METEORMSUMRLRPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<METEORMSUMRLRPTDecoderModule>(input_file, output_file_hint, parameters);
         }

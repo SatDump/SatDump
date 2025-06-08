@@ -1,4 +1,3 @@
-#include "core/module.h"
 #include "core/plugin.h"
 #include "logger.h"
 

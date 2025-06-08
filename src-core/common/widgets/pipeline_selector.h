@@ -1,8 +1,8 @@
 #pragma once
-#include <string>
 #include "core/params.h"
-#include "core/pipeline.h"
 #include "imgui/dialogs/widget.h"
+#include "pipeline/pipeline.h"
+#include <string>
 
 namespace satdump
 {
@@ -21,7 +21,7 @@ namespace satdump
 
         FileSelectWidget inputfileselect = FileSelectWidget("Input File", "Select Input File");
         FileSelectWidget outputdirselect = FileSelectWidget("Output Directory", "Select Output Directory", true);
-        Pipeline selected_pipeline;
+        pipeline::Pipeline selected_pipeline;
         int pipelines_levels_select_id = 0;
 
     private:
@@ -40,4 +40,4 @@ namespace satdump
         std::vector<std::pair<std::string, satdump::params::EditableParameter>> parameters_ui;
         std::vector<std::pair<std::string, satdump::params::EditableParameter>> parameters_ui_pipeline;
     };
-}
+} // namespace satdump

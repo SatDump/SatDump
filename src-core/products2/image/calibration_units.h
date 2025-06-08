@@ -18,7 +18,8 @@
 #define CALIBRATION_ID_REFLECTIVE_RADIANCE "reflective_radiance"
 #define CALIBRATION_ID_SUN_ANGLE_COMPENSATED_REFLECTIVE_RADIANCE "sun_angle_compensated_reflective_radiance"
 #define CALIBRATION_ID_BRIGHTNESS_TEMPERATURE "brightness_temperature"
-#define CALIBRATION_ID_BRIGHTNESS_TEMPERATURE_CELCIUS "brightness_temperature_celcius"
+#define CALIBRATION_ID_BRIGHTNESS_TEMPERATURE_CELSIUS "brightness_temperature_celsius"
+#define CALIBRATION_ID_BACKSCATTER "backscatter"
 
 namespace satdump
 {

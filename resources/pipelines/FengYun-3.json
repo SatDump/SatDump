@@ -1,16 +1,9 @@
 {
     "fengyun3_ab_ahrpt": {
         "name": "FengYun-3 A/B AHRPT",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -32,7 +25,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 2800000,
                     "rrc_alpha": 0.5,
@@ -40,14 +34,16 @@
                 }
             },
             "cadu": {
-                "fengyun_ahrpt_decoder": {
+                "module": "fengyun_ahrpt_decoder",
+                "parameters": {
                     "viterbi_outsync_after": 20,
                     "viterbi_ber_thresold": 0.26,
                     "invert_second_viterbi": false
                 }
             },
             "products": {
-                "fy3_instruments": {
+                "module": "fy3_instruments",
+                "parameters": {
                     "satellite": "fy3ab"
                 }
             }
@@ -55,16 +51,9 @@
     },
     "fengyun3_c_ahrpt": {
         "name": "FengYun-3 C AHRPT ",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -86,7 +75,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 2600000,
                     "rrc_alpha": 0.5,
@@ -94,14 +84,16 @@
                 }
             },
             "cadu": {
-                "fengyun_ahrpt_decoder": {
+                "module": "fengyun_ahrpt_decoder",
+                "parameters": {
                     "viterbi_outsync_after": 20,
                     "viterbi_ber_thresold": 0.26,
                     "invert_second_viterbi": false
                 }
             },
             "products": {
-                "fy3_instruments": {
+                "module": "fy3_instruments",
+                "parameters": {
                     "satellite": "fy3c"
                 }
             }
@@ -109,7 +101,6 @@
     },
     "fengyun3_abc_mpt": {
         "name": "FengYun-3 A/B/C MPT",
-        "live": false,
         "frequencies": [],
         "parameters": {
             "dump_mersi": {
@@ -122,7 +113,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 18.7e6,
                     "rrc_alpha": 0.5,
@@ -131,13 +123,15 @@
                 }
             },
             "cadu": {
-                "fengyun_mpt_decoder": {
+                "module": "fengyun_mpt_decoder",
+                "parameters": {
                     "viterbi_outsync_after": 20,
                     "viterbi_ber_thresold": 0.300
                 }
             },
             "products": {
-                "fy3_instruments": {
+                "module": "fy3_instruments",
+                "parameters": {
                     "satellite": "fy3ab",
                     "downlink": "mpt",
                     "mersi_bowtie": true,
@@ -148,7 +142,6 @@
     },
     "fengyun3_d_ahrpt": {
         "name": "FengYun-3 D AHRPT",
-        "live": false,
         "frequencies": [],
         "parameters": {
             "dump_mersi": {
@@ -161,7 +154,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 30e6,
                     "rrc_alpha": 0.35,
@@ -170,14 +164,16 @@
                 }
             },
             "cadu": {
-                "fengyun_ahrpt_decoder": {
+                "module": "fengyun_ahrpt_decoder",
+                "parameters": {
                     "viterbi_outsync_after": 20,
                     "viterbi_ber_thresold": 0.26,
                     "invert_second_viterbi": true
                 }
             },
             "products": {
-                "fy3_instruments": {
+                "module": "fy3_instruments",
+                "parameters": {
                     "satellite": "fy3d",
                     "mersi_bowtie": true,
                     "mersi_histmatch": true
@@ -187,7 +183,6 @@
     },
     "fengyun3_e_ahrpt": {
         "name": "FengYun-3 E AHRPT",
-        "live": false,
         "frequencies": [],
         "parameters": {
             "dump_mersi": {
@@ -200,7 +195,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 38.4e6,
                     "rrc_alpha": 0.35,
@@ -209,14 +205,16 @@
                 }
             },
             "cadu": {
-                "fengyun_ahrpt_decoder": {
+                "module": "fengyun_ahrpt_decoder",
+                "parameters": {
                     "viterbi_outsync_after": 20,
                     "viterbi_ber_thresold": 0.26,
                     "invert_second_viterbi": true
                 }
             },
             "products": {
-                "fy3_instruments": {
+                "module": "fy3_instruments",
+                "parameters": {
                     "satellite": "fy3e",
                     "mersi_bowtie": true,
                     "mersi_histmatch": true
@@ -226,7 +224,6 @@
     },
     "fengyun3_f_ahrpt": {
         "name": "FengYun-3 F AHRPT",
-        "live": false,
         "frequencies": [],
         "parameters": {
             "dump_mersi": {
@@ -239,7 +236,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 38.4e6,
                     "rrc_alpha": 0.35,
@@ -248,14 +246,16 @@
                 }
             },
             "cadu": {
-                "fengyun_ahrpt_decoder": {
+                "module": "fengyun_ahrpt_decoder",
+                "parameters": {
                     "viterbi_outsync_after": 20,
                     "viterbi_ber_thresold": 0.26,
                     "invert_second_viterbi": true
                 }
             },
             "products": {
-                "fy3_instruments": {
+                "module": "fy3_instruments",
+                "parameters": {
                     "satellite": "fy3f",
                     "mersi_bowtie": true,
                     "mersi_histmatch": true
@@ -265,7 +265,6 @@
     },
     "fengyun3_g_ahrpt": {
         "name": "FengYun-3 G AHRPT",
-        "live": false,
         "frequencies": [],
         "parameters": {
             "satellite_rotated": {
@@ -284,7 +283,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 6e6,
                     "rrc_alpha": 0.35,
@@ -293,14 +293,16 @@
                 }
             },
             "cadu": {
-                "fengyun_ahrpt_decoder": {
+                "module": "fengyun_ahrpt_decoder",
+                "parameters": {
                     "viterbi_outsync_after": 20,
                     "viterbi_ber_thresold": 0.26,
                     "invert_second_viterbi": true
                 }
             },
             "products": {
-                "fy3_instruments": {
+                "module": "fy3_instruments",
+                "parameters": {
                     "satellite": "fy3g",
                     "mersi_bowtie": true,
                     "mersi_histmatch": true
@@ -311,7 +313,6 @@
     },
     "fengyun3_abc_dpt": {
         "name": "FengYun-3 A/B/C DPT",
-        "live": false,
         "frequencies": [],
         "parameters": {
             "dump_mersi": {
@@ -324,7 +325,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 62e6,
                     "rrc_alpha": 0.35,
@@ -333,14 +335,16 @@
                 }
             },
             "cadu": {
-                "fengyun_ahrpt_decoder": {
+                "module": "fengyun_ahrpt_decoder",
+                "parameters": {
                     "viterbi_outsync_after": 20,
                     "viterbi_ber_thresold": 0.26,
                     "invert_second_viterbi": true
                 }
             },
             "products": {
-                "fy3_instruments": {
+                "module": "fy3_instruments",
+                "parameters": {
                     "satellite": "fy3ab",
                     "downlink": "dpt",
                     "mersi_bowtie": true,
@@ -351,7 +355,6 @@
     },
     "fengyun3_d_dpt": {
         "name": "FengYun-3 D DPT",
-        "live": false,
         "frequencies": [],
         "parameters": {
             "dump_mersi": {
@@ -364,7 +367,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 150e6,
                     "rrc_alpha": 0.35,
@@ -373,14 +377,16 @@
                 }
             },
             "cadu": {
-                "fengyun_ahrpt_decoder": {
+                "module": "fengyun_ahrpt_decoder",
+                "parameters": {
                     "viterbi_outsync_after": 20,
                     "viterbi_ber_thresold": 0.26,
                     "invert_second_viterbi": true
                 }
             },
             "products": {
-                "fy3_instruments": {
+                "module": "fy3_instruments",
+                "parameters": {
                     "satellite": "fy3d",
                     "mersi_bowtie": true,
                     "mersi_histmatch": true
@@ -390,7 +396,6 @@
     },
     "fengyun3_e_dpt": {
         "name": "FengYun-3 E DPT",
-        "live": false,
         "frequencies": [],
         "parameters": {
             "dump_mersi": {
@@ -403,7 +408,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 225e6,
                     "rrc_alpha": 0.35,
@@ -412,7 +418,8 @@
                 }
             },
             "cadu": {
-                "ccsds_ldpc_decoder": {
+                "module": "ccsds_ldpc_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "ldpc_rate": "7/8",
                     "ldpc_iterations": 10,
@@ -421,7 +428,8 @@
                 }
             },
             "products": {
-                "fy3_instruments": {
+                "module": "fy3_instruments",
+                "parameters": {
                     "satellite": "fy3e",
                     "mersi_bowtie": true,
                     "mersi_histmatch": true
@@ -431,7 +439,6 @@
     },
     "fengyun3_f_dpt": {
         "name": "FengYun-3 F DPT",
-        "live": false,
         "frequencies": [],
         "parameters": {
             "dump_mersi": {
@@ -444,7 +451,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 225e6,
                     "rrc_alpha": 0.35,
@@ -453,7 +461,8 @@
                 }
             },
             "cadu": {
-                "ccsds_ldpc_decoder": {
+                "module": "ccsds_ldpc_decoder",
+                "parameters": {
                     "constellation": "qpsk",
                     "ldpc_rate": "7/8",
                     "ldpc_iterations": 10,
@@ -462,7 +471,8 @@
                 }
             },
             "products": {
-                "fy3_instruments": {
+                "module": "fy3_instruments",
+                "parameters": {
                     "satellite": "fy3f",
                     "mersi_bowtie": true,
                     "mersi_histmatch": true
@@ -472,23 +482,17 @@
     },
     "fengyun3_tlm_old": {
         "name": "FengYun-3 TLM (Old) A/B/C/D",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [],
         "parameters": {},
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "resample_after_pll": true,
                     "symbolrate": 4096,
                     "pll_bw": 0.01,
@@ -499,7 +503,8 @@
                 }
             },
             "frames": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 2048,
                     "nrzm": true,
@@ -512,23 +517,17 @@
     },
     "fengyun3_tlm": {
         "name": "FengYun-3 TLM E/F",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [],
         "parameters": {},
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "resample_after_pll": true,
                     "symbolrate": 8192,
                     "pll_bw": 0.01,
@@ -539,7 +538,8 @@
                 }
             },
             "frames": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 4096,
                     "nrzm": true,

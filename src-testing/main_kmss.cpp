@@ -12,9 +12,9 @@
 
 #include "logger.h"
 
-#include "common/image/image.h"
-#include "common/image/processing.h"
-#include "common/image/io.h"
+#include "image/image.h"
+#include "image/processing.h"
+#include "image/io.h"
 
 #include "common/projection/thinplatespline.h"
 

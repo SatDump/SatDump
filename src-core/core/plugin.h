@@ -4,8 +4,8 @@
 #include <memory>
 #include <map>
 
-#include "common/event_bus.h"
-#include "common/task_scheduler.h"
+#include "utils/event_bus.h"
+#include "utils/task_scheduler.h"
 
 #define PLUGIN_LOADER(constructor)                       \
     extern "C"                                           \

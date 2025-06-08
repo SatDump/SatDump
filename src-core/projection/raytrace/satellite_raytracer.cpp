@@ -2,10 +2,8 @@
 #include "core/exception.h"
 #include "core/plugin.h"
 
-// TODOREWORK
-#include "common/projection/timestamp_filtering.h"
+#include "projection/raytrace/timestamp_filtering.h"
 
-//
 #include "common/manual_line.h"
 #include "common/normal_line.h"
 #include "common/timestamp_line_gcps.h"
@@ -13,9 +11,8 @@
 
 namespace satdump
 {
-    namespace proj
+    namespace projection
     {
-        // TODOREWORK Are we keeping this?
         void try_interpolate_timestamps(std::vector<double> &timestamps, nlohmann::json &cfg)
         {
             if (cfg.contains("interpolate_timestamps"))
@@ -70,5 +67,5 @@ namespace satdump
 
             throw satdump_exception("Invalid satellite projection : " + type + "!");
         }
-    } // namespace proj
+    } // namespace projection
 } // namespace satdump

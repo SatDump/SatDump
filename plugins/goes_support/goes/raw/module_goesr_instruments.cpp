@@ -1,30 +1,26 @@
 #include "module_goesr_instruments.h"
-#include <fstream>
-#include "common/ccsds/ccsds_aos/vcdu.h"
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
-#include "common/utils.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
-#include "resources.h"
+#include "common/ccsds/ccsds_aos/vcdu.h"
+#include "common/utils.h"
+#include "core/resources.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
 namespace goes
 {
     namespace instruments
     {
         GOESRInstrumentsDecoderModule::GOESRInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            : ProcessingModule(input_file, output_file_hint, parameters)
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
+            fsfsm_enable_output = false;
         }
 
         void GOESRInstrumentsDecoderModule::process()
         {
-            filesize = getFilesize(d_input_file);
-            std::ifstream data_in(d_input_file, std::ios::binary);
-
-            logger->info("Using input frames " + d_input_file);
-
-            time_t lastTime = 0;
             uint8_t cadu[1024];
 
             // Demuxers
@@ -41,10 +37,10 @@ namespace goes
                 suvi_reader.directory = suvi_dir;
             }
 
-            while (!data_in.eof())
+            while (should_run())
             {
                 // Read buffer
-                data_in.read((char *)&cadu, 1024);
+                read_data((uint8_t *)&cadu, 1024);
 
                 // Parse this transport frame
                 ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
@@ -63,40 +59,25 @@ namespace goes
                         if (pkt.header.apid == 810)
                             suvi_reader.work(pkt);
                 }
-
-                progress = data_in.tellg();
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
-            data_in.close();
+            cleanup();
         }
 
         void GOESRInstrumentsDecoderModule::drawUI(bool window)
         {
             ImGui::Begin("GOES-R Instruments Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
-        std::string GOESRInstrumentsDecoderModule::getID()
-        {
-            return "goesr_instruments";
-        }
+        std::string GOESRInstrumentsDecoderModule::getID() { return "goesr_instruments"; }
 
-        std::vector<std::string> GOESRInstrumentsDecoderModule::getParameters()
-        {
-            return {};
-        }
-
-        std::shared_ptr<ProcessingModule> GOESRInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> GOESRInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<GOESRInstrumentsDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace amsu
-} // namespace metop
+    } // namespace instruments
+} // namespace goes

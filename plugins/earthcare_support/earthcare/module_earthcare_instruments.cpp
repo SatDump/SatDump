@@ -1,36 +1,33 @@
 #include "module_earthcare_instruments.h"
-#include <fstream>
-#include "common/ccsds/ccsds_tm/vcdu.h"
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
-#include "common/utils.h"
 #include "common/ccsds/ccsds_tm/demuxer.h"
-#include "products2/image_product.h"
-#include "products2/dataset.h"
-#include "nlohmann/json_utils.h"
-#include "resources.h"
+#include "common/ccsds/ccsds_tm/vcdu.h"
 #include "common/tracking/tle.h"
+#include "common/utils.h"
+#include "core/resources.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include "nlohmann/json_utils.h"
+#include "products2/dataset.h"
+#include "products2/image_product.h"
+#include "utils/stats.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
-#include "common/image/io.h"
+#include "image/io.h"
 
 namespace earthcare
 {
     namespace instruments
     {
         EarthCAREInstrumentsDecoderModule::EarthCAREInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            : ProcessingModule(input_file, output_file_hint, parameters)
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
+            fsfsm_enable_output = false;
         }
 
         void EarthCAREInstrumentsDecoderModule::process()
         {
-            filesize = getFilesize(d_input_file);
-            std::ifstream data_in(d_input_file, std::ios::binary);
-
-            logger->info("Using input frames " + d_input_file);
-
-            time_t lastTime = 0;
             uint8_t cadu[1279];
 
             // Demuxers
@@ -41,10 +38,10 @@ namespace earthcare
 
             //  std::ofstream idk_test_out(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/test_idk.bin", std::ios::binary);
 
-            while (!data_in.eof())
+            while (should_run())
             {
                 // Read buffer
-                data_in.read((char *)cadu, 1279);
+                read_data((uint8_t *)cadu, 1279);
 
                 // Parse this transport frame
                 ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
@@ -75,21 +72,14 @@ namespace earthcare
                         //     logger->error("%d  %d", pkt.header.apid, pkt.payload.size());
                     }
                 }
-
-                progress = data_in.tellg();
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
-            data_in.close();
+            cleanup();
 
             // Products dataset
             satdump::products::DataSet dataset;
             dataset.satellite_name = "EarthCARE";
-            dataset.timestamp = get_median(msi_reader.timestamps);
+            dataset.timestamp = satdump::get_median(msi_reader.timestamps);
 
             int norad = 59908;
 
@@ -113,7 +103,8 @@ namespace earthcare
 
                 satdump::products::ImageProduct msi_products;
                 msi_products.instrument_name = "earthcare_msi";
-                msi_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/earthcare_msi.json")), satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp), msi_reader.timestamps);
+                msi_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/earthcare_msi.json")),
+                                                         satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp), msi_reader.timestamps);
 
                 for (int i = 0; i < 7; i++)
                     msi_products.images.push_back({i, "MSI-" + std::to_string(i + 1), std::to_string(i + 1), msi_reader.getChannel(i), 16});
@@ -177,24 +168,16 @@ namespace earthcare
                 ImGui::EndTable();
             }
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
-        std::string EarthCAREInstrumentsDecoderModule::getID()
-        {
-            return "earthcare_instruments";
-        }
+        std::string EarthCAREInstrumentsDecoderModule::getID() { return "earthcare_instruments"; }
 
-        std::vector<std::string> EarthCAREInstrumentsDecoderModule::getParameters()
-        {
-            return {};
-        }
-
-        std::shared_ptr<ProcessingModule> EarthCAREInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> EarthCAREInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<EarthCAREInstrumentsDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace amsu
-} // namespace metop
+    } // namespace instruments
+} // namespace earthcare

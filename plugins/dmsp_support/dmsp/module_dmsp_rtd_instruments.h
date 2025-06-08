@@ -1,26 +1,18 @@
 #pragma once
 
-#include "core/module.h"
-#include <complex>
-#include <thread>
-#include <fstream>
-
 #include "instruments/ols/ols_rtd_reader.h"
+#include "pipeline/modules/base/filestream_to_filestream.h"
+#include "pipeline/modules/instrument_utils.h"
 
 namespace dmsp
 {
-    class DMSPInstrumentsModule : public ProcessingModule
+    class DMSPInstrumentsModule : public satdump::pipeline::base::FileStreamToFileStreamModule
     {
     protected:
-        std::ifstream data_in;
-
         uint8_t rtd_frame[19];
 
         // Line CNT
         int ols_line_count = 0;
-
-        std::atomic<uint64_t> filesize;
-        std::atomic<uint64_t> progress;
 
         // Readers
         ols::OLSRTDReader ols_reader;
@@ -33,13 +25,11 @@ namespace dmsp
         ~DMSPInstrumentsModule();
         void process();
         void drawUI(bool window);
-        std::vector<ModuleDataType> getInputTypes();
-        std::vector<ModuleDataType> getOutputTypes();
 
     public:
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
-        static std::vector<std::string> getParameters();
+        static nlohmann::json getParams() { return {}; } // TODOREWORK
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
-} // namespace noaa
+} // namespace dmsp

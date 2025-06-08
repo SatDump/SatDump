@@ -3,6 +3,7 @@
 #include "common/utils.h"
 #include "logger.h"
 #include "common/tracking/tle.h"
+#include "utils/time.h"
 #include <cfloat>
 
 namespace satdump

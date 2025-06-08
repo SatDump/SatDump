@@ -1,19 +1,19 @@
 #include "module_sstv_decoder.h"
 #include "common/dsp/filter/firdes.h"
-#include "common/image/image.h"
-#include "common/image/io.h"
 #include "common/utils.h"
 #include "common/wav.h"
 #include "core/exception.h"
+#include "core/resources.h"
 #include "dsp/filter/fir.h"
 #include "dsp/sstv_linesync.h"
 #include "dsp/utils/hilbert.h"
 #include "dsp/utils/quadrature_demod.h"
+#include "image/image.h"
+#include "image/io.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
-#include "resources.h"
 
 #include "lineproc.h"
 
@@ -36,7 +36,7 @@ namespace sstv
 
     void SSTVDecoderModule::process()
     {
-        if (input_data_type == DATA_FILE)
+        if (input_data_type == satdump::pipeline::DATA_FILE)
             filesize = getFilesize(d_input_file);
         else
             filesize = 0;
@@ -46,7 +46,7 @@ namespace sstv
         bool is_stereo = false;
 
         std::ifstream data_in;
-        if (input_data_type == DATA_FILE)
+        if (input_data_type == satdump::pipeline::DATA_FILE)
         {
             wav::WavHeader hdr = wav::parseHeaderFromFileWav(d_input_file);
             if (!wav::isValidWav(hdr))
@@ -118,9 +118,9 @@ namespace sstv
             const int buffer_size = 1024;
             int16_t *s16_buf = new int16_t[buffer_size];
             time_t lastTime = 0;
-            while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
+            while (input_data_type == satdump::pipeline::DATA_FILE ? !data_in.eof() : input_active.load())
             {
-                if (input_data_type == DATA_FILE)
+                if (input_data_type == satdump::pipeline::DATA_FILE)
                     data_in.read((char *)s16_buf, buffer_size * sizeof(int16_t));
                 else
                     input_fifo->read((uint8_t *)s16_buf, buffer_size * sizeof(int16_t));
@@ -141,7 +141,7 @@ namespace sstv
                     io_in.fifo->wait_enqueue(nblk);
                 }
 
-                if (input_data_type == DATA_FILE)
+                if (input_data_type == satdump::pipeline::DATA_FILE)
                     progress = data_in.tellg();
                 if (time(NULL) % 10 == 0 && lastTime != time(NULL))
                 {
@@ -257,7 +257,7 @@ namespace sstv
         }
         ImGui::EndGroup();
 
-        if (input_data_type == DATA_FILE)
+        if (input_data_type == satdump::pipeline::DATA_FILE)
             ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         ImGui::End();
@@ -265,9 +265,7 @@ namespace sstv
 
     std::string SSTVDecoderModule::getID() { return "sstv_decoder"; }
 
-    std::vector<std::string> SSTVDecoderModule::getParameters() { return {}; }
-
-    std::shared_ptr<ProcessingModule> SSTVDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<satdump::pipeline::ProcessingModule> SSTVDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<SSTVDecoderModule>(input_file, output_file_hint, parameters);
     }

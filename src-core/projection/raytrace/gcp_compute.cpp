@@ -5,7 +5,7 @@
 
 namespace satdump
 {
-    namespace proj
+    namespace projection
     {
         std::vector<satdump::projection::GCP> compute_gcps(Projection p)
         {

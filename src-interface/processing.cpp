@@ -1,7 +1,7 @@
+#include <exception>
 #define SATDUMP_DLL_EXPORT2 1
-#include "processing.h"
-#include "core/pipeline.h"
 #include "logger.h"
+#include "processing.h"
 #include <filesystem>
 
 #include "core/config.h"
@@ -20,17 +20,18 @@ namespace satdump
         void process(std::string downlink_pipeline, std::string input_level, std::string input_file, std::string output_file, nlohmann::json parameters)
         {
             // Get pipeline
-            std::optional<Pipeline> pipeline = getPipelineFromName(downlink_pipeline);
-            if (!pipeline.has_value())
+            try
             {
-                logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
-                return;
+                pipeline::Pipeline pipeline = pipeline::getPipelineFromID(downlink_pipeline);
+                process(pipeline, input_level, input_file, output_file, parameters);
             }
-
-            process(pipeline.value(), input_level, input_file, output_file, parameters);
+            catch (std::exception &e)
+            {
+                logger->error("Error processing! %s", e.what());
+            }
         }
 
-        void process(Pipeline downlink_pipeline, std::string input_level, std::string input_file, std::string output_file, nlohmann::json parameters)
+        void process(pipeline::Pipeline downlink_pipeline, std::string input_level, std::string input_file, std::string output_file, nlohmann::json parameters)
         {
             processing_mutex.lock();
             is_processing = true;
@@ -62,7 +63,7 @@ namespace satdump
 
             logger->info("Done! Goodbye");
 
-            if (config::main_cfg["user_interface"]["open_viewer_post_processing"]["value"].get<bool>())
+            if (satdump_cfg.main_cfg["user_interface"]["open_viewer_post_processing"]["value"].get<bool>())
             {
                 if (std::filesystem::exists(output_file + "/dataset.json"))
                 {
@@ -74,7 +75,7 @@ namespace satdump
             processing_mutex.unlock();
         }
 
-        SATDUMP_DLL2 std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> ui_call_list = std::make_shared<std::vector<std::shared_ptr<ProcessingModule>>>();
+        SATDUMP_DLL2 std::shared_ptr<std::vector<std::shared_ptr<pipeline::ProcessingModule>>> ui_call_list = std::make_shared<std::vector<std::shared_ptr<pipeline::ProcessingModule>>>();
         SATDUMP_DLL2 std::shared_ptr<std::mutex> ui_call_list_mutex = std::make_shared<std::mutex>();
         SATDUMP_DLL2 bool is_processing = false;
     } // namespace processing

@@ -2,13 +2,15 @@
 #include "common/repack.h"
 #include "common/tracking/tle.h"
 #include "common/utils.h"
+#include "core/resources.h"
 #include "imgui/imgui.h"
 #include "logger.h"
 #include "meteor.h"
 #include "nlohmann/json_utils.h"
 #include "products2/dataset.h"
 #include "products2/image_product.h"
-#include "resources.h"
+#include "utils/stats.h"
+#include "utils/time.h"
 #include <filesystem>
 #include <fstream>
 
@@ -215,7 +217,7 @@ namespace meteor
                                 else if (norad == 59051)
                                     offset = 1704067200 - 3600 * 24 - 3600 * 3 - 3600 * 24 * 3107;
                                 double timestamp = offset + double(idk_value) * 65536 + double(seconds_value) + double(last_subsecond_cnt) / 16777216.0;
-                                logger->trace("%s - %d", timestamp_to_string(timestamp).c_str(), idk_value);
+                                logger->trace("%s - %d", satdump::timestamp_to_string(timestamp).c_str(), idk_value);
                                 timestamps.push_back(timestamp);
                             }
                             else
@@ -282,7 +284,7 @@ namespace meteor
                 // Products dataset
                 satdump::products::DataSet dataset;
                 dataset.satellite_name = sat_name;
-                dataset.timestamp = get_median(timestamps);
+                dataset.timestamp = satdump::get_median(timestamps);
 
                 // KMSS1
                 {
@@ -394,8 +396,6 @@ namespace meteor
         }
 
         std::string MeteorXBandInstrumentsDecoderModule::getID() { return "meteor_xband_instruments"; }
-
-        std::vector<std::string> MeteorXBandInstrumentsDecoderModule::getParameters() { return {}; }
 
         std::shared_ptr<ProcessingModule> MeteorXBandInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {

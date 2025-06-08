@@ -10,7 +10,7 @@ namespace satdump
 {
     StatusLoggerSink::StatusLoggerSink()
     {
-        show_bar = config::main_cfg["user_interface"]["status_bar"]["value"].get<bool>();
+        show_bar = satdump_cfg.main_cfg["user_interface"]["status_bar"]["value"].get<bool>();
         show_log = false;
     }
 
@@ -50,7 +50,7 @@ namespace satdump
             return 0;
 
         if (processing::is_processing && ImGuiUtils_OfflineProcessingSelected())
-            for (std::shared_ptr<ProcessingModule> module : *processing::ui_call_list)
+            for (std::shared_ptr<pipeline::ProcessingModule> module : *processing::ui_call_list)
                 if (module->getIDM() == "products_processor")
                     return 0;
 

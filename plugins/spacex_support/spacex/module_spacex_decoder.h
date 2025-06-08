@@ -1,14 +1,12 @@
 #pragma once
 
-#include "core/module.h"
-#include <complex>
-#include <fstream>
-#include "deframer.h"
 #include "common/dsp/utils/random.h"
+#include "deframer.h"
+#include "pipeline/modules/base/filestream_to_filestream.h"
 
 namespace spacex
 {
-    class SpaceXDecoderModule : public ProcessingModule
+    class SpaceXDecoderModule : public satdump::pipeline::base::FileStreamToFileStreamModule
     {
     protected:
         // Read buffer
@@ -18,11 +16,6 @@ namespace spacex
 
         uint8_t rsWorkBuffer[255];
         int errors[5];
-
-        std::ifstream data_in;
-        std::ofstream data_out;
-        std::atomic<uint64_t> filesize;
-        std::atomic<uint64_t> progress;
 
         bool qpsk;
 
@@ -34,11 +27,12 @@ namespace spacex
         ~SpaceXDecoderModule();
         void process();
         void drawUI(bool window);
+        nlohmann::json getModuleStats();
 
     public:
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
-        static std::vector<std::string> getParameters();
+        static nlohmann::json getParams() { return {}; } // TODOREWORK
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
-} // namespace falcon
+} // namespace spacex

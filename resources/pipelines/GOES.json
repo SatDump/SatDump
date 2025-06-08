@@ -1,38 +1,19 @@
 {
     "goes_gvar": {
         "name": "GOES GVAR",
-        "live": true,
-        "live_cfg": {
+        "live": {
             "pkt_size": 32786,
             "default": [
-                [
-                    1,
-                    0
-                ],
-                [
-                    2,
-                    0
-                ],
-                [
-                    3,
-                    0
-                ]
+                1,
+                2,
+                3
             ],
             "server": [
-                [
-                    1,
-                    0
-                ],
-                [
-                    2,
-                    0
-                ]
+                1,
+                2
             ],
             "client": [
-                [
-                    3,
-                    0
-                ]
+                3
             ]
         },
         "frequencies": [
@@ -45,7 +26,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 2.11e6,
                     "rrc_alpha": 0.5,
@@ -54,47 +36,29 @@
                 }
             },
             "gvar": {
-                "goes_gvar_decoder": {}
+                "module": "goes_gvar_decoder",
+                "parameters": {}
             },
             "products": {
-                "goes_gvar_image_decoder": {}
+                "module": "goes_gvar_image_decoder"
             }
         }
     },
     "goes_hrit": {
         "name": "GOES-R HRIT",
-        "live": true,
-        "live_cfg": {
+        "live": {
             "pkt_size": 10240, // 1024 * 10
             "default": [
-                [
-                    1,
-                    0
-                ],
-                [
-                    2,
-                    0
-                ],
-                [
-                    3,
-                    0
-                ]
+                1,
+                2,
+                3
             ],
             "server": [
-                [
-                    1,
-                    0
-                ],
-                [
-                    2,
-                    0
-                ]
+                1,
+                2
             ],
             "client": [
-                [
-                    3,
-                    0
-                ]
+                3
             ]
         },
         "frequencies": [
@@ -135,7 +99,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 927e3,
                     "rrc_alpha": 0.5,
@@ -144,7 +109,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
@@ -157,7 +123,8 @@
                 }
             },
             "products": {
-                "goes_lrit_data_decoder": {
+                "module": "goes_lrit_data_decoder",
+                "parameters": {
                     "max_fill_lines": 50,
                     "write_images": true,
                     "write_emwin": true,
@@ -170,20 +137,10 @@
     },
     "goes_hrit_tcp": {
         "name": "GOES-R HRIT to goestools",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ],
-            [
-                3,
-                0
-            ]
+        "live": [
+            1,
+            2,
+            3
         ],
         "frequencies": [
             [
@@ -195,7 +152,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 927e3,
                     "rrc_alpha": 0.5,
@@ -204,7 +162,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
@@ -217,7 +176,8 @@
                 }
             },
             "tcp": {
-                "xrit_goesrecv_publisher": {
+                "module": "xrit_goesrecv_publisher",
+                "parameters": {
                     "address": "0.0.0.0",
                     "nanomsg_port": 5004
                 }
@@ -226,28 +186,15 @@
     },
     "goes_grb": {
         "name": "GOES-R GRB",
-        "live": true,
-        "live_cfg": {
+        "live": {
             "pkt_size": 204800, // 2048 * 100,
             "default": [
-                [
-                    1,
-                    0
-                ],
-                [
-                    2,
-                    0
-                ]
+                1,
+                2
             ],
             "server": [
-                [
-                    1,
-                    0
-                ],
-                [
-                    2,
-                    0
-                ]
+                1,
+                2
             ],
             "client": [
                 [
@@ -261,7 +208,8 @@
         "work": {
             "baseband": {},
             "bbframe": {
-                "dvbs2_demod": {
+                "module": "dvbs2_demod",
+                "parameters": {
                     "symbolrate": 8665938,
                     "rrc_alpha": 0.25,
                     "pll_bw": 0.005,
@@ -271,25 +219,18 @@
                 }
             },
             "cadu": {
-                "goes_grb_cadu_extractor": {}
+                "module": "goes_grb_cadu_extractor"
             },
             "products": {
-                "goes_grb_data_decoder": {}
+                "module": "goes_grb_data_decoder"
             }
         }
     },
     "goesr_cda": {
         "name": "GOES-R CDA (40k)",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -301,7 +242,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 40e3,
                     "rrc_alpha": 0.5,
@@ -310,7 +252,8 @@
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 2048,
                     "nrzm": true,
@@ -323,16 +266,9 @@
     },
     "goesr_cda_4k": {
         "name": "GOES-R CDA (4k)",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -344,7 +280,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 4e3,
                     "rrc_alpha": 0.5,
@@ -353,7 +290,8 @@
                 }
             },
             "cadu": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 2048,
                     "nrzm": true,
@@ -367,21 +305,15 @@
     "goes_mdl": {
         "name": "GOES-N MDL",
         "samplerate": 3e6,
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "qpsk",
                     "symbolrate": 200e3,
                     "rrc_alpha": 0.5,
@@ -390,45 +322,26 @@
                 }
             },
             "frm": {
-                "goes_mdl_decoder": {}
+                "module": "goes_mdl_decoder"
             },
             "products": {}
         }
     },
     "goes_lrit": {
         "name": "GOES-N LRIT",
-        "live": true,
-        "live_cfg": {
+        "live": {
             "pkt_size": 10240, // 1024 * 10
             "default": [
-                [
-                    1,
-                    0
-                ],
-                [
-                    2,
-                    0
-                ],
-                [
-                    3,
-                    0
-                ]
+                1,
+                2,
+                3
             ],
             "server": [
-                [
-                    1,
-                    0
-                ],
-                [
-                    2,
-                    0
-                ]
+                1,
+                2
             ],
             "client": [
-                [
-                    3,
-                    0
-                ]
+                3
             ]
         },
         "frequencies": [
@@ -441,7 +354,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 293e3,
                     "rrc_alpha": 0.5,
@@ -450,7 +364,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "bpsk",
                     "cadu_size": 8192,
                     "viterbi_ber_thresold": 0.300,
@@ -463,7 +378,8 @@
                 }
             },
             "products": {
-                "goes_lrit_data_decoder": {
+                "module": "goes_lrit_data_decoder",
+                "parameters": {
                     "write_images": true,
                     "write_emwin": true,
                     "write_messages": true,
@@ -475,21 +391,15 @@
     },
     "goesn_cda": {
         "name": "GOES-N CDA",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "symbolrate": 4e3,
                     "agc_rate": 0.001,
                     "pll_bw": 0.01,
@@ -501,7 +411,8 @@
                 }
             },
             "frm": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "ccsds": false,
                     "constellation": "bpsk",
                     "cadu_size": 4096,
@@ -516,22 +427,16 @@
     },
     "goesn_sounder": {
         "name": "GOES-N Sounder SD",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "samplerate": 1e6,
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 40e3,
                     "rrc_alpha": 0.5,
@@ -539,7 +444,8 @@
                 }
             },
             "frm": {
-                "ccsds_simple_psk_decoder": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
                     "ccsds": false,
                     "constellation": "bpsk",
                     "cadu_size": 4224,
@@ -554,16 +460,9 @@
     },
     "goesn_sd": {
         "name": "GOES-N Sensor Data",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [],
         "parameters": {
@@ -574,7 +473,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 2.621e6,
                     "rrc_alpha": 0.6,
@@ -582,10 +482,10 @@
                 }
             },
             "frm": {
-                "goesn_sd_decoder": {}
+                "module": "goesn_sd_decoder"
             },
             "products": {
-                "goes_sd_image_decoder": {}
+                "module": "goes_sd_image_decoder"
             }
         }
     },
@@ -595,7 +495,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 60e6,
                     "rrc_alpha": 0.5,
@@ -603,7 +504,8 @@
                 }
             },
             "cadu": {
-                "ccsds_ldpc_decoder": {
+                "module": "ccsds_ldpc_decoder",
+                "parameters": {
                     "constellation": "oqpsk",
                     "ldpc_rate": "7/8",
                     "ldpc_iterations": 10,
@@ -612,7 +514,7 @@
                 }
             },
             "products": {
-                "goesr_instruments": {}
+                "module": "goesr_instruments"
             }
         }
     }

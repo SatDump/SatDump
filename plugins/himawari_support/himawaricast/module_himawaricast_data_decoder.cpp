@@ -1,35 +1,27 @@
 #include "module_himawaricast_data_decoder.h"
-#include <fstream>
-#include "logger.h"
-#include <filesystem>
+#include "common/codings/dvb-s2/bbframe_ts_parser.h"
+#include "common/mpeg_ts/fazzt_processor.h"
+#include "common/mpeg_ts/ts_demux.h"
+#include "common/mpeg_ts/ts_header.h"
+#include "common/utils.h"
+#include "image/io.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
-#include "common/utils.h"
-#include "common/mpeg_ts/ts_header.h"
-#include "common/mpeg_ts/ts_demux.h"
-#include "common/mpeg_ts/fazzt_processor.h"
-#include "lrit_header.h"
-#include "common/codings/dvb-s2/bbframe_ts_parser.h"
 #include "libs/bzlib_utils.h"
-#include "common/image/io.h"
+#include "logger.h"
+#include "lrit_header.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
 namespace himawari
 {
     namespace himawaricast
     {
-        HimawariCastDataDecoderModule::HimawariCastDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                                        productizer("ahi", true, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
+        HimawariCastDataDecoderModule::HimawariCastDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters), productizer("ahi", true, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
         {
-        }
-
-        std::vector<ModuleDataType> HimawariCastDataDecoderModule::getInputTypes()
-        {
-            return {DATA_FILE, DATA_STREAM};
-        }
-
-        std::vector<ModuleDataType> HimawariCastDataDecoderModule::getOutputTypes()
-        {
-            return {DATA_FILE};
+            fsfsm_enable_output = false;
         }
 
         HimawariCastDataDecoderModule::~HimawariCastDataDecoderModule()
@@ -53,30 +45,17 @@ namespace himawari
             }
             else
             {
-                productizer.saveImage(img, img.depth() /*THIS IS VALID FOR CALIBRATION*/, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, std::to_string(meta.channel), meta.scan_time, "", meta.image_navigation_record.get(), meta.image_data_function_record.get());
+                productizer.saveImage(img, img.depth() /*THIS IS VALID FOR CALIBRATION*/, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, std::to_string(meta.channel),
+                                      meta.scan_time, "", meta.image_navigation_record.get(), meta.image_data_function_record.get());
             }
         }
 
         void HimawariCastDataDecoderModule::process()
         {
-            std::ifstream data_in;
-
-            if (input_data_type == DATA_FILE)
-                filesize = getFilesize(d_input_file);
-            else
-                filesize = 0;
-            if (input_data_type == DATA_FILE)
-                data_in = std::ifstream(d_input_file, std::ios::binary);
-
             directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/'));
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
-
-            logger->info("Using input frames " + d_input_file);
-            logger->info("Decoding to " + directory);
-
-            time_t lastTime = 0;
 
             bool ts_input = d_parameters["ts_input"].get<bool>();
 
@@ -93,24 +72,18 @@ namespace himawari
             if (!std::filesystem::exists(directory + "/IMAGES/Unknown"))
                 std::filesystem::create_directories(directory + "/IMAGES/Unknown");
 
-            while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
+            while (should_run())
             {
                 if (ts_input)
                 {
                     // Read buffer
-                    if (input_data_type == DATA_FILE)
-                        data_in.read((char *)mpeg_ts_all, 188);
-                    else
-                        input_fifo->read((uint8_t *)mpeg_ts_all, 188);
+                    read_data((uint8_t *)mpeg_ts_all, 188);
                     ts_cnt = 1;
                 }
                 else
                 {
                     // Read buffer
-                    if (input_data_type == DATA_FILE)
-                        data_in.read((char *)bb_frame, 38688 / 8);
-                    else
-                        input_fifo->read((uint8_t *)bb_frame, 38688 / 8);
+                    read_data((uint8_t *)bb_frame, 38688 / 8);
                     ts_cnt = ts_extractor.work(bb_frame, 1, mpeg_ts_all, 188 * 1000);
                 }
 
@@ -137,9 +110,7 @@ namespace himawari
                             for (size_t i = 0; i < file.size;)
                             {
                                 char *file_c = (char *)file.data.data();
-                                if (file_c[i + 0] == 'B' &&
-                                    file_c[i + 1] == 'Z' &&
-                                    file_c[i + 2] == 'h')
+                                if (file_c[i + 0] == 'B' && file_c[i + 1] == 'Z' && file_c[i + 2] == 'h')
                                 {
                                     unsigned int local_outsize = buffer_output_size;
                                     unsigned int consumed;
@@ -207,7 +178,8 @@ namespace himawari
                                             if (lfile.hasHeader<::lrit::ImageStructureRecord>())
                                             {
                                                 ::lrit::ImageStructureRecord image_structure_record = lfile.getHeader<::lrit::ImageStructureRecord>();
-                                                logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
+                                                logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" +
+                                                              std::to_string(image_structure_record.lines_count));
 
                                                 HIMxRITProductMeta lmeta;
                                                 lmeta.filename = file.name;
@@ -224,16 +196,12 @@ namespace himawari
                                                 image::Image image;
                                                 if (image_structure_record.bit_per_pixel == 8)
                                                 {
-                                                    image = image::Image(&lfile.lrit_data[primary_header.total_header_length],
-                                                                         8,
-                                                                         image_structure_record.columns_count,
+                                                    image = image::Image(&lfile.lrit_data[primary_header.total_header_length], 8, image_structure_record.columns_count,
                                                                          image_structure_record.lines_count, 1);
                                                 }
                                                 else if (image_structure_record.bit_per_pixel == 16)
                                                 {
-                                                    image::Image image2(16,
-                                                                        image_structure_record.columns_count,
-                                                                        image_structure_record.lines_count, 1);
+                                                    image::Image image2(16, image_structure_record.columns_count, image_structure_record.lines_count, 1);
 
                                                     for (long long int i = 0; i < image_structure_record.columns_count * image_structure_record.lines_count; i++)
                                                         image2.set(i, ((&lfile.lrit_data[primary_header.total_header_length])[i * 2 + 0] << 8 |
@@ -313,7 +281,8 @@ namespace himawari
 
                                                 if (segmented_decoders.count(channel_name) == 0)
                                                 {
-                                                    segmented_decoders.insert({channel_name, SegmentedLRITImageDecoder(image.depth(), 10, image_structure_record.columns_count, image_structure_record.lines_count, id)});
+                                                    segmented_decoders.insert(
+                                                        {channel_name, SegmentedLRITImageDecoder(image.depth(), 10, image_structure_record.columns_count, image_structure_record.lines_count, id)});
                                                     segmented_decoders_filenames.insert({channel_name, current_filename});
                                                     segmented_decoders[channel_name].meta = lmeta;
                                                 }
@@ -353,43 +322,25 @@ namespace himawari
                         }
                     }
                 }
-
-                if (input_data_type == DATA_FILE)
-                    progress = data_in.tellg();
-
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
-            data_in.close();
+            cleanup();
         }
 
         void HimawariCastDataDecoderModule::drawUI(bool window)
         {
             ImGui::Begin("HimawariCast Data Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
-            if (!streamingInput)
-                ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
-        std::string HimawariCastDataDecoderModule::getID()
-        {
-            return "himawaricast_data_decoder";
-        }
+        std::string HimawariCastDataDecoderModule::getID() { return "himawaricast_data_decoder"; }
 
-        std::vector<std::string> HimawariCastDataDecoderModule::getParameters()
-        {
-            return {};
-        }
-
-        std::shared_ptr<ProcessingModule> HimawariCastDataDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> HimawariCastDataDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<HimawariCastDataDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace avhrr
-} // namespace metop
+    } // namespace himawaricast
+} // namespace himawari

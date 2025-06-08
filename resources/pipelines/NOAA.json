@@ -1,16 +1,9 @@
 {
     "noaa_hrpt": {
         "name": "NOAA HRPT",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -44,7 +37,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "symbolrate": 665400,
                     "pll_bw": 0.01,
                     "rrc_alpha": 0.6,
@@ -52,27 +46,21 @@
                 }
             },
             "frames": {
-                "noaa_hrpt_decoder": {
+                "module": "noaa_hrpt_decoder",
+                "parameters": {
                     "deframer_thresold": 10
                 }
             },
             "products": {
-                "noaa_instruments": {}
+                "module": "noaa_instruments"
             }
         }
     },
     "noaa_gac": {
         "name": "NOAA GAC",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -108,7 +96,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "bpsk",
                     "symbolrate": 2.6616e6,
                     "rrc_alpha": 0.5,
@@ -117,12 +106,14 @@
                 }
             },
             "frm": {
-                "noaa_gac_decoder": {
+                "module": "noaa_gac_decoder",
+                "parameters": {
                     "backward": false
                 }
             },
             "products": {
-                "noaa_instruments": {
+                "module": "noaa_instruments",
+                "parameters": {
                     "gac_mode": true
                 }
             }
@@ -130,16 +121,9 @@
     },
     "noaa_dsb": {
         "name": "NOAA DSB",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -165,7 +149,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "symbolrate": 8320,
                     "agc_rate": 0.001,
                     "pll_bw": 0.01,
@@ -177,10 +162,11 @@
                 }
             },
             "frames": {
-                "noaa_dsb_decoder": {}
+                "module": "noaa_dsb_decoder"
             },
             "products": {
-                "noaa_instruments": {
+                "module": "noaa_instruments",
+                "parameters": {
                     "dsb_mode": true
                 }
             }
@@ -188,16 +174,9 @@
     },
     "noaa_apt": {
         "name": "NOAA APT",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -250,13 +229,15 @@
         "work": {
             "baseband": {},
             "audio_wav": {
-                "noaa_apt_demod": {
+                "module": "noaa_apt_demod",
+                "parameters": {
                     "symbolrate": 50e3,
                     "save_wav": false
                 }
             },
             "products": {
-                "noaa_apt_decoder": {
+                "module": "noaa_apt_decoder",
+                "parameters": {
                     "audio_samplerate": 50e3,
                     "max_crop_stddev": 3500,
                     "save_unsynced": true,

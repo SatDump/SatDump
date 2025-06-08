@@ -1,12 +1,12 @@
 #pragma once
 
 #include "flowgraph.h"
-#include "common/image/io.h"
-#include "common/image/meta.h"
+#include "image/io.h"
+#include "image/meta.h"
 #include "projection/projection.h"
 #include "projection/reprojector.h"
-#include "common/image/expression.h"
-#include "common/image/processing.h"
+#include "image/expression.h"
+#include "image/processing.h"
 
 namespace satdump
 {
@@ -107,7 +107,7 @@ namespace satdump
         {
             std::shared_ptr<image::Image> img = std::static_pointer_cast<image::Image>(inputs[0].ptr);
 
-            std::shared_ptr<proj::Projection> ptr = std::make_shared<proj::Projection>(image::get_metadata_proj_cfg(*img));
+            std::shared_ptr<projection::Projection> ptr = std::make_shared<projection::Projection>(image::get_metadata_proj_cfg(*img));
             ptr->height = img->height();
             ptr->width = img->width();
             outputs[0].ptr = ptr;
@@ -140,12 +140,12 @@ namespace satdump
         {
             processing = true;
             std::shared_ptr<image::Image> img = std::static_pointer_cast<image::Image>(inputs[0].ptr);
-            std::shared_ptr<proj::Projection> proj = std::static_pointer_cast<proj::Projection>(inputs[1].ptr);
+            std::shared_ptr<projection::Projection> proj = std::static_pointer_cast<projection::Projection>(inputs[1].ptr);
 
             std::shared_ptr<image::Image> img_out = std::make_shared<image::Image>();
 
             // TODOREWORK!!!!
-            proj::ReprojectionOperation op;
+            projection::ReprojectionOperation op;
             op.img = img.get();
             op.output_width = proj->width;
             op.output_height = proj->height;
@@ -156,7 +156,7 @@ namespace satdump
             cfg["width"] = img->width();
             cfg["height"] = img->height();
             image::set_metadata_proj_cfg(*op.img, cfg);
-            *img_out = proj::reproject(op, &progress);
+            *img_out = projection::reproject(op, &progress);
 
             outputs[0].ptr = img_out;
 

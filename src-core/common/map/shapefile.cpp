@@ -1,21 +1,22 @@
 #include "shapefile.h"
+#include "utils/binary.h"
+#include <string>
 
 namespace shapefile
 {
-
     ShapefileHeader::ShapefileHeader(std::istream &stream)
     {
         uint8_t buffer[100];
         stream.read((char *)buffer, 100);
 
         // Little endian
-        file_code = swap_endian<int32_t>(*((int32_t *)&buffer[0]));
-        unused1 = swap_endian<int32_t>(*((int32_t *)&buffer[4]));
-        unused2 = swap_endian<int32_t>(*((int32_t *)&buffer[8]));
-        unused3 = swap_endian<int32_t>(*((int32_t *)&buffer[12]));
-        unused4 = swap_endian<int32_t>(*((int32_t *)&buffer[16]));
-        unused5 = swap_endian<int32_t>(*((int32_t *)&buffer[20]));
-        file_length = swap_endian<int32_t>(*((int32_t *)&buffer[24])) * 2;
+        file_code = satdump::swap_endian<int32_t>(*((int32_t *)&buffer[0]));
+        unused1 = satdump::swap_endian<int32_t>(*((int32_t *)&buffer[4]));
+        unused2 = satdump::swap_endian<int32_t>(*((int32_t *)&buffer[8]));
+        unused3 = satdump::swap_endian<int32_t>(*((int32_t *)&buffer[12]));
+        unused4 = satdump::swap_endian<int32_t>(*((int32_t *)&buffer[16]));
+        unused5 = satdump::swap_endian<int32_t>(*((int32_t *)&buffer[20]));
+        file_length = satdump::swap_endian<int32_t>(*((int32_t *)&buffer[24])) * 2;
 
         // Big endian
         version = *((int32_t *)&buffer[28]);
@@ -37,8 +38,8 @@ namespace shapefile
         stream.read((char *)buffer, 12);
 
         // Little endian
-        record_number = swap_endian<int32_t>(*((int32_t *)&buffer[0]));
-        content_length = swap_endian<int32_t>(*((int32_t *)&buffer[4])) * 2 - 4;
+        record_number = satdump::swap_endian<int32_t>(*((int32_t *)&buffer[0]));
+        content_length = satdump::swap_endian<int32_t>(*((int32_t *)&buffer[4])) * 2 - 4;
 
         // Big endian
         shape_type = *((int32_t *)&buffer[8]);

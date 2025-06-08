@@ -2,14 +2,15 @@
 #include "common/utils.h"
 #include "logger.h"
 #include "products2/image_product.h"
+#include "utils/string.h"
 #include <filesystem>
 
 // TODOREWORK #include "products/processor/image_processor.h"
-#include "common/thread_priority.h"
 #include "core/config.h"
 #include "nlohmann/json_utils.h"
+#include "utils/thread_priority.h"
 
-#include "common/image/io.h"
+#include "image/io.h"
 
 namespace lrit
 {
@@ -40,8 +41,8 @@ namespace lrit
 
     LRITProductizer::LRITProductizer(std::string instrument_id, bool sweep_x, std::string cache_path) : should_sweep_x(sweep_x), instrument_id(instrument_id), compo_cache_path(cache_path)
     {
-        if (satdump::config::main_cfg["viewer"]["instruments"].contains(instrument_id) && satdump::config::main_cfg["satdump_general"]["auto_process_products"]["value"].get<bool>())
-            can_make_composites = true;
+        // if (satdump::config::main_cfg["viewer"]["instruments"].contains(instrument_id) && satdump::config::main_cfg["satdump_general"]["auto_process_products"]["value"].get<bool>())
+        // TODOREWORK    can_make_composites = true;
 
         if (can_make_composites)
             compositeGeneratorThread = std::thread(&LRITProductizer::compositeThreadFunc, this);
@@ -109,10 +110,10 @@ namespace lrit
             // if (instrument_id == "ahi")
             // printf("Channel %s\n%s\n", channel.c_str(), image_data_function_record->datas.c_str());
 
-            auto lines = splitString(image_data_function_record->datas, '\n');
+            auto lines = satdump::splitString(image_data_function_record->datas, '\n');
             if (lines.size() < 4)
             {
-                lines = splitString(image_data_function_record->datas, '\r');
+                lines = satdump::splitString(image_data_function_record->datas, '\r');
                 if (lines.size() < 4)
                 {
                     logger->error("Error parsing calibration info into lines!");
@@ -334,7 +335,7 @@ namespace lrit
 
     void LRITProductizer::compositeThreadFunc()
     {
-        setLowestThreadPriority();
+        satdump::setLowestThreadPriority(); // TODOREWORK namespace remove
 
         std::string file_for_cache = compo_cache_path + "/.composite_cache_do_not_delete.json";
 

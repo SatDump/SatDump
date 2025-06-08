@@ -1,5 +1,5 @@
 #include "aaronia_sdr.h"
-#include "common/utils.h"
+#include "utils/string.h"
 
 #define SPECTRAN_SAMPLERATE_46M 46080000
 #define SPECTRAN_SAMPLERATE_92M 92160000
@@ -197,7 +197,7 @@ void AaroniaSource::start()
 
     if (AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"device/receiverclock") == AARTSAAPI_OK)
         AARTSAAPI_ConfigSetString(&aaronia_device, &config, get_spectran_samplerate_str(current_samplerate < SPECTRAN_SAMPLERATE_46M ? SPECTRAN_SAMPLERATE_46M : current_samplerate).c_str());
-    logger->info("Set Spectran receiver clock to %s", ws2s(get_spectran_samplerate_str(current_samplerate < SPECTRAN_SAMPLERATE_46M ? SPECTRAN_SAMPLERATE_46M : current_samplerate)).c_str());
+    logger->info("Set Spectran receiver clock to %s", satdump::ws2s(get_spectran_samplerate_str(current_samplerate < SPECTRAN_SAMPLERATE_46M ? SPECTRAN_SAMPLERATE_46M : current_samplerate)).c_str());
 
     int current_decimation = 1;
     if (current_samplerate < SPECTRAN_SAMPLERATE_46M)

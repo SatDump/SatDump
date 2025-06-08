@@ -1,0 +1,128 @@
+{
+    "uvsqsatng_s_dump_125": {
+        "name": "UVSQSat-NG 1.25M S-Band Dump",
+        "live": [
+            1,
+            2
+        ],
+        "frequencies": [
+            [
+                "Main",
+                2208e6
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "psk_demod",
+                "parameters": {
+                    "constellation": "bpsk",
+                    "symbolrate": 1.25e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 2072,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": false,
+                    "rs_i": 1,
+                    "rs_type": "rs223",
+                    "rs_usecheck": true
+                }
+            },
+            "products": {
+                "module": "uvsqsatng_instruments"
+            }
+        }
+    },
+    "uvsqsatng_s_dump_25": {
+        "name": "UVSQSat-NG 2.5M S-Band Dump",
+        "live": [
+            1,
+            2
+        ],
+        "frequencies": [
+            [
+                "Main",
+                2208e6
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "psk_demod",
+                "parameters": {
+                    "constellation": "bpsk",
+                    "symbolrate": 2.5e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 2072,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": false,
+                    "rs_i": 1,
+                    "rs_type": "rs223",
+                    "rs_usecheck": true
+                }
+            },
+            "products": {
+                "module": "uvsqsatng_instruments"
+            }
+        }
+    },
+    "uvsqsatng_s_dump_5": {
+        "name": "UVSQSat-NG 5M S-Band Dump",
+        "live": [
+            1,
+            2
+        ],
+        "frequencies": [
+            [
+                "Main",
+                2208e6
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "psk_demod",
+                "parameters": {
+                    "constellation": "bpsk",
+                    "symbolrate": 5e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 2072,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": false,
+                    "rs_i": 1,
+                    "rs_type": "rs223",
+                    "rs_usecheck": true
+                }
+            },
+            "products": {
+                "module": "uvsqsatng_instruments"
+            }
+        }
+    }
+}

@@ -1,11 +1,13 @@
 #define SATDUMP_DLL_EXPORT 1
-#include "init.h"
+
+#include "pipeline/module.h"
+#include "pipeline/pipeline.h"
+
 #include "core/config.h"
-#include "core/module.h"
-#include "core/pipeline.h"
 #include "core/plugin.h"
+#include "core/resources.h"
+#include "init.h"
 #include "logger.h"
-#include "resources.h"
 #include "satdump_vars.h"
 #include <filesystem>
 
@@ -31,7 +33,7 @@ namespace satdump
         logger->info(" ___/ / /_/ / /_/ /_/ / /_/ / / / / / / /_/ /");
         logger->info("/____/\\__,_/\\__/_____/\\__,_/_/ /_/ /_/ .___/ ");
         logger->info("                                    /_/      ");
-        logger->info("Starting SatDump v" + (std::string)SATDUMP_VERSION);
+        logger->info("Starting " + getSatDumpVersionName());
         logger->info("");
 
 #ifdef _WIN32
@@ -48,9 +50,9 @@ namespace satdump
         try
         {
             if (std::filesystem::exists("satdump_cfg.json"))
-                config::loadConfig("satdump_cfg.json", user_path);
+                satdump_cfg.load("satdump_cfg.json", user_path);
             else
-                config::loadConfig(satdump::RESPATH + "satdump_cfg.json", user_path);
+                satdump_cfg.load(satdump::RESPATH + "satdump_cfg.json", user_path);
         }
         catch (std::exception &e)
         {
@@ -60,16 +62,16 @@ namespace satdump
             exit(1);
         }
 
-        if (config::main_cfg["satdump_general"].contains("log_to_file"))
+        if (satdump_cfg.main_cfg["satdump_general"].contains("log_to_file"))
         {
-            bool log_file = config::main_cfg["satdump_general"]["log_to_file"]["value"];
+            bool log_file = satdump_cfg.main_cfg["satdump_general"]["log_to_file"]["value"];
             if (log_file)
                 initFileSink();
         }
 
-        if (config::main_cfg["satdump_general"].contains("log_level"))
+        if (satdump_cfg.main_cfg["satdump_general"].contains("log_level"))
         {
-            std::string log_level = config::main_cfg["satdump_general"]["log_level"]["value"];
+            std::string log_level = satdump_cfg.main_cfg["satdump_general"]["log_level"]["value"];
             if (log_level == "trace")
                 setConsoleLevel(slog::LOG_TRACE);
             else if (log_level == "debug")
@@ -87,17 +89,20 @@ namespace satdump
         loadPlugins();
 
         // Let plugins know we started
-        eventBus->fire_event<config::RegisterPluginConfigHandlersEvent>({config::plugin_config_handlers});
+        satdump_cfg.registerPlugins();
 
-        registerModules();
+        // TODOREWORK
+        pipeline::registerModules();
 
         // Load pipelines
-        loadPipelines(resources::getResourcePath("pipelines"));
+        // TODOREWORK
+        // loadPipelines(resources::getResourcePath("pipelines"));
+        pipeline::loadPipelines(resources::getResourcePath("pipelines"));
 
         // List them
         logger->debug("Registered pipelines :");
-        for (Pipeline &pipeline : pipelines)
-            logger->debug(" - " + pipeline.name);
+        for (auto &pipeline : pipeline::pipelines)
+            logger->debug(" - " + pipeline.id);
 
 #ifdef USE_OPENCL
         // OpenCL
@@ -122,12 +127,12 @@ namespace satdump
         // Products
         products::registerProducts();
 
-        // Set DSP buffer sizes if they have been changed
-        if (config::main_cfg.contains("advanced_settings"))
+        // Set DSP buffer sizes if they have been changed TODOREWORK remove this!
+        if (satdump_cfg.main_cfg.contains("advanced_settings"))
         {
-            if (config::main_cfg["advanced_settings"].contains("default_buffer_size"))
+            if (satdump_cfg.main_cfg["advanced_settings"].contains("default_buffer_size"))
             {
-                int new_sz = config::main_cfg["advanced_settings"]["default_buffer_size"].get<int>();
+                int new_sz = satdump_cfg.main_cfg["advanced_settings"]["default_buffer_size"].get<int>();
                 dsp::STREAM_BUFFER_SIZE = new_sz;
                 dsp::RING_BUF_SZ = new_sz;
                 logger->warn("DSP Buffer size was changed to %d", new_sz);

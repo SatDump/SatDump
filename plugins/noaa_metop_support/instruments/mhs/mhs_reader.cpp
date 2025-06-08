@@ -8,9 +8,9 @@ This decoder takes in raw AIP data and processes it to MHS. It perfprms calibrat
 
 #include "mhs_reader.h"
 #include <cstring>
-#include "resources.h"
+#include "core/resources.h"
 #include "nlohmann/json_utils.h"
-#include "common/utils.h"
+#include "utils/stats.h"
 #include "common/calibration.h"
 
 #include "logger.h"
@@ -152,7 +152,7 @@ namespace noaa_metop
             // calib_out["lua"] = loadFileToString(resources::getResourcePath("calibration/MHS.lua"));
             calib_out["calibrator"] = "noaa_mhs";
 
-            uint8_t PIE = most_common(PIE_buff.begin(), PIE_buff.end(), 0);
+            uint8_t PIE = satdump::most_common(PIE_buff.begin(), PIE_buff.end(), 0);
             PIE_buff.clear();
 
             double a, b;

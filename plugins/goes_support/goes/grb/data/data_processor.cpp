@@ -1,8 +1,8 @@
 #include "data_processor.h"
 #include <filesystem>
 #include "logger.h"
-#include "common/image/image.h"
-#include "common/image/j2k_utils.h"
+#include "image/image.h"
+#include "image/j2k_utils.h"
 #include "abi/abi_products.h"
 #include <fstream>
 #include "glm/glm_parser.h"

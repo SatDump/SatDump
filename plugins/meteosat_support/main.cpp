@@ -1,27 +1,20 @@
 #include "core/plugin.h"
 #include "logger.h"
-#include "core/module.h"
 
 #include "msg/module_msg_instruments_decoder.h"
 
 class MeteosatSupport : public satdump::Plugin
 {
 public:
-    std::string getID()
-    {
-        return "meteosat_support";
-    }
+    std::string getID() { return "meteosat_support"; }
 
     void init()
     {
-        satdump::eventBus->register_handler<RegisterModulesEvent>(registerPluginsHandler);
+        satdump::eventBus->register_handler<satdump::pipeline::RegisterModulesEvent>(registerPluginsHandler);
         // satdump::eventBus->register_handler<satdump::ImageProducts::RequestCalibratorEvent>(provideImageCalibratorHandler);
     }
 
-    static void registerPluginsHandler(const RegisterModulesEvent &evt)
-    {
-        REGISTER_MODULE_EXTERNAL(evt.modules_registry, meteosat::MSGInstrumentsDecoderModule);
-    }
+    static void registerPluginsHandler(const satdump::pipeline::RegisterModulesEvent &evt) { REGISTER_MODULE_EXTERNAL(evt.modules_registry, meteosat::MSGInstrumentsDecoderModule); }
 
     // static void provideImageCalibratorHandler(const satdump::ImageProducts::RequestCalibratorEvent &evt)
     // {

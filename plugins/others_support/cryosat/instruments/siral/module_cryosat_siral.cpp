@@ -1,16 +1,16 @@
 #include "module_cryosat_siral.h"
-#include <fstream>
 #include "common/ccsds/ccsds_tm/demuxer.h"
 #include "common/ccsds/ccsds_tm/vcdu.h"
-#include "logger.h"
-#include <filesystem>
 #include "imgui/imgui.h"
+#include "logger.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 // #include <iostream>
 #include <fftw3.h>
 
-#include "common/image/image.h"
-#include "common/image/io.h"
-#include "common/resizeable_buffer.h"
+#include "image/image.h"
+#include "image/io.h"
 
 // Return filesize
 uint64_t getFilesize(std::string filepath);
@@ -19,24 +19,19 @@ namespace cryosat
 {
     namespace siral
     {
-        CryoSatSIRALDecoderModule::CryoSatSIRALDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters)
+        CryoSatSIRALDecoderModule::CryoSatSIRALDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
+            fsfsm_enable_output = false;
         }
 
         void CryoSatSIRALDecoderModule::process()
         {
-            filesize = getFilesize(d_input_file);
-            std::ifstream data_in(d_input_file, std::ios::binary);
 
             std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/SIRAL";
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
-
-            logger->info("Using input frames " + d_input_file);
-            logger->info("Decoding to " + directory);
-
-            time_t lastTime = 0;
 
             uint8_t buffer[1279];
 
@@ -55,14 +50,13 @@ namespace cryosat
             fftwf_plan p = fftwf_plan_dft_1d(243, (fftwf_complex *)fft_input, (fftwf_complex *)fft_output, FFTW_FORWARD, FFTW_MEASURE);
 
             // cimg_library::CImg<unsigned char> outputImage(243, 100000, 1, 1, 0);
-            ResizeableBuffer<unsigned char> fftImage;
-            fftImage.create(10 * 243);
+            std::vector<unsigned char> fftImage(10 * 243);
             int lines = 0;
 
-            while (!data_in.eof())
+            while (should_run())
             {
                 // Read buffer
-                data_in.read((char *)buffer, 1279);
+                read_data((uint8_t *)buffer, 1279);
 
                 int vcid = ccsds::ccsds_tm::parseVCDU(buffer).vcid;
 
@@ -108,52 +102,36 @@ namespace cryosat
                         }
                     }
                 }
-
-                progress = data_in.tellg();
-
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
             fftwf_free(p);
 
-            data_in.close();
+            cleanup();
 
             logger->info("Writing images.... (Can take a while)");
 
             {
-                image::Image outputImage(fftImage.buf, 8, 243, lines, 1);
+                image::Image outputImage(fftImage.data(), 8, 243, lines, 1);
                 image::save_img(outputImage, directory + "/SIRAL");
             }
 
-            fftImage.destroy();
+            fftImage.clear();
         }
 
         void CryoSatSIRALDecoderModule::drawUI(bool window)
         {
             ImGui::Begin("CryoSat SIRAL Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
-        std::string CryoSatSIRALDecoderModule::getID()
-        {
-            return "cryosat_siral";
-        }
+        std::string CryoSatSIRALDecoderModule::getID() { return "cryosat_siral"; }
 
-        std::vector<std::string> CryoSatSIRALDecoderModule::getParameters()
-        {
-            return {};
-        }
-
-        std::shared_ptr<ProcessingModule> CryoSatSIRALDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> CryoSatSIRALDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<CryoSatSIRALDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace swap
-} // namespace proba
+    } // namespace siral
+} // namespace cryosat

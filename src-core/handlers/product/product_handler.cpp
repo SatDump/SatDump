@@ -1,11 +1,12 @@
 #include "product_handler.h"
-#include "common/utils.h"
 #include "core/config.h"
 #include "core/exception.h"
+#include "core/resources.h"
 #include "imgui/imgui_stdlib.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
-#include "resources.h"
+#include "utils/string.h"
+#include "utils/time.h"
 #include <regex>
 
 namespace satdump
@@ -40,6 +41,8 @@ namespace satdump
                 handler_name = p->get_product_source() + " " + handler_name;
             if (!dataset_mode && p->has_product_timestamp())
                 handler_name += " " + timestamp_to_string(p->get_product_timestamp());
+            if (p->has_product_id())
+                handler_name += " (" + p->get_product_id() + ")";
 
             // TODOREWORK, handle automated?, Filtering what can be made per channels present?
             if (instrument_cfg.contains("presets"))
@@ -149,8 +152,8 @@ namespace satdump
 
         std::string ProductHandler::generateFileName()
         {
-            std::string file_name = config::main_cfg["satdump_directories"]["image_filename_template"]["value"].get<std::string>();
-            std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
+            std::string file_name = satdump_cfg.main_cfg["satdump_directories"]["image_filename_template"]["value"].get<std::string>();
+            std::string default_path = satdump_cfg.main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
             time_t timevalue = 0;
 
             std::string product_source = product->has_product_source() ? product->get_product_source() : "Unknown";

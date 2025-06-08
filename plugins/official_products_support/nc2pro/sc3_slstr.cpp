@@ -3,18 +3,17 @@
 #include <H5LTpublic.h>
 
 #include "common/utils.h"
-#include "common/image/image.h"
+#include "image/image.h"
 #include <filesystem>
 #include "logger.h"
 #include <array>
 #include "products2/image_product.h"
 #include "libs/miniz/miniz.h"
 
-#include "common/projection/projs2/proj_json.h"
 #include "common/calibration.h"
 
 #include "nlohmann/json_utils.h"
-#include "resources.h"
+#include "core/resources.h"
 
 namespace nc2pro
 {

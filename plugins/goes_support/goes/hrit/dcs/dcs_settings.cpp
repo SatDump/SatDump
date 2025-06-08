@@ -28,20 +28,20 @@ namespace goes
 
         void initDcsConfig()
         {
-            advanced_mode = satdump::config::main_cfg["user_interface"]["advanced_mode"]["value"].get_ptr<nlohmann::json::boolean_t*>();
-            if (!satdump::config::main_cfg["plugin_settings"].contains("goes_support"))
-                satdump::config::main_cfg["plugin_settings"]["goes_support"] = nlohmann::ordered_json();
+            advanced_mode = satdump::satdump_cfg.main_cfg["user_interface"]["advanced_mode"]["value"].get_ptr<nlohmann::json::boolean_t*>();
+            if (!satdump::satdump_cfg.main_cfg["plugin_settings"].contains("goes_support"))
+                satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"] = nlohmann::ordered_json();
 
             // Initialize last update
-            if (!satdump::config::main_cfg["plugin_settings"]["goes_support"].contains("last_pdt_update") ||
-                !satdump::config::main_cfg["plugin_settings"]["goes_support"]["last_pdt_update"].is_number())
-                satdump::config::main_cfg["plugin_settings"]["goes_support"]["last_pdt_update"] = 0;
+            if (!satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"].contains("last_pdt_update") ||
+                !satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"]["last_pdt_update"].is_number())
+                satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"]["last_pdt_update"] = 0;
 
             // Initialize Update Interval
-            if (satdump::config::main_cfg["plugin_settings"]["goes_support"].contains("update_interval") &&
-                satdump::config::main_cfg["plugin_settings"]["goes_support"]["update_interval"].is_number())
+            if (satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"].contains("update_interval") &&
+                satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"]["update_interval"].is_number())
             {
-                int update_interval = satdump::config::main_cfg["plugin_settings"]["goes_support"]["update_interval"];
+                int update_interval = satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"]["update_interval"];
                 if (update_interval == 14400)       // 4 hours
                     update_interval_selection = 0;
                 else if (update_interval == 86400)  // 1 day
@@ -54,21 +54,21 @@ namespace goes
                     update_interval_selection = 4;
             }
             else
-                satdump::config::main_cfg["plugin_settings"]["goes_support"]["update_interval"] = 14400;
+                satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"]["update_interval"] = 14400;
 
             // Initialize PDT URLs
-            if (satdump::config::main_cfg["plugin_settings"]["goes_support"].contains("pdt_urls") &&
-                satdump::config::main_cfg["plugin_settings"]["goes_support"]["pdt_urls"].is_array())
-                pdt_urls = satdump::config::main_cfg["plugin_settings"]["goes_support"]["pdt_urls"];
+            if (satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"].contains("pdt_urls") &&
+                satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"]["pdt_urls"].is_array())
+                pdt_urls = satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"]["pdt_urls"];
             else
-                satdump::config::main_cfg["plugin_settings"]["goes_support"]["pdt_urls"] = pdt_urls;
+                satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"]["pdt_urls"] = pdt_urls;
 
             // Initialize HADS URLs
-            if (satdump::config::main_cfg["plugin_settings"]["goes_support"].contains("hads_urls") &&
-                satdump::config::main_cfg["plugin_settings"]["goes_support"]["hads_urls"].is_array())
-                hads_urls = satdump::config::main_cfg["plugin_settings"]["goes_support"]["hads_urls"];
+            if (satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"].contains("hads_urls") &&
+                satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"]["hads_urls"].is_array())
+                hads_urls = satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"]["hads_urls"];
             else
-                satdump::config::main_cfg["plugin_settings"]["goes_support"]["hads_urls"] = hads_urls;
+                satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"]["hads_urls"] = hads_urls;
         }
 
         void renderDcsConfig()
@@ -134,19 +134,19 @@ namespace goes
 
         void saveDcsConfig()
         {
-            satdump::config::main_cfg["plugin_settings"]["goes_support"]["pdt_urls"] = pdt_urls;
-            satdump::config::main_cfg["plugin_settings"]["goes_support"]["hads_urls"] = hads_urls;
+            satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"]["pdt_urls"] = pdt_urls;
+            satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"]["hads_urls"] = hads_urls;
 
             if (update_interval_selection == 0)      // 4 hours
-                satdump::config::main_cfg["plugin_settings"]["goes_support"]["update_interval"] = 14400;
+                satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"]["update_interval"] = 14400;
             else if (update_interval_selection == 1) // 1 day
-                satdump::config::main_cfg["plugin_settings"]["goes_support"]["update_interval"] = 86400;
+                satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"]["update_interval"] = 86400;
             else if (update_interval_selection == 2) // 3 days
-                satdump::config::main_cfg["plugin_settings"]["goes_support"]["update_interval"] = 259200;
+                satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"]["update_interval"] = 259200;
             else if (update_interval_selection == 3) // 7 days
-                satdump::config::main_cfg["plugin_settings"]["goes_support"]["update_interval"] = 604800;
+                satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"]["update_interval"] = 604800;
             else if (update_interval_selection == 4) // Never
-                satdump::config::main_cfg["plugin_settings"]["goes_support"]["update_interval"] = -1;
+                satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"]["update_interval"] = -1;
         }
     }
 }

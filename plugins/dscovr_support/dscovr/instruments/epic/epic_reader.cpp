@@ -1,7 +1,7 @@
 #include "epic_reader.h"
 #include "logger.h"
-#include "common/image/jpeg12_utils.h"
-#include "common/image/io.h"
+#include "image/jpeg12_utils.h"
+#include "image/io.h"
 
 namespace dscovr
 {

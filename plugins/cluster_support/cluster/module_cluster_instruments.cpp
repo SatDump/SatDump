@@ -1,38 +1,31 @@
 #include "module_cluster_instruments.h"
-#include <fstream>
-#include "common/ccsds/ccsds_tm/vcdu.h"
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui.h"
-#include "common/utils.h"
-#include "common/ccsds/ccsds_tm/demuxer.h"
-#include "common/simple_deframer.h"
-#include "instruments/wbd_decoder.h"
 #include "common/audio/audio_sink.h"
+#include "common/ccsds/ccsds_tm/demuxer.h"
+#include "common/ccsds/ccsds_tm/vcdu.h"
 #include "common/dsp/io/wav_writer.h"
+#include "common/simple_deframer.h"
+#include "common/utils.h"
 #include "core/config.h"
+#include "imgui/imgui.h"
+#include "instruments/wbd_decoder.h"
+#include "logger.h"
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 
 namespace cluster
 {
     namespace instruments
     {
         CLUSTERInstrumentsDecoderModule::CLUSTERInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            : ProcessingModule(input_file, output_file_hint, parameters)
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
-            play_audio = satdump::config::main_cfg["user_interface"]["play_audio"]["value"].get<bool>();
+            play_audio = satdump::satdump_cfg.shouldPlayAudio();
+            fsfsm_enable_output = false;
         }
 
         void CLUSTERInstrumentsDecoderModule::process()
         {
-            if (input_data_type == DATA_FILE)
-                filesize = getFilesize(d_input_file);
-            std::ifstream data_in;
-            if (input_data_type == DATA_FILE)
-                data_in = std::ifstream(d_input_file, std::ios::binary);
-
-            logger->info("Using input frames " + d_input_file);
-
-            time_t lastTime = 0;
             uint8_t cadu[1279];
 
             // Demuxers
@@ -47,7 +40,7 @@ namespace cluster
             // Audio stuff
             int16_t audio_buffer[4352];
             std::shared_ptr<audio::AudioSink> audio_sink;
-            if (input_data_type != DATA_FILE && audio::has_sink())
+            if (input_data_type != satdump::pipeline::DATA_FILE && audio::has_sink())
             {
                 enable_audio = true;
                 audio_sink = audio::get_default_sink();
@@ -76,13 +69,10 @@ namespace cluster
             dsp::WavWriter wave_writer_Ey(out_antenna_Ey);
             wave_writer_Ey.write_header(27443, 1);
 
-            while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
+            while (should_run())
             {
                 // Read buffer
-                if (input_data_type == DATA_FILE)
-                    data_in.read((char *)&cadu, 1279);
-                else
-                    input_fifo->read((uint8_t *)&cadu, 1279);
+                read_data((uint8_t *)&cadu, 1279);
 
                 // Save (for now)
                 output_cadu2.write((char *)cadu, 1279);
@@ -142,13 +132,6 @@ namespace cluster
                         }
                     }
                 }
-
-                progress = data_in.tellg();
-                if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-                {
-                    lastTime = time(NULL);
-                    logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%");
-                }
             }
 
             if (enable_audio)
@@ -163,8 +146,7 @@ namespace cluster
             out_antenna_By.close();
             out_antenna_Ey.close();
 
-            if (input_data_type == DATA_FILE)
-                data_in.close();
+            cleanup();
             output_cadu2.close();
         }
 
@@ -239,26 +221,17 @@ namespace cluster
                 ImGui::TextUnformatted(label);
             }
 
-            if (input_data_type == DATA_FILE)
-                ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+            drawProgressBar();
 
             ImGui::End();
         }
 
-        std::string CLUSTERInstrumentsDecoderModule::getID()
-        {
-            return "cluster_instruments";
-        }
+        std::string CLUSTERInstrumentsDecoderModule::getID() { return "cluster_instruments"; }
 
-        std::vector<std::string> CLUSTERInstrumentsDecoderModule::getParameters()
-        {
-            return {};
-        }
-
-        std::shared_ptr<ProcessingModule> CLUSTERInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        std::shared_ptr<satdump::pipeline::ProcessingModule> CLUSTERInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         {
             return std::make_shared<CLUSTERInstrumentsDecoderModule>(input_file, output_file_hint, parameters);
         }
-    } // namespace amsu
-} // namespace metop
+    } // namespace instruments
+} // namespace cluster
 // For Michal B. : This is what i am doing in your classes instead of boring python tasks :) -RS

@@ -4,12 +4,12 @@
  * @file reproject_img.h
  */
 
-#include "common/image/image.h"
+#include "image/image.h"
 #include "nlohmann/json.hpp"
 
 namespace satdump
 {
-    namespace proj
+    namespace projection
     {
         /**
          * @brief Reproject an image to another projection
@@ -19,5 +19,5 @@ namespace satdump
          * @return reprojected image. 0 if failed
          */
         image::Image reprojectImage(image::Image &input, nlohmann::json target_prj, float *progress = nullptr);
-    } // namespace proj
+    } // namespace projection
 } // namespace satdump

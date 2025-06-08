@@ -5,7 +5,9 @@
 #include "downloader.h"
 #include "imgui/dialogs/widget.h"
 #include "imgui/imgui.h"
+#include <map>
 #include <set>
+#include <string>
 
 namespace satdump
 {

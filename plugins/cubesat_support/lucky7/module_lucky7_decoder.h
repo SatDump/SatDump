@@ -1,23 +1,15 @@
 #pragma once
 
-#include "core/module.h"
-#include <complex>
-#include <thread>
-#include <fstream>
 #include "common/simple_deframer.h"
 #include "common/widgets/constellation.h"
+#include "pipeline/modules/base/filestream_to_filestream.h"
 
 namespace lucky7
 {
-    class Lucky7DecoderModule : public ProcessingModule
+    class Lucky7DecoderModule : public satdump::pipeline::base::FileStreamToFileStreamModule
     {
     protected:
         uint8_t *frame_buffer;
-
-        std::ifstream data_in;
-
-        std::atomic<uint64_t> filesize;
-        std::atomic<uint64_t> progress;
 
         struct ImagePayload
         {
@@ -51,7 +43,7 @@ namespace lucky7
     public:
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
-        static std::vector<std::string> getParameters();
+        static nlohmann::json getParams() { return {}; } // TODOREWORK
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
-} // namespace noaa
+} // namespace lucky7

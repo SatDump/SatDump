@@ -119,6 +119,13 @@
             "description": "descriptions/NightFire.md"
         },
         {
+            "name": "Night Fog Difference",
+            "expression": "a=(5, brightness_temperature, 230, 310);b=(4, brightness_temperature, 230, 310);lut=lut(lut/cal/fog_btd.png);lut((a-b-(-0.2))/0.4, 0, 0),lut((a-b-(-0.2))/0.4, 0, 1),lut((a-b-(-0.2))/0.4, 0, 2)",
+            "image": {
+                "geo_correct": true
+            }
+        },
+        {
             "name": "3.75µm IR (CIRA)",
             "expression": "cch4=(4, brightness_temperature, 193.15, 333.15);lut=lut(lut/cal/CIRA_IR37-80+60.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)"
         },

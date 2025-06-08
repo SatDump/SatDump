@@ -1,14 +1,14 @@
 #pragma once
 
-#include "core/module.h"
-#include "dcs/dcs_decoder.h"
-#include "data/lrit_data.h"
 #include "common/lrit/lrit_file.h"
 #include "common/lrit/lrit_productizer.h"
+#include "data/lrit_data.h"
+#include "dcs/dcs_decoder.h"
 #include "goes/crc32.h"
+#include "pipeline/modules/base/filestream_to_filestream.h"
 
-#include <set>
 #include <deque>
+#include <set>
 
 extern "C"
 {
@@ -19,12 +19,9 @@ namespace goes
 {
     namespace hrit
     {
-        class GOESLRITDataDecoderModule : public ProcessingModule
+        class GOESLRITDataDecoderModule : public satdump::pipeline::base::FileStreamToFileStreamModule
         {
         protected:
-            std::atomic<uint64_t> filesize;
-            std::atomic<uint64_t> progress;
-
             bool write_images;
             bool write_emwin;
             bool parse_dcs;
@@ -90,8 +87,6 @@ namespace goes
             ~GOESLRITDataDecoderModule();
             void process();
             void drawUI(bool window);
-            std::vector<ModuleDataType> getInputTypes();
-            std::vector<ModuleDataType> getOutputTypes();
 
         public:
             struct DCPUpdateEvent
@@ -102,7 +97,7 @@ namespace goes
 
             static std::string getID();
             virtual std::string getIDM() { return getID(); };
-            static std::vector<std::string> getParameters();
+            static nlohmann::json getParams() { return {}; } // TODOREWORK
             static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         };
     } // namespace hrit

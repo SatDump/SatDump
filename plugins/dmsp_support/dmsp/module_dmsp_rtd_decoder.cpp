@@ -1,31 +1,23 @@
 #include "module_dmsp_rtd_decoder.h"
-#include "logger.h"
-#include "imgui/imgui.h"
-#include <volk/volk.h>
 #include "common/utils.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include <cstdint>
+#include <volk/volk.h>
 
 #define BUFFER_SIZE 8192
 #define RTD_FRAME_SIZE 19
 
 namespace dmsp
 {
-    DMSPRTDDecoderModule::DMSPRTDDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                  constellation(1.0, 0.15, demod_constellation_size)
+    DMSPRTDDecoderModule::DMSPRTDDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters), constellation(1.0, 0.15, demod_constellation_size)
     {
         def = std::make_shared<DMSP_Deframer>(150, 2);
         soft_buffer = new int8_t[BUFFER_SIZE];
         soft_bits = new uint8_t[BUFFER_SIZE];
         output_frames = new uint8_t[BUFFER_SIZE];
-    }
-
-    std::vector<ModuleDataType> DMSPRTDDecoderModule::getInputTypes()
-    {
-        return {DATA_FILE, DATA_STREAM};
-    }
-
-    std::vector<ModuleDataType> DMSPRTDDecoderModule::getOutputTypes()
-    {
-        return {DATA_FILE};
+        fsfsm_file_ext = ".frm";
     }
 
     DMSPRTDDecoderModule::~DMSPRTDDecoderModule()
@@ -37,26 +29,10 @@ namespace dmsp
 
     void DMSPRTDDecoderModule::process()
     {
-        if (input_data_type == DATA_FILE)
-            filesize = getFilesize(d_input_file);
-        else
-            filesize = 0;
-        if (input_data_type == DATA_FILE)
-            data_in = std::ifstream(d_input_file, std::ios::binary);
-        data_out = std::ofstream(d_output_file_hint + ".frm", std::ios::binary);
-        d_output_files.push_back(d_output_file_hint + ".frm");
-
-        logger->info("Using input symbols " + d_input_file);
-        logger->info("Decoding to " + d_output_file_hint + ".frm");
-
-        time_t lastTime = 0;
-        while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
+        while (should_run())
         {
             // Read a buffer
-            if (input_data_type == DATA_FILE)
-                data_in.read((char *)soft_buffer, BUFFER_SIZE);
-            else
-                input_fifo->read((uint8_t *)soft_buffer, BUFFER_SIZE);
+            read_data((uint8_t *)soft_buffer, BUFFER_SIZE);
 
             for (int i = 0; i < BUFFER_SIZE; i++)
                 soft_bits[i] = soft_buffer[i] > 0;
@@ -68,24 +44,20 @@ namespace dmsp
 
             // Write to file
             if (nframes > 0)
-                data_out.write((char *)output_frames, nframes * RTD_FRAME_SIZE);
-
-            if (input_data_type == DATA_FILE)
-                progress = data_in.tellg();
-
-            if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-            {
-                lastTime = time(NULL);
-                std::string deframer_state = def->getState() == def->STATE_NOSYNC ? "NOSYNC" : (def->getState() == def->STATE_SYNCING ? "SYNCING" : "SYNCED");
-                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, Deframer : " + deframer_state);
-            }
+                write_data((uint8_t *)output_frames, nframes * RTD_FRAME_SIZE);
         }
 
         logger->info("Decoding finished");
 
-        data_out.close();
-        if (input_data_type == DATA_FILE)
-            data_in.close();
+        cleanup();
+    }
+
+    nlohmann::json DMSPRTDDecoderModule::getModuleStats()
+    {
+        auto v = satdump::pipeline::base::FileStreamToFileStreamModule::getModuleStats();
+        std::string deframer_state = def->getState() == def->STATE_NOSYNC ? "NOSYNC" : (def->getState() == def->STATE_SYNCING ? "SYNCING" : "SYNCED");
+        v["deframer_state"] = deframer_state;
+        return v;
     }
 
     void DMSPRTDDecoderModule::drawUI(bool window)
@@ -123,24 +95,15 @@ namespace dmsp
         }
         ImGui::EndGroup();
 
-        if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+        drawProgressBar();
 
         ImGui::End();
     }
 
-    std::string DMSPRTDDecoderModule::getID()
-    {
-        return "dmsp_rtd_decoder";
-    }
+    std::string DMSPRTDDecoderModule::getID() { return "dmsp_rtd_decoder"; }
 
-    std::vector<std::string> DMSPRTDDecoderModule::getParameters()
-    {
-        return {};
-    }
-
-    std::shared_ptr<ProcessingModule> DMSPRTDDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<satdump::pipeline::ProcessingModule> DMSPRTDDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<DMSPRTDDecoderModule>(input_file, output_file_hint, parameters);
     }
-} // namespace noaa
+} // namespace dmsp

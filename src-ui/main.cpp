@@ -1,7 +1,8 @@
-#include "../src-core/resources.h"
 #include "backend.h"
 #include "common/cli_utils.h"
 #include "common/detect_header.h"
+#include "core/plugin.h"
+#include "core/resources.h"
 #include "core/style.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_filedrop.h"
@@ -13,6 +14,7 @@
 #include "nfd.h"
 #include "processing.h"
 #include "satdump_vars.h"
+#include <exception>
 #include <filesystem>
 #include <signal.h>
 #include <string>
@@ -112,7 +114,7 @@ int main(int argc, char *argv[])
     // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
 
-    window = glfwCreateWindow(1000, 600, std::string("SatDump v" + (std::string)satdump::SATDUMP_VERSION).c_str(), nullptr, nullptr);
+    window = glfwCreateWindow(1000, 600, satdump::getSatDumpVersionName().c_str(), nullptr, nullptr);
     if (window == nullptr)
     {
         logger->warn("Could not init GLFW Window; falling back to OpenGL 2.1...");
@@ -177,14 +179,19 @@ int main(int argc, char *argv[])
     satdump::initSatdump(true);
 
     // Check if we need to start a pipeline
-    std::optional<satdump::Pipeline> pipeline = satdump::getPipelineFromName(downlink_pipeline);
-    if (!pipeline.has_value())
-        satdump::processing::is_processing = false;
+    try
+    {
+        satdump::pipeline::Pipeline pipeline = satdump::pipeline::getPipelineFromID(downlink_pipeline);
+        satdump::processing::is_processing = true;
+    }
+    catch (std::exception &)
+    {
+    }
 
     // See if we need to add arguments
-    satdump::config::main_cfg["cli"] = {};
+    satdump::satdump_cfg.main_cfg["cli"] = {};
     if (argc > 1 && !satdump::processing::is_processing)
-        satdump::config::main_cfg["cli"] = parse_common_flags(argc - 1, &argv[1], {{"source_id", typeid(std::string)}});
+        satdump::satdump_cfg.main_cfg["cli"] = parse_common_flags(argc - 1, &argv[1], {{"source_id", typeid(std::string)}});
 
     // Init UI
     satdump::initMainUI();
@@ -203,18 +210,18 @@ int main(int argc, char *argv[])
     // Set window position
     int x, y, xs, ys;
     bool maximized;
-    if (satdump::config::main_cfg["user_interface"]["remember_pos"]["value"].get<bool>() && satdump::config::main_cfg["user_interface"].contains("window"))
+    if (satdump::satdump_cfg.main_cfg["user_interface"]["remember_pos"]["value"].get<bool>() && satdump::satdump_cfg.main_cfg["user_interface"].contains("window"))
     {
-        const bool maximized = getValueOrDefault(satdump::config::main_cfg["user_interface"]["window"]["maximized"], false);
+        const bool maximized = getValueOrDefault(satdump::satdump_cfg.main_cfg["user_interface"]["window"]["maximized"], false);
         if (maximized)
             glfwMaximizeWindow(window);
         else
         {
             const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-            x = getValueOrDefault(satdump::config::main_cfg["user_interface"]["window"]["x"], -1);
-            y = getValueOrDefault(satdump::config::main_cfg["user_interface"]["window"]["y"], -1);
-            xs = getValueOrDefault(satdump::config::main_cfg["user_interface"]["window"]["xs"], -1);
-            ys = getValueOrDefault(satdump::config::main_cfg["user_interface"]["window"]["ys"], -1);
+            x = getValueOrDefault(satdump::satdump_cfg.main_cfg["user_interface"]["window"]["x"], -1);
+            y = getValueOrDefault(satdump::satdump_cfg.main_cfg["user_interface"]["window"]["y"], -1);
+            xs = getValueOrDefault(satdump::satdump_cfg.main_cfg["user_interface"]["window"]["xs"], -1);
+            ys = getValueOrDefault(satdump::satdump_cfg.main_cfg["user_interface"]["window"]["ys"], -1);
 
             if (x >= 0 && y >= 0 && x < mode->width && y < mode->height && xs > 0 && ys > 0)
             {
@@ -238,19 +245,19 @@ int main(int argc, char *argv[])
     } while (!glfwWindowShouldClose(window) && !signal_caught);
 
     // Save window position
-    if (satdump::config::main_cfg["user_interface"]["remember_pos"]["value"].get<bool>())
+    if (satdump::satdump_cfg.main_cfg["user_interface"]["remember_pos"]["value"].get<bool>())
     {
         bool minimized = glfwGetWindowAttrib(window, GLFW_ICONIFIED) == GLFW_TRUE;
         maximized = glfwGetWindowAttrib(window, GLFW_MAXIMIZED) == GLFW_TRUE;
-        satdump::config::main_cfg["user_interface"]["window"]["maximized"] = maximized;
+        satdump::satdump_cfg.main_cfg["user_interface"]["window"]["maximized"] = maximized;
         if (!maximized && !minimized)
         {
             glfwGetWindowPos(window, &x, &y);
             glfwGetWindowSize(window, &xs, &ys);
-            satdump::config::main_cfg["user_interface"]["window"]["x"] = x;
-            satdump::config::main_cfg["user_interface"]["window"]["y"] = y;
-            satdump::config::main_cfg["user_interface"]["window"]["xs"] = xs;
-            satdump::config::main_cfg["user_interface"]["window"]["ys"] = ys;
+            satdump::satdump_cfg.main_cfg["user_interface"]["window"]["x"] = x;
+            satdump::satdump_cfg.main_cfg["user_interface"]["window"]["y"] = y;
+            satdump::satdump_cfg.main_cfg["user_interface"]["window"]["xs"] = xs;
+            satdump::satdump_cfg.main_cfg["user_interface"]["window"]["ys"] = ys;
         }
     }
 

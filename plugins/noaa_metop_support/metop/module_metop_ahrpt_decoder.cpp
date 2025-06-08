@@ -1,8 +1,11 @@
 #include "module_metop_ahrpt_decoder.h"
-#include "common/codings/reedsolomon/reedsolomon.h"
-#include "logger.h"
-#include "common/widgets/themed_widgets.h"
 #include "common/codings/randomization.h"
+#include "common/codings/reedsolomon/reedsolomon.h"
+#include "common/widgets/themed_widgets.h"
+#include "logger.h"
+#include "pipeline/module.h"
+#include "pipeline/modules/base/filestream_to_filestream.h"
+#include <cstdint>
 
 #define BUFFER_SIZE 8192 * 2
 
@@ -11,24 +14,15 @@ uint64_t getFilesize(std::string filepath);
 
 namespace metop
 {
-    MetOpAHRPTDecoderModule::MetOpAHRPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters),
-                                                                                                                                        d_viterbi_outsync_after(parameters["viterbi_outsync_after"].get<int>()),
-                                                                                                                                        d_viterbi_ber_thresold(parameters["viterbi_ber_thresold"].get<float>()),
-                                                                                                                                        viterbi(d_viterbi_ber_thresold, d_viterbi_outsync_after, BUFFER_SIZE)
+    MetOpAHRPTDecoderModule::MetOpAHRPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters), d_viterbi_outsync_after(parameters["viterbi_outsync_after"].get<int>()),
+          d_viterbi_ber_thresold(parameters["viterbi_ber_thresold"].get<float>()), viterbi(d_viterbi_ber_thresold, d_viterbi_outsync_after, BUFFER_SIZE)
     {
         viterbi_out = new uint8_t[BUFFER_SIZE * 2];
         soft_buffer = new int8_t[BUFFER_SIZE];
         deframer.STATE_SYNCED = 18;
-    }
 
-    std::vector<ModuleDataType> MetOpAHRPTDecoderModule::getInputTypes()
-    {
-        return {DATA_FILE, DATA_STREAM};
-    }
-
-    std::vector<ModuleDataType> MetOpAHRPTDecoderModule::getOutputTypes()
-    {
-        return {DATA_FILE};
+        fsfsm_file_ext = ".cadu";
     }
 
     MetOpAHRPTDecoderModule::~MetOpAHRPTDecoderModule()
@@ -39,33 +33,16 @@ namespace metop
 
     void MetOpAHRPTDecoderModule::process()
     {
-        if (input_data_type == DATA_FILE)
-            filesize = getFilesize(d_input_file);
-        else
-            filesize = 0;
-        if (input_data_type == DATA_FILE)
-            data_in = std::ifstream(d_input_file, std::ios::binary);
-        data_out = std::ofstream(d_output_file_hint + ".cadu", std::ios::binary);
-        d_output_files.push_back(d_output_file_hint + ".cadu");
-
-        logger->info("Using input symbols " + d_input_file);
-        logger->info("Decoding to " + d_output_file_hint + ".cadu");
-
-        time_t lastTime = 0;
-
         reedsolomon::ReedSolomon rs(reedsolomon::RS223);
 
         uint8_t frame_buffer[1024 * 10];
 
         int noSyncsRuns = 0;
 
-        while (input_data_type == DATA_FILE ? !data_in.eof() : input_active.load())
+        while (should_run())
         {
             // Read a buffer
-            if (input_data_type == DATA_FILE)
-                data_in.read((char *)soft_buffer, BUFFER_SIZE);
-            else
-                input_fifo->read((uint8_t *)soft_buffer, BUFFER_SIZE);
+            read_data((uint8_t *)soft_buffer, BUFFER_SIZE);
 
             // Perform Viterbi decoding
             int num_samp = viterbi.work(soft_buffer, BUFFER_SIZE, viterbi_out);
@@ -104,31 +81,26 @@ namespace metop
                     rs.decode_interlaved(&cadu[4], true, 4, errors);
 
                     // Write it out
-                    data_out.write((char *)cadu, 1024);
+                    write_data(cadu, 1024);
                 }
-            }
-
-            if (input_data_type == DATA_FILE)
-                progress = data_in.tellg();
-
-            // Update module stats
-            module_stats["deframer_lock"] = deframer.getState() == deframer.STATE_SYNCED;
-            module_stats["viterbi_ber"] = viterbi.ber();
-            module_stats["viterbi_lock"] = viterbi.getState();
-            module_stats["rs_avg"] = (errors[0] + errors[1] + errors[2] + errors[3]) / 4;
-
-            if (time(NULL) % 10 == 0 && lastTime != time(NULL))
-            {
-                lastTime = time(NULL);
-                std::string viterbi_state = viterbi.getState() == 0 ? "NOSYNC" : "SYNCED";
-                std::string deframer_state = deframer.getState() == deframer.STATE_NOSYNC ? "NOSYNC" : (deframer.getState() == deframer.STATE_SYNCING ? "SYNCING" : "SYNCED");
-                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, Viterbi : " + viterbi_state + " BER : " + std::to_string(viterbi.ber()) + ", Deframer : " + deframer_state);
             }
         }
 
-        data_out.close();
-        if (output_data_type == DATA_FILE)
-            data_in.close();
+        cleanup();
+    }
+
+    nlohmann::json MetOpAHRPTDecoderModule::getModuleStats()
+    {
+        auto v = satdump::pipeline::base::FileStreamToFileStreamModule::getModuleStats();
+        v["deframer_lock"] = deframer.getState() == deframer.STATE_SYNCED;
+        v["viterbi_ber"] = viterbi.ber();
+        v["viterbi_lock"] = viterbi.getState();
+        v["rs_avg"] = (errors[0] + errors[1] + errors[2] + errors[3]) / 4;
+        std::string viterbi_state = viterbi.getState() == 0 ? "NOSYNC" : "SYNCED";
+        std::string deframer_state = deframer.getState() == deframer.STATE_NOSYNC ? "NOSYNC" : (deframer.getState() == deframer.STATE_SYNCING ? "SYNCING" : "SYNCED");
+        v["viterbi_state"] = viterbi_state;
+        v["deframer_state"] = deframer_state;
+        return v;
     }
 
     void MetOpAHRPTDecoderModule::drawUI(bool window)
@@ -143,7 +115,7 @@ namespace metop
             {
                 ImDrawList *draw_list = ImGui::GetWindowDrawList();
                 ImVec2 rect_min = ImGui::GetCursorScreenPos();
-                ImVec2 rect_max = { rect_min.x + 200 * ui_scale, rect_min.y + 200 * ui_scale };
+                ImVec2 rect_max = {rect_min.x + 200 * ui_scale, rect_min.y + 200 * ui_scale};
                 draw_list->AddRectFilled(rect_min, rect_max, style::theme.widget_bg);
                 draw_list->PushClipRect(rect_min, rect_max);
 
@@ -151,8 +123,7 @@ namespace metop
                 {
                     draw_list->AddCircleFilled(ImVec2(ImGui::GetCursorScreenPos().x + (int)(100 * ui_scale + (((int8_t *)soft_buffer)[i * 2 + 0] / 127.0) * 100 * ui_scale) % int(200 * ui_scale),
                                                       ImGui::GetCursorScreenPos().y + (int)(100 * ui_scale + (((int8_t *)soft_buffer)[i * 2 + 1] / 127.0) * 100 * ui_scale) % int(200 * ui_scale)),
-                                               2 * ui_scale,
-                                               style::theme.constellation);
+                                               2 * ui_scale, style::theme.constellation);
                 }
 
                 draw_list->PopClipRect();
@@ -183,8 +154,7 @@ namespace metop
                 std::memmove(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
                 ber_history[200 - 1] = ber;
 
-                widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f,
-                                         ImVec2(200 * ui_scale, 50 * ui_scale));
+                widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             ImGui::Spacing();
@@ -237,23 +207,14 @@ namespace metop
         }
         ImGui::EndGroup();
 
-        if (!streamingInput)
-            ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+        drawProgressBar();
 
         ImGui::End();
     }
 
-    std::string MetOpAHRPTDecoderModule::getID()
-    {
-        return "metop_ahrpt_decoder";
-    }
+    std::string MetOpAHRPTDecoderModule::getID() { return "metop_ahrpt_decoder"; }
 
-    std::vector<std::string> MetOpAHRPTDecoderModule::getParameters()
-    {
-        return {"viterbi_outsync_after", "viterbi_ber_thresold"};
-    }
-
-    std::shared_ptr<ProcessingModule> MetOpAHRPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<satdump::pipeline::ProcessingModule> MetOpAHRPTDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<MetOpAHRPTDecoderModule>(input_file, output_file_hint, parameters);
     }

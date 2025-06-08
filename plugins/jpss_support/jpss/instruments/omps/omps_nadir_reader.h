@@ -2,7 +2,7 @@
 
 #include "common/ccsds/ccsds.h"
 #include <cmath>
-#include "common/image/image.h"
+#include "image/image.h"
 extern "C"
 {
 #include <libs/aec/szlib.h>

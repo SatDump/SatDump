@@ -60,7 +60,7 @@ namespace satdump
                 converters.push_back(std::make_shared<conv::RefRadToSunCorRefRadConverter>());
             else if (itype == CALIBRATION_ID_EMISSIVE_RADIANCE && otype == CALIBRATION_ID_BRIGHTNESS_TEMPERATURE)
                 converters.push_back(std::make_shared<conv::EmRadToBrightTempConverter>(false));
-            else if (itype == CALIBRATION_ID_EMISSIVE_RADIANCE && otype == CALIBRATION_ID_BRIGHTNESS_TEMPERATURE_CELCIUS)
+            else if (itype == CALIBRATION_ID_EMISSIVE_RADIANCE && otype == CALIBRATION_ID_BRIGHTNESS_TEMPERATURE_CELSIUS)
                 converters.push_back(std::make_shared<conv::EmRadToBrightTempConverter>(true));
             else if (itype == CALIBRATION_ID_BRIGHTNESS_TEMPERATURE && otype == CALIBRATION_ID_EMISSIVE_RADIANCE)
                 converters.push_back(std::make_shared<conv::BrightTempToEmRadConverter>());
@@ -78,6 +78,10 @@ namespace satdump
         {
             std::vector<std::string> otypes = {itype};
 
+            // Only leave default unit if it actually is valid!
+            if (itype == "")
+                otypes.clear();
+
             // logger->trace("Unit Conversions Request : " + itype);
 
             if (itype == CALIBRATION_ID_REFLECTIVE_RADIANCE)
@@ -85,7 +89,7 @@ namespace satdump
             else if (itype == CALIBRATION_ID_EMISSIVE_RADIANCE)
             {
                 otypes.push_back(CALIBRATION_ID_BRIGHTNESS_TEMPERATURE);
-                otypes.push_back(CALIBRATION_ID_BRIGHTNESS_TEMPERATURE_CELCIUS);
+                otypes.push_back(CALIBRATION_ID_BRIGHTNESS_TEMPERATURE_CELSIUS);
             }
             else if (itype == CALIBRATION_ID_BRIGHTNESS_TEMPERATURE)
                 otypes.push_back(CALIBRATION_ID_EMISSIVE_RADIANCE);

@@ -2,14 +2,15 @@
 
 #include <map>
 #include <mutex>
-#include "common/image/image.h"
-#include "common/image/io.h"
-#include "common/image/j2k_utils.h"
+#include "image/image.h"
+#include "image/io.h"
+#include "image/j2k_utils.h"
 #include "common/ccsds/ccsds.h"
 #include "common/ccsds/ccsds_time.h"
 #include "common/utils.h"
 #include "imgui/imgui_image.h"
 #include <filesystem>
+#include "utils/time.h"
 
 namespace orb
 {
@@ -107,7 +108,7 @@ namespace orb
         void saveAll(int channel = -1)
         {
             std::string dirpath = directory + "/" +
-                                  timestamp_to_string(last_timestamp); //+std::to_string(last_timestamp);
+                                  satdump::timestamp_to_string(last_timestamp); //+std::to_string(last_timestamp);
 
             if (!std::filesystem::exists(dirpath))
                 std::filesystem::create_directories(dirpath);

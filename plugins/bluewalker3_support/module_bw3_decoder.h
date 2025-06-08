@@ -1,15 +1,12 @@
 #pragma once
 
-#include "core/module.h"
+#include "pipeline/modules/base/filestream_to_filestream.h"
 
 namespace bluewalker3
 {
-    class BW3DecoderModule : public ProcessingModule
+    class BW3DecoderModule : public satdump::pipeline::base::FileStreamToFileStreamModule
     {
     protected:
-        std::atomic<uint64_t> filesize;
-        std::atomic<uint64_t> progress;
-
         const int d_cadu_size;
         const int d_payload_size;
 
@@ -21,7 +18,7 @@ namespace bluewalker3
     public:
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
-        static std::vector<std::string> getParameters();
+        static nlohmann::json getParams() { return {}; } // TODOREWORK
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
-}
+} // namespace bluewalker3

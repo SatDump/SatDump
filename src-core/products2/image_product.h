@@ -4,8 +4,8 @@
  * @file image_product.h
  */
 
-#include "common/image/image.h"
-#include "common/utils.h"
+#include "image/image.h"
+#include "utils/stats.h"
 #include "image/channel_transform.h"
 #include "product.h"
 

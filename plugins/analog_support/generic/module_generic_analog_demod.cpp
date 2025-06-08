@@ -1,10 +1,10 @@
 #include "module_generic_analog_demod.h"
-#include "core/config.h"
-#include "logger.h"
-#include "imgui/imgui.h"
-#include <volk/volk.h>
-#include "common/dsp/io/wav_writer.h"
 #include "common/audio/audio_sink.h"
+#include "common/dsp/io/wav_writer.h"
+#include "core/config.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include <volk/volk.h>
 
 namespace generic_analog
 {
@@ -12,7 +12,7 @@ namespace generic_analog
     {
         name = "Generic Analog Demodulator (WIP)";
         show_freq = false;
-        play_audio = satdump::config::main_cfg["user_interface"]["play_audio"]["value"].get<bool>();
+        play_audio = satdump::satdump_cfg.shouldPlayAudio();
 
         constellation.d_hscale = 1.0; // 80.0 / 100.0;
         constellation.d_vscale = 0.5; // 20.0 / 100.0;
@@ -32,10 +32,10 @@ namespace generic_analog
             record_demod_audio = d_parameters["record_demod_audio"];
         }
 
-        //modulation_type
+        // modulation_type
         if (d_parameters.contains("modulation_type"))
         {
-            const std::string& mod = d_parameters["modulation_type"];
+            const std::string &mod = d_parameters["modulation_type"];
             if (mod == "NFM")
             {
                 modulation_type = ModulationType::NFM;
@@ -58,18 +58,16 @@ namespace generic_analog
         //  qua = std::make_shared<dsp::QuadratureDemodBlock>(res->output_stream, dsp::hz_to_rad(d_symbolrate / 2, d_symbolrate));
     }
 
-    GenericAnalogDemodModule::~GenericAnalogDemodModule()
-    {
-    }
+    GenericAnalogDemodModule::~GenericAnalogDemodModule() {}
 
     void GenericAnalogDemodModule::process()
     {
-        if (input_data_type == DATA_FILE)
+        if (input_data_type == satdump::pipeline::DATA_FILE)
             filesize = file_source->getFilesize();
         else
             filesize = 0;
 
-        const bool output_to_file = output_data_type == DATA_FILE || record_demod_audio;
+        const bool output_to_file = output_data_type == satdump::pipeline::DATA_FILE || record_demod_audio;
 
         std::string output_file_hint = d_output_file_hint;
         if (output_to_file)
@@ -78,13 +76,7 @@ namespace generic_analog
             if (d_parameters.contains("satellite_norad"))
             {
                 output_file_hint.push_back('_');
-                output_file_hint.append(
-                    make_safe_string(
-                        std::to_string(
-                            d_parameters["satellite_norad"].get<nlohmann::json::number_unsigned_t>()
-                        )
-                    )
-                );
+                output_file_hint.append(make_safe_string(std::to_string(d_parameters["satellite_norad"].get<nlohmann::json::number_unsigned_t>())));
             }
 
             // append satellite name to filename
@@ -98,17 +90,11 @@ namespace generic_analog
             if (d_parameters.contains("satellite_frequency"))
             {
                 output_file_hint.push_back('_');
-                output_file_hint.append(
-                    make_safe_string(
-                        std::to_string(
-                            d_parameters["satellite_frequency"].get<nlohmann::json::number_unsigned_t>()
-                        ) + "Hz"
-                    )
-                );
+                output_file_hint.append(make_safe_string(std::to_string(d_parameters["satellite_frequency"].get<nlohmann::json::number_unsigned_t>()) + "Hz"));
             }
 
             data_out = std::ofstream(output_file_hint + ".wav", std::ios::binary);
-            d_output_files.push_back(output_file_hint + ".wav");
+            d_output_file = output_file_hint + ".wav";
         }
 
         logger->info("Using input baseband " + d_input_file);
@@ -131,7 +117,7 @@ namespace generic_analog
             wave_writer.write_header(audio_samplerate, 1);
 
         std::shared_ptr<audio::AudioSink> audio_sink;
-        if (input_data_type != DATA_FILE && audio::has_sink())
+        if (input_data_type != satdump::pipeline::DATA_FILE && audio::has_sink())
         {
             enable_audio = true;
             audio_sink = audio::get_default_sink();
@@ -176,7 +162,7 @@ namespace generic_analog
             if (modulation_type == ModulationType::NFM)
                 nout = quad_demod.process(work_buffer_complex, nout, work_buffer_float);
             else if (modulation_type == ModulationType::AM)
-                volk_32fc_magnitude_32f((float *)work_buffer_float, (lv_32fc_t*)work_buffer_complex, nout);
+                volk_32fc_magnitude_32f((float *)work_buffer_float, (lv_32fc_t *)work_buffer_complex, nout);
 
             // Into const
             constellation.pushFloatAndGaussian(work_buffer_float, nout);
@@ -235,7 +221,7 @@ namespace generic_analog
 
             agc->output_stream->flush();
 
-            if (input_data_type == DATA_FILE)
+            if (input_data_type == satdump::pipeline::DATA_FILE)
                 progress = file_source->getPosition();
 
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
@@ -260,7 +246,7 @@ namespace generic_analog
 
         logger->info("Demodulation finished");
 
-        if (input_data_type == DATA_FILE)
+        if (input_data_type == satdump::pipeline::DATA_FILE)
             stop();
     }
 
@@ -285,16 +271,16 @@ namespace generic_analog
 
         ImGui::BeginGroup();
         {
-            ImGui::Button("Settings", { 200 * ui_scale, 20 * ui_scale });
+            ImGui::Button("Settings", {200 * ui_scale, 20 * ui_scale});
 
             proc_mtx.lock();
             ImGui::SetNextItemWidth(200 * ui_scale);
             ImGui::InputInt("Bandwidth##bandwidthsetting", &upcoming_symbolrate);
             ImGui::Checkbox("Record Audio##analogoption", &record_demod_audio);
 
-            ImGui::RadioButton("NFM##analogoption", reinterpret_cast<int*>(&modulation_type), ModulationType::NFM);
+            ImGui::RadioButton("NFM##analogoption", reinterpret_cast<int *>(&modulation_type), ModulationType::NFM);
             ImGui::SameLine();
-            ImGui::RadioButton("AM##analogoption", reinterpret_cast<int*>(&modulation_type), ModulationType::AM);
+            ImGui::RadioButton("AM##analogoption", reinterpret_cast<int *>(&modulation_type), ModulationType::AM);
             style::beginDisabled();
             ImGui::RadioButton("WFM##analogoption", false);
             ImGui::SameLine();
@@ -309,7 +295,7 @@ namespace generic_analog
                 settings_changed = true;
             proc_mtx.unlock();
 
-            ImGui::Button("Signal", { 200 * ui_scale, 20 * ui_scale });
+            ImGui::Button("Signal", {200 * ui_scale, 20 * ui_scale});
             /* if (show_freq)
             {
                 ImGui::Text("Freq : ");
@@ -317,7 +303,7 @@ namespace generic_analog
                 ImGui::TextColored(style::theme.orange, "%.0f Hz", display_freq);
             }
             snr_plot.draw(snr, peak_snr); */
-            if (!streamingInput)
+            if (!d_is_streaming_input)
                 if (ImGui::Checkbox("Show FFT", &show_fft))
                     fft_splitter->set_enabled("fft", show_fft);
             if (enable_audio)
@@ -347,7 +333,7 @@ namespace generic_analog
         }
         ImGui::EndGroup();
 
-        if (!streamingInput)
+        if (!d_is_streaming_input)
             ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
 
         drawStopButton();
@@ -355,7 +341,7 @@ namespace generic_analog
         drawFFT();
     }
 
-    std::string GenericAnalogDemodModule::make_safe_string(const std::string& str)
+    std::string GenericAnalogDemodModule::make_safe_string(const std::string &str)
     {
         std::string safe_str;
         for (const char c : str)
@@ -376,19 +362,10 @@ namespace generic_analog
         return safe_str;
     }
 
-    std::string GenericAnalogDemodModule::getID()
-    {
-        return "generic_analog_demod";
-    }
+    std::string GenericAnalogDemodModule::getID() { return "generic_analog_demod"; }
 
-    std::vector<std::string> GenericAnalogDemodModule::getParameters()
-    {
-        std::vector<std::string> params;
-        return params;
-    }
-
-    std::shared_ptr<ProcessingModule> GenericAnalogDemodModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<satdump::pipeline::ProcessingModule> GenericAnalogDemodModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
         return std::make_shared<GenericAnalogDemodModule>(input_file, output_file_hint, parameters);
     }
-}
+} // namespace generic_analog

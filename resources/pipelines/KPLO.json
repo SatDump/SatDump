@@ -1,23 +1,15 @@
 {
     "kplo_sband_link": {
         "name": "KPLO (Danuri) S-Band Link",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
-        "frequencies": [],
-        "parameters": {},
         "work": {
             "baseband": {},
             "soft": {
-                "pm_demod": {
+                "module": "pm_demod",
+                "parameters": {
                     "resample_after_pll": true,
                     "symbolrate": 16384,
                     "pll_bw": 0.002,
@@ -28,7 +20,8 @@
                 }
             },
             "cadu": {
-                "ccsds_conv_concat_decoder": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
                     "constellation": "bpsk_90",
                     "cadu_size": 2048,
                     "viterbi_ber_thresold": 0.340,

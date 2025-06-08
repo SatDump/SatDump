@@ -1,16 +1,14 @@
 #pragma once
 
-#include "common/image/image.h"
-#include "core/module.h"
-#include <fstream>
 #include "image/svissr_reader.h"
 #include <string>
+#include "image/svissr_reader.h"
+#include "pipeline/modules/base/filestream_to_filestream.h"
 #include <thread>
 
 namespace fengyun_svissr
 {
-
-    class SVISSRImageDecoderModule : public ProcessingModule
+    class SVISSRImageDecoderModule : public satdump::pipeline::base::FileStreamToFileStreamModule
     {
     protected:
         // Settings
@@ -18,10 +16,6 @@ namespace fengyun_svissr
 
         // Read buffer
         uint8_t *frame;
-
-        std::ifstream data_in;
-        std::atomic<uint64_t> filesize;
-        std::atomic<uint64_t> progress;
 
         // Utils values
         bool backwardScan;
@@ -95,13 +89,13 @@ namespace fengyun_svissr
         ~SVISSRImageDecoderModule();
         void process();
         void drawUI(bool window);
-        std::vector<ModuleDataType> getInputTypes();
-        std::vector<ModuleDataType> getOutputTypes();
+
+        nlohmann::json getModuleStats();
 
     public:
         static std::string getID();
         virtual std::string getIDM() { return getID(); };
-        static std::vector<std::string> getParameters();
+        static nlohmann::json getParams() { return {}; } // TODOREWORK
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
-}
+} // namespace fengyun_svissr

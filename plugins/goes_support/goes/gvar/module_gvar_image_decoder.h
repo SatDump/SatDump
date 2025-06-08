@@ -1,11 +1,11 @@
 #pragma once
 
-#include "core/module.h"
 #include "image/infrared1_reader.h"
 #include "image/infrared2_reader.h"
 #include "image/sounder_reader.h"
 #include "image/visible_reader.h"
-#include <fstream>
+#include "pipeline/modules/base/filestream_to_filestream.h"
+#include <thread>
 
 namespace goes
 {
@@ -35,7 +35,7 @@ namespace goes
             uint8_t *frame;
         };
 
-        class GVARImageDecoderModule : public ProcessingModule
+        class GVARImageDecoderModule : public satdump::pipeline::base::FileStreamToFileStreamModule
         {
         protected:
             // Read buffer
@@ -94,13 +94,12 @@ namespace goes
             void process();
             void process_frame_buffer(std::vector<Block> &frame_buffer, time_t &image_time);
             void drawUI(bool window);
-            std::vector<ModuleDataType> getInputTypes();
-            std::vector<ModuleDataType> getOutputTypes();
+            nlohmann::json getModuleStats();
 
         public:
             static std::string getID();
             virtual std::string getIDM() { return getID(); };
-            static std::vector<std::string> getParameters();
+            static nlohmann::json getParams() { return {}; } // TODOREWORK
             static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
         };
     } // namespace gvar

@@ -1,16 +1,9 @@
 {
     "orion_link": {
         "name": "Orion S-Band",
-        "live": true,
-        "live_cfg": [
-            [
-                1,
-                0
-            ],
-            [
-                2,
-                0
-            ]
+        "live": [
+            1,
+            2
         ],
         "frequencies": [
             [
@@ -22,7 +15,8 @@
         "work": {
             "baseband": {},
             "soft": {
-                "psk_demod": {
+                "module": "psk_demod",
+                "parameters": {
                     "constellation": "oqpsk",
                     "symbolrate": 2e6,
                     "rrc_alpha": 0.5,
@@ -30,7 +24,8 @@
                 }
             },
             "cadu": {
-                "ccsds_ldpc_decoder": {
+                "module": "ccsds_ldpc_decoder",
+                "parameters": {
                     "constellation": "oqpsk",
                     "ldpc_rate": "1/2",
                     "ldpc_block_size": 1024,

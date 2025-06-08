@@ -1,11 +1,12 @@
 #include "tracking_widget.h"
-#include "imgui/imgui.h"
-#include "logger.h"
-#include "core/config.h"
-#include "main_ui.h"
-#include "core/style.h"
 #include "common/imgui_utils.h"
 #include "common/tracking/rotator/rotcl_handler.h"
+#include "core/config.h"
+#include "core/style.h"
+#include "imgui/imgui.h"
+#include "logger.h"
+#include "main_ui.h"
+#include "utils/time.h"
 
 namespace satdump
 {
@@ -13,9 +14,9 @@ namespace satdump
     {
         try
         {
-            qth_lon = config::main_cfg["satdump_general"]["qth_lon"]["value"].get<double>();
-            qth_lat = config::main_cfg["satdump_general"]["qth_lat"]["value"].get<double>();
-            qth_alt = config::main_cfg["satdump_general"]["qth_alt"]["value"].get<double>();
+            qth_lon = satdump_cfg.getValueFromSatDumpGeneral<double>("qth_lon");
+            qth_lat = satdump_cfg.getValueFromSatDumpGeneral<double>("qth_lat");
+            qth_alt = satdump_cfg.getValueFromSatDumpGeneral<double>("qth_alt");
         }
         catch (std::exception &e)
         {
@@ -34,7 +35,7 @@ namespace satdump
         {
             try
             {
-                rotator_handler->set_settings(config::main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()]);
+                rotator_handler->set_settings(satdump_cfg.main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()]);
             }
             catch (std::exception &)
             {
@@ -45,9 +46,7 @@ namespace satdump
         object_tracker.setQTH(qth_lon, qth_lat, qth_alt);
         object_tracker.setRotator(rotator_handler);
         object_tracker.setObject(object_tracker.TRACKING_SATELLITE, 25338);
-        object_tracker.rotator_target_pos_updated_callback = [this](double az, double el) {
-            sat_finder.setTarget(az, el);
-        };
+        object_tracker.rotator_target_pos_updated_callback = [this](double az, double el) { sat_finder.setTarget(az, el); };
 
         // Init Sat finder
         sat_finder.setQTH(qth_lon, qth_lat, qth_alt);
@@ -63,10 +62,7 @@ namespace satdump
             this->aos_callback(autotrack_cfg, pass, obj);
             object_tracker.setObject(object_tracker.TRACKING_SATELLITE, obj.norad);
         };
-        auto_scheduler.los_callback = [this](AutoTrackCfg autotrack_cfg, SatellitePass pass, TrackedObject obj)
-        {
-            this->los_callback(autotrack_cfg, pass, obj);
-        };
+        auto_scheduler.los_callback = [this](AutoTrackCfg autotrack_cfg, SatellitePass pass, TrackedObject obj) { this->los_callback(autotrack_cfg, pass, obj); };
 
         auto_scheduler.setQTH(qth_lon, qth_lat, qth_alt);
 
@@ -77,9 +73,9 @@ namespace satdump
         auto_scheduler.start();
 
         // Attempt to apply provided CLI settings
-        if (satdump::config::main_cfg.contains("cli"))
+        if (satdump::satdump_cfg.main_cfg.contains("cli"))
         {
-            auto &cli_settings = satdump::config::main_cfg["cli"];
+            auto &cli_settings = satdump::satdump_cfg.main_cfg["cli"];
 
             if (cli_settings.contains("engage_autotrack") && cli_settings["engage_autotrack"].get<bool>())
             {
@@ -88,10 +84,7 @@ namespace satdump
         }
     }
 
-    TrackingWidget::~TrackingWidget()
-    {
-        saveConfig();
-    }
+    TrackingWidget::~TrackingWidget() { saveConfig(); }
 
     void TrackingWidget::render()
     {
@@ -121,7 +114,7 @@ namespace satdump
 
                 try
                 {
-                    rotator_handler->set_settings(config::main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()]);
+                    rotator_handler->set_settings(satdump_cfg.main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()]);
                 }
                 catch (std::exception &)
                 {
@@ -204,8 +197,10 @@ namespace satdump
         }
     }
 
-    void TrackingWidget::renderSatfinder() {
-        if(show_satellite_finder_window) {
+    void TrackingWidget::renderSatfinder()
+    {
+        if (show_satellite_finder_window)
+        {
             ImGui::Begin("Satellite finder", &show_satellite_finder_window);
             ImGui::SetWindowSize(ImVec2(800, 550), ImGuiCond_FirstUseEver);
             if (satellite_finder_was_asked)
@@ -217,4 +212,4 @@ namespace satdump
             ImGui::End();
         }
     }
-}
+} // namespace satdump

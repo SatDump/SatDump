@@ -1,7 +1,6 @@
 #include "airspyhf_dev.h"
 #include "common/dsp/complex.h"
 #include "core/exception.h"
-#include <libairspyhf/airspyhf.h>
 #include <logger.h>
 
 namespace satdump

@@ -2,8 +2,8 @@
 #include <cmath>
 #include <filesystem>
 
-#include "common/image/image.h"
-#include "common/utils.h"
+#include "image/image.h"
+#include "utils/string.h"
 #include "core/exception.h"
 #include "gk2a_ami.h"
 #include "hdf5_utils.h"
@@ -37,7 +37,7 @@ namespace nc2pro
         if (file < 0)
             return image_out;
 
-        std::vector<std::string> name_parts = splitString(hdf5_get_string_attr_FILE_fixed(file, "file_name"), '_');
+        std::vector<std::string> name_parts = satdump::splitString(hdf5_get_string_attr_FILE_fixed(file, "file_name"), '_');
         image_out.channel = name_parts[3];
         std::transform(image_out.channel.begin(), image_out.channel.end(), image_out.channel.begin(), ::toupper);
 
@@ -96,7 +96,7 @@ namespace nc2pro
         std::vector<ParsedGK2AAMI> all_images;
         std::vector<std::string> files_to_parse; //= {nc_file};
         {
-            auto ori_splt = splitString(std::filesystem::path(nc_file).stem().string(), '_');
+            auto ori_splt = satdump::splitString(std::filesystem::path(nc_file).stem().string(), '_');
             if (ori_splt.size() != 6)
                 throw satdump_exception("Invalid GK-2A filename!");
 
@@ -110,7 +110,7 @@ namespace nc2pro
 
                 {
                     std::string cleanname = std::filesystem::path(path).stem().string();
-                    auto splt = splitString(cleanname, '_');
+                    auto splt = satdump::splitString(cleanname, '_');
 
                     if (splt.size() == 6 && ori_splt[0] == splt[0] && ori_splt[1] == splt[1] && ori_splt[2] == splt[2] && ori_splt[5] == splt[5])
                     {

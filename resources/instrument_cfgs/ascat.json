@@ -1,0 +1,21 @@
+{
+    "name": "ASCAT",
+    "presets": [
+        {
+            "name": "Outgoing shortwave IR",
+            "expression": "ch1",
+            "image": {
+                "individual_equalize": true
+            }
+        }
+    ],
+    "default": {
+        "calibration_ranges": {
+            "1": {
+                "unit": "backscatter",
+                "min": 0,
+                "max": 2576687
+            }
+        }
+    }
+}

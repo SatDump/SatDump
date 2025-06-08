@@ -2,7 +2,7 @@
 #include <cmath>
 #include "defines.h"
 #include <cstring>
-#include "common/image/jpeg12_utils.h"
+#include "image/jpeg12_utils.h"
 
 namespace hinode
 {

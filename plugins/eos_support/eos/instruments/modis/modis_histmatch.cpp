@@ -1,5 +1,5 @@
 #include "modis_histmatch.h"
-#include "common/image/histogram_utils.h"
+#include "image/histogram_utils.h"
 #include "logger.h"
 #include <cmath>
 
