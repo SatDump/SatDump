@@ -213,7 +213,6 @@ namespace satdump
 
                     auto &img = getImage();
                     ImGui::BeginTooltip(); // TODOREWORK
-                    additionalMouseCallback(x, y);
                     ImGui::Text("Raw : %d", img.get(0, x, y));
                     if (image_calib_valid && image.channels() == 1)
                     {
@@ -234,6 +233,7 @@ namespace satdump
                             ImGui::Text("Lon : %f", pos.lon);
                         }
                     }
+                    additionalMouseCallback(x, y);
                     ImGui::EndTooltip();
                 };
             }

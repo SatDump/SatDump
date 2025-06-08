@@ -43,11 +43,13 @@ namespace satdump
                 if (is_processing)
                     return;
 
+                ImGui::SeparatorText("Product Data");
+
                 if (channel_selection_curr_id != -1)
                     ImGui::Text("Count : %d", product->get_raw_channel_val(channel_selection_curr_id, x, y));
 
                 // Show all possible units, if the image is raw
-                if (!channel_calibrated && img_calibrator && channel_selection_curr_id != -1)
+                if (img_calibrator && channel_selection_curr_id != -1)
                 {
                     double val = img_calibrator->compute(channel_selection_curr_id, x, y);
                     for (auto &u : channels_calibration_units_and_converters)
