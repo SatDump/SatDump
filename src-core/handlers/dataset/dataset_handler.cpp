@@ -26,7 +26,7 @@ namespace satdump
 
             dataset_name = d.satellite_name + " " + timestamp_to_string(d.timestamp);
 
-            // TODOREWORK Load more than just image products
+            // Load products into dataset
             for (auto &p : dataset.products_list)
             {
                 auto prod = products::loadProduct(path + "/" + p);

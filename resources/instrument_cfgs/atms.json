@@ -72,7 +72,7 @@
         }
     ],
     "default": {
-        "calibration_ranges": { // TODOREWORK, convert them between units!
+        "calibration_ranges": {
             "1": {
                 "unit": "brightness_temperature",
                 "min": 150,

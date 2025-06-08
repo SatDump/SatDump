@@ -23,7 +23,6 @@ namespace satdump
         };
     } // namespace config
 
-    // TODOREWORK, redo config with a simpler overall class...
     class SatDumpConfigHandler
     {
     public:                                                              // TODOREWORK make this private again

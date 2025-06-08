@@ -1,6 +1,6 @@
 #include "amr2_reader.h"
-#include "common/ccsds/ccsds_time.h"
 #include "../timestamp.h"
+#include "common/ccsds/ccsds_time.h"
 
 namespace jason3
 {
@@ -25,7 +25,7 @@ namespace jason3
                 return;
 
             // We need to know where the satellite was when that packet was created
-            time_t currentTime = parseJasonTime(packet); // TODOREWORK!!!!
+            time_t currentTime = parseJasonTime(packet);
 
             // Also write them as a raw images
             for (int i = 0, y = 0; i < 12; i++)
@@ -56,9 +56,6 @@ namespace jason3
                 channels[channel].resize((lines + 1) * 12);
         }
 
-        image::Image AMR2Reader::getChannel(int channel)
-        {
-            return image::Image(channels[channel].data(), 16, 12, lines, 1);
-        }
-    } // namespace modis
-} // namespace eos
+        image::Image AMR2Reader::getChannel(int channel) { return image::Image(channels[channel].data(), 16, 12, lines, 1); }
+    } // namespace amr2
+} // namespace jason3

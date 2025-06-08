@@ -5,7 +5,7 @@
 namespace satdump
 {
     namespace projection
-    { // TODOREWORK rename?
+    {
         class TimestampLineGCPsRaytracer : public SatelliteRaytracer
         {
         private:
@@ -30,5 +30,5 @@ namespace satdump
             TimestampLineGCPsRaytracer(nlohmann::json cfg);
             bool get_position(double x, double y, geodetic::geodetic_coords_t &pos, double *otime);
         };
-    }
-}
+    } // namespace projection
+} // namespace satdump

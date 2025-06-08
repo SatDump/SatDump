@@ -8,8 +8,6 @@
 #include "metop.h"
 #include <filesystem>
 #include <fstream>
-// #include "products/radiation_products.h" TODOREWORK
-// #include "products/scatterometer_products.h" TODOREWORK ASCAT
 #include "common/calibration.h"
 #include "common/tracking/tle.h"
 #include "core/resources.h"

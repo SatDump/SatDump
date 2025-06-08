@@ -64,7 +64,7 @@ namespace satdump
                     auto fun = [this, default_name, default_dir, dialog_name, force_png]()
                     {
                         file_save_thread_running = true;
-                        // TODOREWORK!!!!
+
                         std::string save_type = "png";
                         if (!force_png)
                             satdump_cfg.tryAssignValueFromSatDumpGeneral(save_type, "image_format");
