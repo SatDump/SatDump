@@ -53,7 +53,10 @@ namespace satdump
                     for (auto &u : channels_calibration_units_and_converters)
                     {
                         double vval = u.second->convert(x, y, val);
-                        ImGui::Text("%s : %f %s", u.first.name.c_str(), vval, u.first.unit.c_str());
+                        if (vval == CALIBRATION_INVALID_VALUE)
+                            ImGui::Text("%s : Invalid Value", u.first.name.c_str());
+                        else
+                            ImGui::Text("%s : %f %s", u.first.name.c_str(), vval, u.first.unit.c_str());
                     }
                 }
             };
