@@ -14,9 +14,9 @@ namespace satdump
     {
         try
         {
-            qth_lon = config::main_cfg["satdump_general"]["qth_lon"]["value"].get<double>();
-            qth_lat = config::main_cfg["satdump_general"]["qth_lat"]["value"].get<double>();
-            qth_alt = config::main_cfg["satdump_general"]["qth_alt"]["value"].get<double>();
+            qth_lon = satdump_cfg.main_cfg["satdump_general"]["qth_lon"]["value"].get<double>();
+            qth_lat = satdump_cfg.main_cfg["satdump_general"]["qth_lat"]["value"].get<double>();
+            qth_alt = satdump_cfg.main_cfg["satdump_general"]["qth_alt"]["value"].get<double>();
         }
         catch (std::exception &e)
         {
@@ -35,7 +35,7 @@ namespace satdump
         {
             try
             {
-                rotator_handler->set_settings(config::main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()]);
+                rotator_handler->set_settings(satdump_cfg.main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()]);
             }
             catch (std::exception &)
             {
@@ -78,9 +78,9 @@ namespace satdump
         auto_scheduler.start();
 
         // Attempt to apply provided CLI settings
-        if (satdump::config::main_cfg.contains("cli"))
+        if (satdump::satdump_cfg.main_cfg.contains("cli"))
         {
-            auto &cli_settings = satdump::config::main_cfg["cli"];
+            auto &cli_settings = satdump::satdump_cfg.main_cfg["cli"];
 
             if (cli_settings.contains("engage_autotrack") && cli_settings["engage_autotrack"].get<bool>())
             {
@@ -122,7 +122,7 @@ namespace satdump
 
                 try
                 {
-                    rotator_handler->set_settings(config::main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()]);
+                    rotator_handler->set_settings(satdump_cfg.main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()]);
                 }
                 catch (std::exception &)
                 {

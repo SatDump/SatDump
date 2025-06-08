@@ -70,7 +70,7 @@ namespace satdump
                 wipInfo.decim_ptr->start();
             wipInfo.file_sink->start();
 
-            wipInfo.file_sink->start_recording(config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>() + "/" +
+            wipInfo.file_sink->start_recording(satdump_cfg.main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>() + "/" +
                                                    prepareBasebandFileName(getTime(), get_samplerate() / decimation, freq),
                                                get_samplerate() / decimation);
 
@@ -122,7 +122,7 @@ namespace satdump
 
             if (it->selected_pipeline.name != "")
             {
-                if (config::main_cfg["user_interface"]["finish_processing_after_live"]["value"].get<bool>() && it->live_pipeline->getOutputFile().size() > 0)
+                if (satdump_cfg.main_cfg["user_interface"]["finish_processing_after_live"]["value"].get<bool>() && it->live_pipeline->getOutputFile().size() > 0)
                 {
                     pipeline::Pipeline pipeline = it->selected_pipeline;
                     std::string input_file = it->live_pipeline->getOutputFile();

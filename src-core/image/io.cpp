@@ -87,9 +87,9 @@ namespace satdump
             try
             {
                 if (prod)
-                    image_format = satdump::config::main_cfg["satdump_general"]["product_format"]["value"];
+                    image_format = satdump_cfg.main_cfg["satdump_general"]["product_format"]["value"];
                 else
-                    image_format = satdump::config::main_cfg["satdump_general"]["image_format"]["value"];
+                    image_format = satdump_cfg.main_cfg["satdump_general"]["image_format"]["value"];
             }
             catch (std::exception &e)
             {

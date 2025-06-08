@@ -1,10 +1,10 @@
 #include "utils.h"
+#include "logger.h"
 #include <cmath>
 #include <sstream>
-#include "logger.h"
 
-#include "core/config.h"
 #include "common/dsp_source_sink/format_notated.h"
+#include "core/config.h"
 
 // Return filesize
 uint64_t getFilesize(std::string filepath)
@@ -20,7 +20,7 @@ std::string prepareAutomatedPipelineFolder(time_t timevalue, double frequency, s
     std::tm *timeReadable = gmtime(&timevalue);
     if (folder == "")
     {
-        folder = satdump::config::main_cfg["satdump_directories"]["live_processing_path"]["value"].get<std::string>();
+        folder = satdump::satdump_cfg.getValueFromSatDumpDirectories<std::string>("live_processing_path");
 #ifdef __ANDROID__
         if (folder == "./live_output")
             folder = "/storage/emulated/0/live_output";
@@ -48,7 +48,7 @@ std::string prepareBasebandFileName(double timeValue_precise, uint64_t samplerat
                             (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "-" +
                             (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
 
-    if (satdump::config::main_cfg["user_interface"]["recorder_baseband_filename_millis_precision"]["value"].get<bool>())
+    if (satdump::satdump_cfg.getValueFromSatDumpUI<bool>("recorder_baseband_filename_millis_precision"))
     {
         std::ostringstream ss;
 

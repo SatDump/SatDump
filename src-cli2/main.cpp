@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
         sub_p->add_option("input_file", "Actual input file (eg. metop_ahrpt.cadu, a baseband, etc)")->required();
         sub_p->add_option("output_folder", "Output folder for processed data")->required();
 
-        nlohmann::json common = satdump::config::main_cfg["user_interface"]["default_offline_parameters"];
+        nlohmann::json common = satdump::satdump_cfg.main_cfg["user_interface"]["default_offline_parameters"];
 
         for (auto &ep : p.editable_parameters.items())
             for (auto &e : ep.value().items())

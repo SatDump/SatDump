@@ -51,7 +51,7 @@ namespace meteosat
             not_channels_lines = 0;
 
             // Automatic composite generation
-            if (satdump::config::main_cfg["viewer"]["instruments"].contains("seviri") && satdump::config::main_cfg["satdump_general"]["auto_process_products"]["value"].get<bool>())
+            if (satdump::satdump_cfg.main_cfg["viewer"]["instruments"].contains("seviri") && satdump::satdump_cfg.main_cfg["satdump_general"]["auto_process_products"]["value"].get<bool>())
                 can_make_composites = true;
 
             if (can_make_composites)

@@ -125,22 +125,22 @@ namespace satdump
             decim_ptr->stop();
         source_ptr->stop();
         is_started = false;
-        config::main_cfg["user"]["recorder_sdr_settings"]["last_used_sdr"] = sources[sdr_select_id].name;
-        config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name] = source_ptr->get_settings();
-        config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["samplerate"] = source_ptr->get_samplerate();
-        config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["frequency"] = frequency_hz;
-        config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["xconverter_frequency"] = xconverter_frequency;
-        config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["decimation"] = current_decimation;
-        config::saveUserConfig();
+        satdump_cfg.main_cfg["user"]["recorder_sdr_settings"]["last_used_sdr"] = sources[sdr_select_id].name;
+        satdump_cfg.main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name] = source_ptr->get_settings();
+        satdump_cfg.main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["samplerate"] = source_ptr->get_samplerate();
+        satdump_cfg.main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["frequency"] = frequency_hz;
+        satdump_cfg.main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["xconverter_frequency"] = xconverter_frequency;
+        satdump_cfg.main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["decimation"] = current_decimation;
+        satdump_cfg.saveUser();
     }
 
     void RecorderApplication::try_load_sdr_settings()
     {
-        if (config::main_cfg["user"].contains("recorder_sdr_settings"))
+        if (satdump_cfg.main_cfg["user"].contains("recorder_sdr_settings"))
         {
-            if (config::main_cfg["user"]["recorder_sdr_settings"].contains(sources[sdr_select_id].name))
+            if (satdump_cfg.main_cfg["user"]["recorder_sdr_settings"].contains(sources[sdr_select_id].name))
             {
-                auto &cfg = config::main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name];
+                auto &cfg = satdump_cfg.main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name];
                 source_ptr->set_settings(cfg);
                 if (cfg.contains("samplerate"))
                 {
@@ -216,7 +216,7 @@ namespace satdump
             live_pipeline->stop();
             is_stopping_processing = is_processing = false;
 
-            if (config::main_cfg["user_interface"]["finish_processing_after_live"]["value"].get<bool>() && live_pipeline->getOutputFile().size() > 0)
+            if (satdump_cfg.main_cfg["user_interface"]["finish_processing_after_live"]["value"].get<bool>() && live_pipeline->getOutputFile().size() > 0)
             {
                 pipeline::Pipeline pipeline = pipeline_selector.selected_pipeline;
                 std::string input_file = live_pipeline->getOutputFile();
@@ -254,7 +254,7 @@ namespace satdump
 
     void RecorderApplication::load_rec_path_data()
     {
-        recording_path = config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>();
+        recording_path = satdump_cfg.main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>();
 #if defined(_MSC_VER)
         recording_path += "\\";
 #elif defined(__ANDROID__)

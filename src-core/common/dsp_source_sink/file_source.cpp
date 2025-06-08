@@ -1,14 +1,14 @@
-#include "logger.h"
+#include "file_source.h"
+#include "common/detect_header.h"
+#include "common/utils.h"
 #include "core/config.h"
 #include "core/style.h"
-#include "file_source.h"
-#include "common/utils.h"
 #include "imgui/imgui_stdlib.h"
-#include "common/detect_header.h"
+#include "logger.h"
 
 FileSource::FileSource(dsp::SourceDescriptor source) : DSPSampleSource(source)
 {
-    file_input.setDefaultDir(satdump::config::main_cfg["satdump_directories"]["default_input_directory"]["value"].get<std::string>());
+    file_input.setDefaultDir(satdump::satdump_cfg.getValueFromSatDumpDirectories<std::string>("default_input_directory"));
     should_run = true;
     work_thread = std::thread(&FileSource::run_thread, this);
 }
@@ -82,10 +82,7 @@ void FileSource::run_thread()
     }
 }
 
-void FileSource::open()
-{
-    is_open = true;
-}
+void FileSource::open() { is_open = true; }
 
 void FileSource::start()
 {
@@ -130,10 +127,7 @@ void FileSource::close()
     }
 }
 
-void FileSource::set_frequency(uint64_t frequency)
-{
-    DSPSampleSource::set_frequency(frequency);
-}
+void FileSource::set_frequency(uint64_t frequency) { DSPSampleSource::set_frequency(frequency); }
 
 void FileSource::drawControlUI()
 {
@@ -184,15 +178,9 @@ void FileSource::drawControlUI()
 #endif
 }
 
-void FileSource::set_samplerate(uint64_t samplerate)
-{
-    samplerate_input.set(samplerate);
-}
+void FileSource::set_samplerate(uint64_t samplerate) { samplerate_input.set(samplerate); }
 
-uint64_t FileSource::get_samplerate()
-{
-    return samplerate_input.get();
-}
+uint64_t FileSource::get_samplerate() { return samplerate_input.get(); }
 
 std::vector<dsp::SourceDescriptor> FileSource::getAvailableSources()
 {

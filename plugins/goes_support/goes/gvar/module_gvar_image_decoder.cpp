@@ -583,7 +583,7 @@ namespace goes
             imager_product.save(disk_folder);
 
             // Generate composites, if enabled
-            if (satdump::config::shouldAutoprocessProducts()) // TODOREWORK. Per pipeline?
+            if (satdump::satdump_cfg.shouldAutoprocessProducts()) // TODOREWORK. Per pipeline?
                 satdump::products::process_product_with_handler(&imager_product, disk_folder);
         }
 

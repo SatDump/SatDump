@@ -61,7 +61,7 @@ namespace satdump
 
             logger->info("Done! Goodbye");
 
-            if (config::main_cfg["user_interface"]["open_viewer_post_processing"]["value"].get<bool>())
+            if (satdump_cfg.main_cfg["user_interface"]["open_viewer_post_processing"]["value"].get<bool>())
             {
                 if (std::filesystem::exists(output_file + "/dataset.json"))
                 {

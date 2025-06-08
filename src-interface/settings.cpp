@@ -46,7 +46,7 @@ namespace satdump
 
         void setup()
         {
-            nlohmann::ordered_json params = satdump::config::main_cfg["user_interface"];
+            nlohmann::ordered_json params = satdump::satdump_cfg.main_cfg["user_interface"];
 
             for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> cfg : params.items())
             {
@@ -55,7 +55,7 @@ namespace satdump
                     settings_user_interface.push_back({cfg.key(), params::EditableParameter(nlohmann::json(cfg.value()))});
             }
 
-            params = satdump::config::main_cfg["satdump_general"];
+            params = satdump::satdump_cfg.main_cfg["satdump_general"];
 
             for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> cfg : params.items())
             {
@@ -64,7 +64,7 @@ namespace satdump
                     settings_general.push_back({cfg.key(), params::EditableParameter(nlohmann::json(cfg.value()))});
             }
 
-            params = satdump::config::main_cfg["satdump_directories"];
+            params = satdump::satdump_cfg.main_cfg["satdump_directories"];
 
             for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> cfg : params.items())
             {
@@ -74,7 +74,7 @@ namespace satdump
             }
 
             int theme_id = 0;
-            std::string current_theme = satdump::config::main_cfg["user_interface"]["theme"]["value"].get<std::string>();
+            std::string current_theme = satdump::satdump_cfg.main_cfg["user_interface"]["theme"]["value"].get<std::string>();
             for (const auto &entry : std::filesystem::directory_iterator(resources::getResourcePath("themes")))
             {
                 if (entry.path().filename().extension() != ".json")
@@ -88,13 +88,13 @@ namespace satdump
                 theme_id++;
             }
 
-            advanced_mode = getValueOrDefault(satdump::config::main_cfg["user_interface"]["advanced_mode"]["value"], false);
+            advanced_mode = getValueOrDefault(satdump::satdump_cfg.main_cfg["user_interface"]["advanced_mode"]["value"], false);
 
 #ifdef USE_OPENCL
             opencl_devices_enum = opencl::getAllDevices();
             opencl_devices_enum.push_back({-1, -1, "None (Use CPU)"});
-            int p = satdump::config::main_cfg["satdump_general"]["opencl_device"]["platform"].get<int>();
-            int d = satdump::config::main_cfg["satdump_general"]["opencl_device"]["device"].get<int>();
+            int p = satdump::satdump_cfg.main_cfg["satdump_general"]["opencl_device"]["platform"].get<int>();
+            int d = satdump::satdump_cfg.main_cfg["satdump_general"]["opencl_device"]["device"].get<int>();
             int dev_id = 0;
             opencl_devices_str = "";
             for (opencl::OCLDevice &dev : opencl_devices_enum)
@@ -178,7 +178,7 @@ namespace satdump
                     if (disable_update_button)
                         style::endDisabled();
 
-                    time_t last_update = getValueOrDefault<time_t>(config::main_cfg["user"]["tles_last_updated"], 0);
+                    time_t last_update = getValueOrDefault<time_t>(satdump_cfg.main_cfg["user"]["tles_last_updated"], 0);
                     if (last_update == 0)
                         strcpy(tle_last_update, "Never");
                     else
@@ -214,11 +214,11 @@ namespace satdump
                 }
             }
 
-            if (config::plugin_config_handlers.size() > 0)
+            if (satdump_cfg.plugin_config_handlers.size() > 0)
             {
                 ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10 * ui_scale);
                 ImGui::SeparatorText("Plugin Settings");
-                for (auto &plugin_hdl : config::plugin_config_handlers)
+                for (auto &plugin_hdl : satdump_cfg.plugin_config_handlers)
                 {
                     if (ImGui::CollapsingHeader(plugin_hdl.name.c_str()))
                     {
@@ -233,23 +233,16 @@ namespace satdump
                 ImGui::SeparatorText("Advanced Settings");
                 if (ImGui::CollapsingHeader("TLE Settings"))
                 {
-                    widgets::JSONTreeEditor(satdump::config::main_cfg["tle_settings"], "tle_settings", false);
+                    widgets::JSONTreeEditor(satdump::satdump_cfg.main_cfg["tle_settings"], "tle_settings", false);
                     if (ImGui::Button("Reset##tle_settings"))
-                        satdump::config::main_cfg["tle_settings"] = satdump::config::master_cfg["tle_settings"];
+                        satdump::satdump_cfg.main_cfg["tle_settings"] = satdump::satdump_cfg.default_cfg["tle_settings"];
                 }
                 if (ImGui::CollapsingHeader("Advanced Settings"))
                 {
-                    widgets::JSONTreeEditor(satdump::config::main_cfg["advanced_settings"], "advanced_settings");
+                    widgets::JSONTreeEditor(satdump::satdump_cfg.main_cfg["advanced_settings"], "advanced_settings");
                     ImGui::SameLine();
                     if (ImGui::Button("Reset##advanced_settings"))
-                        satdump::config::main_cfg["advanced_settings"] = satdump::config::master_cfg["advanced_settings"];
-                }
-                if (ImGui::CollapsingHeader("Instrument Config"))
-                {
-                    widgets::JSONTreeEditor(satdump::config::main_cfg["viewer"]["instruments"], "instrument_settings");
-                    ImGui::SameLine();
-                    if (ImGui::Button("Reset##instrument_settings"))
-                        satdump::config::main_cfg["viewer"]["instruments"] = satdump::config::master_cfg["viewer"]["instruments"];
+                        satdump::satdump_cfg.main_cfg["advanced_settings"] = satdump::satdump_cfg.default_cfg["advanced_settings"];
                 }
                 if (ImGui::CollapsingHeader("Default Pipeline Configs"))
                 {
@@ -265,24 +258,24 @@ namespace satdump
             {
 #ifdef USE_OPENCL
                 // Save OpenCL Device selection
-                satdump::config::main_cfg["satdump_general"]["opencl_device"]["platform"] = opencl_devices_enum[opencl_devices_id].platform_id;
-                satdump::config::main_cfg["satdump_general"]["opencl_device"]["device"] = opencl_devices_enum[opencl_devices_id].device_id;
+                satdump::satdump_cfg.main_cfg["satdump_general"]["opencl_device"]["platform"] = opencl_devices_enum[opencl_devices_id].platform_id;
+                satdump::satdump_cfg.main_cfg["satdump_general"]["opencl_device"]["device"] = opencl_devices_enum[opencl_devices_id].device_id;
                 opencl::resetOCLContext();
 #endif
 
                 // Most general settings
                 for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_user_interface)
-                    satdump::config::main_cfg["user_interface"][p.first]["value"] = p.second.getValue();
+                    satdump::satdump_cfg.main_cfg["user_interface"][p.first]["value"] = p.second.getValue();
                 for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_general)
-                    satdump::config::main_cfg["satdump_general"][p.first]["value"] = p.second.getValue();
+                    satdump::satdump_cfg.main_cfg["satdump_general"][p.first]["value"] = p.second.getValue();
                 for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_output_directories)
-                    satdump::config::main_cfg["satdump_directories"][p.first]["value"] = p.second.getValue();
+                    satdump::satdump_cfg.main_cfg["satdump_directories"][p.first]["value"] = p.second.getValue();
 
                 // Theme
-                satdump::config::main_cfg["user_interface"]["theme"]["value"] = themes[selected_theme];
+                satdump::satdump_cfg.main_cfg["user_interface"]["theme"]["value"] = themes[selected_theme];
 
                 // Plugin Settings
-                for (auto &plugin_hdl : config::plugin_config_handlers)
+                for (auto &plugin_hdl : satdump_cfg.plugin_config_handlers)
                     plugin_hdl.save();
 
                 // Re-initialize auto TLE update
@@ -290,12 +283,12 @@ namespace satdump
                 autoUpdateTLE(user_path + "/satdump_tles.txt");
 
                 // Save config files
-                config::saveUserConfig();
+                satdump_cfg.saveUser();
                 if (advanced_mode)
                     pipeline::savePipelines();
 
                 // Clean up
-                advanced_mode = getValueOrDefault(satdump::config::main_cfg["user_interface"]["advanced_mode"]["value"], false);
+                advanced_mode = getValueOrDefault(satdump::satdump_cfg.main_cfg["user_interface"]["advanced_mode"]["value"], false);
                 saved_message.set_message(style::theme.green, "Settings saved");
                 satdump::update_ui = true;
             }

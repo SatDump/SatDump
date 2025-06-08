@@ -53,7 +53,7 @@ namespace satdump
                 snr = 0;
                 peak_snr = 0;
 
-                showWaterfall = satdump::config::main_cfg["user_interface"]["show_waterfall_demod_fft"]["value"].get<bool>();
+                showWaterfall = satdump::satdump_cfg.main_cfg["user_interface"]["show_waterfall_demod_fft"]["value"].get<bool>();
             }
 
             void BaseDemodModule::initb(bool resample_here)
@@ -131,9 +131,9 @@ namespace satdump
                     double qth_lon = 0, qth_lat = 0, qth_alt = 0;
                     try
                     {
-                        qth_lon = satdump::config::main_cfg["satdump_general"]["qth_lon"]["value"].get<double>();
-                        qth_lat = satdump::config::main_cfg["satdump_general"]["qth_lat"]["value"].get<double>();
-                        qth_alt = satdump::config::main_cfg["satdump_general"]["qth_alt"]["value"].get<double>();
+                        qth_lon = satdump::satdump_cfg.main_cfg["satdump_general"]["qth_lon"]["value"].get<double>();
+                        qth_lat = satdump::satdump_cfg.main_cfg["satdump_general"]["qth_lat"]["value"].get<double>();
+                        qth_alt = satdump::satdump_cfg.main_cfg["satdump_general"]["qth_alt"]["value"].get<double>();
                     }
                     catch (std::exception &)
                     {

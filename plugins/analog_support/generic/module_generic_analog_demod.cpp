@@ -12,7 +12,7 @@ namespace generic_analog
     {
         name = "Generic Analog Demodulator (WIP)";
         show_freq = false;
-        play_audio = satdump::config::main_cfg["user_interface"]["play_audio"]["value"].get<bool>();
+        play_audio = satdump::satdump_cfg.main_cfg["user_interface"]["play_audio"]["value"].get<bool>();
 
         constellation.d_hscale = 1.0; // 80.0 / 100.0;
         constellation.d_vscale = 0.5; // 20.0 / 100.0;

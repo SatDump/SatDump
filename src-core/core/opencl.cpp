@@ -1,8 +1,8 @@
 #include "opencl.h"
-#include "logger.h"
 #include "core/config.h"
-#include <fstream>
 #include "core/exception.h"
+#include "logger.h"
+#include <fstream>
 
 #ifdef USE_OPENCL
 namespace satdump
@@ -129,8 +129,8 @@ namespace satdump
                     logger->error("Could not release old context! Code %d", ret);
             }
 
-            platform_id = satdump::config::main_cfg["satdump_general"]["opencl_device"]["platform"].get<int>();
-            device_id = satdump::config::main_cfg["satdump_general"]["opencl_device"]["device"].get<int>();
+            platform_id = satdump::satdump_cfg.main_cfg["satdump_general"]["opencl_device"]["platform"].get<int>();
+            device_id = satdump::satdump_cfg.main_cfg["satdump_general"]["opencl_device"]["device"].get<int>();
 
             std::vector<OCLDevice> devices = getAllDevices();
             if (devices.empty())
@@ -139,10 +139,7 @@ namespace satdump
             return devices;
         }
 
-        bool useCL()
-        {
-            return platform_id >= 0;
-        }
+        bool useCL() { return platform_id >= 0; }
 
         cl_program buildCLKernel(std::string path, bool use_cache)
         {
@@ -162,13 +159,13 @@ namespace satdump
 
             if (err != CL_SUCCESS)
             {
-                char* error_msg = new char[100000];
+                char *error_msg = new char[100000];
                 size_t error_len = 0;
                 if (clGetProgramBuildInfo(prg, ocl_device, CL_PROGRAM_BUILD_LOG, 100000, error_msg, &error_len) == CL_SUCCESS)
                 {
                     std::string err_str = std::string(&error_msg[0], &error_msg[error_len]);
                     delete[] error_msg;
-                    throw satdump_exception((std::string)"Error building: " + err_str);
+                    throw satdump_exception((std::string) "Error building: " + err_str);
                 }
                 else
                 {
@@ -183,6 +180,6 @@ namespace satdump
 
             return prg;
         }
-    }
-}
+    } // namespace opencl
+} // namespace satdump
 #endif

@@ -1,17 +1,17 @@
 #define SATDUMP_DLL_EXPORT 1
 #include "tle.h"
 #include "common/utils.h"
-#include "logger.h"
 #include "core/config.h"
 #include "core/plugin.h"
-#include <thread>
+#include "logger.h"
 #include "nlohmann/json_utils.h"
-#include <fstream>
-#include <filesystem>
-#include <curl/curl.h>
 #include "satdump_vars.h"
 #include "utils/http.h"
+#include <curl/curl.h>
+#include <filesystem>
+#include <fstream>
 #include <sstream>
+#include <thread>
 
 namespace satdump
 {
@@ -79,11 +79,8 @@ namespace satdump
         }
 
         // Sort and remove duplicates
-        sort(new_registry->begin(), new_registry->end(), [](TLE &a, TLE &b)
-             { return a.name < b.name; });
-        new_registry->erase(std::unique(new_registry->begin(), new_registry->end(), [](TLE &a, TLE &b)
-                                        { return a.norad == b.norad; }),
-                            new_registry->end());
+        sort(new_registry->begin(), new_registry->end(), [](TLE &a, TLE &b) { return a.name < b.name; });
+        new_registry->erase(std::unique(new_registry->begin(), new_registry->end(), [](TLE &a, TLE &b) { return a.norad == b.norad; }), new_registry->end());
 
         return total_lines;
     }
@@ -101,8 +98,8 @@ namespace satdump
             return;
         }
 
-        std::vector<int> norads_to_fetch = config::main_cfg["tle_settings"]["tles_to_fetch"].get<std::vector<int>>();
-        std::vector<std::string> urls_to_fetch = config::main_cfg["tle_settings"]["urls_to_fetch"].get<std::vector<std::string>>();
+        std::vector<int> norads_to_fetch = satdump_cfg.main_cfg["tle_settings"]["tles_to_fetch"].get<std::vector<int>>();
+        std::vector<std::string> urls_to_fetch = satdump_cfg.main_cfg["tle_settings"]["urls_to_fetch"].get<std::vector<std::string>>();
         bool success = true;
         std::shared_ptr<TLERegistry> new_registry = std::make_shared<TLERegistry>();
 
@@ -143,7 +140,7 @@ namespace satdump
 
         for (int norad : norads_to_fetch)
         {
-            std::string url_str = config::main_cfg["tle_settings"]["url_template"].get<std::string>();
+            std::string url_str = satdump_cfg.main_cfg["tle_settings"]["url_template"].get<std::string>();
             while (url_str.find("%NORAD%") != std::string::npos)
                 url_str.replace(url_str.find("%NORAD%"), 7, std::to_string(norad));
 
@@ -182,22 +179,19 @@ namespace satdump
 
         std::ofstream outfile(path, std::ios::trunc);
         for (TLE &tle : *new_registry)
-            outfile << tle.name << std::endl
-                    << tle.line1 << std::endl
-                    << tle.line2 << std::endl
-                    << std::endl;
+            outfile << tle.name << std::endl << tle.line1 << std::endl << tle.line2 << std::endl << std::endl;
         outfile.close();
         general_tle_registry = new_registry;
-        config::main_cfg["user"]["tles_last_updated"] = time(NULL);
-        config::saveUserConfig();
+        satdump_cfg.main_cfg["user"]["tles_last_updated"] = time(NULL);
+        satdump_cfg.saveUser();
         logger->info("%zu TLEs loaded!", new_registry->size());
         eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
     }
 
     void autoUpdateTLE(std::string path)
     {
-        std::string update_setting = getValueOrDefault<std::string>(config::main_cfg["satdump_general"]["tle_update_interval"]["value"], "1 day");
-        time_t last_update = getValueOrDefault<time_t>(config::main_cfg["user"]["tles_last_updated"], 0);
+        std::string update_setting = satdump_cfg.getValueFromSatDumpGeneral<std::string>("tle_update_interval");
+        time_t last_update = getValueOrDefault<time_t>(satdump_cfg.main_cfg["user"]["tles_last_updated"], 0);
         bool honor_setting = true;
         time_t update_interval;
 
@@ -230,8 +224,7 @@ namespace satdump
         // Schedule updates while running
         if (honor_setting)
         {
-            eventBus->register_handler<AutoUpdateTLEsEvent>([](AutoUpdateTLEsEvent evt)
-                                                            { updateTLEFile(evt.path); });
+            eventBus->register_handler<AutoUpdateTLEsEvent>([](AutoUpdateTLEsEvent evt) { updateTLEFile(evt.path); });
             std::shared_ptr<AutoUpdateTLEsEvent> evt = std::make_shared<AutoUpdateTLEsEvent>();
             evt->path = path;
             taskScheduler->add_task<AutoUpdateTLEsEvent>("auto_tle_update", evt, last_update, update_interval);
@@ -252,7 +245,7 @@ namespace satdump
 
     void fetchTLENow(int norad)
     {
-        std::string url_str = config::main_cfg["tle_settings"]["url_template"].get<std::string>();
+        std::string url_str = satdump_cfg.main_cfg["tle_settings"]["url_template"].get<std::string>();
 
         while (url_str.find("%NORAD%") != std::string::npos)
             url_str.replace(url_str.find("%NORAD%"), 7, std::to_string(norad));
@@ -274,12 +267,7 @@ namespace satdump
 
     std::optional<TLE> TLERegistry::get_from_norad(int norad)
     {
-        std::vector<TLE>::iterator it = std::find_if(begin(),
-                                                     end(),
-                                                     [&norad](const TLE &e)
-                                                     {
-                                                         return e.norad == norad;
-                                                     });
+        std::vector<TLE>::iterator it = std::find_if(begin(), end(), [&norad](const TLE &e) { return e.norad == norad; });
 
         if (it != end())
             return std::optional<TLE>(*it);
@@ -289,13 +277,12 @@ namespace satdump
 
     std::optional<TLE> TLERegistry::get_from_norad_time(int norad, time_t timestamp)
     {
-        time_t last_update = getValueOrDefault<time_t>(config::main_cfg["user"]["tles_last_updated"], 0);
-        std::string sc_login = getValueOrDefault<std::string>(config::main_cfg["satdump_general"]["tle_space_track_login"]["value"], "");
-        std::string sc_passw = getValueOrDefault<std::string>(config::main_cfg["satdump_general"]["tle_space_track_password"]["value"], "");
+        time_t last_update = getValueOrDefault<time_t>(satdump_cfg.main_cfg["user"]["tles_last_updated"], 0);
+        std::string sc_login = satdump_cfg.getValueFromSatDumpGeneral<std::string>("tle_space_track_login");
+        std::string sc_passw = satdump_cfg.getValueFromSatDumpGeneral<std::string>("tle_space_track_password");
 
         // Use local time if Space Track credentials are not entered, or time is close to TLE catalog time
-        if (sc_login == "" || sc_passw == "" || sc_login == "yourloginemail" || sc_passw == "yourpassword" ||
-            fabs((double)last_update - (double)timestamp) < 4 * 24 * 3600)
+        if (sc_login == "" || sc_passw == "" || sc_login == "yourloginemail" || sc_passw == "yourpassword" || fabs((double)last_update - (double)timestamp) < 4 * 24 * 3600)
             return get_from_norad(norad);
 
         // Otherwise, request on Space-Track's archive
@@ -347,8 +334,8 @@ namespace satdump
                                 (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
         }
 
-        std::string final_url = "https://www.space-track.org/basicspacedata/query/class/gp_history/NORAD_CAT_ID/" +
-                                std::to_string(norad) + "/EPOCH/%3C" + timestamp_day + "T" + timestamp_daytime + "/orderby/EPOCH%20desc/limit/1/emptyresult/show";
+        std::string final_url = "https://www.space-track.org/basicspacedata/query/class/gp_history/NORAD_CAT_ID/" + std::to_string(norad) + "/EPOCH/%3C" + timestamp_day + "T" + timestamp_daytime +
+                                "/orderby/EPOCH%20desc/limit/1/emptyresult/show";
         std::string result;
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, NULL);
         curl_easy_setopt(curl, CURLOPT_POST, 0);
@@ -409,4 +396,4 @@ namespace satdump
 
         return std::optional<TLE>();
     }
-}
+} // namespace satdump

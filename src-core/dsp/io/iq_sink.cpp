@@ -125,7 +125,7 @@ namespace satdump
                                     (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "-" +
                                     (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
 
-            if (satdump::config::main_cfg["user_interface"]["recorder_baseband_filename_millis_precision"]["value"].get<bool>())
+            if (satdump::satdump_cfg.getValueFromSatDumpUI<bool>("recorder_baseband_filename_millis_precision"))
             {
                 std::ostringstream ss;
 

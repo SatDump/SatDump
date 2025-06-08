@@ -49,7 +49,7 @@ namespace satdump
 
         recorder_app = std::make_shared<RecorderApplication>();
         viewer_app2 = std::make_shared<viewer::ViewerApplication>();
-        open_recorder = satdump::config::main_cfg.contains("cli") && satdump::config::main_cfg["cli"].contains("start_recorder_device");
+        open_recorder = satdump_cfg.main_cfg.contains("cli") && satdump_cfg.main_cfg["cli"].contains("start_recorder_device");
 
         eventBus->fire_event<AddGUIApplicationEvent>({other_apps});
 
@@ -71,7 +71,7 @@ namespace satdump
     {
         recorder_app->save_settings();
         // TODOREWORK SAVING AGAIN? viewer_app->save_settings();
-        config::saveUserConfig();
+        satdump_cfg.saveUser();
         recorder_app.reset();
         viewer_app2.reset();
     }
