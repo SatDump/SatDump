@@ -42,7 +42,7 @@ namespace inmarsat
             if (parameters.contains("station_id"))
                 d_station_id = parameters["station_id"].get<std::string>();
 
-            play_audio = satdump::satdump_cfg.main_cfg["user_interface"]["play_audio"]["value"].get<bool>();
+            play_audio = satdump::satdump_cfg.shouldPlayAudio();
 
             fsfsm_enable_output = false;
         }

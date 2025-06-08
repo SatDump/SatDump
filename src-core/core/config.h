@@ -85,7 +85,7 @@ namespace satdump
 
     public:
         bool shouldAutoprocessProducts() { return getValueFromSatDumpGeneral<bool>("auto_process_products"); } // TODOREWORK remove since per pipeline?
-        // TODOREWORK Add a shouldPlayAudio
+        bool shouldPlayAudio() { return getValueFromSatDumpUI<bool>("play_audio"); }
     };
 
     SATDUMP_DLL extern SatDumpConfigHandler satdump_cfg; // SatDump configuratiin

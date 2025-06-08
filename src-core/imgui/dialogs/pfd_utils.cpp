@@ -12,6 +12,7 @@
 
 #include "image/io.h"
 
+// TODOREWORK move/rename this file
 namespace satdump
 {
     std::string save_image_dialog(std::string default_name, std::string default_path, std::string window_title, image::Image *image, std::string *default_ext)
@@ -42,7 +43,7 @@ namespace satdump
 
     done_ext:
 #ifdef __ANDROID__
-        *default_ext = config::main_cfg["satdump_general"]["image_format"]["value"].get<std::string>();
+        *default_ext = satdump_cfg.getValueFromSatDumpGeneral<std::string>["image_format");
 #endif
 
 #if defined(_MSC_VER)

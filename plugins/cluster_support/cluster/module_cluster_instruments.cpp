@@ -20,7 +20,7 @@ namespace cluster
         CLUSTERInstrumentsDecoderModule::CLUSTERInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
             : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
-            play_audio = satdump::satdump_cfg.main_cfg["user_interface"]["play_audio"]["value"].get<bool>();
+            play_audio = satdump::satdump_cfg.shouldPlayAudio();
             fsfsm_enable_output = false;
         }
 

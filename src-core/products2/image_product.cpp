@@ -25,7 +25,7 @@ namespace satdump
             std::string image_format;
             try
             {
-                image_format = satdump_cfg.main_cfg["satdump_general"]["product_format"]["value"];
+                image_format = satdump_cfg.getValueFromSatDumpGeneral<std::string>("product_format");
             }
             catch (std::exception &e)
             {

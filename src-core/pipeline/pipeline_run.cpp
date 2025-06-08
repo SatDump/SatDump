@@ -171,7 +171,7 @@ namespace satdump
 
             // We are done. Does this have a dataset?
             bool input_is_dataset = std::filesystem::path(input_file).stem().string() == "dataset" && std::filesystem::path(input_file).extension().string() == ".json";
-            if ((std::filesystem::exists(output_directory + "/dataset.json") || input_is_dataset) && satdump_cfg.main_cfg["satdump_general"]["auto_process_products"]["value"].get<bool>())
+            if ((std::filesystem::exists(output_directory + "/dataset.json") || input_is_dataset) && satdump_cfg.shouldAutoprocessProducts())
             {
                 logger->debug("Products processing is enabled! Starting processing module.");
 
