@@ -21,17 +21,27 @@ protected:
     widgets::DoubleList samplerate_widget;
     widgets::NotatedNum<int> ppm_widget;
 
-    int gain = 0;
+    int gain[7] = { 0, 0, 0, 0, 0, 0, 0 };
     int last_ppm = 0;
+    bool tuner_is_e4000 = false;
     float display_gain = 0.0f;
+    float display_gain_e4000[6] = { -30.0f, 0.0f, 0.0f, 0.0f, 30.0f, 30.0f };
     float gain_step = 1.0f;
     std::vector<int> available_gains = { 0, 496 };
+    std::vector<std::vector<int>> available_gains_e4000 = {
+        {-30, 60 },
+        { 0, 30, 60, 90 },
+        { 0, 30, 60, 90 },
+        { 0, 10, 20 },
+        { 30, 60, 90, 120, 150 },
+        { 30, 60, 90, 120, 150 }
+    };
     bool changed_agc = true;
     bool bias_enabled = false;
     bool lna_agc_enabled = false;
     bool tuner_agc_enabled = false;
 
-    void set_gain(std::vector<int> available_gain, float setgain, bool changed_agc, bool tuner_agc_enabled);
+    void set_gain(std::vector<int> available_gain, float setgain, bool changed_agc, bool tuner_agc_enabled, bool e4000, int e4000_stage);
     void set_gains();
     void set_bias();
     void set_ppm();
