@@ -172,9 +172,6 @@ namespace satdump
              */
             inline double convert(double x, double y, double val)
             {
-                if (val == CALIBRATION_INVALID_VALUE)
-                    return val; // Special case
-
                 if (unitEqual)
                     return val;
                 else if (converter)

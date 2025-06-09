@@ -30,6 +30,9 @@ namespace satdump
 
                 double convert(const UnitConverter *c, double x, double y, double val)
                 {
+                    if (val == CALIBRATION_INVALID_VALUE)
+                        return val; // Special case
+
                     if (c->wavenumber == -1)
                         return CALIBRATION_INVALID_VALUE;
                     return radiance_to_temperature(val, c->wavenumber) - (celsius ? 273.15 : 0.0);
