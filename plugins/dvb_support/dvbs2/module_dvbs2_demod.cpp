@@ -415,13 +415,6 @@ namespace satdump
 
             std::string DVBS2DemodModule::getID() { return "dvbs2_demod"; }
 
-            // std::vector<std::string> DVBS2DemodModule::getParameters()
-            // {
-            //     std::vector<std::string> params = {"rrc_alpha", "rrc_taps", "pll_bw", "clock_gain_omega", "clock_mu", "clock_gain_mu", "clock_omega_relative_limit"};
-            //     params.insert(params.end(), BaseDemodModule::getParameters().begin(), BaseDemodModule::getParameters().end());
-            //     return params;
-            // } TODOREWORK
-
             std::shared_ptr<ProcessingModule> DVBS2DemodModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
             {
                 return std::make_shared<DVBS2DemodModule>(input_file, output_file_hint, parameters);

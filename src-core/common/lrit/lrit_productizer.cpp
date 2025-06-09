@@ -2,8 +2,8 @@
 #include "common/utils.h"
 #include "logger.h"
 #include "products2/image_product.h"
-#include <filesystem>
 #include "utils/string.h"
+#include <filesystem>
 
 // TODOREWORK #include "products/processor/image_processor.h"
 #include "core/config.h"
@@ -41,8 +41,8 @@ namespace lrit
 
     LRITProductizer::LRITProductizer(std::string instrument_id, bool sweep_x, std::string cache_path) : should_sweep_x(sweep_x), instrument_id(instrument_id), compo_cache_path(cache_path)
     {
-        if (satdump::config::main_cfg["viewer"]["instruments"].contains(instrument_id) && satdump::config::main_cfg["satdump_general"]["auto_process_products"]["value"].get<bool>())
-            can_make_composites = true;
+        // if (satdump::config::main_cfg["viewer"]["instruments"].contains(instrument_id) && satdump::config::main_cfg["satdump_general"]["auto_process_products"]["value"].get<bool>())
+        // TODOREWORK    can_make_composites = true;
 
         if (can_make_composites)
             compositeGeneratorThread = std::thread(&LRITProductizer::compositeThreadFunc, this);

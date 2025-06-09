@@ -10,7 +10,7 @@ namespace satdump
 {
     StatusLoggerSink::StatusLoggerSink()
     {
-        show_bar = config::main_cfg["user_interface"]["status_bar"]["value"].get<bool>();
+        show_bar = satdump_cfg.main_cfg["user_interface"]["status_bar"]["value"].get<bool>();
         show_log = false;
     }
 

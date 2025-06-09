@@ -43,9 +43,9 @@ public:
     static void save()
     {
         setenv("UHD_IMAGES_DIR", file_select->getPath().c_str(), 1);
-        satdump::config::main_cfg["plugin_settings"]["usrp_sdr_support"] = nlohmann::json::object();
+        satdump::satdump_cfg.main_cfg["plugin_settings"]["usrp_sdr_support"] = nlohmann::json::object();
         if (file_select->getPath() != "")
-            satdump::config::main_cfg["plugin_settings"]["usrp_sdr_support"]["uhd_images_dir"] = file_select->getPath();
+            satdump::satdump_cfg.main_cfg["plugin_settings"]["usrp_sdr_support"]["uhd_images_dir"] = file_select->getPath();
     }
 
     std::string getID()
@@ -59,12 +59,12 @@ public:
         satdump::eventBus->register_handler<satdump::config::RegisterPluginConfigHandlersEvent>(registerConfigHandler);
 
         file_select = std::make_shared<FileSelectWidget>("UHD Images Path", "UHD Images Path", true);
-        if (satdump::config::main_cfg["plugin_settings"].contains("usrp_sdr_support") &&
-            satdump::config::main_cfg["plugin_settings"]["usrp_sdr_support"].contains("uhd_images_dir") &&
-            satdump::config::main_cfg["plugin_settings"]["usrp_sdr_support"]["uhd_images_dir"].is_string() &&
-            satdump::config::main_cfg["plugin_settings"]["usrp_sdr_support"]["uhd_images_dir"] != "")
+        if (satdump::satdump_cfg.main_cfg["plugin_settings"].contains("usrp_sdr_support") &&
+            satdump::satdump_cfg.main_cfg["plugin_settings"]["usrp_sdr_support"].contains("uhd_images_dir") &&
+            satdump::satdump_cfg.main_cfg["plugin_settings"]["usrp_sdr_support"]["uhd_images_dir"].is_string() &&
+            satdump::satdump_cfg.main_cfg["plugin_settings"]["usrp_sdr_support"]["uhd_images_dir"] != "")
         {
-            file_select->setPath(satdump::config::main_cfg["plugin_settings"]["usrp_sdr_support"]["uhd_images_dir"]);
+            file_select->setPath(satdump::satdump_cfg.main_cfg["plugin_settings"]["usrp_sdr_support"]["uhd_images_dir"]);
             setenv("UHD_IMAGES_DIR", file_select->getPath().c_str(), 1);
         }
     }

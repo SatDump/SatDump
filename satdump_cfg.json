@@ -237,6 +237,7 @@
             "name": "Default QTH Label",
             "description": "Default map label for QTH marker"
         },
+        // TODOREWORK
         "default_borders_color": {
             "type": "color",
             "value": [

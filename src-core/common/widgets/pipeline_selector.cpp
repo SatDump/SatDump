@@ -14,20 +14,20 @@ namespace satdump
 {
     PipelineUISelector::PipelineUISelector(bool live_mode) : live_mode(live_mode)
     {
-        nlohmann::ordered_json params = satdump::config::main_cfg["user_interface"]["default_offline_parameters"];
-        advanced_mode = satdump::config::main_cfg["user_interface"]["advanced_mode"]["value"].get_ptr<nlohmann::json::boolean_t *>();
+        nlohmann::ordered_json params = satdump_cfg.main_cfg["user_interface"]["default_offline_parameters"];
+        advanced_mode = satdump::satdump_cfg.main_cfg["user_interface"]["advanced_mode"]["value"].get_ptr<nlohmann::json::boolean_t *>();
 
         for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> cfg : params.items())
             if (!cfg.value().contains("no_live") || !live_mode)
                 parameters_ui.push_back({cfg.key(), satdump::params::EditableParameter(nlohmann::json(cfg.value()))});
 
-        if (config::main_cfg.contains("user"))
+        if (satdump_cfg.main_cfg.contains("user"))
         {
-            if (config::main_cfg["user"].contains("favourite_pipelines"))
+            if (satdump_cfg.main_cfg["user"].contains("favourite_pipelines"))
             {
                 try
                 {
-                    for (std::string pipeline_s : config::main_cfg["user"]["favourite_pipelines"].get<std::vector<std::string>>())
+                    for (std::string pipeline_s : satdump_cfg.main_cfg["user"]["favourite_pipelines"].get<std::vector<std::string>>())
                     {
                         for (int i = 0; i < (int)pipeline::pipelines.size(); i++)
                             if (pipeline::pipelines[i].id == pipeline_s)
@@ -122,14 +122,14 @@ namespace satdump
         if (width != -1)
             ImGui::SetNextItemWidth(width);
 
-        if (config::main_cfg.contains("user"))
+        if (satdump_cfg.main_cfg.contains("user"))
         {
-            if (config::main_cfg["user"].contains("favourite_pipelines"))
+            if (satdump_cfg.main_cfg["user"].contains("favourite_pipelines"))
             {
-                if (config::main_cfg["user"]["favourite_pipelines"].size() != favourite.size())
+                if (satdump_cfg.main_cfg["user"]["favourite_pipelines"].size() != favourite.size())
                 {
                     favourite.clear();
-                    for (std::string pipeline_s : config::main_cfg["user"]["favourite_pipelines"].get<std::vector<std::string>>())
+                    for (std::string pipeline_s : satdump_cfg.main_cfg["user"]["favourite_pipelines"].get<std::vector<std::string>>())
                     {
                         for (int i = 0; i < (int)pipeline::pipelines.size(); i++)
                             if (pipeline::pipelines[i].id == pipeline_s)
@@ -179,7 +179,7 @@ namespace satdump
                                 if (is_selected != (selected_pipeline.id == pipeline::pipelines[n].id) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenOverlapped))
                                 {
                                     favourite.erase(favourite.begin() + k);
-                                    config::main_cfg["user"]["favourite_pipelines"].erase(k);
+                                    satdump_cfg.main_cfg["user"]["favourite_pipelines"].erase(k);
                                     continue;
                                 }
 
@@ -235,7 +235,7 @@ namespace satdump
                                     if (favourite[i] == n)
                                     {
                                         favourite.erase(favourite.begin() + i);
-                                        config::main_cfg["user"]["favourite_pipelines"].erase(i);
+                                        satdump_cfg.main_cfg["user"]["favourite_pipelines"].erase(i);
                                         isfav = false;
                                         break;
                                     }
@@ -245,7 +245,7 @@ namespace satdump
                             else
                             {
                                 favourite.push_back(n);
-                                config::main_cfg["user"]["favourite_pipelines"].push_back(pipeline::pipelines[n].id);
+                                satdump_cfg.main_cfg["user"]["favourite_pipelines"].push_back(pipeline::pipelines[n].id);
                                 isfav = true;
                                 is_selected = !is_selected;
                             }

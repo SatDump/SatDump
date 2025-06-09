@@ -1,27 +1,24 @@
 #include "bitview.h"
+#include "core/style.h"
 #include "imgui/imgui_image.h"
 #include "imgui/imgui_stdlib.h"
 #include "imgui/implot/implot.h"
 #include <fstream>
-#include "core/style.h"
 
-#include <fcntl.h>
 #include "common/utils.h"
+#include <fcntl.h>
 #include <filesystem>
 
 #include "logger.h"
 
-//////
+#include "tools/ccsds_vcid_splitter.h"
 #include "tools/deframer.h"
 #include "tools/diff_decode.h"
 #include "tools/soft2hard.h"
-#include "tools/ccsds_vcid_splitter.h"
 
 namespace satdump
 {
-    // TODOREWORK
-    BitViewHandler::BitViewHandler(std::shared_ptr<BitContainer> c)
-        : current_bit_container(c)
+    BitViewHandler::BitViewHandler(std::shared_ptr<BitContainer> c) : current_bit_container(c)
     {
         c->bitview = this;
         handler_tree_icon = u8"\uf471";
@@ -42,9 +39,7 @@ namespace satdump
         all_tools.push_back(std::make_shared<CCSDSVcidSplitterTool>());
     }
 
-    BitViewHandler::~BitViewHandler()
-    {
-    }
+    BitViewHandler::~BitViewHandler() {}
 
     void BitViewHandler::drawMenu()
     {
@@ -128,9 +123,7 @@ namespace satdump
         }
     }
 
-    void BitViewHandler::drawMenuBar()
-    {
-    }
+    void BitViewHandler::drawMenuBar() {}
 
     void BitViewHandler::drawContents(ImVec2 win_size)
     {
@@ -150,4 +143,4 @@ namespace satdump
 
         ImPlot::EndPlot();
     }
-}
+} // namespace satdump

@@ -18,8 +18,8 @@ namespace satdump
          * This is intended to handle instrument product datasets,
          * usually from a single satellite with one or more instruments.
          * It will organize things a bit better better by grouping instruments
-         * and locking their handlers in place TODOREWORK, as well as setup
-         * a product generator capable of processing the dataset as a whole.
+         * and locking their handlers in place, as well as setup a product
+         * generator capable of processing the dataset as a whole.
          *
          * @param instrument_products handler used to store instrument products
          * @param general_products handler used to generate dataset-based products

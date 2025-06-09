@@ -42,7 +42,7 @@ namespace style
     void setStyle()
     {
         // Set standard theme info
-        ui_scale = backend::device_scale * satdump::config::main_cfg["user_interface"]["manual_dpi_scaling"]["value"].get<float>();
+        ui_scale = backend::device_scale * satdump::satdump_cfg.main_cfg["user_interface"]["manual_dpi_scaling"]["value"].get<float>();
         ImGuiStyle &style = ImGui::GetStyle();
         style = ImGuiStyle();
         theme = Theme();
@@ -51,15 +51,15 @@ namespace style
         nlohmann::json data;
         try
         {
-            std::string selected_theme = satdump::config::main_cfg["user_interface"]["theme"]["value"];
+            std::string selected_theme = satdump::satdump_cfg.main_cfg["user_interface"]["theme"]["value"];
             std::string theme_path;
             if (resources::resourceExists("themes/" + selected_theme + ".json"))
                 theme_path = "themes/" + selected_theme + ".json";
             else
             {
                 logger->warn("Failed to load theme \"%s\". Will fall back to Dark", selected_theme.c_str());
-                satdump::config::main_cfg["user_interface"]["theme"]["value"] = selected_theme = "Dark";
-                satdump::config::saveUserConfig();
+                satdump::satdump_cfg.main_cfg["user_interface"]["theme"]["value"] = selected_theme = "Dark";
+                satdump::satdump_cfg.saveUser();
             }
 
             std::ifstream file(resources::getResourcePath("themes/" + selected_theme + ".json"));

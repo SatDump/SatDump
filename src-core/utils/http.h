@@ -13,7 +13,9 @@ namespace satdump
      * @brief cURL helper function, writing
      * the payload into a std::string
      *
-     * TODOREWORK document
+     * Provided a std::string is passed as userdata
+     * for Curl, this can be used a handler to write
+     * incoming data into said string.
      */
     size_t curl_write_std_string(void *contents, size_t size, size_t nmemb, std::string *s);
 

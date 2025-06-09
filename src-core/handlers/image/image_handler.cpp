@@ -1,10 +1,10 @@
 #include "image_handler.h"
 
+#include "core/plugin.h"
+#include "core/style.h"
 #include "image/hue_saturation.h"
 #include "image/image_background.h"
 #include "image/meta.h"
-#include "core/plugin.h"
-#include "core/style.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
 #include "logger.h"
@@ -18,14 +18,14 @@
 
 #include "../vector/shapefile_handler.h"
 
-#include "utils/string.h"
 #include "core/config.h"
 #include "imgui/dialogs/pfd_utils.h" // TODOREWORK
+#include "utils/string.h"
 
 // TODOREWORK!
+#include "core/resources.h"
 #include "handlers/vector/shapefile_handler.h"
 #include "products2/image/channel_transform.h"
-#include "core/resources.h"
 #include <cstddef>
 #include <filesystem>
 #include <memory>
@@ -159,8 +159,8 @@ namespace satdump
                     file_save_thread_running = true;
                     // TODOREWORK!!!!
                     std::string save_type = "png";
-                    config::tryAssignValueFromSatdumpGeneralConfig(save_type, "image_format");
-                    std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
+                    satdump_cfg.tryAssignValueFromSatDumpGeneral(save_type, "image_format");
+                    std::string default_path = satdump_cfg.getValueFromSatDumpDirectories<std::string>("default_image_output_directory");
                     std::string saved_at = save_image_dialog(getSaneName(), default_path, "Save Image", &getImage(), &save_type);
                     if (saved_at == "")
                         logger->info("Save cancelled");

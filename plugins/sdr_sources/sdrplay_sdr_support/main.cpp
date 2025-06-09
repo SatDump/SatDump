@@ -10,7 +10,7 @@ class SDRPlaySDRSupport : public satdump::Plugin
 private:
     static void renderConfig() { ImGui::InputText("SDRPlay API Path", &sdrplay_api_path); }
 
-    static void save() { satdump::config::main_cfg["plugin_settings"]["sdrplay_support"] = sdrplay_api_path; }
+    static void save() { satdump::satdump_cfg.main_cfg["plugin_settings"]["sdrplay_support"] = sdrplay_api_path; }
 
 public:
     std::string getID() { return "sdrplay_sdr_support"; }
@@ -19,8 +19,8 @@ public:
     {
         satdump::eventBus->register_handler<dsp::RegisterDSPSampleSourcesEvent>(registerSources);
         satdump::eventBus->register_handler<satdump::config::RegisterPluginConfigHandlersEvent>(registerConfigHandler);
-        if (!satdump::config::main_cfg["plugin_settings"]["sdrplay_support"].is_null())
-            sdrplay_api_path = satdump::config::main_cfg["plugin_settings"]["sdrplay_support"];
+        if (!satdump::satdump_cfg.main_cfg["plugin_settings"]["sdrplay_support"].is_null())
+            sdrplay_api_path = satdump::satdump_cfg.main_cfg["plugin_settings"]["sdrplay_support"];
     }
 
     static void registerSources(const dsp::RegisterDSPSampleSourcesEvent &evt)

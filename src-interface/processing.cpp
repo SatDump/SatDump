@@ -1,6 +1,7 @@
+#include <exception>
 #define SATDUMP_DLL_EXPORT2 1
-#include "processing.h"
 #include "logger.h"
+#include "processing.h"
 #include <filesystem>
 
 #include "core/config.h"
@@ -19,14 +20,15 @@ namespace satdump
         void process(std::string downlink_pipeline, std::string input_level, std::string input_file, std::string output_file, nlohmann::json parameters)
         {
             // Get pipeline
-            pipeline::Pipeline pipeline = pipeline::getPipelineFromID(downlink_pipeline);
-            // if (!pipeline.has_value())
-            // {
-            //     logger->critical("Pipeline " + downlink_pipeline + " does not exist!");
-            //     return;
-            // } TODOREWORK
-
-            process(pipeline, input_level, input_file, output_file, parameters);
+            try
+            {
+                pipeline::Pipeline pipeline = pipeline::getPipelineFromID(downlink_pipeline);
+                process(pipeline, input_level, input_file, output_file, parameters);
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Error processing! %s", e.what());
+            }
         }
 
         void process(pipeline::Pipeline downlink_pipeline, std::string input_level, std::string input_file, std::string output_file, nlohmann::json parameters)
@@ -61,7 +63,7 @@ namespace satdump
 
             logger->info("Done! Goodbye");
 
-            if (config::main_cfg["user_interface"]["open_viewer_post_processing"]["value"].get<bool>())
+            if (satdump_cfg.main_cfg["user_interface"]["open_viewer_post_processing"]["value"].get<bool>())
             {
                 if (std::filesystem::exists(output_file + "/dataset.json"))
                 {

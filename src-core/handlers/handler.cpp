@@ -13,7 +13,7 @@ namespace satdump
         {
             ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
             //  if (!h->hasSubhandlers())
-            flags |= ImGuiTreeNodeFlags_Leaf; // TODOREWORK?
+            flags |= ImGuiTreeNodeFlags_Leaf;
             if (sec)
                 flags |= ImGuiTreeNodeFlags_Selected;
             return flags;

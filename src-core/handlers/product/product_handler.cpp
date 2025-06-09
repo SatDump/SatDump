@@ -152,8 +152,8 @@ namespace satdump
 
         std::string ProductHandler::generateFileName()
         {
-            std::string file_name = config::main_cfg["satdump_directories"]["image_filename_template"]["value"].get<std::string>();
-            std::string default_path = config::main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
+            std::string file_name = satdump_cfg.main_cfg["satdump_directories"]["image_filename_template"]["value"].get<std::string>();
+            std::string default_path = satdump_cfg.main_cfg["satdump_directories"]["default_image_output_directory"]["value"].get<std::string>();
             time_t timevalue = 0;
 
             std::string product_source = product->has_product_source() ? product->get_product_source() : "Unknown";

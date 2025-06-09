@@ -208,7 +208,7 @@ namespace satdump
                     taskq.push(
                         [this]()
                         {
-                            std::string recording_path = config::main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>();
+                            std::string recording_path = satdump_cfg.main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>();
                             iq_sink->set_cfg("filepath", recording_path);
                             iq_sink->set_cfg("autogen", true);
                             iq_sink->set_cfg("samplerate", dev->getStreamSamplerate(0, false));

@@ -50,9 +50,9 @@ namespace satdump
         try
         {
             if (std::filesystem::exists("satdump_cfg.json"))
-                config::loadConfig("satdump_cfg.json", user_path);
+                satdump_cfg.load("satdump_cfg.json", user_path);
             else
-                config::loadConfig(satdump::RESPATH + "satdump_cfg.json", user_path);
+                satdump_cfg.load(satdump::RESPATH + "satdump_cfg.json", user_path);
         }
         catch (std::exception &e)
         {
@@ -62,16 +62,16 @@ namespace satdump
             exit(1);
         }
 
-        if (config::main_cfg["satdump_general"].contains("log_to_file"))
+        if (satdump_cfg.main_cfg["satdump_general"].contains("log_to_file"))
         {
-            bool log_file = config::main_cfg["satdump_general"]["log_to_file"]["value"];
+            bool log_file = satdump_cfg.main_cfg["satdump_general"]["log_to_file"]["value"];
             if (log_file)
                 initFileSink();
         }
 
-        if (config::main_cfg["satdump_general"].contains("log_level"))
+        if (satdump_cfg.main_cfg["satdump_general"].contains("log_level"))
         {
-            std::string log_level = config::main_cfg["satdump_general"]["log_level"]["value"];
+            std::string log_level = satdump_cfg.main_cfg["satdump_general"]["log_level"]["value"];
             if (log_level == "trace")
                 setConsoleLevel(slog::LOG_TRACE);
             else if (log_level == "debug")
@@ -89,7 +89,7 @@ namespace satdump
         loadPlugins();
 
         // Let plugins know we started
-        eventBus->fire_event<config::RegisterPluginConfigHandlersEvent>({config::plugin_config_handlers});
+        satdump_cfg.registerPlugins();
 
         // TODOREWORK
         pipeline::registerModules();
@@ -127,12 +127,12 @@ namespace satdump
         // Products
         products::registerProducts();
 
-        // Set DSP buffer sizes if they have been changed
-        if (config::main_cfg.contains("advanced_settings"))
+        // Set DSP buffer sizes if they have been changed TODOREWORK remove this!
+        if (satdump_cfg.main_cfg.contains("advanced_settings"))
         {
-            if (config::main_cfg["advanced_settings"].contains("default_buffer_size"))
+            if (satdump_cfg.main_cfg["advanced_settings"].contains("default_buffer_size"))
             {
-                int new_sz = config::main_cfg["advanced_settings"]["default_buffer_size"].get<int>();
+                int new_sz = satdump_cfg.main_cfg["advanced_settings"]["default_buffer_size"].get<int>();
                 dsp::STREAM_BUFFER_SIZE = new_sz;
                 dsp::RING_BUF_SZ = new_sz;
                 logger->warn("DSP Buffer size was changed to %d", new_sz);

@@ -112,9 +112,9 @@ namespace orbcomm
         logger->info("Using input frames " + d_input_file);
         uint8_t frm[600];
 
-        double qth_lon = satdump::config::main_cfg["satdump_general"]["qth_lon"]["value"].get<double>();
-        double qth_lat = satdump::config::main_cfg["satdump_general"]["qth_lat"]["value"].get<double>();
-        double qth_alt = satdump::config::main_cfg["satdump_general"]["qth_alt"]["value"].get<double>();
+        double qth_lon = satdump::satdump_cfg.getValueFromSatDumpGeneral<double>("qth_lon");
+        double qth_lat = satdump::satdump_cfg.getValueFromSatDumpGeneral<double>("qth_lat");
+        double qth_alt = satdump::satdump_cfg.getValueFromSatDumpGeneral<double>("qth_alt");
 
         predict_observer_t *predict_obs = predict_create_observer("Main", qth_lat * DEG_TO_RAD, qth_lon * DEG_TO_RAD, qth_alt);
 

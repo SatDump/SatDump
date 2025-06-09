@@ -21,9 +21,9 @@ namespace satdump
 {
     RecorderApplication::RecorderApplication() : Application("recorder"), pipeline_selector(true)
     {
-        automated_live_output_dir = config::main_cfg["satdump_directories"]["live_processing_autogen"]["value"].get<bool>();
-        processing_modules_floating_windows = config::main_cfg["user_interface"]["recorder_floating_windows"]["value"].get<bool>();
-        remaining_disk_space_time = config::main_cfg["user_interface"]["remaining_disk_space_time"]["value"].get<int>();
+        automated_live_output_dir = satdump_cfg.main_cfg["satdump_directories"]["live_processing_autogen"]["value"].get<bool>();
+        processing_modules_floating_windows = satdump_cfg.main_cfg["user_interface"]["recorder_floating_windows"]["value"].get<bool>();
+        remaining_disk_space_time = satdump_cfg.main_cfg["user_interface"]["remaining_disk_space_time"]["value"].get<int>();
 
         load_rec_path_data();
         dsp::registerAllSources();
@@ -36,9 +36,9 @@ namespace satdump
         }
 
         // First, check to see if a source was passed via command line
-        if (satdump::config::main_cfg.contains("cli") && satdump::config::main_cfg["cli"].contains("source"))
+        if (satdump::satdump_cfg.main_cfg.contains("cli") && satdump::satdump_cfg.main_cfg["cli"].contains("source"))
         {
-            auto &cli_settings = satdump::config::main_cfg["cli"];
+            auto &cli_settings = satdump::satdump_cfg.main_cfg["cli"];
             std::string source = cli_settings["source"];
             for (int i = 0; i < (int)sources.size(); i++)
             {
@@ -63,9 +63,9 @@ namespace satdump
         }
 
         // If not, or it failed to open, revert to last used SDR
-        if (sdr_select_id == -1 && config::main_cfg["user"]["recorder_sdr_settings"].contains("last_used_sdr"))
+        if (sdr_select_id == -1 && satdump_cfg.main_cfg["user"]["recorder_sdr_settings"].contains("last_used_sdr"))
         {
-            std::string last_used_sdr = config::main_cfg["user"]["recorder_sdr_settings"]["last_used_sdr"].get<std::string>();
+            std::string last_used_sdr = satdump_cfg.main_cfg["user"]["recorder_sdr_settings"]["last_used_sdr"].get<std::string>();
             for (int i = 0; i < (int)sources.size(); i++)
             {
                 if (sources[i].name != last_used_sdr)
@@ -142,8 +142,8 @@ namespace satdump
         fft->on_fft = [this](float *v) { waterfall_plot->push_fft(v); };
 
         // Load config
-        if (config::main_cfg["user"].contains("recorder_state"))
-            deserialize_config(config::main_cfg["user"]["recorder_state"]);
+        if (satdump_cfg.main_cfg["user"].contains("recorder_state"))
+            deserialize_config(satdump_cfg.main_cfg["user"]["recorder_state"]);
 
         file_sink->set_output_sample_type(baseband_format);
         fft_plot->set_size(fft_size);
@@ -151,9 +151,9 @@ namespace satdump
         waterfall_plot->set_rate(fft_rate, waterfall_rate);
 
         // Attempt to apply provided CLI settings
-        if (satdump::config::main_cfg.contains("cli"))
+        if (satdump_cfg.main_cfg.contains("cli"))
         {
-            auto &cli_settings = satdump::config::main_cfg["cli"];
+            auto &cli_settings = satdump_cfg.main_cfg["cli"];
             if (source_ptr)
             {
                 if (cli_settings.contains("samplerate"))
@@ -342,7 +342,7 @@ namespace satdump
                     if (current_decimation < 1)
                         current_decimation = 1;
 
-                    bool disableLO = config::main_cfg["user_interface"]["lock_xconverter_input"]["value"];
+                    bool disableLO = satdump_cfg.main_cfg["user_interface"]["lock_xconverter_input"]["value"];
                     if (assume_started && !disableLO)
                         style::endDisabled();
 

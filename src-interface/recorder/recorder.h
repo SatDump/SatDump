@@ -219,7 +219,7 @@ namespace satdump
         RecorderApplication();
         ~RecorderApplication();
 
-        void save_settings() { config::main_cfg["user"]["recorder_state"] = serialize_config(); }
+        void save_settings() { satdump_cfg.main_cfg["user"]["recorder_state"] = serialize_config(); }
 
     public:
         static std::string getID() { return "recorder"; }
