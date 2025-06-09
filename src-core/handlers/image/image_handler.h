@@ -150,6 +150,25 @@ namespace satdump
             void setConfig(nlohmann::json p);
             nlohmann::json getConfig();
 
+            // TODOREWORK DOCUMENT (must be copy-pasted from "All Params")
+            void resetConfig()
+            {
+                huesaturation_img = false;
+                equalize_img = false;
+                equalize_perchannel_img = false;
+                white_balance_img = false;
+                normalize_img = false;
+                invert_img = false;
+                median_blur_img = false;
+                despeckle_img = false;
+                rotate180_image = false;
+                geocorrect_image = false;
+                brightness_contrast_image = false;
+                brightness_contrast_brightness_image = 0.0;
+                brightness_contrast_constrast_image = 0.0;
+                remove_background_img = false;
+            }
+
             std::string getName() { return image_name; }
 
             std::string getID() { return "image_handler"; }

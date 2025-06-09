@@ -64,6 +64,7 @@ namespace satdump
 
             void setConfig(nlohmann::json p);
             nlohmann::json getConfig();
+            void resetConfig() { img_handler->resetConfig(); }
 
             void saveResult(std::string directory);
 

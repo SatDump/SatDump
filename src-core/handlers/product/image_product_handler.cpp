@@ -198,8 +198,8 @@ namespace satdump
             // Trigger actual background processing as needed
             if (needs_to_update)
             {
-                if (!presetSet) // Reset if anything was changed here
-                    resetPreset();
+                if (!presetSet)
+                    resetPreset(); // Reset the preset menu if anything was changed here
                 asyncProcess();
                 needs_to_update = false;
             }
