@@ -11,6 +11,35 @@ void RtlSdrSource::_rx_callback(unsigned char *buf, uint32_t len, void *ctx)
     stream->swap(len / 2);
 };
 
+void RtlSdrSource::set_gain(std::vector<int> available_gain, float setgain, bool changed_agc, bool tuner_agc_enabled)
+{
+    // Get nearest supported tuner gain
+    auto gain_iterator = std::lower_bound(available_gain.begin(), available_gain.end(), int(setgain * 10.0f));
+    if (gain_iterator == available_gain.end())
+        gain_iterator--;
+
+    bool force_gain = changed_agc && !tuner_agc_enabled;
+    if (tuner_agc_enabled || (!force_gain && *gain_iterator == setgain))
+        return;
+
+    if (gain_iterator == available_gain.begin())
+        gain_step = 1.0f;
+    else
+        gain_step = (float)(*gain_iterator - *std::prev(gain_iterator)) / 10.0f;
+
+    // Set gain
+    int attempts = 0;
+    gain = *gain_iterator;
+    while (attempts < 20 && rtlsdr_set_tuner_gain(rtlsdr_dev_obj, gain) < 0)
+        attempts++;
+    if (attempts == 20)
+        logger->warn("Unable to set RTL-SDR Gain!");
+    else if (attempts == 0)
+        logger->debug("Set RTL-SDR Gain to %.1f", (float)gain / 10.0f);
+    else
+        logger->debug("Set RTL-SDR Gain to %f (%d attempts!)", (float)gain / 10.0f, attempts + 1);
+}
+
 void RtlSdrSource::set_gains()
 {
     if (!is_started)
@@ -43,34 +72,10 @@ void RtlSdrSource::set_gains()
             logger->debug("Set RTL-SDR Tuner gain mode to %d (%d attempts!)", tuner_gain_mode, attempts + 1);
     }
 
-    // Get nearest supported tuner gain
-    auto gain_iterator = std::lower_bound(available_gains.begin(), available_gains.end(), int(display_gain * 10.0f));
-    if (gain_iterator == available_gains.end())
-        gain_iterator--;
+    set_gain(available_gains, display_gain, changed_agc, tuner_agc_enabled);
 
-    bool force_gain = changed_agc && !tuner_agc_enabled;
     if (changed_agc)
         changed_agc = false;
-
-    if (tuner_agc_enabled || (!force_gain && *gain_iterator == gain))
-        return;
-
-    if (gain_iterator == available_gains.begin())
-        gain_step = 1.0f;
-    else
-        gain_step = (float)(*gain_iterator - *std::prev(gain_iterator)) / 10.0f;
-
-    // Set tuner gain
-    attempts = 0;
-    gain = *gain_iterator;
-    while (attempts < 20 && rtlsdr_set_tuner_gain(rtlsdr_dev_obj, gain) < 0)
-        attempts++;
-    if (attempts == 20)
-        logger->warn("Unable to set RTL-SDR Gain!");
-    else if (attempts == 0)
-        logger->debug("Set RTL-SDR Gain to %.1f", (float)gain / 10.0f);
-    else
-        logger->debug("Set RTL-SDR Gain to %f (%d attempts!)", (float)gain / 10.0f, attempts + 1);
 }
 
 void RtlSdrSource::set_bias()

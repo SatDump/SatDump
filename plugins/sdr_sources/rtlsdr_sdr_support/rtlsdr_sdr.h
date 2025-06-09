@@ -31,6 +31,7 @@ protected:
     bool lna_agc_enabled = false;
     bool tuner_agc_enabled = false;
 
+    void set_gain(std::vector<int> available_gain, float setgain, bool changed_agc, bool tuner_agc_enabled);
     void set_gains();
     void set_bias();
     void set_ppm();
