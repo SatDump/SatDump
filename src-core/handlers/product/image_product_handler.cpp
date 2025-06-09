@@ -24,6 +24,7 @@ namespace satdump
             : ProductHandler(p, dataset_mode, [p](auto &c) { return products::check_expression_product_composite((products::ImageProduct *)p.get(), c["expression"]); })
         {
             handler_tree_icon = u8"\uf71e";
+            preset_reset_by_handler = true;
 
             product = (products::ImageProduct *)ProductHandler::product.get();
             for (auto &img : product->images)
@@ -170,7 +171,8 @@ namespace satdump
                     style::endDisabled();
             }
 
-            needs_to_update |= renderPresetMenu();
+            bool presetSet = false;
+            needs_to_update |= presetSet = renderPresetMenu();
 
             if (ImGui::CollapsingHeader("Expression", ImGuiTreeNodeFlags_DefaultOpen))
             {
@@ -196,12 +198,16 @@ namespace satdump
             // Trigger actual background processing as needed
             if (needs_to_update)
             {
+                if (!presetSet) // Reset if anything was changed here
+                    resetPreset();
                 asyncProcess();
                 needs_to_update = false;
             }
 
             // The image controls
             img_handler->drawMenu();
+            if (img_handler->wasMenuTriggered) // If image got anything changed, reset too
+                resetPreset();
 
             // TODOREWORK, make this nicer
             if (ImGui::CollapsingHeader("ImageProduct Advanced"))

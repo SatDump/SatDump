@@ -142,6 +142,7 @@ namespace satdump
 
                 if (needs_to_update)
                     asyncProcess();
+                wasMenuTriggered = needs_to_update;
             }
         }
 

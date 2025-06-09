@@ -7,9 +7,9 @@
 #include "../handler.h"
 #include "../processing_handler.h"
 
+#include "common/widgets/image_view.h"
 #include "image/hue_saturation_json.h"
 #include "image/meta.h"
-#include "common/widgets/image_view.h"
 
 #include "nlohmann/json.hpp"
 #include "projection/projection.h"
@@ -124,6 +124,8 @@ namespace satdump
         public:
             // Mouse callback to be added by other handlers if needed
             std::function<void(int x, int y)> additionalMouseCallback = [](int, int) {};
+            // TODOREWORK
+            bool wasMenuTriggered = false;
 
         public:
             /**
