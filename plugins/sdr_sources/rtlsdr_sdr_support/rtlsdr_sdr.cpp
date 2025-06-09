@@ -246,6 +246,9 @@ void RtlSdrSource::set_frequency(uint64_t frequency)
 
 void RtlSdrSource::drawControlUI()
 {
+    bool update_gains = false;
+    bool refresh_display_gain = false;
+
     if (is_started)
         RImGui::beginDisabled();
 
@@ -261,26 +264,31 @@ void RtlSdrSource::drawControlUI()
         RImGui::beginDisabled();
     if (RImGui::SteppedSliderFloat("Tuner Gain", &display_gain, (float)available_gains[0] / 10.0f,
         (float)available_gains.back() / 10.0f, gain_step, "%.1f"))
-            set_gains();
-    if(is_started && RImGui::IsItemDeactivatedAfterEdit())
-        display_gain = (float)gain / 10.0f;
+            update_gains = true;
+    refresh_display_gain = is_started && RImGui::IsItemDeactivatedAfterEdit();
     if (tuner_agc_enabled)
         RImGui::endDisabled();
 
     if (RImGui::Checkbox("LNA AGC", &lna_agc_enabled))
     {
         changed_agc = true;
-        set_gains();
+        update_gains = true;
     }
 
     if (RImGui::Checkbox("Tuner AGC", &tuner_agc_enabled))
     {
         changed_agc = true;
-        set_gains();
+        update_gains = true;
     }
+
+    if (update_gains)
+        set_gains();
 
     if (RImGui::Checkbox("Bias-Tee", &bias_enabled))
         set_bias();
+
+    if (refresh_display_gain)
+        display_gain = (float)gain / 10.0f;
 }
 
 void RtlSdrSource::set_samplerate(uint64_t samplerate)
