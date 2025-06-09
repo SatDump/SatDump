@@ -20,6 +20,9 @@ namespace satdump
 
             std::shared_ptr<ImageHandler> img_handler;
 
+            // Advanced mode
+            bool enabled_advanced_menus = false;
+
             // Products
             products::ImageProduct *product;
             std::shared_ptr<products::ImageCalibrator> img_calibrator;

@@ -209,27 +209,30 @@ namespace satdump
             if (img_handler->wasMenuTriggered) // If image got anything changed, reset too
                 resetPreset();
 
-            // TODOREWORK, make this nicer
-            if (ImGui::CollapsingHeader("ImageProduct Advanced"))
+            // Advanced controls
+            if (enabled_advanced_menus)
             {
-                if (ImGui::BeginTabBar("###imageproducttuning", ImGuiTabBarFlags_FittingPolicyScroll))
+                if (ImGui::CollapsingHeader("Advanced"))
                 {
-                    if (product->has_proj_cfg() && ImGui::BeginTabItem("Proj"))
+                    if (ImGui::BeginTabBar("###imageproducttuning", ImGuiTabBarFlags_FittingPolicyScroll))
                     {
-                        widgets::JSONTreeEditor(product->contents["projection_cfg"], "##projcfgeditor");
-                        ImGui::EndTabItem();
-                    }
-
-                    for (auto &ch : product->images)
-                    {
-                        std::string id = "Channel " + ch.channel_name;
-                        if (ImGui::BeginTabItem(id.c_str()))
+                        if (product->has_proj_cfg() && ImGui::BeginTabItem("Proj"))
                         {
-                            ch.ch_transform.render();
+                            widgets::JSONTreeEditor(product->contents["projection_cfg"], "##projcfgeditor");
                             ImGui::EndTabItem();
                         }
+
+                        for (auto &ch : product->images)
+                        {
+                            std::string id = "Channel " + ch.channel_name;
+                            if (ImGui::BeginTabItem(id.c_str()))
+                            {
+                                ch.ch_transform.render();
+                                ImGui::EndTabItem();
+                            }
+                        }
+                        ImGui::EndTabBar();
                     }
-                    ImGui::EndTabBar();
                 }
             }
         }
@@ -385,6 +388,8 @@ namespace satdump
                 a->setName(img_handler->getName());
                 addSubHandler(a);
             }
+            if (ImGui::MenuItem("Advanced Mode", NULL, enabled_advanced_menus))
+                enabled_advanced_menus = !enabled_advanced_menus;
         }
 
         void ImageProductHandler::drawContents(ImVec2 win_size) { img_handler->drawContents(win_size); }
