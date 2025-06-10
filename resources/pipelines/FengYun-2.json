@@ -48,7 +48,7 @@
                 "parameters": {}
             },
             "products": {
-                "fengyun_svissr_image_decoder": {}
+                "module": "fengyun_svissr_image_decoder"
             }
         }
     }
