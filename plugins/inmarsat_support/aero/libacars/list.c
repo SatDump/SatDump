@@ -36,14 +36,14 @@ size_t la_list_length(la_list const *l) {
 	return len;
 }
 
-void la_list_foreach(la_list *l, void (*cb)(), void *ctx) {
+void la_list_foreach(la_list *l, void (*cb)(const void* p, void* c), void *ctx) {
 	la_assert(cb != NULL);
 	for(; l != NULL; l = la_list_next(l)) {
 		cb(l->data, ctx);
 	}
 }
 
-void la_list_free_full_with_ctx(la_list *l, void (*node_free)(), void *ctx) {
+void la_list_free_full_with_ctx(la_list *l, void (*node_free)(void* tag, void* c), void *ctx) {
 	if(l == NULL) {
 		return;
 	}
@@ -57,7 +57,7 @@ void la_list_free_full_with_ctx(la_list *l, void (*node_free)(), void *ctx) {
 	LA_XFREE(l);
 }
 
-void la_list_free_full(la_list *l, void (*node_free)()) {
+void la_list_free_full(la_list *l, void (*node_free)(void* tag)) {
 	if(l == NULL) {
 		return;
 	}
