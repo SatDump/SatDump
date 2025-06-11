@@ -20,6 +20,9 @@ namespace satdump
 
             std::shared_ptr<ImageHandler> img_handler;
 
+            // Advanced mode
+            bool enabled_advanced_menus = false;
+
             // Products
             products::ImageProduct *product;
             std::shared_ptr<products::ImageCalibrator> img_calibrator;
@@ -64,6 +67,7 @@ namespace satdump
 
             void setConfig(nlohmann::json p);
             nlohmann::json getConfig();
+            void resetConfig() { img_handler->resetConfig(); }
 
             void saveResult(std::string directory);
 

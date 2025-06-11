@@ -24,6 +24,7 @@ namespace satdump
             : ProductHandler(p, dataset_mode, [p](auto &c) { return products::check_expression_product_composite((products::ImageProduct *)p.get(), c["expression"]); })
         {
             handler_tree_icon = u8"\uf71e";
+            preset_reset_by_handler = true;
 
             product = (products::ImageProduct *)ProductHandler::product.get();
             for (auto &img : product->images)
@@ -43,17 +44,22 @@ namespace satdump
                 if (is_processing)
                     return;
 
+                ImGui::SeparatorText("Product Data");
+
                 if (channel_selection_curr_id != -1)
                     ImGui::Text("Count : %d", product->get_raw_channel_val(channel_selection_curr_id, x, y));
 
                 // Show all possible units, if the image is raw
-                if (!channel_calibrated && img_calibrator && channel_selection_curr_id != -1)
+                if (img_calibrator && channel_selection_curr_id != -1)
                 {
                     double val = img_calibrator->compute(channel_selection_curr_id, x, y);
                     for (auto &u : channels_calibration_units_and_converters)
                     {
                         double vval = u.second->convert(x, y, val);
-                        ImGui::Text("%s : %f %s", u.first.name.c_str(), vval, u.first.unit.c_str());
+                        if (vval == CALIBRATION_INVALID_VALUE)
+                            ImGui::Text("%s : Invalid Value", u.first.name.c_str());
+                        else
+                            ImGui::Text("%s : %f %s", u.first.name.c_str(), vval, u.first.unit.c_str());
                     }
                 }
             };
@@ -165,7 +171,8 @@ namespace satdump
                     style::endDisabled();
             }
 
-            needs_to_update |= renderPresetMenu();
+            bool presetSet = false;
+            needs_to_update |= presetSet = renderPresetMenu();
 
             if (ImGui::CollapsingHeader("Expression", ImGuiTreeNodeFlags_DefaultOpen))
             {
@@ -191,34 +198,41 @@ namespace satdump
             // Trigger actual background processing as needed
             if (needs_to_update)
             {
+                if (!presetSet)
+                    resetPreset(); // Reset the preset menu if anything was changed here
                 asyncProcess();
                 needs_to_update = false;
             }
 
             // The image controls
             img_handler->drawMenu();
+            if (img_handler->wasMenuTriggered) // If image got anything changed, reset too
+                resetPreset();
 
-            // TODOREWORK, make this nicer
-            if (ImGui::CollapsingHeader("ImageProduct Advanced"))
+            // Advanced controls
+            if (enabled_advanced_menus)
             {
-                if (ImGui::BeginTabBar("###imageproducttuning", ImGuiTabBarFlags_FittingPolicyScroll))
+                if (ImGui::CollapsingHeader("Advanced"))
                 {
-                    if (product->has_proj_cfg() && ImGui::BeginTabItem("Proj"))
+                    if (ImGui::BeginTabBar("###imageproducttuning", ImGuiTabBarFlags_FittingPolicyScroll))
                     {
-                        widgets::JSONTreeEditor(product->contents["projection_cfg"], "##projcfgeditor");
-                        ImGui::EndTabItem();
-                    }
-
-                    for (auto &ch : product->images)
-                    {
-                        std::string id = "Channel " + ch.channel_name;
-                        if (ImGui::BeginTabItem(id.c_str()))
+                        if (product->has_proj_cfg() && ImGui::BeginTabItem("Proj"))
                         {
-                            ch.ch_transform.render();
+                            widgets::JSONTreeEditor(product->contents["projection_cfg"], "##projcfgeditor");
                             ImGui::EndTabItem();
                         }
+
+                        for (auto &ch : product->images)
+                        {
+                            std::string id = "Channel " + ch.channel_name;
+                            if (ImGui::BeginTabItem(id.c_str()))
+                            {
+                                ch.ch_transform.render();
+                                ImGui::EndTabItem();
+                            }
+                        }
+                        ImGui::EndTabBar();
                     }
-                    ImGui::EndTabBar();
                 }
             }
         }
@@ -374,6 +388,8 @@ namespace satdump
                 a->setName(img_handler->getName());
                 addSubHandler(a);
             }
+            if (ImGui::MenuItem("Advanced Mode", NULL, enabled_advanced_menus))
+                enabled_advanced_menus = !enabled_advanced_menus;
         }
 
         void ImageProductHandler::drawContents(ImVec2 win_size) { img_handler->drawContents(win_size); }

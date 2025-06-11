@@ -44,6 +44,15 @@ namespace satdump
             widgets::MarkdownHelper markdown_info;
 
         protected:
+            // TODOREWORK document
+            bool preset_reset_by_handler = false;
+            void resetPreset()
+            {
+                preset_selection_curr_id = -1;
+                has_markdown_description = false;
+            }
+
+        protected:
             std::shared_ptr<products::Product> product;
             nlohmann::ordered_json instrument_cfg;
 

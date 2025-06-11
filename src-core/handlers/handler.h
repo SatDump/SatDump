@@ -150,6 +150,11 @@ namespace satdump
              */
             virtual nlohmann::json getConfig();
 
+            /**
+             * @brief Optional, allows resetting the handler's configuration
+             */
+            virtual void resetConfig() {};
+
         public:
             virtual std::string getID() = 0; // TODOREWORK
         };

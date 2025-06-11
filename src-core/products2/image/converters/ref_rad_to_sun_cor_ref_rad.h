@@ -27,6 +27,9 @@ namespace satdump
             public:
                 double convert(const UnitConverter *c, double x, double y, double val)
                 {
+                    if (val == CALIBRATION_INVALID_VALUE)
+                        return val; // Special case
+
                     geodetic::geodetic_coords_t pos;
                     double timestamp = -1;
                     if (((UnitConverter *)c)->proj.inverse(x, y, pos, &timestamp))

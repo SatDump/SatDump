@@ -19,8 +19,8 @@
 #include "handlers/trash/trash_handler.h"
 #include "handlers/vector/shapefile_handler.h"
 // TODOREWORK
-#include "imgui/imgui.h"
 #include "core/resources.h"
+#include "imgui/imgui.h"
 
 // TODOREWORK
 #include "dsp/newrec.h"
@@ -129,6 +129,8 @@ namespace satdump
                             tryOpenFileInViewer(quickOpenString);
                             quickOpenString.clear();
                         }
+                        if (ImGui::Button("Paste & Load"))
+                            tryOpenFileInViewer(std::string(ImGui::GetClipboardText()));
                         ImGui::EndMenu();
                     }
 

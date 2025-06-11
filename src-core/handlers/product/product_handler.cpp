@@ -78,9 +78,9 @@ namespace satdump
 
             if (ImGui::CollapsingHeader("Presets", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                if (ImGui::BeginCombo("##presetproductcombo", /*TODOREWORK maybe make this generic?*/
-                                      (preset_selection_curr_id >= 0 && preset_selection_curr_id < preset_selection_box_str.size()) ? preset_selection_box_str[preset_selection_curr_id].c_str()
-                                                                                                                                    : "Select Preset..."))
+                if (ImGui::BeginCombo("##presetproductcombo", (preset_selection_curr_id >= 0 && preset_selection_curr_id < preset_selection_box_str.size())
+                                                                  ? preset_selection_box_str[preset_selection_curr_id].c_str()
+                                                                  : "Select Preset..."))
                 {
                     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                     ImGui::InputTextWithHint("##searchpresets", u8"\uf422   Search", &preset_search_str);
@@ -95,9 +95,11 @@ namespace satdump
                             preset_selection_curr_id = i;
 
                             auto preset = all_presets[preset_selection_curr_id];
+                            resetConfig(); // If we're setting a new preset, make sure the img_handler is in a sane state
                             setConfig(preset);
                             was_changed = true;
-                            preset_selection_curr_id = -1;
+                            if (!preset_reset_by_handler) // If this is handled by the handler implementing it, don't auto-reset
+                                preset_selection_curr_id = -1;
 
                             // Description, optional
                             if (preset.contains("description"))

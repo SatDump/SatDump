@@ -7,9 +7,9 @@
 #include "../handler.h"
 #include "../processing_handler.h"
 
+#include "common/widgets/image_view.h"
 #include "image/hue_saturation_json.h"
 #include "image/meta.h"
-#include "common/widgets/image_view.h"
 
 #include "nlohmann/json.hpp"
 #include "projection/projection.h"
@@ -124,6 +124,8 @@ namespace satdump
         public:
             // Mouse callback to be added by other handlers if needed
             std::function<void(int x, int y)> additionalMouseCallback = [](int, int) {};
+            // TODOREWORK
+            bool wasMenuTriggered = false;
 
         public:
             /**
@@ -147,6 +149,25 @@ namespace satdump
 
             void setConfig(nlohmann::json p);
             nlohmann::json getConfig();
+
+            // TODOREWORK DOCUMENT (must be copy-pasted from "All Params")
+            void resetConfig()
+            {
+                huesaturation_img = false;
+                equalize_img = false;
+                equalize_perchannel_img = false;
+                white_balance_img = false;
+                normalize_img = false;
+                invert_img = false;
+                median_blur_img = false;
+                despeckle_img = false;
+                rotate180_image = false;
+                geocorrect_image = false;
+                brightness_contrast_image = false;
+                brightness_contrast_brightness_image = 0.0;
+                brightness_contrast_constrast_image = 0.0;
+                remove_background_img = false;
+            }
 
             std::string getName() { return image_name; }
 

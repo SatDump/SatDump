@@ -21,6 +21,7 @@ namespace satdump
                 {
                     try
                     {
+                        handler->resetConfig();
                         handler->setConfig(cfg);
                         handler->process();
                         handler->saveResult(directory);
