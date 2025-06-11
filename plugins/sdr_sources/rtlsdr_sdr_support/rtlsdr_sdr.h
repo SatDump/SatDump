@@ -40,6 +40,8 @@ protected:
     bool bias_enabled = false;
     bool lna_agc_enabled = false;
     bool tuner_agc_enabled = false;
+    bool changed_offset_tuning = true;
+    bool offset_tuning_enabled = false;
 
     void set_gain(std::vector<int> available_gain, float setgain, bool changed_agc, bool tuner_agc_enabled, bool e4000, int e4000_stage);
     void set_gains();

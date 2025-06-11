@@ -75,6 +75,19 @@ void RtlSdrSource::set_gains()
             logger->debug("Set RTL-SDR Tuner gain mode to %d (%d attempts!)", tuner_gain_mode, attempts + 1);
     }
 
+    if (changed_offset_tuning) {
+        // Offset Tuning eliminates DC spike on E4000
+        attempts = 0;
+        while (attempts < 20 && rtlsdr_set_offset_tuning(rtlsdr_dev_obj, offset_tuning_enabled) < 0)
+            attempts++;
+        if (attempts == 20)
+            logger->warn("Unable to set RTL-SDR Offset Tuning mode!");
+        else if (attempts == 0)
+            logger->debug("Set RTL-SDR Offset Tuning to %d", (int)offset_tuning_enabled);
+        else
+            logger->debug("Set RTL-SDR Offset Tuning to %d (%d attempts!)", (int)offset_tuning_enabled, attempts + 1);
+    }
+
     set_gain(available_gains, display_gain, changed_agc, tuner_agc_enabled, false, 0);
     if (tuner_is_e4000) {
         for (int i = 0; i < 6; i++)
@@ -141,7 +154,9 @@ void RtlSdrSource::set_settings(nlohmann::json settings)
     tuner_agc_enabled = getValueOrDefault(d_settings["tuner_agc"], tuner_agc_enabled);
     bias_enabled = getValueOrDefault(d_settings["bias"], bias_enabled);
     ppm_widget.set(getValueOrDefault(d_settings["ppm_correction"], ppm_widget.get()));
+    offset_tuning_enabled = getValueOrDefault(d_settings["offset_tuning"], offset_tuning_enabled);
     changed_agc = true;
+    changed_offset_tuning = true;
 
     if (is_started)
     {
@@ -164,6 +179,7 @@ nlohmann::json RtlSdrSource::get_settings()
     d_settings["tuner_agc"] = tuner_agc_enabled;
     d_settings["bias"] = bias_enabled;
     d_settings["ppm_correction"] = ppm_widget.get();
+    d_settings["offset_tuning"] = offset_tuning_enabled;
 
     return d_settings;
 }
@@ -352,6 +368,12 @@ void RtlSdrSource::drawControlUI()
     if (RImGui::Checkbox("Tuner AGC", &tuner_agc_enabled))
     {
         changed_agc = true;
+        update_gains = true;
+    }
+
+    if (RImGui::Checkbox("Offset Tuning", &offset_tuning_enabled))
+    {
+        changed_offset_tuning = true;
         update_gains = true;
     }
 
