@@ -88,7 +88,8 @@ namespace uvsq
                     valid += int(v);
                 logger->info("Image ID %d, Got %d/%d Chunks, Time %s", p.first, valid, p.second.c.size(), satdump::timestamp_to_string(timestamp).c_str());
 
-                //  std::ofstream("/tmp/uv/" + std::to_string(img_n) + ".jpg").write((char *)wip_img.data(), wip_img.size());
+                // std::ofstream(directory + "/" + std::to_string(p.first) + ".jpg").write((char *)p.second.p.data(), p.second.p.size());
+
                 image::save_img(img, directory + "/" + std::to_string(p.first) + ".png");
             }
         }

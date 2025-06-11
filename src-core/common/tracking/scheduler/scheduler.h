@@ -65,7 +65,7 @@ namespace satdump
             j["downlinks"][i]["frequency"] = v.downlinks[i].frequency;
             j["downlinks"][i]["record"] = v.downlinks[i].record;
             j["downlinks"][i]["live"] = v.downlinks[i].live;
-            j["downlinks"][i]["pipeline_name"] = v.downlinks[i].pipeline_selector->selected_pipeline.name;
+            j["downlinks"][i]["pipeline_name"] = v.downlinks[i].pipeline_selector->selected_pipeline.id;
             j["downlinks"][i]["pipeline_params"] = v.downlinks[i].pipeline_selector->getParameters();
             j["downlinks"][i]["baseband_format"] = (std::string)v.downlinks[i].baseband_format;
             j["downlinks"][i]["baseband_decimation"] = v.downlinks[i].baseband_decimation;
@@ -86,7 +86,7 @@ namespace satdump
                 nlohmann::ordered_json step_params = nlohmann::ordered_json::object();
 
                 nlohmann::ordered_json module_diff =
-                    perform_json_diff(pipeline::pipelines_json[v.downlinks[i].pipeline_selector->selected_pipeline.name]["work"][step.level][step.module], step.parameters);
+                    perform_json_diff(pipeline::pipelines_json[v.downlinks[i].pipeline_selector->selected_pipeline.id]["work"][step.level][step.module], step.parameters);
                 if (!module_diff.is_null())
                     step_params[step.module] = module_diff;
 

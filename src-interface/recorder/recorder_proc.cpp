@@ -349,7 +349,7 @@ namespace satdump
 
                     if (obj.downlinks[0].live)
                     {
-                        pipeline_selector.select_pipeline(obj.downlinks[0].pipeline_selector->selected_pipeline.name);
+                        pipeline_selector.select_pipeline(obj.downlinks[0].pipeline_selector->selected_pipeline.id);
                         pipeline_selector.setParameters(obj.downlinks[0].pipeline_selector->getParameters());
                         pipeline_selector.selected_pipeline.steps = obj.downlinks[0].pipeline_selector->selected_pipeline.steps;
                         start_processing();

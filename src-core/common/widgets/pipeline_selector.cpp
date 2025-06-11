@@ -104,7 +104,7 @@ namespace satdump
         if (!live_mode)
         {
             pipeline_levels_str = "";
-            if (selected_pipeline.name != "")
+            if (selected_pipeline.id != "")
                 for (int i = 0; i < (int)selected_pipeline.steps.size() - 1; i++)
                     pipeline_levels_str += selected_pipeline.steps[i].level + '\0';
 
@@ -332,7 +332,7 @@ namespace satdump
             pipeline_mtx.lock();
             for (auto &step : selected_pipeline.steps)
                 if (widgets::JSONTableEditor(step.parameters, step.module.c_str()))
-                    step.parameters = pipeline::pipelines_json[selected_pipeline.name]["work"][step.level][step.module];
+                    step.parameters = pipeline::pipelines_json[selected_pipeline.id]["work"][step.level][step.module];
 
             pipeline_mtx.unlock();
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5 * ui_scale);

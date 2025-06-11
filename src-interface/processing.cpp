@@ -36,7 +36,7 @@ namespace satdump
             processing_mutex.lock();
             is_processing = true;
 
-            logger->info("Starting processing pipeline " + downlink_pipeline.name + "...");
+            logger->info("Starting processing pipeline " + downlink_pipeline.id + "...");
             logger->debug("Input file (" + input_level + ") : " + input_file);
             logger->debug("Output file : " + output_file);
 
