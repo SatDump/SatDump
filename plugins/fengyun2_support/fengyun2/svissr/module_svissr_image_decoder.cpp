@@ -1,11 +1,8 @@
 #include "module_svissr_image_decoder.h"
-#include "common/codings/differential/nrzs.h"
-#include "common/utils.h"
-#include "core/resources.h"
-#include "image/io.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
 #include "logger.h"
+#include "products2/image_product.h"
 #include "utils/stats.h"
 #include <cstdint>
 #include <filesystem>
@@ -35,13 +32,28 @@ namespace fengyun_svissr
 
         logger->info("Found SCID " + std::to_string(buffer.scid));
 
-        const time_t timevalue = buffer.timestamp; // time(0);
-        std::tm *timeReadable = gmtime(&timevalue);
-        std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
-                                (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
-                                (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
-                                (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
-                                (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
+        if (buffer.timestamp == 0)
+        {
+            logger->warn("No timestamps were pulled! Was the reception too short? Defaulting to system time");
+            buffer.timestamp = time(0);
+        }
+        // Sanity check, if the timestamp isn't between 2000 and 2050, consider it to be incorrect
+        // (I don't think the Fengyun 2 satellites will live for another 25 years)
+        else if (buffer.timestamp < 946681200 || buffer.timestamp > 2524604400)
+        {
+            logger->warn("The pulled timestamp looks erroneous! Was the SNR too low? Defaulting to system time");
+            buffer.timestamp = time(0);
+        }
+
+        const time_t timevalue = buffer.timestamp;
+        // Copies the gmtime result since it gets modified elsewhere
+
+        std::tm timeReadable = *gmtime(&timevalue);
+        std::string timestamp = std::to_string(timeReadable.tm_year + 1900) + "-" +
+                                (timeReadable.tm_mon + 1 > 9 ? std::to_string(timeReadable.tm_mon + 1) : "0" + std::to_string(timeReadable.tm_mon + 1)) + "-" +
+                                (timeReadable.tm_mday > 9 ? std::to_string(timeReadable.tm_mday) : "0" + std::to_string(timeReadable.tm_mday)) + "_" +
+                                (timeReadable.tm_hour > 9 ? std::to_string(timeReadable.tm_hour) : "0" + std::to_string(timeReadable.tm_hour)) + "-" +
+                                (timeReadable.tm_min > 9 ? std::to_string(timeReadable.tm_min) : "0" + std::to_string(timeReadable.tm_min));
 
         logger->info("Full disk finished, saving at " + timestamp + "...");
 
@@ -49,17 +61,51 @@ namespace fengyun_svissr
 
         std::string disk_folder = buffer.directory + "/" + timestamp;
 
-        image::save_img(buffer.image5, std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "1")).c_str());
-        image::save_img(buffer.image1, std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "2")).c_str());
-        image::save_img(buffer.image2, std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "3")).c_str());
-        image::save_img(buffer.image3, std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "4")).c_str());
-        image::save_img(buffer.image4, std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "5")).c_str());
+        // TODOREWORK Get the correct SC/IDs
+        // Is the SC/ID we pull correct? It's 64 on both FY-2G and FY-2H
+        // Verify it's correct with some sample files if able, alternatively
+        // figure out a different way to identify the satellite (last resort is a manual selection)
+        sat_name = "FY-2x";
+        /*
+        // Get the sat name
+        switch (buffer.scid) {
 
-        // We are done with all channels but 1 and 4. Clear others to free up memory!
-        buffer.image1.clear();
-        buffer.image2.clear();
-        buffer.image3.clear();
+            case (0):
+            {
+                sat_name = "FY-2H";
+            }
+            break;
 
+            default:
+            {
+                sat_name = "Unknown FY-2";
+            }
+
+        }
+        */
+
+        // Save products
+        satdump::products::ImageProduct svissr_product;
+        svissr_product.instrument_name = "fy2-svissr";
+        svissr_product.set_product_source(sat_name);
+        svissr_product.set_product_timestamp(buffer.timestamp);
+
+        // Raw Images
+        svissr_product.images.push_back({0, getSvissrFilename(&timeReadable, "1"), "1", buffer.image5, 10, satdump::ChannelTransform().init_none()});
+        svissr_product.images.push_back({1, getSvissrFilename(&timeReadable, "2"), "2", buffer.image4, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
+        svissr_product.images.push_back({2, getSvissrFilename(&timeReadable, "3"), "3", buffer.image3, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
+        svissr_product.images.push_back({3, getSvissrFilename(&timeReadable, "4"), "4", buffer.image1, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
+        svissr_product.images.push_back({4, getSvissrFilename(&timeReadable, "5"), "5", buffer.image2, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
+
+        // Set the channel wavelengths
+        svissr_product.set_channel_wavenumber(0, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 0.65e-6));
+        svissr_product.set_channel_wavenumber(1, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 3.75e-6));
+        svissr_product.set_channel_wavenumber(2, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 7.15e-6));
+        svissr_product.set_channel_wavenumber(3, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 10.8e-6));
+        svissr_product.set_channel_wavenumber(4, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 12e-6));
+
+        // TODOREWORK Uncomment when able to automate
+        /*
         // If we can, generate false color
         if (resources::resourceExists("fy2/svissr/lut.png"))
         {
@@ -101,13 +147,21 @@ namespace fengyun_svissr
         else
         {
             logger->warn("fy2/svissr/lut.png LUT is missing! False Color will not be generated");
-        }
+        }*/
+
+        svissr_product.save(disk_folder);
+
+        buffer.image1.clear();
+        buffer.image2.clear();
+        buffer.image3.clear();
+        buffer.image4.clear();
+        buffer.image5.clear();
 
         writingImage = false;
     }
 
     SVISSRImageDecoderModule::SVISSRImageDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-        : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters), sat_name(parameters["satname"])
+        : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
     {
         frame = new uint8_t[FRAME_SIZE * 2];
 
@@ -203,6 +257,30 @@ namespace fengyun_svissr
                     }
                 }
 
+                // ID of the block group: Simplified mapping, Orbit and attitude data, MANAM,
+                // Calibration block 1 and 2 are all sent in 25 separate groups because of their
+                // size. The group ID defines which group is sent. Every group gets transmitted
+                // 8 times every 200 lines, the retransmission counter is at the 195th byte
+                int group_id = frame[193];
+
+                // First 6 bytes from the Orbit and Attitude header, which is sent in 25 100-byte pieces
+                // We need the first piece -> GID = 0
+                if (group_id == 0)
+                {
+
+                    // R6*8 -> Big endian 6 byte integer, needs 10e-8 to read the value
+                    uint64_t raw =
+                        ((uint64_t)frame[296] << 40 | (uint64_t)frame[297] << 32 | (uint64_t)frame[298] << 24 | (uint64_t)frame[299] << 16 | (uint64_t)frame[300] << 8 | (uint64_t)frame[301]);
+
+                    // note for future developers that will save you 6 hours of your life debugging
+                    // 10x10^-8 != 10^-8
+                    // i hate myself
+                    double timestamp = raw * 1e-8;
+
+                    // Converts the MJD timestamp to a unix timestamp
+                    timestamp_stats.push_back(((timestamp - 40587) * 86400));
+                }
+
                 // Parse SCID
                 int scid = frame[89];
 
@@ -254,7 +332,14 @@ namespace fengyun_svissr
                     buffer->scid = satdump::most_common(scid_stats.begin(), scid_stats.end(), 0);
                     scid_stats.clear();
 
-                    buffer->timestamp = time(0);
+                    // TODOREWORK majority law would be incredibly useful here, but needs N-element
+                    // implementation because we might sync less frames than intended
+                    // Please note that the timestamps are already converted to unix timestamps,
+                    // this would have to happen on the raw JD one (see where the the stats are pushed to)
+
+                    buffer->timestamp = satdump::most_common(timestamp_stats.begin(), timestamp_stats.end(), 0);
+                    timestamp_stats.clear();
+
                     buffer->directory = directory;
 
                     // Write those
@@ -303,7 +388,14 @@ namespace fengyun_svissr
             buffer->scid = satdump::most_common(scid_stats.begin(), scid_stats.end(), 0);
             scid_stats.clear();
 
-            buffer->timestamp = time(0);
+            // TODOREWORK majority law would be incredibly useful here, but needs N-element
+            // implementation because we might sync less frames than intended
+            // Please note that the timestamps are already converted to unix timestamps,
+            // this would have to happen on the raw JD one (see where the the stats are pushed to)
+
+            buffer->timestamp = satdump::most_common(timestamp_stats.begin(), timestamp_stats.end(), 0);
+            timestamp_stats.clear();
+
             buffer->directory = directory;
 
             images_queue_mtx.lock();
@@ -330,7 +422,14 @@ namespace fengyun_svissr
             buffer->scid = satdump::most_common(scid_stats.begin(), scid_stats.end(), 0);
             scid_stats.clear();
 
-            buffer->timestamp = time(0);
+            // TODOREWORK majority law would be incredibly useful here, but needs N-element
+            // implementation because we might sync less frames than intended
+            // Please note that the timestamps are already converted to unix timestamps,
+            // this would have to happen on the raw JD one (see where the the stats are pushed to)
+
+            buffer->timestamp = satdump::most_common(timestamp_stats.begin(), timestamp_stats.end(), 0);
+            timestamp_stats.clear();
+
             buffer->directory = directory;
 
             writeImages(*buffer);
