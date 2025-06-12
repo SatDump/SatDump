@@ -182,7 +182,7 @@
         },
         {
             "name": "Cloud Top IR",
-            "expression": "cch31=(cch31, emissive_radiance, , );lut=lut(lut/cal/CloudTopIR.png);lut(cch31, 0, 0), lut(cch31, 0, 1), lut(cch31, 0, 2)",
+            "expression": "cch31=(cch31, emissive_radiance, 183.15, 323.15);lut=lut(lut/cal/CloudTopIR.png);lut(cch31, 0, 0), lut(cch31, 0, 1), lut(cch31, 0, 2)",
             "image": {
                 "geo_correct": true
             },
