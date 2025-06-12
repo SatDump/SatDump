@@ -197,7 +197,8 @@
             "description": "descriptions/EnhancedIR.md"
         },
         {
-            "name": "IR 10.8µm - IR 6.2 µm Difference"
+            "name": "IR 10.8µm - IR 6.2 µm Difference",
+            "expression": ""
         },
         {
             "name": "Night Microphysics",

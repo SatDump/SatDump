@@ -285,6 +285,13 @@
             "image": {
                 "remove_background": true
             }
+        },
+        {
+            "name": "MeCIDA T6a Cirrus Detection (full)",
+            "expression": "cch3=(3, reflective_radiance, 0.000000, 16.850000);cch2=(2, reflective_radiance, 0.000000, 20.240000);cch1=(1, reflective_radiance, 0.000000, 17.760000);cch11=(11, brightness_temperature, 000.000000, 1000.000000);cch8=(8, brightness_temperature, 000.000000, 1000.000000);(cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 0 : cch3  : cch3,(cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : cch2  : cch2,(cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : cch1  : cch1",
+            "image": {
+                "remove_background": true
+            }
         }
     ],
     "default": {
