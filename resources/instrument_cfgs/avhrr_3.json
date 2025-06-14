@@ -102,7 +102,7 @@
         },
         {
             "name": "MCIR",
-            "expression": "cch4=(4, emissive_radiance, 120.000000, 20.000000); bm=equp(maps/nasa_hd.jpg); cch4 * (cch4) + (1-cch4) * bm(0), cch4 * (cch4) + (1-cch4) * bm(1), cch4 * (cch4) + (1-cch4) * bm(2)",
+            "expression": "cch4=(4, emissive_radiance, 120.000000, 20.000000); bm=equp(maps/map_aweeri.jpg); cch4 * (cch4) + (1-cch4) * bm(0), cch4 * (cch4) + (1-cch4) * bm(1), cch4 * (cch4) + (1-cch4) * bm(2)",
             "description": "descriptions/MCIR.md"
         },
         {
@@ -110,7 +110,7 @@
             "image": {
                 "geo_correct": true
             },
-            "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0.000000, 46.203000); bm=equp(maps/nasa_hd.jpg); cch1 * (cch1) + (1-cch1) * bm(0), cch1 * (cch1) + (1-cch1) * bm(1), cch1 * (cch1) + (1-cch1) * bm(2)",
+            "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0.000000, 46.203000); bm=equp(maps/map_aweeri.jpg); cch1 * (cch1) + (1-cch1) * bm(0), cch1 * (cch1) + (1-cch1) * bm(1), cch1 * (cch1) + (1-cch1) * bm(2)",
             "description": "descriptions/MSA.md"
         },
         {
@@ -118,7 +118,7 @@
             "image": {
                 "geo_correct": true
             },
-            "expression": "cch2=(2, sun_angle_compensated_reflective_radiance, 0.000000, 46.203000); bm=equp(maps/nasa_hd.jpg); cch2 * (cch2) + (1-cch2) * bm(0), cch2 * (cch2) + (1-cch2) * bm(1), cch2 * (cch2) + (1-cch2) * bm(2)",
+            "expression": "cch2=(2, sun_angle_compensated_reflective_radiance, 0.000000, 46.203000); bm=equp(maps/map_aweeri.jpg); cch2 * (cch2) + (1-cch2) * bm(0), cch2 * (cch2) + (1-cch2) * bm(1), cch2 * (cch2) + (1-cch2) * bm(2)",
             "description": "descriptions/MSA.md"
         },
         {
@@ -343,17 +343,17 @@
         {
             "name": "MCIR (Uncalibrated)",
             "description": "descriptions/MCIR.md",
-            "expression": "bm=equp(maps/nasa_hd.jpg); chb * (chb) + (1-chb) * bm(0), chb * (chb) + (1-chb) * bm(1), chb * (chb) + (1-chb) * bm(2)"
+            "expression": "bm=equp(maps/map_aweeri.jpg); chb * (chb) + (1-chb) * bm(0), chb * (chb) + (1-chb) * bm(1), chb * (chb) + (1-chb) * bm(2)"
         },
         {
             "name": "MSA (Uncalibrated)",
             "description": "descriptions/MSA.md",
-            "expression": "bm=equp(maps/nasa_hd.jpg); ch=(cha) * 1.5;ch * (ch) + (1-ch) * bm(0), ch * (ch) + (1-ch) * bm(1), ch * (ch) + (1-ch) * bm(2)"
+            "expression": "bm=equp(maps/map_aweeri.jpg); ch=(cha) * 1.5;ch * (ch) + (1-ch) * bm(0), ch * (ch) + (1-ch) * bm(1), ch * (ch) + (1-ch) * bm(2)"
         },
         {
             "name": "MCIR Rain (Uncalibrated)",
             "description": "descriptions/MCIR_precip.md",
-            "expression": "bm=equp(maps/nasa_hd.jpg);lut=lut(lut/cal/WXtoImg-NO.png);lut(1-chb, 0, 0) * (chb) + (1-chb) * bm(0), lut(1-chb, 0, 1) * (chb) + (1-chb) * bm(1),lut(1-chb, 0, 2) * (chb) + (1-chb) * bm(2)"
+            "expression": "bm=equp(maps/map_aweeri.jpg);lut=lut(lut/cal/WXtoImg-NO.png);lut(1-chb, 0, 0) * (chb) + (1-chb) * bm(0), lut(1-chb, 0, 1) * (chb) + (1-chb) * bm(1),lut(1-chb, 0, 2) * (chb) + (1-chb) * bm(2)"
         },
         {
             "name": "HVC (channel 1)",
