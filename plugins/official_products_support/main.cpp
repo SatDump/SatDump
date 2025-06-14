@@ -3,8 +3,10 @@
 
 #include "off2pro/module_off2pro.h"
 
-#include "nc2pro/abi_nc_calibrator.h"
-#include "nc2pro/fci_nc_calibrator.h"
+#include "nc2pro/abi/abi_nc_calibrator.h"
+#include "nc2pro/fci/fci_nc_calibrator.h"
+
+#include "nc2pro/jpss/viirs_nc_calibrator.h"
 
 //////////
 
@@ -40,6 +42,8 @@ public:
             evt.calibrators.push_back(std::make_shared<nat2pro::MHSNatCalibrator>(evt.products, evt.calib));
         else if (evt.id == "metop_amsu_nat")
             evt.calibrators.push_back(std::make_shared<nat2pro::AMSUNatCalibrator>(evt.products, evt.calib));
+        else if (evt.id == "jpss_nc_viirs")
+            evt.calibrators.push_back(std::make_shared<nc2pro::VIIRSNcCalibrator>(evt.products, evt.calib));
     }
 };
 

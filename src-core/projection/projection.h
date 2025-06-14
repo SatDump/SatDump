@@ -9,8 +9,8 @@
 
 // Needed for projs. Maybe hide later? TBD TODOREWORK
 #include "products2/image/channel_transform.h"
-#include "standard/proj.h"
 #include "raytrace/satellite_raytracer.h"
+#include "standard/proj.h"
 #include "tps/latlontps_proj.h"
 
 namespace satdump
@@ -98,9 +98,10 @@ namespace satdump
              * @param pos output geodetic position
              * @param x pixel position
              * @param y pixel position
+             * @param except if false, doesn't throw exceptions
              * @return true on error
              */
-            bool forward(geodetic::geodetic_coords_t pos, double &x, double &y);
+            bool forward(geodetic::geodetic_coords_t pos, double &x, double &y, bool except = true);
 
             /**
              * @brief Run forward (X/Y => Lat/Lon) projection
@@ -110,9 +111,10 @@ namespace satdump
              * @param otime pixel timestamp, MUST be set to -1 before passing
              * to this function. No guarantee the underlaying projection supports
              * this, must be checked before use
+             * @param except if false, doesn't throw exceptions
              * @return true on error
              */
-            bool inverse(double x, double y, geodetic::geodetic_coords_t &pos, double *otime = nullptr);
+            bool inverse(double x, double y, geodetic::geodetic_coords_t &pos, double *otime = nullptr, bool except = true);
 
         public:
             void to_json(nlohmann::json &j) const;

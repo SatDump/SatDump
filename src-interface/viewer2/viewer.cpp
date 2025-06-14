@@ -53,6 +53,9 @@ namespace satdump
                         tryOpenFileInViewer(f);
                 });
 
+            // Enable adding handlers to the viewer externally
+            eventBus->register_handler<ViewerAddHandlerEvent>([this](const ViewerAddHandlerEvent &e) { master_handler->addSubHandler(e.h); });
+
             // TODOREWORK. Returns the last selected handler of a specific type if available
             eventBus->register_handler<GetLastSelectedOfTypeEvent>(
                 [this](const GetLastSelectedOfTypeEvent &v)

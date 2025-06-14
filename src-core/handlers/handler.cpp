@@ -89,9 +89,17 @@ namespace satdump
                     if (handler_can_be_reorg)
                     {
                         float xpos = ImGui::GetWindowWidth();
+                        float ypos = ImGui::GetCursorPosY();
+
+                        ImVec4 c = ImGui::GetStyle().Colors[ImGuiCol_WindowBg];
+                        c.w = 1;
 
                         if (i > 0)
                         {
+                            ImGui::GetWindowDrawList()->AddRectFilled({xpos - 32 * ui_scale, ypos + 17 * ui_scale}, //
+                                                                      {xpos - 10 * ui_scale, ypos + 32 * ui_scale}, //
+                                                                      (ImU32)((ImColor)c));
+
                             ImGui::SameLine();
                             ImGui::SetCursorPosX(xpos - 35 * ui_scale);
                             ImGui::Text(u8"\ueaf4");
@@ -100,6 +108,10 @@ namespace satdump
                         }
                         if (i != (int)subhandlers.size() - 1)
                         {
+                            ImGui::GetWindowDrawList()->AddRectFilled({xpos - 52 * ui_scale, ypos + 17 * ui_scale}, //
+                                                                      {xpos - 30 * ui_scale, ypos + 32 * ui_scale}, //
+                                                                      (ImU32)((ImColor)c));
+
                             ImGui::SameLine();
                             ImGui::SetCursorPosX(xpos - 55 * ui_scale);
                             ImGui::Text(u8"\ueaf3");

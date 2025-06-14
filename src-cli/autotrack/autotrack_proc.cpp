@@ -18,7 +18,7 @@ void AutoTrackApp::start_processing()
 
     try
     {
-        pipeline_output_dir = prepareAutomatedPipelineFolder(time(0), source_ptr->d_frequency, selected_pipeline.name, d_output_folder);
+        pipeline_output_dir = prepareAutomatedPipelineFolder(time(0), source_ptr->d_frequency, selected_pipeline.id, d_output_folder);
         live_pipeline = std::make_unique<satdump::pipeline::LivePipeline>(selected_pipeline, pipeline_params, pipeline_output_dir);
         splitter->reset_output("live");
         live_pipeline->start(splitter->get_output("live"), main_thread_pool);

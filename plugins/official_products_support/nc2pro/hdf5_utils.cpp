@@ -10,7 +10,7 @@ namespace nc2pro
             return "";
         hid_t att = H5Aopen(file, attr.c_str(), H5P_DEFAULT);
         hid_t att_type = H5Aget_type(att);
-        char str[10000] = { 0 };
+        char str[10000] = {0};
         H5Aread(att, att_type, &str);
         val = std::string(str);
         H5Tclose(att_type);
@@ -18,7 +18,7 @@ namespace nc2pro
         return val;
     }
 
-	int hdf5_get_int(hid_t &file, std::string path)
+    int hdf5_get_int(hid_t &file, std::string path)
     {
         int32_t val = 0;
         hid_t dataset = H5Dopen1(file, path.c_str());
@@ -47,13 +47,15 @@ namespace nc2pro
         if (dataset < 0)
             return -1e6;
         hid_t att = H5Aopen(dataset, attr.c_str(), H5P_DEFAULT);
+        if (att < 0)
+            return -1e6;
         H5Aread(att, H5T_NATIVE_FLOAT, &val);
         H5Aclose(att);
         H5Dclose(dataset);
         return val;
     }
 
-    double hdf5_get_double_attr_FILE(hid_t& file, std::string attr)
+    double hdf5_get_double_attr_FILE(hid_t &file, std::string attr)
     {
         double val = 0.0;
         if (file < 0)
@@ -83,4 +85,4 @@ namespace nc2pro
         H5Aclose(att);
         return val;
     }
-}
+} // namespace nc2pro

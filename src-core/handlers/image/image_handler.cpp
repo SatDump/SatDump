@@ -2,6 +2,7 @@
 
 #include "core/plugin.h"
 #include "core/style.h"
+#include "handlers/projection/projection_handler.h"
 #include "image/hue_saturation.h"
 #include "image/image_background.h"
 #include "image/meta.h"
@@ -249,13 +250,17 @@ namespace satdump
                 if (image_proj_valid)
                 {
                     if (ImGui::MenuItem("Add To Proj"))
-                    {
+                    { // TODOREWORK
                         std::shared_ptr<Handler> h;
                         eventBus->fire_event<viewer::ViewerApplication::GetLastSelectedOfTypeEvent>({"projection_handler", h});
                         if (h)
                             h->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()));
                         else
-                            logger->warn("No projection selected");
+                        {
+                            auto p = std::make_shared<ProjectionHandler>();
+                            p->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()));
+                            eventBus->fire_event<viewer::ViewerApplication::ViewerAddHandlerEvent>({p});
+                        }
                     }
                 }
 

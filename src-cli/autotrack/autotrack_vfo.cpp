@@ -22,7 +22,7 @@ void AutoTrackApp::add_vfo_live(std::string id, std::string name, double freq, s
         vpipeline_params["buffer_size"] = dsp::STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
         vpipeline_params["start_timestamp"] = (double)time(0);     // Some pipelines need this
 
-        std::string output_dir = prepareAutomatedPipelineFolder(time(0), freq, vpipeline.name, d_output_folder);
+        std::string output_dir = prepareAutomatedPipelineFolder(time(0), freq, vpipeline.id, d_output_folder);
 
         wipInfo.output_dir = output_dir;
 
@@ -102,7 +102,7 @@ void AutoTrackApp::del_vfo(std::string id)
 
         splitter->set_vfo_enabled(it->id, false);
 
-        if (it->selected_pipeline.name != "")
+        if (it->selected_pipeline.id != "")
             it->live_pipeline->stop();
 
         if (it->file_sink)
@@ -114,7 +114,7 @@ void AutoTrackApp::del_vfo(std::string id)
 
         splitter->del_vfo(it->id);
 
-        if (it->selected_pipeline.name != "")
+        if (it->selected_pipeline.id != "")
         {
             if (d_settings.contains("finish_processing") && d_settings["finish_processing"].get<bool>() && it->live_pipeline->getOutputFile().size() > 0)
             {

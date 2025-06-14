@@ -318,7 +318,7 @@ namespace satdump
                     if (!downlink.live)
                         ImGui::BeginDisabled();
                     ImGui::SetNextItemWidth(downlink_dd_width);
-                    if (ImGui::BeginCombo(((std::string) "##pipelinesel" + idpart).c_str(), downlink.pipeline_selector->selected_pipeline.id.c_str(), ImGuiComboFlags_HeightLarge))
+                    if (ImGui::BeginCombo(((std::string) "##pipelinesel" + idpart).c_str(), downlink.pipeline_selector->selected_pipeline.name.c_str(), ImGuiComboFlags_HeightLarge))
                     {
                         downlink.pipeline_selector->renderSelectionBox(300 * ui_scale);
                         ImGui::EndCombo();

@@ -665,7 +665,7 @@ namespace satdump
                             ImGui::BulletText("Frequency: %s", format_notated(vfo.freq, "Hz").c_str());
                             if (vfo.selected_pipeline.id != "")
                             {
-                                ImGui::BulletText("Pipeline: %s", vfo.selected_pipeline.name.c_str());
+                                ImGui::BulletText("Pipeline: %s", vfo.selected_pipeline.id.c_str());
                                 ImGui::BulletText("Directory: %s", vfo.output_dir.c_str());
                             }
                             else if (vfo.file_sink)
@@ -797,7 +797,7 @@ namespace satdump
                 {
                     if (ImGui::BeginTabItem(vfo.name.c_str()))
                     {
-                        if (vfo.selected_pipeline.name != "")
+                        if (vfo.selected_pipeline.id != "")
                         {
                             float y_pos = ImGui::GetCursorPosY() + 35 * ui_scale;
                             float live_width = recorder_size.x + 16 * ui_scale;

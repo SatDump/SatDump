@@ -52,6 +52,11 @@ namespace satdump
                 std::shared_ptr<handlers::Handler> &h;
             };
 
+            struct ViewerAddHandlerEvent
+            {
+                std::shared_ptr<handlers::Handler> h;
+            };
+
         public:
             void tryOpenFileInViewer(std::string path);
 

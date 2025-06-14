@@ -287,7 +287,7 @@
             "image": {
                 "geo_correct": true
             },
-            "expression": "bm=equp(maps/nasa_hd.jpg); ((1-ch5) * 2.8 - 0.9) * ((1-ch5) * 2.8 - 0.9) + (1-((1-ch5) * 2.8 - 0.9)) * bm(0), ((1-ch5) * 2.8 - 0.9) * ((1-ch5) * 2.8 - 0.9) + (1-((1-ch5) * 2.8 - 0.9)) * bm(1), ((1-ch5) * 2.8 - 0.9) * ((1-ch5) * 2.8 - 0.9) + (1-((1-ch5) * 2.8 - 0.9)) * bm(2)",
+            "expression": "bm=equp(maps/map_aweeri.jpg); ((1-ch5) * 2.8 - 0.9) * ((1-ch5) * 2.8 - 0.9) + (1-((1-ch5) * 2.8 - 0.9)) * bm(0), ((1-ch5) * 2.8 - 0.9) * ((1-ch5) * 2.8 - 0.9) + (1-((1-ch5) * 2.8 - 0.9)) * bm(1), ((1-ch5) * 2.8 - 0.9) * ((1-ch5) * 2.8 - 0.9) + (1-((1-ch5) * 2.8 - 0.9)) * bm(2)",
             "description": "descriptions/MCIR.md"
         },
         {
@@ -295,7 +295,7 @@
             "image": {
                 "geo_correct": true
             },
-            "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0.000000, 46.203000); bm=equp(maps/nasa_hd.jpg); cch1 * (cch1) + (1-cch1) * bm(0), cch1 * (cch1) + (1-cch1) * bm(1), cch1 * (cch1) + (1-cch1) * bm(2)",
+            "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0.000000, 46.203000); bm=equp(maps/map_aweeri.jpg); cch1 * (cch1) + (1-cch1) * bm(0), cch1 * (cch1) + (1-cch1) * bm(1), cch1 * (cch1) + (1-cch1) * bm(2)",
             "description": "descriptions/MSA.md"
         },
         {

@@ -27,7 +27,7 @@ namespace satdump
             vpipeline_params["buffer_size"] = dsp::STREAM_BUFFER_SIZE; // This is required, as we WILL go over the (usually) default 8192 size
             vpipeline_params["start_timestamp"] = (double)time(0);     // Some pipelines need this
 
-            std::string output_dir = prepareAutomatedPipelineFolder(time(0), freq, vpipeline.name);
+            std::string output_dir = prepareAutomatedPipelineFolder(time(0), freq, vpipeline.id);
 
             wipInfo.output_dir = output_dir;
 
@@ -108,7 +108,7 @@ namespace satdump
 
             splitter->set_vfo_enabled(it->id, false);
 
-            if (it->selected_pipeline.name != "")
+            if (it->selected_pipeline.id != "")
                 it->live_pipeline->stop();
 
             if (it->file_sink)
@@ -120,7 +120,7 @@ namespace satdump
 
             splitter->del_vfo(it->id);
 
-            if (it->selected_pipeline.name != "")
+            if (it->selected_pipeline.id != "")
             {
                 if (satdump_cfg.main_cfg["user_interface"]["finish_processing_after_live"]["value"].get<bool>() && it->live_pipeline->getOutputFile().size() > 0)
                 {

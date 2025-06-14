@@ -1,6 +1,8 @@
 #pragma once
 
 #include "image/svissr_reader.h"
+#include <string>
+#include "image/svissr_reader.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
 #include <thread>
 
@@ -10,7 +12,7 @@ namespace fengyun_svissr
     {
     protected:
         // Settings
-        const std::string sat_name;
+        std::string sat_name;
 
         // Read buffer
         uint8_t *frame;
@@ -75,6 +77,7 @@ namespace fengyun_svissr
 
         // Stats
         std::vector<int> scid_stats;
+        std::vector<int> timestamp_stats;
 
         // UI Stuff
         float corr_history_ca[200];
