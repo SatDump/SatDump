@@ -6,8 +6,6 @@
 #include "dsp/filter/rrc.h"
 #include "dsp/io/file_source.h"
 #include "dsp/path/splitter.h"
-#include "dsp/utils/cyclostationary_analysis.h"
-#include "dsp/utils/freq_shift.h"
 #include "imgui/imnodes/imnodes.h"
 #include "logger.h"
 
@@ -17,12 +15,16 @@
 #include "dsp/filter/fir.h"
 
 #include "dsp/clock_recovery/clock_recovery_mm.h"
-#include "dsp/const/const_disp.h"
+#include "dsp/displays/const_disp.h"
+#include "dsp/displays/hist_disp.h"
 #include "dsp/pll/costas.h"
 
 #include "dsp/utils/correct_iq.h"
+#include "dsp/utils/cyclostationary_analysis.h"
 #include "dsp/utils/delay_one_imag.h"
 #include "dsp/utils/freq_shift.h"
+#include "dsp/utils/hilbert.h"
+#include "dsp/utils/quadrature_demod.h"
 #include "dsp/utils/real_to_complex.h"
 
 #include "nlohmann/json_utils.h"
@@ -81,6 +83,19 @@ namespace satdump
             }
         };
 
+        class NodeTestHisto : public ndsp::NodeInternal
+        {
+        public:
+            NodeTestHisto(const ndsp::Flowgraph *f) : ndsp::NodeInternal(f, std::make_shared<ndsp::HistogramDisplayBlock>()) {}
+
+            virtual bool render()
+            {
+                ndsp::NodeInternal::render();
+                ((ndsp::HistogramDisplayBlock *)blk.get())->histo.draw();
+                return false;
+            }
+        };
+
         DSPFlowGraphHandler::DSPFlowGraphHandler()
         {
             // TODOREWORK
@@ -100,7 +115,9 @@ namespace satdump
             flowgraph.node_internal_registry.insert(
                 {"costas_cc", {"PLL/Costas Loop", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::CostasBlock>()); }}});
 
-            flowgraph.node_internal_registry.insert({"const_disp_cc", {"View/Constellation Display", [](const ndsp::Flowgraph *f) { return std::make_shared<NodeTestConst>(f); }}});
+            flowgraph.node_internal_registry.insert({"const_disp_c", {"View/Constellation Display", [](const ndsp::Flowgraph *f) { return std::make_shared<NodeTestConst>(f); }}});
+
+            flowgraph.node_internal_registry.insert({"histo_disp_c", {"View/Histogram Display", [](const ndsp::Flowgraph *f) { return std::make_shared<NodeTestHisto>(f); }}});
 
             flowgraph.node_internal_registry.insert(
                 {"mm_clock_recovery_cc",
@@ -124,6 +141,12 @@ namespace satdump
 
             flowgraph.node_internal_registry.insert(
                 {"real_to_complex_fc", {"Utils/Real to Complex", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::RealToComplexBlock>()); }}});
+
+            flowgraph.node_internal_registry.insert(
+                {"quadrature_demod_cf", {"Utils/Quadrature Demod", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::QuadratureDemodBlock>()); }}});
+
+            flowgraph.node_internal_registry.insert(
+                {"hilbert_fc", {"Utils/Hilbert Transform", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::HilbertBlock>()); }}});
 
             flowgraph.node_internal_registry.insert(
                 {"splitter_cc", {"Utils/Splitter CC", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::SplitterBlock<complex_t>>()); }}});
