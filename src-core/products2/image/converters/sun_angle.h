@@ -29,7 +29,7 @@ namespace satdump
 
                     geodetic::geodetic_coords_t pos;
                     double timestamp = -1;
-                    if (((UnitConverter *)c)->proj.inverse(x, y, pos, &timestamp))
+                    if (((UnitConverter *)c)->proj.inverse(x, y, pos, &timestamp, false))
                         return CALIBRATION_INVALID_VALUE;
 
                     if (timestamp == -1)

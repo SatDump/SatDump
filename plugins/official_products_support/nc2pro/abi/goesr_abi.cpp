@@ -2,7 +2,7 @@
 
 #include "common/calibration.h"
 #include "image/image.h"
-#include "hdf5_utils.h"
+#include "../hdf5_utils.h"
 #include "logger.h"
 #include "products2/image_product.h"
 #include <H5LTpublic.h>

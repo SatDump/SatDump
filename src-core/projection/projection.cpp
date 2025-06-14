@@ -107,7 +107,7 @@ namespace satdump
             return false;
         }
 
-        bool Projection::forward(geodetic::geodetic_coords_t pos, double &x, double &y)
+        bool Projection::forward(geodetic::geodetic_coords_t pos, double &x, double &y, bool except)
         {
             if (fwd_type == PROJ_STANDARD)
             {
@@ -123,7 +123,10 @@ namespace satdump
             }
             else
             {
-                throw satdump_exception("Invalid forward projection type! " + d_cfg["type"].get<std::string>());
+                if (except)
+                    throw satdump_exception("Invalid forward projection type! " + d_cfg["type"].get<std::string>());
+                else
+                    return 1;
             }
 
             // Run channel transform, might do nothing if no transform is needed
@@ -133,7 +136,7 @@ namespace satdump
             return 0;
         }
 
-        bool Projection::inverse(double x, double y, geodetic::geodetic_coords_t &pos, double *otime)
+        bool Projection::inverse(double x, double y, geodetic::geodetic_coords_t &pos, double *otime, bool except)
         {
             // Run channel transform, might do nothing if no transform is needed
             if (has_2nd_transform)
@@ -153,7 +156,10 @@ namespace satdump
             }
             else
             {
-                throw satdump_exception("Invalid inverse projection type! " + d_cfg["type"].get<std::string>());
+                if (except)
+                    throw satdump_exception("Invalid inverse projection type! " + d_cfg["type"].get<std::string>());
+                else
+                    return 1;
             }
         }
 
@@ -174,5 +180,5 @@ namespace satdump
             fwd_type = PROJ_INVALID;
             inv_type = PROJ_INVALID;
         }
-    } // namespace proj
+    } // namespace projection
 } // namespace satdump

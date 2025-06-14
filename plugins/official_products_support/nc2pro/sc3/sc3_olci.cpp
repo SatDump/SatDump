@@ -12,7 +12,7 @@
 
 #include "nlohmann/json_utils.h"
 #include "core/resources.h"
-#include "hdf5_utils.h"
+#include "../hdf5_utils.h"
 #include <H5LTpublic.h>
 
 namespace nc2pro

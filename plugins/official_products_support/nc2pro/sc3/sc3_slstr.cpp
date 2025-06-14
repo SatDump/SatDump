@@ -1,5 +1,5 @@
 #include "sc3_slstr.h"
-#include "hdf5_utils.h"
+#include "../hdf5_utils.h"
 #include <H5LTpublic.h>
 
 #include "common/utils.h"

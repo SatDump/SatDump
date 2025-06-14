@@ -6,13 +6,15 @@
 #include "../nat2pro/formats/formats.h"
 
 #include "../file_utils/file_utils.h"
-#include "../nc2pro/mtg_fci.h"
-#include "../nc2pro/sc3_olci.h"
-#include "../nc2pro/sc3_slstr.h"
+#include "../nc2pro/fci/mtg_fci.h"
+#include "../nc2pro/sc3/sc3_olci.h"
+#include "../nc2pro/sc3/sc3_slstr.h"
 
 #include "../hsd2pro/himawari_ahi.h"
-#include "../nc2pro/gk2a_ami.h"
-#include "../nc2pro/goesr_abi.h"
+#include "../nc2pro/abi/goesr_abi.h"
+#include "../nc2pro/ami/gk2a_ami.h"
+
+#include "../nc2pro/jpss/jpss_viirs.h"
 
 namespace off2pro
 {
@@ -50,10 +52,13 @@ namespace off2pro
         else if (source_off_path.extension() == ".nc")
         {
             std::string prefix = source_off_path.stem().string().substr(0, 14);
+            std::string prefix2 = source_off_path.stem().string().substr(0, 5);
             if (prefix == "OR_ABI-L1b-Rad")
                 nc2pro::process_goesr_abi(source_off_file, pro_output_file, &progress);
             else if (prefix == "gk2a_ami_le1b_")
                 nc2pro::process_gk2a_ami(source_off_file, pro_output_file, &progress);
+            else if (prefix2 == "VNP02")
+                nc2pro::process_jpss_viirs(source_off_file, pro_output_file, &progress);
             else
                 logger->error("Unknown .nc file type!");
         }
