@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dsp/const/const_disp.h"
+#include "dsp/displays/const_disp.h"
 #include "dsp/device/dev.h"
 #include "dsp/device/options_displayer.h"
 #include "dsp/fft/fft_pan.h"
