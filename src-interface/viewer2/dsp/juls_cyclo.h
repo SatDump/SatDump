@@ -1,10 +1,16 @@
 #pragma once
 
+#include "dsp/utils/correct_iq.h"
+#include "dsp/utils/cyclostationary_analysis.h"
+#include "dsp/utils/delay_one_imag.h"
+#include "dsp/utils/freq_shift.h"
+#include "dsp/utils/real_to_complex.h"
 #include "handlers/handler.h"
 
 #include "dsp/agc/agc.h"
 #include "dsp/clock_recovery/clock_recovery_mm.h"
 #include "dsp/displays/const_disp.h"
+#include "dsp/displays/hist_disp.h"
 #include "dsp/fft/fft_pan.h"
 #include "dsp/filter/rrc.h"
 #include "dsp/io/file_source.h"
@@ -13,22 +19,22 @@
 
 #include "common/widgets/fft_plot.h"
 #include "common/widgets/notated_num.h"
-#include "common/widgets/waterfall_plot.h"
 
 #include <memory>
-#include <thread>
 
 #include "dsp/device/options_displayer_warper.h"
+#include "viewer2/dsp/task_queue.h"
 
 // TODOREWORK, move into plugin? Or Core?
 namespace satdump
 {
     namespace handlers
     {
-        class CycloHelperHandler : public Handler
+        class JulsCycloHelperHandler : public Handler
         {
         public:
             std::shared_ptr<ndsp::FileSourceBlock> file_source;
+            std::shared_ptr<ndsp::CorrectIQBlock<complex_t>> dc_block;
             std::shared_ptr<ndsp::SplitterBlock<complex_t>> splitter;
             std::shared_ptr<ndsp::FFTPanBlock> fft;
             std::shared_ptr<ndsp::AGCBlock<complex_t>> agc;
@@ -38,18 +44,29 @@ namespace satdump
             std::shared_ptr<ndsp::CostasBlock> costas;
             std::shared_ptr<ndsp::MMClockRecoveryBlock<complex_t>> recovery;
             std::shared_ptr<ndsp::ConstellationDisplayBlock> constell;
+            std::shared_ptr<ndsp::SplitterBlock<complex_t>> splitter3;
+            std::shared_ptr<ndsp::DelayOneImagBlock> delay_one_imag;
+            std::shared_ptr<ndsp::ConstellationDisplayBlock> constell2;
+            std::shared_ptr<ndsp::CyclostationaryAnalysis> cyclo;
+            std::shared_ptr<ndsp::RealToComplexBlock> realcomp;
+            std::shared_ptr<ndsp::FreqShiftBlock> freq_shift;
 
         public:
             widgets::NotatedNum<uint64_t> samplerate = widgets::NotatedNum<uint64_t>("Samplerate", 6e6, "S/s");
-            widgets::NotatedNum<uint64_t> symbolrate = widgets::NotatedNum<uint64_t>("Symbolrate", 2.00e6, "S/s");
+            widgets::NotatedNum<uint64_t> symbolrate = widgets::NotatedNum<uint64_t>("Symbolrate", 2.33e6, "S/s");
 
+            std::unique_ptr<ndsp::OptDisplayerWarper> file_source_optdisp;
+            std::unique_ptr<ndsp::OptDisplayerWarper> freq_shift_optdisp;
             std::unique_ptr<ndsp::OptDisplayerWarper> agc_optdisp;
             std::unique_ptr<ndsp::OptDisplayerWarper> rrc_optdisp;
+
+            TaskQueue taskq;
 
             enum mod_type_t
             {
                 MOD_BPSK = 0,
                 MOD_QPSK = 1,
+                MOD_8PSK = 2,
             };
 
             mod_type_t mod_type = MOD_BPSK;
@@ -63,16 +80,16 @@ namespace satdump
             bool started = 0;
 
         public:
-            CycloHelperHandler();
-            ~CycloHelperHandler();
+            JulsCycloHelperHandler();
+            ~JulsCycloHelperHandler();
 
             // The Rest
             void drawMenu();
             void drawContents(ImVec2 win_size);
 
-            std::string getName() { return "Cyclo Helper"; }
+            std::string getName() { return "Juls Cyclo Analysis"; }
 
-            std::string getID() { return "cyclo_helper_handler"; }
+            std::string getID() { return "juls_cyclo_analysis_handler"; }
         };
     } // namespace handlers
 } // namespace satdump

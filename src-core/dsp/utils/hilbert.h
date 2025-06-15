@@ -14,7 +14,7 @@ namespace satdump
         {
         private:
             bool needs_reinit = false;
-            int ntaps = 65;
+            int p_ntaps = 65;
             int p_buffer_size = 8192 * 8;
 
         private:
@@ -44,19 +44,26 @@ namespace satdump
                 buffer_size = p_buffer_size;
 
                 // Init taps
-                auto p_taps = dsp::firdes::hilbert(ntaps, dsp::fft::window::WIN_HAMMING, 6.76);
+                auto p_taps = dsp::firdes::hilbert(p_ntaps, dsp::fft::window::WIN_HAMMING, 6.76);
 
                 // Init taps
-                ntaps = p_taps.size();
-                taps = (float *)volk_malloc(ntaps * sizeof(float), volk_get_alignment());
-                for (int j = 0; j < ntaps; j++)
-                    taps[j] = p_taps[(ntaps - 1) - j]; // Reverse taps
+                p_ntaps = p_taps.size();
+                taps = (float *)volk_malloc(p_ntaps * sizeof(float), volk_get_alignment());
+                for (int j = 0; j < p_ntaps; j++)
+                    taps[j] = p_taps[(p_ntaps - 1) - j]; // Reverse taps
+            }
+
+            nlohmann::ordered_json get_cfg_list()
+            {
+                nlohmann::ordered_json p;
+                add_param_simple(p, "ntaps", "int");
+                return p;
             }
 
             nlohmann::json get_cfg(std::string key)
             {
                 if (key == "ntaps")
-                    return ntaps;
+                    return p_ntaps;
                 else if (key == "buffer_size")
                     return p_buffer_size;
                 else
@@ -67,7 +74,7 @@ namespace satdump
             {
                 if (key == "ntaps")
                 {
-                    ntaps = v;
+                    p_ntaps = v;
                     needs_reinit = true;
                 }
                 else if (key == "buffer_size")
