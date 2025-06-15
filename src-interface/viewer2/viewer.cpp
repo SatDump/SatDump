@@ -11,6 +11,7 @@
 #include "core/style.h"
 #include "dsp/cyclo_test.h"
 #include "dsp/flowgraph/dsp_flowgraph_handler.h"
+#include "dsp/juls_cyclo.h"
 #include "handlers/dataset/dataset_handler.h"
 #include "handlers/dummy_handler.h"
 #include "handlers/product/image_product_handler.h" // TODOREWORK CLEAN
@@ -197,6 +198,8 @@ namespace satdump
                             master_handler->addSubHandler(std::make_shared<handlers::NewRecHandler>());
                         if (ImGui::MenuItem("CycloHelper TEST"))
                             master_handler->addSubHandler(std::make_shared<handlers::CycloHelperHandler>());
+                        if (ImGui::MenuItem("Júlia's Cyclo Analysis TEST"))
+                            master_handler->addSubHandler(std::make_shared<handlers::JulsCycloHelperHandler>());
                         ImGui::EndMenu();
                     }
 
