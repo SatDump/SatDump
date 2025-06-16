@@ -1,4 +1,46 @@
 {
+    "uvsqsatng_s_dump_oqpsk3125": {
+        "name": "UVSQSat-NG OQPSK 312.5k S-Band Dump",
+        "live": [
+            1,
+            2
+        ],
+        "frequencies": [
+            [
+                "Main",
+                2208e6
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "psk_demod",
+                "parameters": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 0.3125e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
+                    "constellation": "oqpsk",
+                    "cadu_size": 2072,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": false,
+                    "rs_i": 1,
+                    "rs_type": "rs223",
+                    "rs_usecheck": true
+                }
+            },
+            "products": {
+                "module": "uvsqsatng_instruments"
+            }
+        }
+    },
     "uvsqsatng_s_dump_125": {
         "name": "UVSQSat-NG 1.25M S-Band Dump",
         "live": [

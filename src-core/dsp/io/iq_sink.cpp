@@ -24,7 +24,7 @@ namespace satdump
 
             std::string path = filepath;
             if (autogen)
-                path += "/" + prepareBasebandFileName(timestamp, samplerate, frequency);
+                path += "/" + prepareBasebandFileName(timestamp, samplerate, frequency) + "." + (std::string)format;
             logger->info("Recording IQ to " + path);
 
             file_stream = fopen(path.c_str(), "wb");
