@@ -24,26 +24,28 @@ namespace satdump
 
             std::string path = filepath;
             if (autogen)
+            {
                 path += "/" + prepareBasebandFileName(timestamp, samplerate, frequency) + "." + (std::string)format;
+            }
             logger->info("Recording IQ to " + path);
 
             file_stream = fopen(path.c_str(), "wb");
             if (file_stream == NULL)
                 throw satdump_exception("Couldn't open IQ file for writing at " + path);
 
-            if (format == dsp::CS_32)
+            if (format == CS32)
                 buffer_convert = dsp::create_volk_buffer<int32_t>(buffer_size * 2);
-            else if (format == dsp::CS_16)
+            else if (format == CS16)
                 buffer_convert = dsp::create_volk_buffer<int16_t>(buffer_size * 2);
-            else if (format == dsp::CS_8)
+            else if (format == CS8)
                 buffer_convert = dsp::create_volk_buffer<int8_t>(buffer_size * 2);
 
             Block::start();
         }
 
-        void IQSinkBlock::stop()
+        void IQSinkBlock::stop(bool stop_now)
         {
-            Block::stop();
+            Block::stop(stop_now);
 
             if (file_stream != nullptr)
             {
@@ -76,24 +78,24 @@ namespace satdump
             void *write_ptr = nullptr;
             size_t write_sz = 0;
 
-            if (format == dsp::CF_32)
+            if (format == CF32)
             {
                 write_ptr = ibuf;
                 write_sz = nsam * sizeof(complex_t);
             }
-            else if (format == dsp::CS_32)
+            else if (format == CS32)
             {
                 volk_32f_s32f_convert_32i((int32_t *)buffer_convert, (float *)ibuf, 2147483648 /*-1, but float*/, nsam * 2);
                 write_ptr = buffer_convert;
                 write_sz = nsam * 2 * sizeof(int32_t);
             }
-            else if (format == dsp::CS_16)
+            else if (format == CS16)
             {
                 volk_32f_s32f_convert_16i((int16_t *)buffer_convert, (float *)ibuf, 32767, nsam * 2);
                 write_ptr = buffer_convert;
                 write_sz = nsam * 2 * sizeof(int16_t);
             }
-            else if (format == dsp::CS_8)
+            else if (format == CS8)
             {
                 volk_32f_s32f_convert_8i((int8_t *)buffer_convert, (float *)ibuf, 127, nsam * 2);
                 write_ptr = buffer_convert;

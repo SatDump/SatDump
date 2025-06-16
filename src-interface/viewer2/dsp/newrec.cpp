@@ -201,6 +201,12 @@ namespace satdump
                 ratio = (float)dev->get_outputs()[0].fifo->size_approx() / (float)dev->get_outputs()[0].fifo->max_capacity();
             ImGui::ProgressBar(ratio);
 
+            if (recording)
+                style::beginDisabled();
+            rec_type.draw_combo();
+            if (recording)
+                style::beginDisabled();
+
             if (!recording)
             {
                 if (ImGui::Button("Rec Start"))
@@ -214,7 +220,7 @@ namespace satdump
                             iq_sink->set_cfg("samplerate", dev->getStreamSamplerate(0, false));
                             iq_sink->set_cfg("frequency", dev->getStreamFrequency(0, false));
                             iq_sink->set_cfg("timestamp", getTime());
-                            iq_sink->set_cfg("format", "cs8");
+                            iq_sink->set_cfg("format", rec_type);
                             iq_sink->set_input(splitter->add_output("tmp_record", false), 0);
                             iq_sink->start();
                         });

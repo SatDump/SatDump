@@ -5,6 +5,7 @@
 #include "dsp/device/options_displayer.h"
 #include "dsp/fft/fft_pan.h"
 #include "dsp/io/iq_sink.h"
+#include "dsp/io/iq_types.h"
 #include "dsp/path/splitter.h"
 #include "handlers/handler.h"
 
@@ -44,6 +45,7 @@ namespace satdump
             std::shared_ptr<ndsp::ConstellationDisplayBlock> const_disp;
 
             bool recording = false;
+            ndsp::IQType rec_type;
             std::shared_ptr<ndsp::IQSinkBlock> iq_sink;
 
             TaskQueue taskq;

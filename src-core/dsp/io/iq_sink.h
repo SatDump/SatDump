@@ -2,8 +2,8 @@
 
 #include "common/dsp/block.h"
 #include "common/dsp/complex.h"
-#include "common/dsp/io/baseband_type.h"
 #include "dsp/block.h"
+#include "iq_types.h"
 #include <cstdint>
 #include <cstdio>
 
@@ -20,7 +20,7 @@ namespace satdump
         private:
             int buffer_size = 1024 * 1024; // TODOREWORK
             std::string filepath;
-            dsp::BasebandType format;
+            IQType format;
             bool autogen = false;
             double samplerate = 1e6;
             double frequency = 100e6;
@@ -33,7 +33,7 @@ namespace satdump
 
         public:
             void start();
-            void stop();
+            void stop(bool stop_now = false);
 
         public:
             IQSinkBlock();

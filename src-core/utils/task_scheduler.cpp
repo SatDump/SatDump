@@ -40,7 +40,7 @@ namespace satdump
             needs_update = false;
             if (sleep_for > 0)
                 cv.wait_for(lock, std::chrono::seconds(sleep_for), [this] { return !running || needs_update; });
-            std::this_thread::sleep_for(std::chrono::seconds(1)); // TODOREWORK. Hogs CPU otherwise...
+            std::this_thread::sleep_for(std::chrono::milliseconds(10)); // TODOREWORK. Hogs CPU otherwise...
 
             // Stop/Restart loop if needed
             if (!running || needs_update ||          // We were woken up because of a change in the program
