@@ -22,6 +22,11 @@ namespace satdump
         std::stringstream timestamp_string;
         std::string timezone_string = "";
 
+        if (timeReadable == nullptr)
+        {
+            return std::to_string(timestamp);
+        }
+
         if (local)
         {
 #ifdef _WIN32
