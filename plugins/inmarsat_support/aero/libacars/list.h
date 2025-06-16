@@ -22,10 +22,10 @@ struct la_list {
 la_list *la_list_next(la_list const *l);
 la_list *la_list_append(la_list *l, void *data);
 size_t la_list_length(la_list const *l);
-void la_list_foreach(la_list *l, void (*cb)(), void *ctx);
+void la_list_foreach(la_list *l, void (*cb)(const void* p, void* c), void *ctx);
 void la_list_free(la_list *l);
-void la_list_free_full(la_list *l, void (*node_free)());
-void la_list_free_full_with_ctx(la_list *l, void (*node_free)(), void *ctx);
+void la_list_free_full(la_list *l, void (*node_free)(void* tag));
+void la_list_free_full_with_ctx(la_list *l, void (*node_free)(void* tag, void* c), void *ctx);
 
 #ifdef __cplusplus
 }

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <mutex>
 #include <string>
+#include <chrono>
 #include <thread>
 #include <math.h>
 #include <array>

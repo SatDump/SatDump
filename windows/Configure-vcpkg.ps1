@@ -92,6 +92,7 @@ if($env:PROCESSOR_ARCHITECTURE -ne $arch)
 Write-Output "Building libusb..."
 git clone https://github.com/HannesFranke-smartoptics/libusb -b raw_io_v2
 cd libusb\msvc
+(Get-Content -raw Base.props) -replace "<TreatWarningAsError>true</TreatWarningAsError>", "<TreatWarningAsError>false</TreatWarningAsError>" | Set-Content -Encoding ASCII Base.props
 msbuild -m -v:m -p:Platform=$generator,Configuration=Release .\libusb.sln
 msbuild -m -v:m -p:Platform=$generator,Configuration=Debug .\libusb.sln
 $toolset_used=$(get-childitem ..\build\)[0].Name
@@ -106,9 +107,8 @@ cd ..\..
 rm -recurse -force libusb
 
 Write-Output "Building cpu_features..."
-git clone https://github.com/google/cpu_features # -b 0.9.1 (not released as of this writing)
+git clone https://github.com/google/cpu_features -b v0.10.1
 cd cpu_features
-git checkout 6aecde5
 $null = mkdir build
 cd build
 cmake $build_args -DBUILD_TESTING=OFF -DBUILD_EXECUTABLE=OFF ..
@@ -207,7 +207,7 @@ if($platform -eq "x64-windows" -or $platform -eq "x86-windows")
     Invoke-WebRequest -Uri "https://www.satdump.org/FX3-SDK.zip" -OutFile FX3-SDK.zip
     Expand-Archive FX3-SDK.zip .
     $fx3_arg = "-DFX3_SDK_PATH=$($(Get-Item .\FX3-SDK).FullName)"
-    git clone https://github.com/myriadrf/LimeSuite --depth 1 -b v23.11.0
+    git clone https://github.com/myriadrf/LimeSuite # v23.11.0 (latest as of this writing) is not compatible with the latest MSVC
     cd LimeSuite
     $null = mkdir build-dir
     cd build-dir
@@ -239,7 +239,7 @@ if($platform -eq "x64-windows" -or $platform -eq "x86-windows")
 }
 
 Write-Output "Building UHD..."
-git clone https://github.com/EttusResearch/uhd --depth 1 -b v4.8.0.0
+git clone https://github.com/EttusResearch/uhd # v4.8 (latest as of this writing) is not compatible with the latest MSVC
 cd uhd\host
 $null = mkdir build
 cd build
