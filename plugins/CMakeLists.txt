@@ -374,6 +374,12 @@ if(PLUGIN_RFNM_SDR_SUPPORT)
   add_subdirectory(sdr_sources/rfnm_sdr_support)
 endif()
 
+option(PLUGIN_FOBOSSDR_SDR_SUPPORT "Enable FobosSDR Support plugin" ON)
+
+if(PLUGIN_FOBOSSDR_SDR_SUPPORT)
+  add_subdirectory(sdr_sources/fobos_sdr_support)
+endif()
+
 option(PLUGIN_RTAUDIO_SDR_SUPPORT "Enable RtAudio Source Support plugin" OFF)
 
 if(PLUGIN_RTAUDIO_SDR_SUPPORT)

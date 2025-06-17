@@ -1,0 +1,26 @@
+cmake_minimum_required(VERSION 3.12)
+project(fobos_sdr_support)
+
+
+find_library(FOBOS_LIBRARY fobos)
+
+if(FOBOS_LIBRARY OR MSVC)
+    message("Building with FobosSDR support")
+    file(GLOB_RECURSE fobos_sdr_support_CPPS *.cpp)
+    add_library(fobos_sdr_support SHARED ${fobos_sdr_support_CPPS})
+    target_include_directories(fobos_sdr_support PUBLIC src)
+
+    if(MSVC)
+        target_link_libraries(fobos_sdr_support PUBLIC satdump_core fobos.dll)
+        install(TARGETS fobos_sdr_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins RUNTIME_DEPENDENCY_SET satdump_deps)
+    # elseif(ANDROID)
+    #     target_link_libraries(fobos_sdr_support PUBLIC satdump_core airspy usb)
+    #     target_include_directories(fobos_sdr_support PUBLIC ../../../android/deps/libairspy)
+    #     install(TARGETS fobos_sdr_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+    else()
+        target_link_libraries(fobos_sdr_support PUBLIC satdump_core ${FOBOS_LIBRARY})
+        install(TARGETS fobos_sdr_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+    endif()
+else()
+    message("FobosSDR Library could not be found! Not building.")
+endif()
