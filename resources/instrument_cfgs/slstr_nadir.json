@@ -11,7 +11,7 @@
             "name": "AVHRR 3a21 False Color",
             "expression": "ch5, ch3, ch2",
             "equalize": true,
-            "description": "descriptions/3a21.md"
+            "description": "descriptions/321.md"
         },
         {
             "name": "CIR (Color Infrared)",
