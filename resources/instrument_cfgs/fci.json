@@ -329,6 +329,13 @@
             "image": {
                 "remove_background": true
             }
+        },
+        {
+            "name": "Night Hotspot Detection (3.9µm)",
+            "expression": "cch4=(9, brightness_temperature_celsius, -90.000000, 40.000000);lut=lut(lut/cal/abi_ir39_-90+40.png);lut(cch4,0,0), lut(cch4,0,1), lut(cch4,0,2)",
+            "image": {
+                "remove_background": true
+            }
         }
     ],
     "default": {
