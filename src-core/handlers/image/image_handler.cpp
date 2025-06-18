@@ -100,12 +100,12 @@ namespace satdump
                 needs_to_update |= ImGui::Checkbox("Normalize", &normalize_img);
                 needs_to_update |= ImGui::Checkbox("Invert", &invert_img);
 
-                needs_to_update |= ImGui::Checkbox("Brightness/Constrast", &brightness_contrast_image);
+                needs_to_update |= ImGui::Checkbox("Brightness/contrast", &brightness_contrast_image);
                 if (brightness_contrast_image)
                 {
                     ImGui::SliderFloat("Brightness", &brightness_contrast_brightness_image, -2, 2);
                     needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
-                    ImGui::SliderFloat("Contrast", &brightness_contrast_constrast_image, -2, 2);
+                    ImGui::SliderFloat("Contrast", &brightness_contrast_contrast_image, -2, 2);
                     needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
                 }
 
@@ -285,7 +285,7 @@ namespace satdump
             geocorrect_image = getValueOrDefault(p["geocorrect"], geocorrect_image);
             brightness_contrast_image = getValueOrDefault(p["brightness_contrast"], false);
             brightness_contrast_brightness_image = getValueOrDefault(p["brightness_contrast_brightness"], 0);
-            brightness_contrast_constrast_image = getValueOrDefault(p["brightness_contrast_constrast"], 0);
+            brightness_contrast_contrast_image = getValueOrDefault(p["brightness_contrast_contrast"], 0);
             huesaturation_img = getValueOrDefault(p["hue_saturation"], false);
             if (p.contains("hue_saturation_cfg"))
                 huesaturation_cfg_img = p["hue_saturation_cfg"];
@@ -306,7 +306,7 @@ namespace satdump
             p["geocorrect"] = geocorrect_image;
             p["brightness_contrast"] = brightness_contrast_image;
             p["brightness_contrast_brightness"] = brightness_contrast_brightness_image;
-            p["brightness_contrast_constrast"] = brightness_contrast_constrast_image;
+            p["brightness_contrast_contrast"] = brightness_contrast_contrast_image;
             p["hue_saturation"] = huesaturation_img;
             p["hue_saturation_cfg"] = huesaturation_cfg_img;
             p["remove_background"] = remove_background_img;
@@ -361,7 +361,7 @@ namespace satdump
                 if (despeckle_img)
                     image::kuwahara_filter(curr_image);
                 if (brightness_contrast_image)
-                    image::brightness_contrast(curr_image, brightness_contrast_brightness_image, brightness_contrast_constrast_image);
+                    image::brightness_contrast(curr_image, brightness_contrast_brightness_image, brightness_contrast_contrast_image);
                 if (remove_background_img)
                     image::remove_background(curr_image, nullptr); // TODOREWORK progress?
                 if (rotate180_image)

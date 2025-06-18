@@ -12,7 +12,7 @@ namespace satdump
     namespace image
     {
         /**
-         * @brief Constrast and brightness correction, similar to Gimp
+         * @brief contrast and brightness correction, similar to Gimp
          *
          * @param image the image to use
          * @param brightness brightness factor

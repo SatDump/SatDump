@@ -7,7 +7,7 @@
             "image": {
                 "brightness_contrast": true,
                 "brightness_contrast_brightness": 0.256,
-                "brightness_contrast_constrast": 0.20,
+                "brightness_contrast_contrast": 0.20,
                 "white_balance": true,
                 "remove_background": true,
                 "hue_saturation": true,
