@@ -103,7 +103,7 @@ namespace satdump
             bool geocorrect_image = false;
             bool brightness_contrast_image = false;
             float brightness_contrast_brightness_image = 0.0;
-            float brightness_contrast_constrast_image = 0.0;
+            float brightness_contrast_contrast_image = 0.0;
             bool remove_background_img = false;
 
             // Proj/Calib TODOREWORK
@@ -165,7 +165,7 @@ namespace satdump
                 geocorrect_image = false;
                 brightness_contrast_image = false;
                 brightness_contrast_brightness_image = 0.0;
-                brightness_contrast_constrast_image = 0.0;
+                brightness_contrast_contrast_image = 0.0;
                 remove_background_img = false;
             }
 
