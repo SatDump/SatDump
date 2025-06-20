@@ -408,6 +408,7 @@
         ],
         "url_template": "http://www.celestrak.org/NORAD/elements/gp.php?CATNR=%NORAD%",
         "tles_to_fetch": [
+            63251, // UVSQSat-NG
             6235, // NOAA-2
             29499, // MetOp-A
             // 38771, // MetOp-B

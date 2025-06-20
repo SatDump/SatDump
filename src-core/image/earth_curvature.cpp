@@ -1,6 +1,7 @@
 #include "earth_curvature.h"
 #include "logger.h"
 #include "meta.h"
+#include "products2/image/channel_transform.h"
 #include <cmath>
 
 namespace satdump
@@ -128,7 +129,32 @@ namespace satdump
                     }
                 }
 
-                return image::earth_curvature::correct_earth_curvature(img, altit, swath, resol, foward_table, reverse_table);
+                // We need to update metadata!
+                bool table_was_null = reverse_table == nullptr;
+                if (table_was_null)
+                    reverse_table = new std::vector<float>();
+
+                // Actual correction
+                auto img2 = image::earth_curvature::correct_earth_curvature(img, altit, swath, resol, foward_table, reverse_table);
+
+                // Update metadata, add transform
+                std::vector<std::pair<double, double>> ix;
+                for (size_t i = 0; i < reverse_table->size(); i++)
+                    ix.push_back({i, (*reverse_table)[i]});
+                double x1 = 0, y1 = 0;
+                if (proj_cfg.contains("transform2"))
+                {
+                    x1 = proj_cfg["transform2"]["bx"].get<double>();
+                    y1 = proj_cfg["transform2"]["by"].get<double>();
+                }
+                proj_cfg["transform2"] = ChannelTransform().init_affine_interpx(1, 1, x1, y1, ix);
+                image::set_metadata_proj_cfg(img2, proj_cfg);
+
+                // Cleanup
+                if (table_was_null)
+                    delete reverse_table;
+
+                return img2;
             }
         } // namespace earth_curvature
     } // namespace image

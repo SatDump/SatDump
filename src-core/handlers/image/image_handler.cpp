@@ -60,11 +60,17 @@ namespace satdump
                 {
                     x1 += proj_cfg["transform2"]["bx"].get<double>();
                     y1 += proj_cfg["transform2"]["by"].get<double>();
+                    proj_cfg["transform2"]["bx"] = x1;
+                    proj_cfg["transform2"]["by"] = y1;
                 }
-                proj_cfg["width"] = img.width();
-                proj_cfg["height"] = img.height();
-                proj_cfg["transform2"] = ChannelTransform().init_affine(1, 1, x1, y1);
+                else
+                {
+                    proj_cfg["width"] = img.width();
+                    proj_cfg["height"] = img.height();
+                    proj_cfg["transform2"] = ChannelTransform().init_affine(1, 1, x1, y1);
+                }
                 image::set_metadata_proj_cfg(img, proj_cfg);
+                geocorrect_image = false;
                 setImage(img);
             };
         }
@@ -210,15 +216,16 @@ namespace satdump
 
                 image_view.mouseCallback = [this](float x, float y)
                 {
-                    if (correct_fwd_lut.size() > 0 && x > 0 && x < correct_fwd_lut.size())
-                        x = correct_fwd_lut[x];
-
                     auto &img = getImage();
-                    ImGui::BeginTooltip(); // TODOREWORK
+                    ImGui::BeginTooltip();
                     ImGui::Text("Raw : %d", img.get(0, x, y));
                     if (image_calib_valid && image.channels() == 1)
                     {
-                        double val = image_calib.getVal(img.getf(0, x, y));
+                        int xc = x; // Correction only needs to be undone for calib
+                        if (correct_fwd_lut.size() > 0 && x > 0 && x < correct_fwd_lut.size())
+                            xc = correct_fwd_lut[x];
+
+                        double val = image_calib.getVal(img.getf(0, xc, y));
                         ImGui::Text("Unit : %f %s", val, image_calib.unit.c_str());
                     }
                     if (image_proj_valid)
@@ -373,10 +380,10 @@ namespace satdump
                     curr_image = image::earth_curvature::perform_geometric_correction(curr_image, success, &correct_rev_lut, &correct_fwd_lut);
                     if (!success)
                     {
+                        logger->error("Failed Geo-Correcting image!");
                         correct_fwd_lut.clear();
                         correct_rev_lut.clear();
                     }
-                    image::set_metadata_proj_cfg(curr_image, {});
                 }
             }
             else
@@ -393,12 +400,9 @@ namespace satdump
             if (image_has_overlays)
             {
                 if (curr_image.size() == 0)
-                {
                     curr_image = image;
-                    logger->critical("COPYING IMAGE!\n"); // TODOREWORK
-                }
 
-                nlohmann::json cfg = image::get_metadata_proj_cfg(image);
+                nlohmann::json cfg = image::get_metadata_proj_cfg(curr_image);
                 cfg["width"] = curr_image.width();
                 cfg["height"] = curr_image.height();
                 std::unique_ptr<projection::Projection> p = std::make_unique<projection::Projection>();
@@ -406,22 +410,13 @@ namespace satdump
                 p->init(1, 0);
 
                 double rotate180 = rotate180_image;
-                auto corr_lut = correct_rev_lut;
-                auto pfunc = [&p, rotate180, corr_lut](double lat, double lon, double h, double w) mutable -> std::pair<double, double>
+                auto pfunc = [&p, rotate180](double lat, double lon, double h, double w) mutable -> std::pair<double, double>
                 {
                     double x, y;
                     if (p->forward(geodetic::geodetic_coords_t(lat, lon, 0, false), x, y) || x < 0 || x >= w || y < 0 || y >= h)
                         return {-1, -1};
                     else
                     {
-                        if (corr_lut.size() > 0)
-                        {
-                            if (x < corr_lut.size())
-                                x = corr_lut[x];
-                            else
-                                return {-1, -1};
-                        }
-
                         if (rotate180)
                             return {w - 1 - x, h - 1 - y};
                         else
