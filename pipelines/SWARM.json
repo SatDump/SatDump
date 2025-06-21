@@ -1,0 +1,23 @@
+{
+    "swarm_s_band_link": {
+        "name": "SWARM S-band dump",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "psk_demod": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 2988e3,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.002
+                }
+            }
+        }
+    }
+}
