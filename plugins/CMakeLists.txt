@@ -290,6 +290,12 @@ if(PLUGIN_AIRSPY_SDR_SUPPORT)
   add_subdirectory(sdr_sources/airspy_sdr_support)
 endif()
 
+option(PLUGIN_HYDRASDR_SDR_SUPPORT "Enable HydraSDR Support plugin" ON)
+
+if(PLUGIN_HYDRASDR_SDR_SUPPORT)
+  add_subdirectory(sdr_sources/hydrasdr_sdr_support)
+endif()
+
 option(PLUGIN_AIRSPYHF_SDR_SUPPORT "Enable AirspyHF SDR Support plugin" ON)
 
 if(PLUGIN_AIRSPYHF_SDR_SUPPORT)
