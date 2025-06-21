@@ -4,7 +4,7 @@
 
 #include "dsp/agc/agc.h"
 #include "dsp/clock_recovery/clock_recovery_mm.h"
-#include "dsp/const/const_disp.h"
+#include "dsp/displays/const_disp.h"
 #include "dsp/fft/fft_pan.h"
 #include "dsp/filter/rrc.h"
 #include "dsp/io/file_source.h"

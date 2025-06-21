@@ -102,6 +102,7 @@ First time here? See the reference documents below to get started using SatDump.
 - Digitelektro
 - Felix OK9UWU
 - Fred Jansen
+- Júlia M.
 - Jpjonte
 - LazzSnazz
 - Mark Pentier
