@@ -250,7 +250,10 @@ namespace noaa
                         hirs_reader.calibrate(calib_coefs[sat_name], sat_name == "NOAA-15");
                         hirs_products.set_calibration("noaa_hirs", hirs_reader.calib_out);
                         for (int n = 0; n < 19; n++)
+                        {
                             hirs_products.set_channel_unit(n, CALIBRATION_ID_EMISSIVE_RADIANCE);
+                            hirs_products.set_channel_wavenumber(n, calib_coefs[sat_name]["wavenumber"][n].get<double>());
+                        }
                         hirs_products.set_channel_unit(19, CALIBRATION_ID_REFLECTIVE_RADIANCE);
                     }
                     else
@@ -498,7 +501,10 @@ namespace noaa
                         hirs_reader.calibrate(calib_coefs[sat_name], sat_name == "NOAA-15");
                         hirs_products.set_calibration("noaa_hirs", hirs_reader.calib_out);
                         for (int n = 0; n < 19; n++)
+                        {
                             hirs_products.set_channel_unit(n, CALIBRATION_ID_EMISSIVE_RADIANCE);
+                            hirs_products.set_channel_wavenumber(n, calib_coefs[sat_name]["wavenumber"][n].get<double>());
+                        }
                         hirs_products.set_channel_unit(19, CALIBRATION_ID_REFLECTIVE_RADIANCE);
                         for (int n = 0; n < 20; n++)
                             hirs_products.set_channel_wavenumber(n, hirs_reader.calib_out["wavenumbers"][n]);
