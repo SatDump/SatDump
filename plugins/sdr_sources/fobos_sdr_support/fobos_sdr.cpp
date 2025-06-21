@@ -1,6 +1,7 @@
 #include "fobos_sdr.h"
 #include "common/utils.h"
 #include "imgui/imgui.h"
+#include "utils/string.h"
 #include <cstdint>
 #include <fobos.h>
 
@@ -23,7 +24,7 @@ void FobosSource::open_sdr()
 
     if (c > 0)
     {
-        auto split_serials(splitString(std::string((const char *)serials), ' '));
+        auto split_serials(satdump::splitString(std::string((const char *)serials), ' '));
 
         for (int i = 0; i < split_serials.size(); i++)
         {
@@ -194,7 +195,7 @@ std::vector<dsp::SourceDescriptor> FobosSource::getAvailableSources()
 
     if (c > 0)
     {
-        auto split_serials(splitString(std::string((const char *)serials), ' '));
+        auto split_serials(satdump::splitString(std::string((const char *)serials), ' '));
 
         for (auto s : split_serials)
             results.push_back({"fobos", "FobosSDR " + s, s});

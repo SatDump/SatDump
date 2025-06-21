@@ -136,6 +136,7 @@ namespace satdump
                 std::string name = "AirSpy One " + ss.str();
 
                 nlohmann::json c;
+                nlohmann::json p;
 
                 airspy_device *airspy_dev_obj;
                 if (airspy_open_sn(&airspy_dev_obj, serials[i]) == AIRSPY_SUCCESS)
@@ -164,6 +165,8 @@ namespace satdump
                     if (!has_10msps)
                         c["samplerate"]["list"].push_back(10e6);
 
+                    p["samplerate"] = dev_samplerates[0];
+
                     airspy_close(airspy_dev_obj);
                 }
                 else
@@ -171,7 +174,6 @@ namespace satdump
                     logger->warn("Could not probe Airspy device. Not providing specific parameters!");
                 }
 
-                nlohmann::json p;
                 p["serial"] = std::to_string(serials[i]);
                 r.push_back({"airspy", name, p, c});
             }
