@@ -89,6 +89,10 @@ int main(int argc, char *argv[])
     glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
 #endif
 
+#if GLFW_VERSION_MAJOR > 3 || (GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 4)
+    glfwWindowHintString(GLFW_WAYLAND_APP_ID, "satdump");
+#endif
+
     // Decide GL+GLSL versions
     const char *OPENGL_VERSIONS_GLSL[] = {"#version 100", "#version 130", "#version 150"};
     int selected_glsl;
