@@ -95,7 +95,6 @@ namespace satdump
                             preset_selection_curr_id = i;
 
                             auto preset = all_presets[preset_selection_curr_id];
-                            // TODOREWORK? resetConfig(); // If we're setting a new preset, make sure the handler is in a sane state
                             setConfig(preset);
                             was_changed = true;
                             if (!preset_reset_by_handler) // If this is handled by the handler implementing it, don't auto-reset

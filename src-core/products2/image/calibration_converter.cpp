@@ -2,6 +2,7 @@
 #include "core/plugin.h"
 #include "logger.h"
 #include "products2/image/calibration_units.h"
+#include "products2/image/converters/kelvin_celcius.h"
 #include "products2/image_product.h"
 
 #include "converters/bright_temp_to_em_rad.h"
@@ -66,6 +67,10 @@ namespace satdump
                 converters.push_back(std::make_shared<conv::BrightTempToEmRadConverter>());
             else if (itype == CALIBRATION_ID_ALBEDO && otype == CALIBRATION_ID_SUN_ANGLE_COMPENSATED_ALBEDO)
                 converters.push_back(std::make_shared<conv::RefRadToSunCorRefRadConverter>());
+            else if (itype == CALIBRATION_ID_BRIGHTNESS_TEMPERATURE && otype == CALIBRATION_ID_BRIGHTNESS_TEMPERATURE_CELSIUS)
+                converters.push_back(std::make_shared<conv::KelvinCelsiusConverter>(true));
+            else if (itype == CALIBRATION_ID_BRIGHTNESS_TEMPERATURE_CELSIUS && otype == CALIBRATION_ID_BRIGHTNESS_TEMPERATURE)
+                converters.push_back(std::make_shared<conv::KelvinCelsiusConverter>(false));
             else if (otype == CALIBRATION_ID_SUN_ANGLE)
                 converters.push_back(std::make_shared<conv::SunAngleConverter>());
 
@@ -92,7 +97,10 @@ namespace satdump
                 otypes.push_back(CALIBRATION_ID_BRIGHTNESS_TEMPERATURE_CELSIUS);
             }
             else if (itype == CALIBRATION_ID_BRIGHTNESS_TEMPERATURE)
+            {
                 otypes.push_back(CALIBRATION_ID_EMISSIVE_RADIANCE);
+                otypes.push_back(CALIBRATION_ID_BRIGHTNESS_TEMPERATURE_CELSIUS);
+            }
             else if (itype == CALIBRATION_ID_ALBEDO)
                 otypes.push_back(CALIBRATION_ID_SUN_ANGLE_COMPENSATED_ALBEDO);
 
