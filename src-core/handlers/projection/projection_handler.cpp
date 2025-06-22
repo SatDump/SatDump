@@ -13,6 +13,7 @@
 #include "projection/reprojector.h"
 
 #include "projection/standard/proj_json.h"
+#include <exception>
 
 namespace satdump
 {
@@ -308,134 +309,141 @@ namespace satdump
 
         void ProjectionHandler::do_process()
         {
-            image::Image img;
-
-            // TODOREWORK
-            auto proj = projui.get_proj();
-            proj["width"] = projui.projections_image_width;
-            proj["height"] = projui.projections_image_height;
-
+            try
             {
-                auto &target_cfg = proj;
+                image::Image img;
 
-                // Automatic projection settings!
-                if (projui.projection_auto_mode && (target_cfg["type"] == "equirec" || target_cfg["type"] == "stereo"))
+                // TODOREWORK
+                auto proj = projui.get_proj();
+                proj["width"] = projui.projections_image_width;
+                proj["height"] = projui.projections_image_height;
+
                 {
-                    ProjBounds bounds;
-                    bounds.min_lon = 180;
-                    bounds.max_lon = -180;
-                    bounds.min_lat = 90;
-                    bounds.max_lat = -90;
+                    auto &target_cfg = proj;
 
-                    for (int i = subhandlers.size() - 1; i >= 0; i--)
+                    // Automatic projection settings!
+                    if (projui.projection_auto_mode && (target_cfg["type"] == "equirec" || target_cfg["type"] == "stereo"))
                     {
-                        auto &h = subhandlers[i];
-                        if (h->getID() == "image_handler")
-                        {
-                            ImageHandler *im_h = (ImageHandler *)h.get();
+                        ProjBounds bounds;
+                        bounds.min_lon = 180;
+                        bounds.max_lon = -180;
+                        bounds.min_lat = 90;
+                        bounds.max_lat = -90;
 
-                            auto boundshere = determineProjectionBounds(im_h->getImage());
-                            if (boundshere.valid)
+                        for (int i = subhandlers.size() - 1; i >= 0; i--)
+                        {
+                            auto &h = subhandlers[i];
+                            if (h->getID() == "image_handler")
                             {
-                                if (boundshere.min_lon < bounds.min_lon)
-                                    bounds.min_lon = boundshere.min_lon;
-                                if (boundshere.max_lon > bounds.max_lon)
-                                    bounds.max_lon = boundshere.max_lon;
-                                if (boundshere.min_lat < bounds.min_lat)
-                                    bounds.min_lat = boundshere.min_lat;
-                                if (boundshere.max_lat > bounds.max_lat)
-                                    bounds.max_lat = boundshere.max_lat;
+                                ImageHandler *im_h = (ImageHandler *)h.get();
+
+                                auto boundshere = determineProjectionBounds(im_h->getImage());
+                                if (boundshere.valid)
+                                {
+                                    if (boundshere.min_lon < bounds.min_lon)
+                                        bounds.min_lon = boundshere.min_lon;
+                                    if (boundshere.max_lon > bounds.max_lon)
+                                        bounds.max_lon = boundshere.max_lon;
+                                    if (boundshere.min_lat < bounds.min_lat)
+                                        bounds.min_lat = boundshere.min_lat;
+                                    if (boundshere.max_lat > bounds.max_lat)
+                                        bounds.max_lat = boundshere.max_lat;
+                                }
                             }
                         }
-                    }
 
-                    logger->trace("Final Bounds are : %f, %f - %f, %f", bounds.min_lon, bounds.min_lat, bounds.max_lon, bounds.max_lat);
+                        logger->trace("Final Bounds are : %f, %f - %f, %f", bounds.min_lon, bounds.min_lat, bounds.max_lon, bounds.max_lat);
 
-                    if (projui.projection_auto_scale_mode)
-                    {
-                        if (target_cfg.contains("width"))
-                            target_cfg.erase("width");
-                        if (target_cfg.contains("height"))
-                            target_cfg.erase("height");
-                    }
-                    else
-                    {
-                        if (target_cfg.contains("scale_x"))
-                            target_cfg.erase("scale_x");
-                        if (target_cfg.contains("scale_y"))
-                            target_cfg.erase("scale_y");
-                    }
-
-                    tryAutoTuneProjection(bounds, target_cfg);
-                    if (target_cfg.contains("width"))
-                        projui.projections_image_width = target_cfg["width"];
-                    if (target_cfg.contains("height"))
-                        projui.projections_image_height = target_cfg["height"];
-
-                    logger->debug("\n%s", target_cfg.dump(4).c_str());
-                }
-            }
-
-            // TODOREWORK
-
-            std::vector<image::Image> all_imgs;
-            for (int i = subhandlers.size() - 1; i >= 0; i--)
-            {
-                auto &h = subhandlers[i];
-                if (h->getID() == "image_handler")
-                {
-                    ImageHandler *im_h = (ImageHandler *)h.get();
-                    logger->critical("Drawing IMAGE!");
-                    //                    sh_h->draw_to_image(curr_image, pfunc);
-
-                    // TODOREWORK!!!!
-                    logger->trace("Proj : \n%s\n", proj.dump(4).c_str());
-                    auto im = projection::reprojectImage(im_h->getImage(), proj);
-                    all_imgs.push_back(im);
-                    logger->critical("DONE REPROJECTING!");
-                }
-            }
-
-            if (all_imgs.size() > 0)
-            {
-                img.init(all_imgs[0].depth(), all_imgs[0].width(), all_imgs[0].height(), 3);
-                image::set_metadata_proj_cfg(img, image::get_metadata_proj_cfg(all_imgs[0]));
-            }
-
-            for (int i = 0; i < all_imgs.size(); i++)
-            {
-                logger->trace("Draw %d", i);
-                img.draw_image_alpha(all_imgs[i]);
-            }
-
-            for (int i = subhandlers.size() - 1; i >= 0; i--)
-            {
-                auto &h = subhandlers[i];
-                if (h->getID() == "shapefile_handler")
-                {
-                    ShapefileHandler *sh_h = (ShapefileHandler *)h.get();
-                    logger->critical("Drawing OVERLAY!");
-
-                    nlohmann::json cfg = image::get_metadata_proj_cfg(img);
-                    cfg["width"] = img.width();
-                    cfg["height"] = img.height();
-                    std::unique_ptr<projection::Projection> p = std::make_unique<projection::Projection>();
-                    *p = cfg;
-                    p->init(1, 0);
-
-                    auto pfunc = [&p](double lat, double lon, double h, double w) mutable -> std::pair<double, double>
-                    {
-                        double x, y;
-                        if (p->forward(geodetic::geodetic_coords_t(lat, lon, 0, false), x, y) || x < 0 || x >= w || y < 0 || y >= h)
-                            return {-1, -1};
+                        if (projui.projection_auto_scale_mode)
+                        {
+                            if (target_cfg.contains("width"))
+                                target_cfg.erase("width");
+                            if (target_cfg.contains("height"))
+                                target_cfg.erase("height");
+                        }
                         else
-                            return {x, y};
-                    };
-                    sh_h->draw_to_image(img, pfunc);
-                }
-            }
+                        {
+                            if (target_cfg.contains("scale_x"))
+                                target_cfg.erase("scale_x");
+                            if (target_cfg.contains("scale_y"))
+                                target_cfg.erase("scale_y");
+                        }
 
-            img_handler.setImage(img);
+                        tryAutoTuneProjection(bounds, target_cfg);
+                        if (target_cfg.contains("width"))
+                            projui.projections_image_width = target_cfg["width"];
+                        if (target_cfg.contains("height"))
+                            projui.projections_image_height = target_cfg["height"];
+
+                        logger->debug("\n%s", target_cfg.dump(4).c_str());
+                    }
+                }
+
+                // TODOREWORK
+
+                std::vector<image::Image> all_imgs;
+                for (int i = subhandlers.size() - 1; i >= 0; i--)
+                {
+                    auto &h = subhandlers[i];
+                    if (h->getID() == "image_handler")
+                    {
+                        ImageHandler *im_h = (ImageHandler *)h.get();
+                        logger->critical("Drawing IMAGE!");
+                        //                    sh_h->draw_to_image(curr_image, pfunc);
+
+                        // TODOREWORK!!!!
+                        logger->trace("Proj : \n%s\n", proj.dump(4).c_str());
+                        auto im = projection::reprojectImage(im_h->getImage(), proj);
+                        all_imgs.push_back(im);
+                        logger->critical("DONE REPROJECTING!");
+                    }
+                }
+
+                if (all_imgs.size() > 0)
+                {
+                    img.init(all_imgs[0].depth(), all_imgs[0].width(), all_imgs[0].height(), 3);
+                    image::set_metadata_proj_cfg(img, image::get_metadata_proj_cfg(all_imgs[0]));
+                }
+
+                for (int i = 0; i < all_imgs.size(); i++)
+                {
+                    logger->trace("Draw %d", i);
+                    img.draw_image_alpha(all_imgs[i]);
+                }
+
+                for (int i = subhandlers.size() - 1; i >= 0; i--)
+                {
+                    auto &h = subhandlers[i];
+                    if (h->getID() == "shapefile_handler")
+                    {
+                        ShapefileHandler *sh_h = (ShapefileHandler *)h.get();
+                        logger->critical("Drawing OVERLAY!");
+
+                        nlohmann::json cfg = image::get_metadata_proj_cfg(img);
+                        cfg["width"] = img.width();
+                        cfg["height"] = img.height();
+                        std::unique_ptr<projection::Projection> p = std::make_unique<projection::Projection>();
+                        *p = cfg;
+                        p->init(1, 0);
+
+                        auto pfunc = [&p](double lat, double lon, double h, double w) mutable -> std::pair<double, double>
+                        {
+                            double x, y;
+                            if (p->forward(geodetic::geodetic_coords_t(lat, lon, 0, false), x, y) || x < 0 || x >= w || y < 0 || y >= h)
+                                return {-1, -1};
+                            else
+                                return {x, y};
+                        };
+                        sh_h->draw_to_image(img, pfunc);
+                    }
+                }
+
+                img_handler.setImage(img);
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Error projecting %s", e.what());
+            }
         }
 
         void ProjectionHandler::drawMenuBar()
