@@ -241,7 +241,10 @@ void ImageViewWidget::draw(ImVec2 win_size)
                 else
                 {
                     logger->trace("Crop %d %d, %d %d\n", (int)crop_initial_pos.x, (fimg_height - 1) - (int)crop_initial_pos.y, (int)crop_end_pos.x, (fimg_height - 1) - (int)crop_end_pos.y);
-                    cropCallback(crop_initial_pos.x, (fimg_height - 1) - crop_initial_pos.y, crop_end_pos.x, (fimg_height - 1) - crop_end_pos.y);
+                    if (abs(crop_initial_pos.x - crop_end_pos.x) <= 0 || abs(((fimg_height - 1) - crop_initial_pos.y) - ((fimg_height - 1) - crop_end_pos.y)))
+                        logger->error("Crop must be bigger than 0!");
+                    else
+                        cropCallback(crop_initial_pos.x, (fimg_height - 1) - crop_initial_pos.y, crop_end_pos.x, (fimg_height - 1) - crop_end_pos.y);
                     isSelectingCrop = false;
                 }
             }
