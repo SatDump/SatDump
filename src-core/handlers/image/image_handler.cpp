@@ -47,6 +47,12 @@ namespace satdump
             // TODOREWORK experimental?
             image_view.cropCallback = [this](int x1, int y1, int x2, int y2)
             {
+                if (is_processing)
+                {
+                    logger->error("Cannot crop while processing!"); // TODOREWORK see when adding other functions - maybe a global image lock?
+                    return;
+                }
+
                 if (x2 < x1)
                     std::swap(x1, x2);
                 if (y2 < y1)
