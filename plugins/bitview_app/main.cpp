@@ -20,7 +20,7 @@ public:
     {
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::BeginMenu("Add"))
+            if (ImGui::BeginMenu("Tools"))
             {
                 if (ImGui::MenuItem("BitView"))
                     evt.master_handler->addSubHandler(std::make_shared<satdump::BitViewHandler>());
@@ -29,7 +29,7 @@ public:
 
             ImGui::EndMenu();
         }
-    } // TODOREWORK
+    }
 };
 
 PLUGIN_LOADER(BitViewAppPlugin)
