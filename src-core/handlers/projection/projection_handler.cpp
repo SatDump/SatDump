@@ -38,7 +38,7 @@ namespace satdump
                 projui.drawUI();
 
                 //            needs_to_update |= TODO; // TODOREWORK move in top drawMenu?
-                if (ImGui::Button("TEST"))
+                if (ImGui::Button("Project"))
                     needs_to_update = true;
 
                 if (needs_to_be_disabled)
