@@ -1,9 +1,9 @@
 #include "lut_generator.h"
+#include "core/resources.h"
 #include "image/io.h"
 #include "imgui/dialogs/pfd_utils.h"
 #include "imgui/implot/implot.h"
 #include "logger.h"
-#include "core/resources.h"
 #include <cstdint>
 
 namespace satdump
@@ -275,10 +275,19 @@ namespace satdump
             FILE *grabcFile = popen("grabc", "r");
 
             if (!grabcFile)
+            {
+                logger->critical("Please use Linux and install grabc! \ue712 (or remind us maybe we should support Windows too?)");
                 return {0, 0, 0, 0};
+            }
 
             char buffer[1024];
             char *line_p = fgets(buffer, sizeof(buffer), grabcFile);
+
+            if (line_p == nullptr)
+            {
+                logger->critical("Please use Linux and install grabc! \ue712 (or remind us maybe we should support Windows too?)");
+                return {0, 0, 0, 0};
+            }
 
             std::string hex(line_p + 1, line_p + 7);
 
