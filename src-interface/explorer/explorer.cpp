@@ -180,12 +180,7 @@ namespace satdump
                         ImGui::EndMenu();
                     }
 
-                    ImGui::EndMenu();
-                }
-
-                if (ImGui::BeginMenu("Handler"))
-                {
-                    if (ImGui::BeginMenu("Add"))
+                    if (ImGui::BeginMenu("Tools"))
                     { // TODOREWORK?
                         if (ImGui::MenuItem("Projection"))
                             master_handler->addSubHandler(std::make_shared<handlers::ProjectionHandler>());
@@ -200,6 +195,11 @@ namespace satdump
                         ImGui::EndMenu();
                     }
 
+                    ImGui::EndMenu();
+                }
+
+                if (ImGui::BeginMenu("Handler", bool(curr_handler)))
+                {
                     if (curr_handler && ImGui::BeginMenu("Config"))
                     {
                         if (ImGui::MenuItem("JSON To Clipboard"))
@@ -217,6 +217,7 @@ namespace satdump
                     ImGui::EndMenu();
                 }
 
+                // TODOREWORK
                 if (curr_handler)
                 {
                     if (ImGui::BeginMenu("Current"))
