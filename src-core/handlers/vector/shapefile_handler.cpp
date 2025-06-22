@@ -122,6 +122,9 @@ namespace satdump
 
         void ShapefileHandler::draw_to_image(image::Image &img, std::function<std::pair<double, double>(double, double, double, double)> projectionFunc)
         {
+            if (img.channels() < 3)
+                img.to_rgb();
+
             // TODOREWORK
             std::vector<double> color = {color_to_draw.x, color_to_draw.y, color_to_draw.z, color_to_draw.w};
 
