@@ -41,7 +41,7 @@ namespace lrit
 
     LRITProductizer::LRITProductizer(std::string instrument_id, bool sweep_x, std::string cache_path) : should_sweep_x(sweep_x), instrument_id(instrument_id), compo_cache_path(cache_path)
     {
-        // if (satdump::config::main_cfg["viewer"]["instruments"].contains(instrument_id) && satdump::config::main_cfg["satdump_general"]["auto_process_products"]["value"].get<bool>())
+        // if (satdump::config::main_cfg["explorer"]["instruments"].contains(instrument_id) && satdump::config::main_cfg["satdump_general"]["auto_process_products"]["value"].get<bool>())
         // TODOREWORK    can_make_composites = true;
 
         if (can_make_composites)
@@ -72,7 +72,7 @@ namespace lrit
     {
         if (image_data_function_record)
         {
-            // Default, to not crash the viewer on no calib TODOREWORK not needed?
+            // Default, to not crash the explorer on no calib TODOREWORK not needed?
             // pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_RADIANCE);
 
             if (instrument_id == "goesn_imager" && std::stoi(channel) > 0 && std::stoi(channel) <= 5)
@@ -270,17 +270,17 @@ namespace lrit
         try
         {
             // Get instrument settings
-            nlohmann::ordered_json instrument_viewer_settings;
-            if (satdump::config::main_cfg["viewer"]["instruments"].contains(pro->instrument_name))
-                instrument_viewer_settings = satdump::config::main_cfg["viewer"]["instruments"][pro->instrument_name];
+            nlohmann::ordered_json instrument_explorer_settings;
+            if (satdump::config::main_cfg["explorer"]["instruments"].contains(pro->instrument_name))
+                instrument_explorer_settings = satdump::config::main_cfg["explorer"]["instruments"][pro->instrument_name];
             else
                 logger->error("Unknown instrument : %s!", pro->instrument_name.c_str());
 
             // Generate composites
-            if (instrument_viewer_settings.contains("rgb_composites"))
+            if (instrument_explorer_settings.contains("rgb_composites"))
             {
                 bool can_make_composites = false;
-                for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> compo : instrument_viewer_settings["rgb_composites"].items())
+                for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> compo : instrument_explorer_settings["rgb_composites"].items())
                 {
                     if (compo.value().contains("autogen"))
                         if (compo.value()["autogen"].get<bool>() == false)

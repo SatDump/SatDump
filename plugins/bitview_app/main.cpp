@@ -1,9 +1,10 @@
 #include "core/plugin.h"
+#include "explorer/explorer.h"
 #include "logger.h"
 
 #include "app.h"
 #include "bitview.h"
-#include "viewer2/viewer.h"
+#include "explorer/explorer.h"
 
 class BitViewAppPlugin : public satdump::Plugin
 {
@@ -13,10 +14,10 @@ public:
     void init()
     {
         // TODOREWORK maybe a way to call up/init a handler?
-        satdump::eventBus->register_handler<satdump::viewer::ViewerApplication::RenderLoadMenuElementsEvent>(renderViewerLoaderButton);
+        satdump::eventBus->register_handler<satdump::explorer::ExplorerApplication::RenderLoadMenuElementsEvent>(renderExplorerLoaderButton);
     }
 
-    static void renderViewerLoaderButton(const satdump::viewer::ViewerApplication::RenderLoadMenuElementsEvent &evt)
+    static void renderExplorerLoaderButton(const satdump::explorer::ExplorerApplication::RenderLoadMenuElementsEvent &evt)
     {
         if (ImGui::BeginMenu("File"))
         {

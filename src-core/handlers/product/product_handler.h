@@ -20,7 +20,7 @@ namespace satdump
         /**
          * @brief Product handler base class.
          *
-         * A common usecase of handlers in the viewer is to allow
+         * A common usecase of handlers in the explorer is to allow
          * displaying and doing basic manipulation on instrument products.
          *
          * To this effect, this base class implements the common interface

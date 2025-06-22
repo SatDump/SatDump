@@ -15,7 +15,7 @@ An expression is split into 2 parts, one of them optional. The first part is the
 
 ![AVHRR ch2, ch2, ch1 Expression Example](img_exp/simple.png)
 
-The only variables available by default are raw channel values, named `chCHNAME`, with `CHNAME` being the instrument channel name, as displayed in the viewer under "Channels" (eg, `Channel 3a` becomes `ch3a`).
+The only variables available by default are raw channel values, named `chCHNAME`, with `CHNAME` being the instrument channel name, as displayed in the explorer under "Channels" (eg, `Channel 3a` becomes `ch3a`).
 
 Those channel variables will be scaled from 0 to 1, with 0 being the minimum possible pixel value, and 1 the maximum. The expected output range is the same.
 

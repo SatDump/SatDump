@@ -1,4 +1,4 @@
-#include "viewer.h"
+#include "explorer.h"
 // #include "image_handler.h"
 // #include "radiation_handler.h"
 // #include "scatterometer_handler.h"
@@ -31,29 +31,29 @@
 
 namespace satdump
 {
-    namespace viewer
+    namespace explorer
     {
-        ViewerApplication::ViewerApplication() : Application("viewer")
+        ExplorerApplication::ExplorerApplication() : Application("explorer")
         {
-            master_handler = std::make_shared<handlers::DummyHandler>("MasterHandlerViewer");
+            master_handler = std::make_shared<handlers::DummyHandler>("MasterHandlerExplorer");
 
             // Add trashcan
-            trash_handler = std::make_shared<handlers::DummyHandler>("TrashHandlerViewer");
+            trash_handler = std::make_shared<handlers::DummyHandler>("TrashHandlerExplorer");
             auto trash_h = std::make_shared<handlers::TrashHandler>();
             trash_h->setCanBeDragged(false);
             trash_handler->addSubHandler(trash_h);
             trash_handler->setCanBeDraggedTo(false);
 
-            // Enable dropping files onto the viewer. TODOREWORK, check the viewer IS active!?
+            // Enable dropping files onto the explorer. TODOREWORK, check the explorer IS active!?
             eventBus->register_handler<imgui_utils::FileDropEvent>(
                 [this](const imgui_utils::FileDropEvent &v)
                 {
                     for (auto &f : v.files)
-                        tryOpenFileInViewer(f);
+                        tryOpenFileInExplorer(f);
                 });
 
-            // Enable adding handlers to the viewer externally
-            eventBus->register_handler<ViewerAddHandlerEvent>([this](const ViewerAddHandlerEvent &e) { master_handler->addSubHandler(e.h); });
+            // Enable adding handlers to the explorer externally
+            eventBus->register_handler<ExplorerAddHandlerEvent>([this](const ExplorerAddHandlerEvent &e) { master_handler->addSubHandler(e.h); });
 
             // TODOREWORK. Returns the last selected handler of a specific type if available
             eventBus->register_handler<GetLastSelectedOfTypeEvent>(
@@ -66,16 +66,16 @@ namespace satdump
                 });
 
             // TODOREWORK remove
-            tryOpenFileInViewer("/home/alan/Downloads/SatDump_NEWPRODS/metop_test/dataset.json");
+            tryOpenFileInExplorer("/home/alan/Downloads/SatDump_NEWPRODS/metop_test/dataset.json");
         }
 
-        ViewerApplication::~ViewerApplication()
+        ExplorerApplication::~ExplorerApplication()
         {
             if (file_open_thread.joinable())
                 file_open_thread.join();
         }
 
-        void ViewerApplication::drawPanel()
+        void ExplorerApplication::drawPanel()
         {
             ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2);
 
@@ -102,7 +102,7 @@ namespace satdump
             }
         }
 
-        void ViewerApplication::drawMenuBar()
+        void ExplorerApplication::drawMenuBar()
         {
             // Handle File Stuff TODOREWORK?
             {
@@ -110,7 +110,7 @@ namespace satdump
                 {
                     std::string prod_path = file_open_dialog.getPath();
                     if (prod_path.size() > 0)
-                        tryOpenFileInViewer(prod_path);
+                        tryOpenFileInExplorer(prod_path);
                     else
                         logger->trace("No file selected");
                 }
@@ -128,11 +128,11 @@ namespace satdump
                         ImGui::InputText("##quickvieweropen", &quickOpenString);
                         if (ImGui::IsItemDeactivatedAfterEdit())
                         {
-                            tryOpenFileInViewer(quickOpenString);
+                            tryOpenFileInExplorer(quickOpenString);
                             quickOpenString.clear();
                         }
                         if (ImGui::Button("Paste & Load"))
-                            tryOpenFileInViewer(std::string(ImGui::GetClipboardText()));
+                            tryOpenFileInExplorer(std::string(ImGui::GetClipboardText()));
                         ImGui::EndMenu();
                     }
 
@@ -140,25 +140,25 @@ namespace satdump
                     if (ImGui::BeginMenu("Hardcoded"))
                     {
                         if (ImGui::MenuItem("Load KMSS"))
-                            tryOpenFileInViewer("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/dataset.json");
+                            tryOpenFileInExplorer("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/dataset.json");
                         if (ImGui::MenuItem("Load Sterna"))
-                            tryOpenFileInViewer("/home/alan/Downloads/SatDump_NEWPRODS/aws_pfm_cadu/dataset.json");
+                            tryOpenFileInExplorer("/home/alan/Downloads/SatDump_NEWPRODS/aws_pfm_cadu/dataset.json");
                         if (ImGui::MenuItem("Load MSUGS"))
-                            tryOpenFileInViewer("/home/alan/Downloads/20241231_132953_ARKTIKA-M 2_dat/MSUGS_VIS1/product.cbor");
+                            tryOpenFileInExplorer("/home/alan/Downloads/20241231_132953_ARKTIKA-M 2_dat/MSUGS_VIS1/product.cbor");
                         if (ImGui::MenuItem("Load MSUGS 2"))
-                            tryOpenFileInViewer("/home/alan/Downloads/SatDump_NEWPRODS/20250104_071415_ELEKTRO-L_3_dat/dataset.json");
+                            tryOpenFileInExplorer("/home/alan/Downloads/SatDump_NEWPRODS/20250104_071415_ELEKTRO-L_3_dat/dataset.json");
                         if (ImGui::MenuItem("Load MetOp"))
-                            tryOpenFileInViewer("/home/alan/Downloads/SatDump_NEWPRODS/metop_test/dataset.json");
+                            tryOpenFileInExplorer("/home/alan/Downloads/SatDump_NEWPRODS/metop_test/dataset.json");
                         if (ImGui::MenuItem("Load L3"))
-                            tryOpenFileInViewer("/data_ssd/ELEKTRO-L3/20250104_071415_ELEKTRO-L 3.dat_OUT/dataset.json");
+                            tryOpenFileInExplorer("/data_ssd/ELEKTRO-L3/20250104_071415_ELEKTRO-L 3.dat_OUT/dataset.json");
                         if (ImGui::MenuItem("Load JPSS-1"))
-                            tryOpenFileInViewer("/home/alan/Downloads/SatDump_NEWPRODS/202411271228_NOAA_20/dataset.json");
+                            tryOpenFileInExplorer("/home/alan/Downloads/SatDump_NEWPRODS/202411271228_NOAA_20/dataset.json");
                         if (ImGui::MenuItem("Load JPSS-2"))
-                            tryOpenFileInViewer("/home/alan/Downloads/SatDump_NEWPRODS/n21_day/dataset.json");
+                            tryOpenFileInExplorer("/home/alan/Downloads/SatDump_NEWPRODS/n21_day/dataset.json");
                         if (ImGui::MenuItem("Load APT"))
-                            tryOpenFileInViewer("/home/alan/Downloads/audio_137912500Hz_11-39-56_04-03-2024_wav/dataset.json");
+                            tryOpenFileInExplorer("/home/alan/Downloads/audio_137912500Hz_11-39-56_04-03-2024_wav/dataset.json");
                         if (ImGui::MenuItem("Load GOES"))
-                            tryOpenFileInViewer("/home/alan/Downloads/SatDump_NEWPRODS/goes_hrit_jvital2013_cadu/IMAGES/GOES-16/Full Disk/2024-04-17_18-00-20/product.cbor");
+                            tryOpenFileInExplorer("/home/alan/Downloads/SatDump_NEWPRODS/goes_hrit_jvital2013_cadu/IMAGES/GOES-16/Full Disk/2024-04-17_18-00-20/product.cbor");
                         if (ImGui::MenuItem("Load Shapefile"))
                         {
                             auto shp_h = std::make_shared<handlers::ShapefileHandler>(resources::getResourcePath("maps/ne_10m_admin_0_countries.shp"));
@@ -232,25 +232,25 @@ namespace satdump
             }
         }
 
-        void ViewerApplication::drawContents() { ImGui::Text("No handler selected!"); }
+        void ExplorerApplication::drawContents() { ImGui::Text("No handler selected!"); }
 
-        void ViewerApplication::drawUI()
+        void ExplorerApplication::drawUI()
         {
-            ImVec2 viewer_size = ImGui::GetContentRegionAvail();
+            ImVec2 explorer_size = ImGui::GetContentRegionAvail();
 
             if (ImGui::BeginTable("##wiever_table", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInnerV))
             {
-                ImGui::TableSetupColumn("##panel_v", ImGuiTableColumnFlags_None, viewer_size.x * panel_ratio);
-                ImGui::TableSetupColumn("##view", ImGuiTableColumnFlags_None, viewer_size.x * (1.0f - panel_ratio));
+                ImGui::TableSetupColumn("##panel_v", ImGuiTableColumnFlags_None, explorer_size.x * panel_ratio);
+                ImGui::TableSetupColumn("##view", ImGuiTableColumnFlags_None, explorer_size.x * (1.0f - panel_ratio));
                 ImGui::TableNextColumn();
 
                 float left_width = ImGui::GetColumnWidth(0);
-                float right_width = viewer_size.x - left_width;
+                float right_width = explorer_size.x - left_width;
                 if (left_width != last_width && last_width != -1)
-                    panel_ratio = left_width / viewer_size.x;
+                    panel_ratio = left_width / explorer_size.x;
                 last_width = left_width;
 
-                ImGui::BeginChild("ViewerChildPanel", {left_width, float(viewer_size.y - 10)}, false, ImGuiWindowFlags_MenuBar);
+                ImGui::BeginChild("ExplorerChildPanel", {left_width, float(explorer_size.y - 10)}, false, ImGuiWindowFlags_MenuBar);
                 drawMenuBar();
                 drawPanel();
                 ImGui::EndChild();
@@ -259,7 +259,7 @@ namespace satdump
                 ImGui::BeginGroup();
 
                 if (curr_handler)
-                    curr_handler->drawContents({float(right_width - 9 * ui_scale), float(viewer_size.y)});
+                    curr_handler->drawContents({float(right_width - 9 * ui_scale), float(explorer_size.y)});
                 else
                     drawContents();
 
@@ -268,7 +268,7 @@ namespace satdump
             }
         }
 
-        void ViewerApplication::tryOpenFileInViewer(std::string path)
+        void ExplorerApplication::tryOpenFileInExplorer(std::string path)
         {
             if (file_open_thread.joinable())
                 file_open_thread.join();
@@ -284,7 +284,7 @@ namespace satdump
 
                     if (std::filesystem::path(path).extension().string() == ".cbor")
                     {
-                        logger->trace("Viewer loading product " + path);
+                        logger->trace("Explorer loading product " + path);
 
                         try
                         {
@@ -337,5 +337,5 @@ namespace satdump
             };
             file_open_thread = std::thread(fun);
         }
-    } // namespace viewer
+    } // namespace explorer
 }; // namespace satdump

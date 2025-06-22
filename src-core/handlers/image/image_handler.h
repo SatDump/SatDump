@@ -23,7 +23,7 @@ namespace satdump
          *
          * This is more or less just meant to display images. It
          * may either be used directly to present an image to the user
-         * in the viewer, while also showing edition options (TODOREWORK,
+         * in the explorer, while also showing edition options (TODOREWORK,
          * have a mode where (part of?) editing is disabled?), or
          * integrated in another handler as you wish.
          *

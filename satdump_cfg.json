@@ -61,11 +61,11 @@
             "name": "Finish processing when stopping live",
             "description": "Launch an offline processing task when you press \"Stop\",\nto finish processing down to the end of the pipeline."
         },
-        "open_viewer_post_processing": {
+        "open_explorer_post_processing": {
             "type": "bool",
             "value": true,
-            "name": "Open Viewer after decoding",
-            "description": "Open the decoded data in the viewer after decoding is done"
+            "name": "Open Explorer after decoding",
+            "description": "Open the decoded data in the explorer after decoding is done"
         },
         "show_waterfall_demod_fft": {
             "type": "bool",
@@ -362,14 +362,14 @@
             "is_directory": true,
             "value": ".",
             "name": "Default Img Output Directory",
-            "description": "Path to the default folder to open when saving an image in the viewer."
+            "description": "Path to the default folder to open when saving an image in the explorer."
         },
         "default_projection_output_directory": {
             "type": "path",
             "is_directory": true,
             "value": ".",
             "name": "Default Proj Output Directory",
-            "description": "Path to the default folder to open when saving a projection in the viewer."
+            "description": "Path to the default folder to open when saving a projection in the explorer."
         },
         "image_filename_template": {
             "type": "labeled_options",
@@ -398,7 +398,7 @@
                     "WMO"
                 ]
             ],
-            "description": "Template used when saving images in the viewer. Variables available:\n - $y - year\n - $M - month\n - $d - day\n - $h - hour\n - $m - minute\n - $s - second\n - $t - unix timestamp\n - $c - composite/channel name\n - $C - composite/channel name (caps)\n - $a - composite/channel name (abbreviated)\n - $i - instrument name\n - $I - instrument name (caps)\n - $o - satellite/object\n - $O - satellite/object (caps)"
+            "description": "Template used when saving images in the explorer. Variables available:\n - $y - year\n - $M - month\n - $d - day\n - $h - hour\n - $m - minute\n - $s - second\n - $t - unix timestamp\n - $c - composite/channel name\n - $C - composite/channel name (caps)\n - $a - composite/channel name (abbreviated)\n - $i - instrument name\n - $I - instrument name (caps)\n - $o - satellite/object\n - $O - satellite/object (caps)"
         }
     },
     // TLE settings

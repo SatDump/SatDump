@@ -4,7 +4,7 @@ PROJECT_NUMBER         = @SATDUMP_VERSION@
 INPUT                  = src-core/common/ccsds \
                          src-core/products2 \
                          src-core/handlers \
-                         src-interface/viewer2 \
+                         src-interface/explorer \
                          src-core/projection \
                          src-core/dsp \
                          src-core/image \

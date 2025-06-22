@@ -21,7 +21,7 @@ namespace satdump
          * @brief SatDump's handler base class.
          *
          * Handlers are meant to handle displaying and maniipulating
-         * data inside the viewer. To avoid code duplication, they may
+         * data inside the explorer. To avoid code duplication, they may
          * also serve as headless processors.
          *
          * This implements all basic UI functions and handler tree system,
@@ -63,22 +63,22 @@ namespace satdump
 
         public:
             /**
-             * @brief Render viewer menu left sidebar
+             * @brief Render explorer menu left sidebar
              */
             virtual void drawMenu() = 0;
 
             /**
-             * @brief Render viewer contents (center/left)
+             * @brief Render explorer contents (center/left)
              */
             virtual void drawContents(ImVec2 win_size) = 0;
 
             /**
-             * @brief Render viewer menu bar (in the left sidebar)
+             * @brief Render explorer menu bar (in the left sidebar)
              */
             virtual void drawMenuBar() {}
 
             /**
-             * @brief Render viewer menu bar (in the left sidebar)
+             * @brief Render explorer menu bar (in the left sidebar)
              * @param h currently selected handler, to be replaced if
              * another is selected
              */

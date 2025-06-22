@@ -13,7 +13,7 @@ namespace satdump
         /**
          * @brief Handler Tree Drawer
          *
-         * Draws the left-panel viewer tree lines.
+         * Draws the left-panel explorer tree lines.
          */
         struct TreeDrawer
         {

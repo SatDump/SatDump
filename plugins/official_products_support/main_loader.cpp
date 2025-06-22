@@ -5,8 +5,8 @@
 
 #include "loader/archive_loader.h"
 
+#include "explorer/explorer.h"
 #include "imgui/imgui_stdlib.h"
-#include "viewer2/viewer.h"
 
 namespace
 {
@@ -23,7 +23,7 @@ public:
     void init()
     {
         satdump::eventBus->register_handler<satdump::config::RegisterPluginConfigHandlersEvent>(registerConfigHandler);
-        satdump::eventBus->register_handler<satdump::viewer::ViewerApplication::RenderLoadMenuElementsEvent>(renderViewerLoaderButton);
+        satdump::eventBus->register_handler<satdump::explorer::ExplorerApplication::RenderLoadMenuElementsEvent>(renderExplorerLoaderButton);
 
         if (satdump::satdump_cfg.main_cfg.contains("plugin_settings") && satdump::satdump_cfg.main_cfg["plugin_settings"].contains("official_products"))
             if (satdump::satdump_cfg.main_cfg["plugin_settings"]["official_products"].contains("enable_loader"))
@@ -81,7 +81,7 @@ public:
         cfg["enable_loader"] = _enable_loader;
     }
 
-    static void renderViewerLoaderButton(const satdump::viewer::ViewerApplication::RenderLoadMenuElementsEvent &evt)
+    static void renderExplorerLoaderButton(const satdump::explorer::ExplorerApplication::RenderLoadMenuElementsEvent &evt)
     {
         if (!_enable_loader)
             return;

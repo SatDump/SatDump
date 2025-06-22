@@ -33,7 +33,7 @@
 #include <utility>
 
 // TODOREWORK
-#include "../../../src-interface/viewer2/viewer.h"
+#include "../../../src-interface/explorer/explorer.h"
 
 namespace satdump
 {
@@ -259,14 +259,14 @@ namespace satdump
                     if (ImGui::MenuItem("Add To Proj"))
                     { // TODOREWORK
                         std::shared_ptr<Handler> h;
-                        eventBus->fire_event<viewer::ViewerApplication::GetLastSelectedOfTypeEvent>({"projection_handler", h});
+                        eventBus->fire_event<explorer::ExplorerApplication::GetLastSelectedOfTypeEvent>({"projection_handler", h});
                         if (h)
                             h->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()));
                         else
                         {
                             auto p = std::make_shared<ProjectionHandler>();
                             p->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()));
-                            eventBus->fire_event<viewer::ViewerApplication::ViewerAddHandlerEvent>({p});
+                            eventBus->fire_event<explorer::ExplorerApplication::ExplorerAddHandlerEvent>({p});
                         }
                     }
                 }

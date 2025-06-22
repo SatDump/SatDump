@@ -12,7 +12,7 @@ First time here? See the reference documents below to get started using SatDump.
 - [dlfcn-win32](https://github.com/dlfcn-win32/dlfcn-win32), to use the usual dlopen() functions on Windows
 - [ImGui](https://github.com/ocornut/imgui), for the user interface
 - [imgui_markdown](https://github.com/juliettef/imgui_markdown), to render composite info popups and this very file!
-- [implot](https://github.com/epezent/implot), to display images in the viewer
+- [implot](https://github.com/epezent/implot), to display images in the explorer
 - [libaec](https://gitlab.dkrz.de/k202009/libaec), with OpenSatelliteProject's path
 - [libcorrect](https://github.com/quiet/libcorrect), for Reed-Solomon decoding
 - [libjpeg](https://ijg.org/), from the Independent JPEG Group

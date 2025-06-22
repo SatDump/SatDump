@@ -60,7 +60,7 @@ namespace satdump
                     if (handler_can_subhandlers_be_dragged && handler->handler_can_be_dragged && ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
                     {
                         DragDropWip d({handler, this});
-                        ImGui::SetDragDropPayload("VIEWER_HANDLER", &d, sizeof(DragDropWip));
+                        ImGui::SetDragDropPayload("EXPLORER_HANDLER", &d, sizeof(DragDropWip));
 
                         ImGui::Text("%s", handler->getName().c_str());
                         ImGui::EndDragDropSource();
@@ -68,7 +68,7 @@ namespace satdump
 
                     if (handler->handler_can_be_dragged_to && ImGui::BeginDragDropTarget())
                     {
-                        if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("VIEWER_HANDLER"))
+                        if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("EXPLORER_HANDLER"))
                         {
                             IM_ASSERT(payload->DataSize == sizeof(DragDropWip));
                             const DragDropWip *payload_n = (const DragDropWip *)payload->Data;

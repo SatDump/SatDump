@@ -9,9 +9,9 @@
 
 namespace satdump
 {
-    namespace viewer
+    namespace explorer
     {
-        class ViewerApplication : public Application
+        class ExplorerApplication : public Application
         {
         public:
             struct RenderLoadMenuElementsEvent
@@ -31,7 +31,7 @@ namespace satdump
             void drawContents();
             void drawMenuBar();
 
-            // Viewer main handlers
+            // Explorer main handlers
             std::shared_ptr<handlers::Handler> curr_handler;
             std::shared_ptr<handlers::Handler> master_handler;
             std::shared_ptr<handlers::Handler> trash_handler;
@@ -52,22 +52,22 @@ namespace satdump
                 std::shared_ptr<handlers::Handler> &h;
             };
 
-            struct ViewerAddHandlerEvent
+            struct ExplorerAddHandlerEvent
             {
                 std::shared_ptr<handlers::Handler> h;
             };
 
         public:
-            void tryOpenFileInViewer(std::string path);
+            void tryOpenFileInExplorer(std::string path);
 
         public:
-            ViewerApplication();
-            ~ViewerApplication();
+            ExplorerApplication();
+            ~ExplorerApplication();
 
         public:
-            static std::string getID() { return "viewer"; }
-            std::string get_name() { return "Viewer"; }
-            static std::shared_ptr<Application> getInstance() { return std::make_shared<ViewerApplication>(); }
+            static std::string getID() { return "explorer"; }
+            std::string get_name() { return "Explorer"; }
+            static std::shared_ptr<Application> getInstance() { return std::make_shared<ExplorerApplication>(); }
         };
-    } // namespace viewer
+    } // namespace explorer
 }; // namespace satdump

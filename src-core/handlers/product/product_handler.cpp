@@ -196,7 +196,7 @@ namespace satdump
             // Make sure we never overwrite anything unintentionally
             std::string filename_suffix = "";
             int suffix_num = 1;
-            while (std::filesystem::exists(default_path + "/" + file_name + filename_suffix /*+ "." + viewer_app->save_type*/))
+            while (std::filesystem::exists(default_path + "/" + file_name + filename_suffix))
                 filename_suffix = "_" + std::to_string(++suffix_num);
             file_name += filename_suffix;
 

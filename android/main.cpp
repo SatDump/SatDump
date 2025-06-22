@@ -187,7 +187,7 @@ static void handleAppCmd(struct android_app *app, int32_t appCmd)
         break;
     case APP_CMD_SAVE_STATE:
         satdump::recorder_app->save_settings();
-        // satdump::viewer_app->save_settings(); // TODOREWORK!!!!
+        // satdump::explorer_app->save_settings(); // TODOREWORK!!!!
         satdump::config::saveUserConfig();
         break;
     }

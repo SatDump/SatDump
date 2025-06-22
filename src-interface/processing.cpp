@@ -63,12 +63,12 @@ namespace satdump
 
             logger->info("Done! Goodbye");
 
-            if (satdump_cfg.main_cfg["user_interface"]["open_viewer_post_processing"]["value"].get<bool>())
+            if (satdump_cfg.main_cfg["user_interface"]["open_explorer_post_processing"]["value"].get<bool>()) 
             {
                 if (std::filesystem::exists(output_file + "/dataset.json"))
                 {
-                    logger->info("Opening viewer!");
-                    viewer_app2->tryOpenFileInViewer(output_file + "/dataset.json");
+                    logger->info("Opening explorer!");
+                    explorer_app->tryOpenFileInExplorer(output_file + "/dataset.json"); // TODOREWORK Maybe just try to open the final file produced?
                 }
             }
 
