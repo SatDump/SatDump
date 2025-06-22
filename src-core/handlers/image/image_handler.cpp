@@ -286,8 +286,8 @@ namespace satdump
             white_balance_img = getValueOrDefault(p["white_balance"], false);
             normalize_img = getValueOrDefault(p["normalize"], false);
             invert_img = getValueOrDefault(p["invert"], false);
-            median_blur_img = getValueOrDefault(p["median_blur"], false);
-            despeckle_img = getValueOrDefault(p["despeckle"], false);
+            median_blur_img = getValueOrDefault(p["median_blur"], median_blur_img);
+            despeckle_img = getValueOrDefault(p["despeckle"], despeckle_img);
             rotate180_image = getValueOrDefault(p["rotate180"], rotate180_image);
             geocorrect_image = getValueOrDefault(p["geocorrect"], geocorrect_image);
             brightness_contrast_image = getValueOrDefault(p["brightness_contrast"], false);
