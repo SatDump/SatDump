@@ -23,7 +23,6 @@
             "name": "Natural Color",
             "expression": "((0.5*max(ch3,min(ch2,ch1)) + 0.5*ch2) / 0.7)^0.65, (ch2/0.7)^0.65, (ch1/0.7)^0.65",
             "image": {
-                "equalize": true,
                 "white_balance": true,
                 "remove_background": true
             },
@@ -33,7 +32,6 @@
             "name": "AVHRR 124 False Color (Cloud RGB)",
             "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0, 46.203); cch2=(2, sun_angle_compensated_reflective_radiance, 0, 97.0507); cch4=(9, brightness_temperature, 203, 323); cch1, cch2, 1-cch4",
             "image": {
-                "individual_equalize": true,
                 "white_balance": true,
                 "remove_background": true
             },
