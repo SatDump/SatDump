@@ -4,14 +4,14 @@ project(hydrasdr_sdr_support)
 
 find_library(HYDRASDR_LIBRARY hydrasdr)
 
-if(HYDRASDR_LIBRARY OR MSVC OR ANDROID)
+if(HYDRASDR_LIBRARY OR MSVC) # OR ANDROID)
     message("Building with HydraSDR support")
     file(GLOB_RECURSE hydrasdr_sdr_support_CPPS *.cpp)
     add_library(hydrasdr_sdr_support SHARED ${hydrasdr_sdr_support_CPPS})
     target_include_directories(hydrasdr_sdr_support PUBLIC src)
 
     if(MSVC)
-        target_link_libraries(hydrasdr_sdr_support PUBLIC satdump_core airhydrasdrspy.dll)
+        target_link_libraries(hydrasdr_sdr_support PUBLIC satdump_core hydrasdr.dll)
         install(TARGETS hydrasdr_sdr_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins RUNTIME_DEPENDENCY_SET satdump_deps)
     elseif(ANDROID)
         target_link_libraries(hydrasdr_sdr_support PUBLIC satdump_core hydrasdr usb)
