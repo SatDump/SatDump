@@ -4,7 +4,7 @@ project(hydrasdr_sdr_support)
 
 find_library(HYDRASDR_LIBRARY hydrasdr)
 
-if(HYDRASDR_LIBRARY OR MSVC OR ANDROID)
+if(HYDRASDR_LIBRARY OR MSVC) # OR ANDROID)
     message("Building with HydraSDR support")
     file(GLOB_RECURSE hydrasdr_sdr_support_CPPS *.cpp)
     add_library(hydrasdr_sdr_support SHARED ${hydrasdr_sdr_support_CPPS})
