@@ -2,6 +2,7 @@
 
 #include "common/dsp/io/baseband_interface.h"
 #include "dsp/block.h"
+#include "dsp/io/iq_types.h"
 
 namespace satdump
 {
@@ -23,6 +24,8 @@ namespace satdump
             std::atomic<bool> d_eof;
 
             dsp::BasebandReader baseband_reader;
+
+            IQType iqtype;
 
             bool work();
 
@@ -53,7 +56,7 @@ namespace satdump
                 nlohmann::ordered_json p;
                 add_param_simple(p, "file", "string");
                 p["file"]["disable"] = is_work_running();
-                add_param_simple(p, "type", "string");
+                add_param_list(p, "type", "string", {"cf32", "cs32", "cs16", "cs8", "cu8", "wav"}, "Type");
                 p["type"]["disable"] = is_work_running();
                 add_param_simple(p, "buffer_size", "int");
                 p["buffer_size"]["disable"] = is_work_running();
@@ -79,7 +82,10 @@ namespace satdump
             cfg_res_t set_cfg(std::string key, nlohmann::json v)
             {
                 if (key == "file")
+                {
                     p_file = v;
+                    setType(0, false, IQType(p_file.substr(p_file.find_last_of(".") + 1)));
+                }
                 else if (key == "type")
                     p_type = v.get<std::string>();
                 else if (key == "buffer_size")
@@ -89,6 +95,13 @@ namespace satdump
                 else
                     throw satdump_exception(key);
                 return RES_OK;
+            }
+
+            virtual void setType(int id, bool output, std::string type) // TODOREWORK maybe change the function name to avoid conflicts/make it clearer what it does?
+            {
+                if (id > 0 || output)
+                    throw satdump_exception("Stream ID must be 0 and input only!");
+                set_cfg("type", type);
             }
         };
     } // namespace ndsp
