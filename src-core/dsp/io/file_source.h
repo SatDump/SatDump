@@ -97,7 +97,7 @@ namespace satdump
                 return RES_OK;
             }
 
-            virtual void setType(int id, bool output, std::string type) // TODOREWORK maybe change the function name to avoid conflicts/make it clearer what it does?
+            virtual void setType(int id, bool output, std::string type) // TODOREWORK maybe change the function name to avoid conflicts/make it clearer on what it does?
             {
                 if (id > 0 || output)
                     throw satdump_exception("Stream ID must be 0 and input only!");
