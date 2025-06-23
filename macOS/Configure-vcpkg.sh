@@ -53,8 +53,10 @@ source venv/bin/activate
 pip3 install mako
 
 build_args="-DCMAKE_TOOLCHAIN_FILE=$(cd ../scripts/buildsystems && pwd)/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=osx-satdump -DCMAKE_INSTALL_PREFIX=$(cd ../installed/osx-satdump && pwd) -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=$osx_target -DCMAKE_MACOSX_RPATH=ON"
-libusb_include="$(cd ../installed/osx-satdump/include/libusb-1.0 && pwd)"
-libusb_lib="$(cd ../installed/osx-satdump/lib && pwd)/libusb-1.0.0.dylib"
+standard_include="$(cd ../installed/osx-satdump/include && pwd)"
+standard_lib="$(cd ../installed/osx-satdump/lib && pwd)"
+libusb_include="$(cd $standard_include/libusb-1.0 && pwd)"
+libusb_lib="$standard_lib/libusb-1.0.0.dylib"
 
 echo "Building OpenMP"
 mkdir libomp && cd libomp
@@ -139,6 +141,28 @@ make -j$(sysctl -n hw.logicalcpu)
 make install
 cd ../../../..
 rm -rf hackrf
+
+echo "Building HydraSDR..."
+git clone https://github.com/hydrasdr/rfone_host -b v1.0.1
+cd rfone_host/libhydrasdr
+mkdir build && cd build
+cmake $build_args -DLIBUSB_INCLUDE_DIR=$libusb_include -DLIBUSB_LIBRARIES=$libusb_lib ..
+make -j$(sysctl -n hw.logicalcpu)
+make install
+cd ../../..
+rm -rf rfone_host
+
+echo "Building FobosSDR..."
+git clone https://github.com/rigexpert/libfobos -b v.2.2.2
+cd libfobos
+sed -i '' 's/#target_link_libraries/target_link_libraries/' CMakeLists.txt
+sed -i '' 's/"udev"/"udev" EXCLUDE_FROM_ALL/' CMakeLists.txt
+mkdir build && cd build
+cmake $build_args -DLIBUSB_INCLUDE_DIRS=$standard_include -DCMAKE_INSTALL_LIBDIR=$standard_lib ..
+make -j$(sysctl -n hw.logicalcpu)
+make install
+cd ../..
+rm -rf libfobos
 
 echo "Building LimeSuite..."
 git clone https://github.com/myriadrf/LimeSuite --depth 1 -b v23.11.0

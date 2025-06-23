@@ -11,7 +11,7 @@ if(HYDRASDR_LIBRARY OR MSVC OR ANDROID)
     target_include_directories(hydrasdr_sdr_support PUBLIC src)
 
     if(MSVC)
-        target_link_libraries(hydrasdr_sdr_support PUBLIC satdump_core airhydrasdrspy.dll)
+        target_link_libraries(hydrasdr_sdr_support PUBLIC satdump_core hydrasdr.dll)
         install(TARGETS hydrasdr_sdr_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins RUNTIME_DEPENDENCY_SET satdump_deps)
     elseif(ANDROID)
         target_link_libraries(hydrasdr_sdr_support PUBLIC satdump_core hydrasdr usb)

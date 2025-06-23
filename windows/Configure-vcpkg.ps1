@@ -78,6 +78,7 @@ $null = mkdir build
 cd build
 $build_args="-DCMAKE_TOOLCHAIN_FILE=$($(Get-Item ..\scripts\buildsystems\vcpkg.cmake).FullName)", "-DVCPKG_TARGET_TRIPLET=$platform", "-DCMAKE_INSTALL_PREFIX=$($(Get-Item ..\installed\$platform).FullName)", "-DCMAKE_BUILD_TYPE=Release", "-A", $generator
 $standard_include=$(Get-Item ..\installed\$platform\include).FullName
+$standard_lib=$(Get-Item ..\installed\$platform\lib).FullName
 $pthread_lib=$(Get-Item ..\installed\$platform\lib\pthreadVC3.lib).FullName
 $libusb_include=$(Get-Item ..\installed\$platform\include\libusb-1.0).FullName
 $libusb_lib=$(Get-Item ..\installed\$platform\lib\libusb-1.0.lib).FullName
@@ -176,6 +177,35 @@ cmake --build . --config Release
 cmake --install .
 cd ..\..\..\..
 rm -recurse -force hackrf
+
+Write-Output "Building HydraSDR..."
+git clone https://github.com/hydrasdr/rfone_host -b v1.0.1 #TODO: Patch for Raw IO support to avoid sample drops?
+cd rfone_host\libhydrasdr
+$null = mkdir build
+cd build
+cmake $build_args -DLIBUSB_INCLUDE_DIR="$($libusb_include)" -DLIBUSB_LIBRARIES="$($libusb_lib)" -DTHREADS_PTHREADS_WIN32_LIBRARY="$($pthread_lib)" ..
+cmake --build . --config Release
+cmake --install .
+cd ..\..\..
+rm -recurse -force rfone_host
+
+Write-Output "Building FobosSDR..."
+git clone https://github.com/rigexpert/libfobos -b v.2.2.2 #TODO: Patch for Raw IO support to avoid sample drops?
+cd libfobos
+
+# FobosSDR wants us to load libusb into its directory, and install udev rules to the root of the drive.
+# We want it to share libusb, with no udev. Patches herein to make it play ball
+(Get-Content -raw CMakeLists.txt) -replace "(?ms)find_package\(PkgConfig\).*message\(FATAL_ERROR `"LibUSB 1.0 required`"\)`r`nendif\(\)", "" | Set-Content -Encoding ASCII CMakeLists.txt
+(Get-Content -raw CMakeLists.txt) -replace "(?ms)ADD_CUSTOM_COMMAND.*Release\r\n\)", "" | Set-Content -Encoding ASCII CMakeLists.txt
+(Get-Content -raw CMakeLists.txt) -replace "(?ms)install\(.*`"udev`"`r`n    \)", "" | Set-Content -Encoding ASCII CMakeLists.txt
+
+$null = mkdir build
+cd build
+cmake $build_args -DLIBUSB_INCLUDE_DIRS="$($standard_include)" -DLIBUSB_LIBRARIES="$($(Get-Item $libusb_lib).Directory.FullName)" -DCMAKE_INSTALL_LIBDIR="$($standard_lib)" ..
+cmake --build . --config Release
+cmake --install .
+cd ..\..
+rm -recurse -force libfobos
 
 Write-Output "Building libiio..."
 git clone https://github.com/analogdevicesinc/libiio --depth 1 -b v0.26
