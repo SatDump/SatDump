@@ -1,0 +1,40 @@
+{
+    "prefire_s_dump": {
+        "name": "PREFIRE-1/2 S-Band Dump",
+        "live": [
+            1,
+            2
+        ],
+        "frequencies": [
+            [
+                "Main",
+                2212.5e6
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "psk_demod",
+                "parameters": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 2e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.006
+                }
+            },
+            "cadu": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
+                    "constellation": "oqpsk",
+                    "cadu_size": 16416,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": true,
+                    "rs_i": 0
+                }
+            },
+            "products": {}
+        }
+    }
+}
