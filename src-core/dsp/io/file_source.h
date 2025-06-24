@@ -3,6 +3,7 @@
 #include "common/dsp/io/baseband_interface.h"
 #include "dsp/block.h"
 #include "dsp/io/iq_types.h"
+#include <filesystem>
 
 namespace satdump
 {
@@ -84,7 +85,10 @@ namespace satdump
                 if (key == "file")
                 {
                     p_file = v;
-                    setType(0, false, IQType(p_file.substr(p_file.find_last_of(".") + 1)));
+                    if (std::filesystem::path(p_file).has_extension())
+                    {
+                        setType(0, false, IQType(p_file.substr(p_file.find_last_of(".") + 1)));
+                    }
                 }
                 else if (key == "type")
                     p_type = v.get<std::string>();
