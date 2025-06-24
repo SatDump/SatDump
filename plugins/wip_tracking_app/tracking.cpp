@@ -3,8 +3,8 @@
 #include "common/utils.h"
 #include "imgui/implot3d/implot3d.h"
 #include "testgl.h"
-#include <GLFW/glfw3.h>
 #include "utils/time.h"
+#include <GLFW/glfw3.h>
 
 namespace satdump
 {
@@ -30,6 +30,7 @@ namespace satdump
 
     void WipTrackingHandler::drawContents(ImVec2 win_size)
     {
+#if 0
         double utc_time = satdump::getTime();
         predict_orbit(satellite_object, &satellite_orbit, predict_to_julian_double(utc_time));
 
@@ -49,14 +50,15 @@ namespace satdump
         // ImGui::SetNextWindowPos({0, 0});
         // ImGui::SetNextWindowSize({wwidth, wheight});
         // ImGui::Begin("TestGL");
+#endif
 
         GLFWwindow *window = glfwGetCurrentContext();
 
         if (scene == nullptr)
             scene = new OpenGLScene();
 
-        GLuint text = scene->draw(window, 400, 400);
-        ImGui::Image((void *)(intptr_t)text, {400, 400});
+        GLuint text = scene->draw(window, win_size.x, win_size.y);
+        ImGui::Image((void *)(intptr_t)text, {win_size.x, win_size.y});
         //  ImGui::End();
     }
 } // namespace satdump

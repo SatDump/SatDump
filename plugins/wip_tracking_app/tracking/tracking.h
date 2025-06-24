@@ -10,13 +10,5 @@ namespace satdump
             BKD_TYPE_NOVAS,
             BKD_TYPE_HORIZONS,
         };
-
-        class StationBackend
-        {
-        };
-
-        class Station
-        {
-        };
     } // namespace tracking
 } // namespace satdump

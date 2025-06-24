@@ -1,14 +1,13 @@
 #include "core/plugin.h"
 #include "logger.h"
 
-#include "app.h"
+#include "doctest.h"
 #include "explorer/explorer.h"
-#include "tracking.h"
 
-class WipTrackingAppPlugin : public satdump::Plugin
+class DocTestAppPlugin : public satdump::Plugin
 {
 public:
-    std::string getID() { return "wiptracking_app"; }
+    std::string getID() { return "doctest_app"; }
 
     void init()
     {
@@ -22,8 +21,8 @@ public:
         {
             if (ImGui::BeginMenu("Tools"))
             {
-                if (ImGui::MenuItem("WIP Tracking"))
-                    evt.master_handler->addSubHandler(std::make_shared<satdump::WipTrackingHandler>());
+                if (ImGui::MenuItem("WIP Documentation"))
+                    evt.master_handler->addSubHandler(std::make_shared<satdump::DocTestHandler>());
                 ImGui::EndMenu();
             }
 
@@ -32,4 +31,4 @@ public:
     } // TODOREWORK
 };
 
-PLUGIN_LOADER(WipTrackingAppPlugin)
+PLUGIN_LOADER(DocTestAppPlugin)

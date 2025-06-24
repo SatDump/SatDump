@@ -463,3 +463,9 @@ option(PLUGIN_WIPTRACKING_APP "Enable WIP Tracking Application" OFF)
 if(PLUGIN_WIPTRACKING_APP)
   add_subdirectory(wip_tracking_app)
 endif()
+
+option(PLUGIN_DOCTEST_APP "Enable WIP DocTest Application" OFF)
+
+if(PLUGIN_DOCTEST_APP)
+  add_subdirectory(wip_doc_test)
+endif()
