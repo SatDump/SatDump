@@ -68,6 +68,14 @@
                 "geo_correct": true
             },
             "description": "descriptions/543b.md"
+        },
+        {
+            "name": "Automatic Visible False Color (uncal)",
+            "expression": "lut=lut(lut/2dfc/2dfc_vis.png);lut(ch1*2,ch3^0.9,0),lut(ch1*2,ch3^0.9,1),lut(ch1*2,ch3^0.9,2)",
+            "image": {
+                "white_balance": true,
+                "geo_correct": true
+            }
         }
     ]
 }
