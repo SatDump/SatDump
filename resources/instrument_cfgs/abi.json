@@ -219,6 +219,12 @@
         {
             "name": "SST Transparent (tmbates)",
             "expression": "lut=lut(lut/goes/abi/L2/sst_transparent_tmbates.png);lut(chSST, 0, 0),lut(chSST, 0, 1),lut(chSST, 0, 2),lut(chSST, 0, 3)"
+        },        {
+        "name": "Automatic IR False Color",
+            "expression": "IR11=(13, brightness_temperature_celsius, -60, 40);lm=equp(maps/landmask.png);land=lut(lut/2dfc/2dfc_ir_land.png);sea=lut(lut/2dfc/2dfc_ir_sea.png);lm(0) == 1 ? land(IR11, 0, 0) : sea(IR11, 0, 0),lm(0) == 1 ? land(IR11, 0, 1) : sea(IR11, 0, 1),lm(0) == 1 ? land(IR11, 0, 2) : sea(IR11, 0, 2)",
+            "image": {
+                "geo_correct": true
+            }
         }
     ],
     "default": {

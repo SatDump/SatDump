@@ -352,6 +352,13 @@
             "image": {
                 "geo_correct": true
             }
+        },
+        {
+            "name": "Automatic IR False Color",
+            "expression": "IR11=(5, brightness_temperature_celsius, -60, 40);lm=equp(maps/landmask.png);land=lut(lut/2dfc/2dfc_ir_land.png);sea=lut(lut/2dfc/2dfc_ir_sea.png);lm(0) == 1 ? land(IR11, 0, 0) : sea(IR11, 0, 0),lm(0) == 1 ? land(IR11, 0, 1) : sea(IR11, 0, 1),lm(0) == 1 ? land(IR11, 0, 2) : sea(IR11, 0, 2)",
+            "image": {
+                "geo_correct": true
+            }
         }
     ],
     "default": {

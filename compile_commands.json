@@ -1153,6 +1153,12 @@
 },
 {
   "directory": "/home/jacopo/Sviluppo/SatDump/build/src-core",
+  "command": "/usr/lib/icecc/bin/c++ -DBUILD_ZIQ=\\\"1\\\" -DSOURCE_PATH_SIZE=30 -DUSE_OPENCL=1 -Dsatdump_core_EXPORTS -I/home/jacopo/Sviluppo/SatDump/src-core/. -I/home/jacopo/Sviluppo/SatDump/src-core/libs/lua  -Wall -Wextra -Wno-psabi -fopenmp -O3 -DNDEBUG -O3 -std=gnu++17 -fPIC -o CMakeFiles/satdump_core.dir/common/widgets/histogram.cpp.o -c /home/jacopo/Sviluppo/SatDump/src-core/common/widgets/histogram.cpp",
+  "file": "/home/jacopo/Sviluppo/SatDump/src-core/common/widgets/histogram.cpp",
+  "output": "src-core/CMakeFiles/satdump_core.dir/common/widgets/histogram.cpp.o"
+},
+{
+  "directory": "/home/jacopo/Sviluppo/SatDump/build/src-core",
   "command": "/usr/lib/icecc/bin/c++ -DBUILD_ZIQ=\\\"1\\\" -DSOURCE_PATH_SIZE=30 -DUSE_OPENCL=1 -Dsatdump_core_EXPORTS -I/home/jacopo/Sviluppo/SatDump/src-core/. -I/home/jacopo/Sviluppo/SatDump/src-core/libs/lua  -Wall -Wextra -Wno-psabi -fopenmp -O3 -DNDEBUG -O3 -std=gnu++17 -fPIC -o CMakeFiles/satdump_core.dir/common/widgets/image_view.cpp.o -c /home/jacopo/Sviluppo/SatDump/src-core/common/widgets/image_view.cpp",
   "file": "/home/jacopo/Sviluppo/SatDump/src-core/common/widgets/image_view.cpp",
   "output": "src-core/CMakeFiles/satdump_core.dir/common/widgets/image_view.cpp.o"
@@ -1309,15 +1315,21 @@
 },
 {
   "directory": "/home/jacopo/Sviluppo/SatDump/build/src-core",
-  "command": "/usr/lib/icecc/bin/c++ -DBUILD_ZIQ=\\\"1\\\" -DSOURCE_PATH_SIZE=30 -DUSE_OPENCL=1 -Dsatdump_core_EXPORTS -I/home/jacopo/Sviluppo/SatDump/src-core/. -I/home/jacopo/Sviluppo/SatDump/src-core/libs/lua  -Wall -Wextra -Wno-psabi -fopenmp -O3 -DNDEBUG -O3 -std=gnu++17 -fPIC -o CMakeFiles/satdump_core.dir/dsp/const/const_disp.cpp.o -c /home/jacopo/Sviluppo/SatDump/src-core/dsp/const/const_disp.cpp",
-  "file": "/home/jacopo/Sviluppo/SatDump/src-core/dsp/const/const_disp.cpp",
-  "output": "src-core/CMakeFiles/satdump_core.dir/dsp/const/const_disp.cpp.o"
-},
-{
-  "directory": "/home/jacopo/Sviluppo/SatDump/build/src-core",
   "command": "/usr/lib/icecc/bin/c++ -DBUILD_ZIQ=\\\"1\\\" -DSOURCE_PATH_SIZE=30 -DUSE_OPENCL=1 -Dsatdump_core_EXPORTS -I/home/jacopo/Sviluppo/SatDump/src-core/. -I/home/jacopo/Sviluppo/SatDump/src-core/libs/lua  -Wall -Wextra -Wno-psabi -fopenmp -O3 -DNDEBUG -O3 -std=gnu++17 -fPIC -o CMakeFiles/satdump_core.dir/dsp/device/dev.cpp.o -c /home/jacopo/Sviluppo/SatDump/src-core/dsp/device/dev.cpp",
   "file": "/home/jacopo/Sviluppo/SatDump/src-core/dsp/device/dev.cpp",
   "output": "src-core/CMakeFiles/satdump_core.dir/dsp/device/dev.cpp.o"
+},
+{
+  "directory": "/home/jacopo/Sviluppo/SatDump/build/src-core",
+  "command": "/usr/lib/icecc/bin/c++ -DBUILD_ZIQ=\\\"1\\\" -DSOURCE_PATH_SIZE=30 -DUSE_OPENCL=1 -Dsatdump_core_EXPORTS -I/home/jacopo/Sviluppo/SatDump/src-core/. -I/home/jacopo/Sviluppo/SatDump/src-core/libs/lua  -Wall -Wextra -Wno-psabi -fopenmp -O3 -DNDEBUG -O3 -std=gnu++17 -fPIC -o CMakeFiles/satdump_core.dir/dsp/displays/const_disp.cpp.o -c /home/jacopo/Sviluppo/SatDump/src-core/dsp/displays/const_disp.cpp",
+  "file": "/home/jacopo/Sviluppo/SatDump/src-core/dsp/displays/const_disp.cpp",
+  "output": "src-core/CMakeFiles/satdump_core.dir/dsp/displays/const_disp.cpp.o"
+},
+{
+  "directory": "/home/jacopo/Sviluppo/SatDump/build/src-core",
+  "command": "/usr/lib/icecc/bin/c++ -DBUILD_ZIQ=\\\"1\\\" -DSOURCE_PATH_SIZE=30 -DUSE_OPENCL=1 -Dsatdump_core_EXPORTS -I/home/jacopo/Sviluppo/SatDump/src-core/. -I/home/jacopo/Sviluppo/SatDump/src-core/libs/lua  -Wall -Wextra -Wno-psabi -fopenmp -O3 -DNDEBUG -O3 -std=gnu++17 -fPIC -o CMakeFiles/satdump_core.dir/dsp/displays/hist_disp.cpp.o -c /home/jacopo/Sviluppo/SatDump/src-core/dsp/displays/hist_disp.cpp",
+  "file": "/home/jacopo/Sviluppo/SatDump/src-core/dsp/displays/hist_disp.cpp",
+  "output": "src-core/CMakeFiles/satdump_core.dir/dsp/displays/hist_disp.cpp.o"
 },
 {
   "directory": "/home/jacopo/Sviluppo/SatDump/build/src-core",
@@ -3469,6 +3481,30 @@
 },
 {
   "directory": "/home/jacopo/Sviluppo/SatDump/build/src-interface",
+  "command": "/usr/lib/icecc/bin/c++ -DBUILD_ZIQ=\\\"1\\\" -DSOURCE_PATH_SIZE=30 -DUSE_OPENCL=1 -Dsatdump_interface_EXPORTS -I/home/jacopo/Sviluppo/SatDump/src-interface/. -I/home/jacopo/Sviluppo/SatDump/src-interface/../src-core -I/home/jacopo/Sviluppo/SatDump/src-core/. -I/home/jacopo/Sviluppo/SatDump/src-core/libs/lua  -Wall -Wextra -Wno-psabi -fopenmp -O3 -DNDEBUG -O3 -std=gnu++17 -fPIC -o CMakeFiles/satdump_interface.dir/explorer/dsp/cyclo_test.cpp.o -c /home/jacopo/Sviluppo/SatDump/src-interface/explorer/dsp/cyclo_test.cpp",
+  "file": "/home/jacopo/Sviluppo/SatDump/src-interface/explorer/dsp/cyclo_test.cpp",
+  "output": "src-interface/CMakeFiles/satdump_interface.dir/explorer/dsp/cyclo_test.cpp.o"
+},
+{
+  "directory": "/home/jacopo/Sviluppo/SatDump/build/src-interface",
+  "command": "/usr/lib/icecc/bin/c++ -DBUILD_ZIQ=\\\"1\\\" -DSOURCE_PATH_SIZE=30 -DUSE_OPENCL=1 -Dsatdump_interface_EXPORTS -I/home/jacopo/Sviluppo/SatDump/src-interface/. -I/home/jacopo/Sviluppo/SatDump/src-interface/../src-core -I/home/jacopo/Sviluppo/SatDump/src-core/. -I/home/jacopo/Sviluppo/SatDump/src-core/libs/lua  -Wall -Wextra -Wno-psabi -fopenmp -O3 -DNDEBUG -O3 -std=gnu++17 -fPIC -o CMakeFiles/satdump_interface.dir/explorer/dsp/newrec.cpp.o -c /home/jacopo/Sviluppo/SatDump/src-interface/explorer/dsp/newrec.cpp",
+  "file": "/home/jacopo/Sviluppo/SatDump/src-interface/explorer/dsp/newrec.cpp",
+  "output": "src-interface/CMakeFiles/satdump_interface.dir/explorer/dsp/newrec.cpp.o"
+},
+{
+  "directory": "/home/jacopo/Sviluppo/SatDump/build/src-interface",
+  "command": "/usr/lib/icecc/bin/c++ -DBUILD_ZIQ=\\\"1\\\" -DSOURCE_PATH_SIZE=30 -DUSE_OPENCL=1 -Dsatdump_interface_EXPORTS -I/home/jacopo/Sviluppo/SatDump/src-interface/. -I/home/jacopo/Sviluppo/SatDump/src-interface/../src-core -I/home/jacopo/Sviluppo/SatDump/src-core/. -I/home/jacopo/Sviluppo/SatDump/src-core/libs/lua  -Wall -Wextra -Wno-psabi -fopenmp -O3 -DNDEBUG -O3 -std=gnu++17 -fPIC -o CMakeFiles/satdump_interface.dir/explorer/dsp/waterfall_test.cpp.o -c /home/jacopo/Sviluppo/SatDump/src-interface/explorer/dsp/waterfall_test.cpp",
+  "file": "/home/jacopo/Sviluppo/SatDump/src-interface/explorer/dsp/waterfall_test.cpp",
+  "output": "src-interface/CMakeFiles/satdump_interface.dir/explorer/dsp/waterfall_test.cpp.o"
+},
+{
+  "directory": "/home/jacopo/Sviluppo/SatDump/build/src-interface",
+  "command": "/usr/lib/icecc/bin/c++ -DBUILD_ZIQ=\\\"1\\\" -DSOURCE_PATH_SIZE=30 -DUSE_OPENCL=1 -Dsatdump_interface_EXPORTS -I/home/jacopo/Sviluppo/SatDump/src-interface/. -I/home/jacopo/Sviluppo/SatDump/src-interface/../src-core -I/home/jacopo/Sviluppo/SatDump/src-core/. -I/home/jacopo/Sviluppo/SatDump/src-core/libs/lua  -Wall -Wextra -Wno-psabi -fopenmp -O3 -DNDEBUG -O3 -std=gnu++17 -fPIC -o CMakeFiles/satdump_interface.dir/explorer/explorer.cpp.o -c /home/jacopo/Sviluppo/SatDump/src-interface/explorer/explorer.cpp",
+  "file": "/home/jacopo/Sviluppo/SatDump/src-interface/explorer/explorer.cpp",
+  "output": "src-interface/CMakeFiles/satdump_interface.dir/explorer/explorer.cpp.o"
+},
+{
+  "directory": "/home/jacopo/Sviluppo/SatDump/build/src-interface",
   "command": "/usr/lib/icecc/bin/c++ -DBUILD_ZIQ=\\\"1\\\" -DSOURCE_PATH_SIZE=30 -DUSE_OPENCL=1 -Dsatdump_interface_EXPORTS -I/home/jacopo/Sviluppo/SatDump/src-interface/. -I/home/jacopo/Sviluppo/SatDump/src-interface/../src-core -I/home/jacopo/Sviluppo/SatDump/src-core/. -I/home/jacopo/Sviluppo/SatDump/src-core/libs/lua  -Wall -Wextra -Wno-psabi -fopenmp -O3 -DNDEBUG -O3 -std=gnu++17 -fPIC -o CMakeFiles/satdump_interface.dir/loader/loader.cpp.o -c /home/jacopo/Sviluppo/SatDump/src-interface/loader/loader.cpp",
   "file": "/home/jacopo/Sviluppo/SatDump/src-interface/loader/loader.cpp",
   "output": "src-interface/CMakeFiles/satdump_interface.dir/loader/loader.cpp.o"
@@ -3538,30 +3574,6 @@
   "command": "/usr/lib/icecc/bin/c++ -DBUILD_ZIQ=\\\"1\\\" -DSOURCE_PATH_SIZE=30 -DUSE_OPENCL=1 -Dsatdump_interface_EXPORTS -I/home/jacopo/Sviluppo/SatDump/src-interface/. -I/home/jacopo/Sviluppo/SatDump/src-interface/../src-core -I/home/jacopo/Sviluppo/SatDump/src-core/. -I/home/jacopo/Sviluppo/SatDump/src-core/libs/lua  -Wall -Wextra -Wno-psabi -fopenmp -O3 -DNDEBUG -O3 -std=gnu++17 -fPIC -o CMakeFiles/satdump_interface.dir/status_logger_sink.cpp.o -c /home/jacopo/Sviluppo/SatDump/src-interface/status_logger_sink.cpp",
   "file": "/home/jacopo/Sviluppo/SatDump/src-interface/status_logger_sink.cpp",
   "output": "src-interface/CMakeFiles/satdump_interface.dir/status_logger_sink.cpp.o"
-},
-{
-  "directory": "/home/jacopo/Sviluppo/SatDump/build/src-interface",
-  "command": "/usr/lib/icecc/bin/c++ -DBUILD_ZIQ=\\\"1\\\" -DSOURCE_PATH_SIZE=30 -DUSE_OPENCL=1 -Dsatdump_interface_EXPORTS -I/home/jacopo/Sviluppo/SatDump/src-interface/. -I/home/jacopo/Sviluppo/SatDump/src-interface/../src-core -I/home/jacopo/Sviluppo/SatDump/src-core/. -I/home/jacopo/Sviluppo/SatDump/src-core/libs/lua  -Wall -Wextra -Wno-psabi -fopenmp -O3 -DNDEBUG -O3 -std=gnu++17 -fPIC -o CMakeFiles/satdump_interface.dir/viewer2/dsp/cyclo_test.cpp.o -c /home/jacopo/Sviluppo/SatDump/src-interface/viewer2/dsp/cyclo_test.cpp",
-  "file": "/home/jacopo/Sviluppo/SatDump/src-interface/viewer2/dsp/cyclo_test.cpp",
-  "output": "src-interface/CMakeFiles/satdump_interface.dir/viewer2/dsp/cyclo_test.cpp.o"
-},
-{
-  "directory": "/home/jacopo/Sviluppo/SatDump/build/src-interface",
-  "command": "/usr/lib/icecc/bin/c++ -DBUILD_ZIQ=\\\"1\\\" -DSOURCE_PATH_SIZE=30 -DUSE_OPENCL=1 -Dsatdump_interface_EXPORTS -I/home/jacopo/Sviluppo/SatDump/src-interface/. -I/home/jacopo/Sviluppo/SatDump/src-interface/../src-core -I/home/jacopo/Sviluppo/SatDump/src-core/. -I/home/jacopo/Sviluppo/SatDump/src-core/libs/lua  -Wall -Wextra -Wno-psabi -fopenmp -O3 -DNDEBUG -O3 -std=gnu++17 -fPIC -o CMakeFiles/satdump_interface.dir/viewer2/dsp/newrec.cpp.o -c /home/jacopo/Sviluppo/SatDump/src-interface/viewer2/dsp/newrec.cpp",
-  "file": "/home/jacopo/Sviluppo/SatDump/src-interface/viewer2/dsp/newrec.cpp",
-  "output": "src-interface/CMakeFiles/satdump_interface.dir/viewer2/dsp/newrec.cpp.o"
-},
-{
-  "directory": "/home/jacopo/Sviluppo/SatDump/build/src-interface",
-  "command": "/usr/lib/icecc/bin/c++ -DBUILD_ZIQ=\\\"1\\\" -DSOURCE_PATH_SIZE=30 -DUSE_OPENCL=1 -Dsatdump_interface_EXPORTS -I/home/jacopo/Sviluppo/SatDump/src-interface/. -I/home/jacopo/Sviluppo/SatDump/src-interface/../src-core -I/home/jacopo/Sviluppo/SatDump/src-core/. -I/home/jacopo/Sviluppo/SatDump/src-core/libs/lua  -Wall -Wextra -Wno-psabi -fopenmp -O3 -DNDEBUG -O3 -std=gnu++17 -fPIC -o CMakeFiles/satdump_interface.dir/viewer2/dsp/waterfall_test.cpp.o -c /home/jacopo/Sviluppo/SatDump/src-interface/viewer2/dsp/waterfall_test.cpp",
-  "file": "/home/jacopo/Sviluppo/SatDump/src-interface/viewer2/dsp/waterfall_test.cpp",
-  "output": "src-interface/CMakeFiles/satdump_interface.dir/viewer2/dsp/waterfall_test.cpp.o"
-},
-{
-  "directory": "/home/jacopo/Sviluppo/SatDump/build/src-interface",
-  "command": "/usr/lib/icecc/bin/c++ -DBUILD_ZIQ=\\\"1\\\" -DSOURCE_PATH_SIZE=30 -DUSE_OPENCL=1 -Dsatdump_interface_EXPORTS -I/home/jacopo/Sviluppo/SatDump/src-interface/. -I/home/jacopo/Sviluppo/SatDump/src-interface/../src-core -I/home/jacopo/Sviluppo/SatDump/src-core/. -I/home/jacopo/Sviluppo/SatDump/src-core/libs/lua  -Wall -Wextra -Wno-psabi -fopenmp -O3 -DNDEBUG -O3 -std=gnu++17 -fPIC -o CMakeFiles/satdump_interface.dir/viewer2/viewer.cpp.o -c /home/jacopo/Sviluppo/SatDump/src-interface/viewer2/viewer.cpp",
-  "file": "/home/jacopo/Sviluppo/SatDump/src-interface/viewer2/viewer.cpp",
-  "output": "src-interface/CMakeFiles/satdump_interface.dir/viewer2/viewer.cpp.o"
 },
 {
   "directory": "/home/jacopo/Sviluppo/SatDump/build/src-ui",
