@@ -263,7 +263,7 @@ public:
             image::Image map_image;
             // map_image.load_jpeg(resources::getResourcePath("maps/nasa.jpg"));
             // map_image.load_jpeg("/home/alan/Downloads/land_ocean_ice_cloud_2048.jpg");
-            image::load_img(map_image, "resources/maps/nasa_hd.jpg"); // "/home/alan/Downloads/world.200408.3x21600x10800.png");
+            image::load_img(map_image, resources::getResourcePath("maps/nasa_hd.jpg")); // "/home/alan/Downloads/world.200408.3x21600x10800.png");
             // map_image.load_png("/home/alan/Downloads/projection_ews_test.png");
             // map_image.load_jpeg("/home/alan/Downloads/dnb_land_ocean_ice.2012.54000x27000_geo.jpg");
             // map_image.load_png("/home/alan/Downloads/projection_metop.png");
