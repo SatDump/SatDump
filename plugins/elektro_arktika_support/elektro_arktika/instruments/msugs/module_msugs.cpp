@@ -49,26 +49,27 @@ namespace elektro_arktika
                 read_data((uint8_t *)cadu, 1024);
 
                 int vcid = (cadu[5] >> 1) & 7;
+                int vcid_2 = (cadu[11] >> 1) & 7;
 
-                if (vcid == 2)
+                if ((vcid == 2) || (vcid_2 == 2))
                 {
                     std::vector<std::vector<uint8_t>> frames = deframerVIS1.work(&cadu[24], 1024 - 24);
                     for (std::vector<uint8_t> &frame : frames)
                         vis1_reader.pushFrame(&frame[0]);
                 }
-                else if (vcid == 3)
+                else if ((vcid == 3) || (vcid_2 == 3))
                 {
                     std::vector<std::vector<uint8_t>> frames = deframerVIS2.work(&cadu[24], 1024 - 24);
                     for (std::vector<uint8_t> &frame : frames)
                         vis2_reader.pushFrame(&frame[0]);
                 }
-                else if (vcid == 5)
+                else if ((vcid == 5) || (vcid_2 == 5))
                 {
                     std::vector<std::vector<uint8_t>> frames = deframerVIS3.work(&cadu[24], 1024 - 24);
                     for (std::vector<uint8_t> &frame : frames)
                         vis3_reader.pushFrame(&frame[0]);
                 }
-                else if (vcid == 4)
+                else if ((vcid == 4) || (vcid_2 == 4))
                 {
                     std::vector<std::vector<uint8_t>> frames = deframerIR.work(&cadu[24], 1024 - 24);
                     for (std::vector<uint8_t> &frame : frames)
