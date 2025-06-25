@@ -297,7 +297,7 @@ namespace satdump
                         }
                         catch (std::exception &e)
                         {
-                            logger->error("Error loading product! Maybe not a valid product? Details : %s", e.what());
+                            logger->error("Error loading product! Maybe not a valid product? (Reminder : Pre-2.0.0 products are NOT compatible with 2.0.0) Details : %s", e.what());
                         }
                     }
                     else if (std::filesystem::path(path).extension().string() == ".json")
@@ -313,7 +313,7 @@ namespace satdump
                         }
                         catch (std::exception &e)
                         {
-                            logger->error("Error loading dataset! Maybe not a valid dataset? Details : %s", e.what());
+                            logger->error("Error loading dataset! Maybe not a valid dataset? (Reminder : Pre-2.0.0 datasets are NOT compatible with 2.0.0) Details : %s", e.what());
                         }
                     }
                     else if (std::filesystem::path(path).extension().string() == ".shp")
