@@ -126,11 +126,14 @@ namespace satdump
                     if (ImGui::BeginMenu("Quick Open"))
                     {
                         ImGui::InputText("##quickvieweropen", &quickOpenString);
-                        if (ImGui::IsItemDeactivatedAfterEdit())
+                        bool go = ImGui::IsItemDeactivatedAfterEdit();
+                        ImGui::SameLine();
+                        if (ImGui::Button("Go##loadfromhttpgo") || go)
                         {
                             tryOpenFileInExplorer(quickOpenString);
                             quickOpenString.clear();
                         }
+                        ImGui::SameLine();
                         if (ImGui::Button("Paste & Load"))
                             tryOpenFileInExplorer(std::string(ImGui::GetClipboardText()));
                         ImGui::EndMenu();
