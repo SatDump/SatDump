@@ -22,7 +22,6 @@ namespace satdump
 
             int d_buffer_size;
             bool d_iq_swap;
-            std::atomic<bool> d_eof;
 
             dsp::BasebandReader baseband_reader;
 
@@ -34,6 +33,7 @@ namespace satdump
             // TODOREWORK
             std::atomic<uint64_t> d_filesize;
             std::atomic<uint64_t> d_progress;
+            std::atomic<bool> d_eof;
 
         public:
             FileSourceBlock();
