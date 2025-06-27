@@ -1,7 +1,7 @@
 #include "calibration_units.h"
 #include "core/plugin.h"
 
-#define CALIBRATION_RADIANCE_UNIT "W\u00B7sr\u207b\u00b9\u00B7m\u207b\u00b2"
+#define CALIBRATION_RADIANCE_UNIT u8"W\u00B7sr\u207b\u00b9\u00B7m\u207b\u00b2"
 #define CALIBRATION_TEMPERATURE_UNIT "°K"
 #define CALIBRATION_TEMPERATURE_UNIT_CELSIUS "°C"
 
