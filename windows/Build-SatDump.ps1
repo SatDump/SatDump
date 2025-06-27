@@ -51,13 +51,13 @@ if($env:PROCESSOR_ARCHITECTURE -ne $arch)
         Write-Error "Unsupported host platform: $($env:PROCESSOR_ARCHITECTURE)"
         exit 1
     }
-    $additional_args += "-DVCPKG_USE_HOST_TOOLS=ON", "-DVCPKG_HOST_TRIPLET=$host_triplet"
+    $additional_args += "-DCMAKE_SYSTEM_NAME=Windows", "-DCMAKE_SYSTEM_PROCESSOR=$arch", "-DCMAKE_CROSSCOMPILING=ON", "-DVCPKG_USE_HOST_TOOLS=ON", "-DVCPKG_HOST_TRIPLET=$host_triplet"
 }
 
 #Build SatDump
 cd "$(Split-Path -Parent $MyInvocation.MyCommand.Path)\.."
 mkdir build | Out-Null
 cd build
-cmake .. -DVCPKG_TARGET_TRIPLET=$platform -DBUILD_MSVC=ON -DCMAKE_TOOLCHAIN_FILE="$($(Get-Item ..\vcpkg\scripts\buildsystems\vcpkg.cmake).FullName)" -DVCPKG_TARGET_TRIPLET="$platform" -A $generator $additional_args
+cmake .. -DBUILD_MSVC=ON -DCMAKE_TOOLCHAIN_FILE="$($(Get-Item ..\vcpkg\scripts\buildsystems\vcpkg.cmake).FullName)" -DVCPKG_TARGET_TRIPLET="$platform" -A $generator $additional_args
 cmake --build . --config Release
 cd ..
