@@ -122,7 +122,7 @@ namespace satdump
                         auto freq = product->get_channel_frequency(ch.abs_index);
                         ImGui::SameLine();
                         ImGui::Text("(%s)", format_notated(SPEED_OF_LIGHT_M_S / freq, "m", 2).c_str());
-                        ImGui::Text("%.3f cm\u207b\u00b9 / %s", ch.wavenumber, format_notated(freq, "Hz", 2).c_str());
+                        ImGui::Text(u8"%.3f cm\u207b\u00b9 / %s", ch.wavenumber, format_notated(freq, "Hz", 2).c_str());
                     }
                 }
 
