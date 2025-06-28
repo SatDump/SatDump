@@ -348,7 +348,7 @@
         },
         {
         "name": "Cloud Top IR",
-            "expression": "cch4=(4, brightness_temperature, 183.15, 323.15);lut=lut(lut/cal/CloudTopIR.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
+            "expression": "cch4=(5, brightness_temperature, 183.15, 323.15);lut=lut(lut/cal/CloudTopIR.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
             "image": {
                 "geo_correct": true
             }
