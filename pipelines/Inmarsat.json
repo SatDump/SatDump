@@ -243,5 +243,28 @@
                 }
             }
         }
+    },
+    "inmarsat_ttc": {
+        "name": "Inmarsat TT&C",
+        "live": true,
+        "live_cfg": [
+            [
+                1,
+                0
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "pm_demod": {
+                    "resample_after_pll": true,
+                    "symbolrate": 16375,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.35,
+                    "costas_bw": 0.01,
+                    "subcarrier_offset": 65500
+                }
+            }
+        }
     }
 }
