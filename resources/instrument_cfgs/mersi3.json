@@ -14,7 +14,7 @@
             "name": "MERSI False Color",
             "expression": "ch3, (ch2 * 0.43 + ch4 * 0.57), ch1",
             "image": {
-                "individual_equalize": true,
+                "individual_equalize": false,
                 "geo_correct": true
             }
         },
