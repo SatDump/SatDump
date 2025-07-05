@@ -77,7 +77,7 @@ namespace satdump
             double rgb_r, rgb_g, rgb_b;
             double hsl_h, hsl_s, hsl_l;
 
-            float overlap = config.overlap / 2.0;
+            float overlap = (config.overlap / 100.0) / 2.0;
 
             for (size_t pixel = 0; pixel < image.width() * image.height(); pixel++)
             {

@@ -140,11 +140,11 @@ namespace satdump
                         huesaturation_cfg_img.saturation[i] = saturation / 100.0;
                         huesaturation_cfg_img.lightness[i] = lightness / 100.0;
                     }
-                    
-                    float overlap = huesaturation_cfg_img.overlap * 100.0;
+
+                    float overlap = huesaturation_cfg_img.overlap;
                     ImGui::SliderFloat("Overlap", &overlap, -100.0, 100.0);
                     needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
-                    huesaturation_cfg_img.overlap = overlap / 100.0;
+                    huesaturation_cfg_img.overlap = overlap;
                 }
 
                 needs_to_update |= ImGui::Checkbox("Remove Background", &remove_background_img);
