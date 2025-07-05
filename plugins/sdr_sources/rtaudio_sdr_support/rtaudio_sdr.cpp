@@ -26,9 +26,7 @@ void RtAudioSource::set_settings(nlohmann::json settings)
 
     channel_mode = getValueOrDefault(d_settings["channel_cnt"], channel_mode);
 
-    if (is_started)
-    {
-    }
+    if (is_started) {}
 }
 
 nlohmann::json RtAudioSource::get_settings()
@@ -45,7 +43,7 @@ void RtAudioSource::open()
     // Set available samplerate
     available_samplerates.clear();
 
-    RtAudio::DeviceInfo info = adc_dev.getDeviceInfo(d_sdr_id);
+    RtAudio::DeviceInfo info = adc_dev.getDeviceInfo(std::stoi(d_sdr_id));
     for (auto s : info.sampleRates)
         available_samplerates.push_back(s);
     channel_count = info.inputChannels;
@@ -91,10 +89,7 @@ void RtAudioSource::stop()
     is_started = false;
 }
 
-void RtAudioSource::close()
-{
-    is_open = false;
-}
+void RtAudioSource::close() { is_open = false; }
 
 void RtAudioSource::set_frequency(uint64_t frequency)
 {
@@ -141,10 +136,7 @@ void RtAudioSource::set_samplerate(uint64_t samplerate)
     throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
-uint64_t RtAudioSource::get_samplerate()
-{
-    return current_samplerate;
-}
+uint64_t RtAudioSource::get_samplerate() { return current_samplerate; }
 
 std::vector<dsp::SourceDescriptor> RtAudioSource::getAvailableSources()
 {
@@ -156,8 +148,8 @@ std::vector<dsp::SourceDescriptor> RtAudioSource::getAvailableSources()
     for (unsigned int i = 0; i < devices; i++)
     {
         info = adc_dev.getDeviceInfo(i);
-        if (info.probed == true)
-            results.push_back({"rtaudio", "RtAudio - " + info.name, std::to_string(i)});
+        // if (info.probed == true)
+        results.push_back({"rtaudio", "RtAudio - " + info.name, std::to_string(i)});
     }
 
     return results;

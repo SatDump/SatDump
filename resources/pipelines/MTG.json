@@ -2,7 +2,8 @@
     "mtg_s_band_link": {
         "name": "MTG S-band TLM link",
         "live": [
-            1
+            1,
+            2
         ],
         "work": {
             "baseband": {},
@@ -16,7 +17,54 @@
                     "costas_bw": 0.01,
                     "subcarrier_offset": 64e3
                 }
+            },
+            "cadu": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": false,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
             }
+        }
+    },
+    "mtg_raw": {
+        "name": "MTG Ka-Band Link",
+        "live": [
+            1,
+            2
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "psk_demod",
+                "parameters": {
+                    "constellation": "oqpsk",
+                    "symbolrate": 188e6,
+                    "rrc_alpha": 0.35,
+                    "pll_bw": 0.0001,
+                    "clock_alpha": 1e-2
+                }
+            },
+            "cadu": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
+                    "constellation": "oqpsk",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.360,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": false,
+                    "rs_i": 5,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {}
         }
     }
 }
