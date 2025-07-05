@@ -463,3 +463,9 @@ option(PLUGIN_WIPTRACKING_APP "Enable WIP Tracking Application" OFF)
 if(PLUGIN_WIPTRACKING_APP)
   add_subdirectory(wip_tracking_app)
 endif()
+
+option(PLUGIN_WIPSETTINGS_EDITOR_APP "Enable WIP Settings Editor Application" ON)
+
+if (PLUGIN_WIPSETTINGS_EDITOR_APP)
+  add_subdirectory(wip_settings_editor_app)
+endif()
