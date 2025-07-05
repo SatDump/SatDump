@@ -49,6 +49,6 @@ namespace satdump
         ~WipSettingsEditorHandler();
 
         std::string getID()   { return "wipsettings_handler"; }
-        std::string getName() { return "Instrument Config Generator"; }
+        std::string getName() { return "Instrument Config Editor"; }
     };
 } // namespace satdump

@@ -21,7 +21,7 @@ public:
         {
             if (ImGui::BeginMenu("Tools"))
             {
-                if (ImGui::MenuItem("Instrument Config Generator"))
+                if (ImGui::MenuItem("Instrument Config Editor"))
                     evt.master_handler->addSubHandler(std::make_shared<satdump::WipSettingsEditorHandler>());
                 ImGui::EndMenu();
             }
