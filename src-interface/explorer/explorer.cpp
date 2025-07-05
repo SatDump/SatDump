@@ -240,6 +240,8 @@ namespace satdump
 
         void ExplorerApplication::drawUI()
         {
+            drawMenuBar();
+
             ImVec2 explorer_size = ImGui::GetContentRegionAvail();
 
             if (ImGui::BeginTable("##wiever_table", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInnerV))
@@ -254,8 +256,7 @@ namespace satdump
                     panel_ratio = left_width / explorer_size.x;
                 last_width = left_width;
 
-                ImGui::BeginChild("ExplorerChildPanel", {left_width, float(explorer_size.y - 10)}, false, ImGuiWindowFlags_MenuBar);
-                drawMenuBar();
+                ImGui::BeginChild("ExplorerChildPanel", {left_width, float(explorer_size.y - 10)}, false);
                 drawPanel();
                 ImGui::EndChild();
 

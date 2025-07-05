@@ -3,14 +3,9 @@
 
 namespace satdump
 {
-    Application::Application(std::string id)
-        : app_id(id)
-    {
-    }
+    Application::Application(std::string id) : app_id(id) {}
 
-    Application::~Application()
-    {
-    }
+    Application::~Application() {}
 
     void Application::drawWindow()
     {
@@ -19,15 +14,14 @@ namespace satdump
         ImGui::End();
     }
 
-    void Application::draw()
+    void Application::draw(bool window)
     {
-        ImGui::BeginChild(app_id.c_str(), ImGui::GetContentRegionAvail(), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+        if (window)
+            ImGui::BeginChild(app_id.c_str(), ImGui::GetContentRegionAvail(), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
         drawUI();
-        ImGui::EndChild();
+        if (window)
+            ImGui::EndChild();
     }
 
-    void Application::drawUI()
-    {
-        ImGui::Text("Nothing implemented there yet!");
-    }
-};
+    void Application::drawUI() { ImGui::Text("Nothing implemented there yet!"); }
+}; // namespace satdump

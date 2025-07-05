@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace satdump
@@ -20,7 +20,7 @@ namespace satdump
         ~Application();
 
         void drawWindow();
-        void draw();
+        void draw(bool window = true);
 
     public:
         static std::string getID();
@@ -32,4 +32,4 @@ namespace satdump
     {
         std::vector<std::shared_ptr<Application>> &applications;
     };
-};
+}; // namespace satdump

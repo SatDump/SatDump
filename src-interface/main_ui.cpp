@@ -76,6 +76,9 @@ namespace satdump
         explorer_app.reset();
     }
 
+    // TODOREWORKUI
+    bool offline_en = false;
+
     void renderMainUI()
     {
         if (update_ui)
@@ -92,7 +95,58 @@ namespace satdump
         {
             ImGui::SetNextWindowPos({0, 0});
             ImGui::SetNextWindowSize({(float)dims.first, (float)dims.second});
-            ImGui::Begin("SatDump UI", nullptr, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration);
+            ImGui::Begin("SatDump UI", nullptr, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_MenuBar);
+
+#if 1
+            if (ImGui::BeginMenuBar())
+            {
+                if (ImGui::BeginMenu("Others"))
+                {
+                    if (ImGui::MenuItem("Offline Processing", NULL, offline_en))
+                        offline_en = !offline_en;
+                    ImGui::EndMenu();
+                }
+
+                ImGui::EndMenuBar();
+            }
+
+            explorer_app->draw(false);
+
+            if (offline_en)
+            {
+                ImGui::Begin("Offline Processing");
+
+                if (processing::is_processing)
+                {
+                    // ImGui::BeginChild("OfflineProcessingChild");
+                    processing::ui_call_list_mutex->lock();
+                    int live_width = dims.first; // ImGui::GetWindowWidth();
+                    int live_height = /*ImGui::GetWindowHeight()*/ dims.second - ImGui::GetCursorPos().y;
+                    float winheight = processing::ui_call_list->size() > 0 ? live_height / processing::ui_call_list->size() : live_height;
+                    float currentPos = ImGui::GetCursorPos().y;
+                    ImGui::PushStyleColor(ImGuiCol_TitleBg, ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive));
+                    for (std::shared_ptr<pipeline::ProcessingModule> module : *processing::ui_call_list)
+                    {
+                        ImGui::SetNextWindowPos({0, currentPos});
+                        currentPos += winheight;
+                        ImGui::SetNextWindowSize({(float)live_width, (float)winheight});
+                        module->drawUI(false);
+                    }
+                    ImGui::PopStyleColor();
+                    processing::ui_call_list_mutex->unlock();
+                    // ImGui::EndChild();
+                }
+                else
+                {
+                    ImGui::BeginChild("offlineprocessing", ImGui::GetContentRegionAvail());
+                    offline::render();
+                    ImGui::EndChild();
+                }
+
+                ImGui::End();
+            }
+
+#else
             if (ImGui::BeginTabBar("Main TabBar", ImGuiTabBarFlags_None))
             {
                 if (ImGui::BeginTabItem("Offline processing"))
@@ -161,6 +215,7 @@ namespace satdump
                 }
             }
             ImGui::EndTabBar();
+#endif
             ImGuiUtils_SendCurrentWindowToBack();
             ImGui::End();
 
