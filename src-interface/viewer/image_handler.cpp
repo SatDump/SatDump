@@ -22,6 +22,8 @@
 #include "common/image/processing.h"
 #include "common/image/image_lut.h"
 
+#include <regex>
+
 namespace satdump
 {
     void ImageViewerHandler::init()
@@ -495,7 +497,7 @@ namespace satdump
                     if (scale_has_update)
                     {
                         if(scale_texture_id == 0)
-                            scale_texture_id = makeImageTexture();
+                            scale_texture_id = makeImageTexture(25, 512);
                         updateImageTexture(scale_texture_id, scale_buffer, 25, 512);
                         scale_has_update = false;
                     }

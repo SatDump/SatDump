@@ -80,7 +80,7 @@ namespace fengyun_svissr
         std::vector<int> scid_stats;
 
         // UI Stuff
-        unsigned int textureID = 0;
+        intptr_t textureID = 0;
         uint32_t *textureBuffer;
 
     public:

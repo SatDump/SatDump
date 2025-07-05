@@ -24,7 +24,7 @@ namespace widgets
             logger->info("Opening URL " + url);
 
 #if defined(_WIN32)
-            ShellExecuteA(0, 0, url.c_str(), 0, 0, SW_SHOW);
+            // ShellExecuteA(0, 0, url.c_str(), 0, 0, SW_SHOW); //TODOUWP
 #elif defined(__APPLE__)
             system(std::string("open " + url).c_str());
 #elif defined(__ANDROID__)
@@ -83,7 +83,7 @@ namespace widgets
                 image::Image img;
                 image::load_img(img, resources::getResourcePath(image_path));
 
-                unsigned int text_id = makeImageTexture();
+                intptr_t text_id = makeImageTexture(img.width(), img.height());
                 uint32_t *output_buffer = new uint32_t[img.width() * img.height()];
                 image::image_to_rgba(img, output_buffer);
                 updateImageTexture(text_id, output_buffer, img.width(), img.height());
@@ -91,7 +91,7 @@ namespace widgets
 
                 imageData.isValid = true;
                 imageData.useLinkCallback = false;
-                imageData.user_texture_id = (ImTextureID)(intptr_t)text_id;
+                imageData.user_texture_id = (ImTextureID)text_id;
                 imageData.size = ImVec2(img.width(), img.height());
             }
 

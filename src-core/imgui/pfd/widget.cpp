@@ -1,19 +1,30 @@
 #include <filesystem>
-#include "widget.h"
 #include "core/style.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
+#include "widget.h"
 #include "android_dialogs.h"
 
 #ifdef _MSC_VER
 #include <direct.h>
+
+//TODOUWP
+#include <winrt/windows.storage.h>
 #endif
 
 FileSelectWidget::FileSelectWidget(std::string label, std::string selection_text, bool directory, bool allow_url)
     : label(label), selection_text(selection_text), directory(directory), allow_url(allow_url)
 {
-    fileselect = nullptr;
-    dirselect = nullptr;
+    // TODOUWP
+    //fileselect = nullptr;
+    //dirselect = nullptr;
+
+    //TODOUWP
+    ImGuiFileBrowserFlags fileBrowserFlags = ImGuiFileBrowserFlags_CreateNewDir | ImGuiFileBrowserFlags_SkipItemsCausingError;
+    std::string defaultPath = winrt::to_string(winrt::Windows::Storage::ApplicationData::Current().LocalFolder().Path()) + "\\Documents";
+    fileselect = ImGui::FileBrowser(fileBrowserFlags, defaultPath);
+    dirselect = ImGui::FileBrowser(fileBrowserFlags | ImGuiFileBrowserFlags_HideRegularFiles | ImGuiFileBrowserFlags_SelectDirectory, defaultPath);
+
     waiting_for_res = false;
     file_valid = false;
     url_valid = false;
@@ -24,8 +35,9 @@ FileSelectWidget::FileSelectWidget(std::string label, std::string selection_text
 
 FileSelectWidget::~FileSelectWidget()
 {
-    delete fileselect;
-    delete dirselect;
+    // TODOUWP
+    //delete fileselect;
+    //delete dirselect;
 }
 
 bool FileSelectWidget::draw(std::string hint)
@@ -67,6 +79,13 @@ bool FileSelectWidget::draw(std::string hint)
     ImGui::SameLine();
     if (ImGui::Button(btnid.c_str()))
     {
+        // TODOUWP
+        if (directory)
+            dirselect.Open();
+        else
+            fileselect.Open();
+
+        /* TODOUWP
         if (!directory)
         {
 #ifdef __ANDROID__
@@ -85,11 +104,13 @@ bool FileSelectWidget::draw(std::string hint)
         }
 
         waiting_for_res = true;
+        */
     }
 
     if (disabled)
         style::endDisabled();
 
+    /* TODOUWP
     if (waiting_for_res)
     {
         std::string get = "";
@@ -132,6 +153,25 @@ bool FileSelectWidget::draw(std::string hint)
                 waiting_for_res = false;
             }
         }
+    }
+    */
+
+    // TODOUWP
+    fileselect.Display();
+    dirselect.Display();
+
+    if (fileselect.HasSelected())
+    {
+        path = fileselect.GetSelected().string();
+        changed |= true;
+        fileselect.ClearSelected();
+    }
+
+    if (dirselect.HasSelected())
+    {
+        path = dirselect.GetSelected().string();
+        changed |= true;
+        dirselect.ClearSelected();
     }
 
     bool is_dir = std::filesystem::is_directory(path);

@@ -66,7 +66,7 @@ namespace noaa_apt
         // UI Stuff
         instrument_status_t apt_status = DECODING;
         bool has_to_update = false;
-        unsigned int textureID = 0;
+        intptr_t textureID = 0;
         uint32_t *textureBuffer = nullptr;
 
         // Functions

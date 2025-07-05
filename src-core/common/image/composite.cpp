@@ -11,12 +11,16 @@
 
 #include "io.h"
 
+#include <codecvt>
+#include <locale>
+
 namespace image
 {
     // Generate a composite from channels and an equation
     Image generate_composite_from_equ(std::vector<Image> &inputChannels, std::vector<std::string> channelNumbers, std::string equation, nlohmann::json offsets_cfg, float *progress)
     {
         // Equation parsing stuff
+        std::wstring_convert<std::codecvt_utf8<wchar_t>> converter; //TODOUWP
         mu::Parser rgbParser;
         int outValsCnt = 0;
 
@@ -27,18 +31,18 @@ namespace image
         for (int i = 0; i < (int)inputChannels.size(); i++)
         {
             channelValues[i] = 0;
-            rgbParser.DefineVar(channelNumbers[i], &channelValues[i]);
+            rgbParser.DefineVar(converter.from_bytes(channelNumbers[i]), &channelValues[i]); //TODOUWP
         }
 
         try
         {
             // Set expression
-            rgbParser.SetExpr(equation);
+            rgbParser.SetExpr(converter.from_bytes(equation)); //TODOUWP
             rgbParser.Eval(outValsCnt); // Eval once for channel output count
         }
         catch (mu::ParserError &e)
         {
-            logger->error(e.GetMsg());
+            logger->error(converter.to_bytes(e.GetMsg()));
             return Image();
         }
 

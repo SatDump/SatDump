@@ -31,6 +31,12 @@ elseif($platform -eq "arm64-windows")
     $arch = "ARM64"
     $sdrplay_arch = "arm64"
 }
+elseif($platform -eq "x64-uwp")
+{
+    $generator = "x64"
+    $arch = "AMD64"
+    $sdrplay_arch = "x64"
+}
 else
 {
     Write-Error "Unsupported platform: $platform"
@@ -65,13 +71,23 @@ git clone https://github.com/microsoft/vcpkg -b 2025.01.13
 cd vcpkg
 .\bootstrap-vcpkg.bat
 
-# Core packages. libxml2 is for libiio
-.\vcpkg install --triplet $platform pthreads libjpeg-turbo tiff libpng glfw3 libusb fftw3 libxml2 portaudio nng zstd armadillo opencl curl[schannel] hdf5
+# Core packages
+.\vcpkg install --triplet $platform pthreads libjpeg-turbo tiff libpng fftw3 zstd curl libiconv
 
-# Entirely for UHD...
-.\vcpkg install --triplet $platform boost-chrono boost-date-time boost-filesystem boost-program-options boost-system boost-serialization boost-thread `
-                                    boost-test boost-format boost-asio boost-math boost-graph boost-units boost-lockfree boost-circular-buffer        `
-                                    boost-assign boost-dll
+if($platform -ne "x64-uwp")
+{
+    # libxml2 is for libiio
+    .\vcpkg install --triplet $platform portaudio opencl nng libusb hdf5 armadillo glfw3 libxml2 
+
+    # Entirely for UHD...
+    .\vcpkg install --triplet $platform boost-chrono boost-date-time boost-filesystem boost-program-options boost-system boost-serialization boost-thread `
+                                        boost-test boost-format boost-asio boost-math boost-graph boost-units boost-lockfree boost-circular-buffer        `
+                                        boost-assign boost-dll
+}
+else
+{
+    .\vcpkg install --triplet $platform cppwinrt
+}
 
 #Start Building Dependencies
 $null = mkdir build
@@ -79,31 +95,64 @@ cd build
 $build_args="-DCMAKE_TOOLCHAIN_FILE=$($(Get-Item ..\scripts\buildsystems\vcpkg.cmake).FullName)", "-DVCPKG_TARGET_TRIPLET=$platform", "-DCMAKE_INSTALL_PREFIX=$($(Get-Item ..\installed\$platform).FullName)", "-DCMAKE_BUILD_TYPE=Release", "-A", $generator
 $standard_include=$(Get-Item ..\installed\$platform\include).FullName
 $pthread_lib=$(Get-Item ..\installed\$platform\lib\pthreadVC3.lib).FullName
-$libusb_include=$(Get-Item ..\installed\$platform\include\libusb-1.0).FullName
-$libusb_lib=$(Get-Item ..\installed\$platform\lib\libusb-1.0.lib).FullName
-if($env:PROCESSOR_ARCHITECTURE -ne $arch)
+
+if($platform -eq "x64-uwp")
+{
+    $build_args += "-DCMAKE_SYSTEM_NAME=WindowsStore", "-DCMAKE_SYSTEM_VERSION=10.0", "-DCMAKE_SYSTEM_PROCESSOR=$arch", "-DCMAKE_CROSSCOMPILING=ON", "-DVCPKG_USE_HOST_TOOLS=ON", "-DVCPKG_HOST_TRIPLET=$host_triplet"
+}
+elseif($env:PROCESSOR_ARCHITECTURE -ne $arch)
 {
     $build_args += "-DCMAKE_SYSTEM_NAME=Windows", "-DCMAKE_SYSTEM_PROCESSOR=$arch", "-DCMAKE_CROSSCOMPILING=ON", "-DVCPKG_USE_HOST_TOOLS=ON", "-DVCPKG_HOST_TRIPLET=$host_triplet"
 }
 
-#TEMPORARY: Use an unmerged PR of LibUSB to allow setting RAW_IO on USB transferrs. This is needed to
-#           prevent sample drops on some Windows machines with USB SDRs
-#           Update Jan. 30, 2025: There's nothing more permanent than a temporary measure :-)
-Write-Output "Building libusb..."
-git clone https://github.com/HannesFranke-smartoptics/libusb -b raw_io_v2
-cd libusb\msvc
-msbuild -m -v:m -p:Platform=$generator,Configuration=Release .\libusb.sln
-msbuild -m -v:m -p:Platform=$generator,Configuration=Debug .\libusb.sln
-$toolset_used=$(get-childitem ..\build\)[0].Name
-cp -Force ..\build\$toolset_used\$generator\Release\dll\libusb-1.0.dll ..\..\..\installed\$platform\bin
-cp -Force ..\build\$toolset_used\$generator\Release\dll\libusb-1.0.pdb ..\..\..\installed\$platform\bin
-cp -Force ..\build\$toolset_used\$generator\Release\dll\libusb-1.0.lib ..\..\..\installed\$platform\lib
-cp -Force ..\build\$toolset_used\$generator\Debug\dll\libusb-1.0.dll ..\..\..\installed\$platform\Debug\bin
-cp -Force ..\build\$toolset_used\$generator\Debug\dll\libusb-1.0.pdb ..\..\..\installed\$platform\Debug\bin
-cp -Force ..\build\$toolset_used\$generator\Debug\dll\libusb-1.0.lib ..\..\..\installed\$platform\Debug\lib
-cp -force ..\libusb\libusb.h ..\..\..\installed\$platform\include
-cd ..\..
-rm -recurse -force libusb
+if($platform -ne "x64-uhd")
+{
+    $libusb_include=$(Get-Item ..\installed\$platform\include\libusb-1.0).FullName
+    $libusb_lib=$(Get-Item ..\installed\$platform\lib\libusb-1.0.lib).FullName
+
+    #TEMPORARY: Use an unmerged PR of LibUSB to allow setting RAW_IO on USB transferrs. This is needed to
+    #           prevent sample drops on some Windows machines with USB SDRs
+    #           Update Jan. 30, 2025: There's nothing more permanent than a temporary measure :-)
+    Write-Output "Building libusb..."
+    git clone https://github.com/HannesFranke-smartoptics/libusb -b raw_io_v2
+    cd libusb\msvc
+    msbuild -m -v:m -p:Platform=$generator,Configuration=Release .\libusb.sln
+    msbuild -m -v:m -p:Platform=$generator,Configuration=Debug .\libusb.sln
+    $toolset_used=$(get-childitem ..\build\)[0].Name
+    cp -Force ..\build\$toolset_used\$generator\Release\dll\libusb-1.0.dll ..\..\..\installed\$platform\bin
+    cp -Force ..\build\$toolset_used\$generator\Release\dll\libusb-1.0.pdb ..\..\..\installed\$platform\bin
+    cp -Force ..\build\$toolset_used\$generator\Release\dll\libusb-1.0.lib ..\..\..\installed\$platform\lib
+    cp -Force ..\build\$toolset_used\$generator\Debug\dll\libusb-1.0.dll ..\..\..\installed\$platform\Debug\bin
+    cp -Force ..\build\$toolset_used\$generator\Debug\dll\libusb-1.0.pdb ..\..\..\installed\$platform\Debug\bin
+    cp -Force ..\build\$toolset_used\$generator\Debug\dll\libusb-1.0.lib ..\..\..\installed\$platform\Debug\lib
+    cp -force ..\libusb\libusb.h ..\..\..\installed\$platform\include
+    cd ..\..
+    rm -recurse -force libusb
+}
+else
+{
+    Write-Output "Building nng..."
+    git clone -b v1.9.0 https://github.com/nanomsg/nng
+    cd nng
+    mkdir build
+    cd build
+    cmake $build_args -DBUILD_SHARED_LIBS=ON -DNNG_ENABLE_TLS=OFF -DNNG_TOOLS=OFF -DNNG_TESTS=OFF -DNNG_ENABLE_NNGCAT=OFF -DNNG_ENABLE_COMPAT=OFF ..
+    cmake --build . --config Release
+    cmake --install .
+    cd ..\..
+    #rm -recurse -force nng #TODO
+
+    Write-Output "Building libxml2..."
+    git clone -b v2.14.4 https://github.com/GNOME/libxml2
+    cd libxml2
+    mkdir build
+    cd build
+    cmake $build_args -DLIBXML2_WITH_DEBUG=OFF -DLIBXML2_WITH_LZMA=ON -DLIBXML2_WITH_PROGRAMS=OFF -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_TESTS=OFF ..
+    cmake --build . --config Release
+    cmake --install .
+    cd ..\..
+    #rm -recurse -force nng #TODO
+}
 
 Write-Output "Building cpu_features..."
 git clone https://github.com/google/cpu_features # -b 0.9.1 (not released as of this writing)

@@ -1,6 +1,6 @@
 #include <algorithm>
 #include <sstream>
-#include "portable-file-dialogs.h"
+//#include "portable-file-dialogs.h" //TODOUWP
 #include "core/config.h"
 #include "logger.h"
 #include "pfd_utils.h"
@@ -45,11 +45,11 @@ namespace satdump
         }
 
     done_ext:
-#ifdef __ANDROID__
+//#ifdef __ANDROID__ //TODOUWP
         *default_ext = config::main_cfg["satdump_general"]["image_format"]["value"].get<std::string>();
-#endif
+//#endif
 
-#if defined(_MSC_VER)
+/*#if defined(_MSC_VER)
         if (default_path == ".")
         {
             char *cwd;
@@ -58,17 +58,17 @@ namespace satdump
                 default_path = cwd;
         }
         default_path += "\\";
-#elif defined(__ANDROID__)
+#elif defined(__ANDROID__) */
         if (default_path == ".")
             default_path = "/storage/emulated/0";
         default_path += "/";
-#else
+/*#else
         default_path += "/";
-#endif
+#endif*/
         std::string save_name = default_path + default_name + "." + *default_ext;
         std::string path = "";
 
-#ifndef __ANDROID__
+/*#ifndef __ANDROID__
         auto result = pfd::save_file(window_title, save_name, saveopts);
         while (!result.ready(1000))
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -81,10 +81,10 @@ namespace satdump
             if (extension.size() > 1)
                 *default_ext = extension.substr(1);
         }
-#else
+#else*/
         path = save_name;
         image::save_img(*image, save_name);
-#endif
+//#endif
         return path;
     }
 }

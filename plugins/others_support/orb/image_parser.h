@@ -19,7 +19,7 @@ namespace orb
         struct ImgStc
         {
             image::Image img;
-            uint32_t textureID = 0;
+            intptr_t textureID = 0;
             uint32_t *textureBuffer;
             int imgsize = 0;
             bool hasToUpdate = false;

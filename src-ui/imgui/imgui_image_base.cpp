@@ -29,14 +29,14 @@ int funcGetMaxTextureSize()
     return maxTextureSize;
 }
 
-unsigned int funcMakeImageTexture()
+intptr_t funcMakeImageTexture(int, int)
 {
     GLuint gl_text;
     glGenTextures(1, &gl_text);
     return gl_text;
 }
 
-void funcUpdateImageTexture(unsigned int gl_text, uint32_t *buffer, int width, int height)
+void funcUpdateImageTexture(intptr_t gl_text, uint32_t *buffer, int width, int height)
 {
     glBindTexture(GL_TEXTURE_2D, gl_text);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -46,7 +46,7 @@ void funcUpdateImageTexture(unsigned int gl_text, uint32_t *buffer, int width, i
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void funcUpdateMMImageTexture_GL2(unsigned int gl_text, uint32_t *buffer, int width, int height)
+void funcUpdateMMImageTexture_GL2(intptr_t gl_text, uint32_t *buffer, int width, int height)
 {
 #if defined(IMGUI_IMPL_OPENGL_ES2)
     if (width % 2 == 1 || height % 2 == 1)
@@ -75,7 +75,7 @@ void funcUpdateMMImageTexture_GL2(unsigned int gl_text, uint32_t *buffer, int wi
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void funcDeleteImageTexture(unsigned int gl_text)
+void funcDeleteImageTexture(intptr_t gl_text)
 {
     glDeleteTextures(1, &gl_text);
 }

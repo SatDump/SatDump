@@ -321,7 +321,7 @@ namespace fengyun_svissr
     {
         if (textureID == 0)
         {
-            textureID = makeImageTexture();
+            textureID = makeImageTexture(2501, 2291);
             textureBuffer = new uint32_t[2501 * 2291];
             memset(textureBuffer, 0, sizeof(uint32_t) * 2501 * 2291);
         }

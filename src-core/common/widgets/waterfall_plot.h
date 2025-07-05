@@ -15,7 +15,7 @@ namespace widgets
         int fft_size;
         int fft_lines;
         const int resolution = 2000; // Number of colors
-        unsigned int texture_id = 0;
+        intptr_t texture_id = 0;
         uint32_t *raw_img_buffer = nullptr;
 
         std::vector<uint32_t> palette;

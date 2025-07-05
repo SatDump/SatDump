@@ -30,8 +30,10 @@ target_include_directories(satdump_core PUBLIC .)
 
 # Set the resources path
 if(MSVC OR BUILD_MSVC)
-    target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="./")
-    target_compile_definitions(satdump_core PUBLIC LIBRARIES_PATH="./")
+    #target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="./")
+    #target_compile_definitions(satdump_core PUBLIC LIBRARIES_PATH="./")
+    target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="Assets/") # TODOUWP
+    target_compile_definitions(satdump_core PUBLIC LIBRARIES_PATH="Assets/") # TODOUWP
 else()
     target_compile_definitions(satdump_core PUBLIC RESOURCES_PATH="${CMAKE_INSTALL_PREFIX}/share/satdump/")
     target_compile_definitions(satdump_core PUBLIC LIBRARIES_PATH="${CMAKE_INSTALL_FULL_LIBDIR}/satdump/")
@@ -72,13 +74,17 @@ endif()
 
 if(MSVC)
     # Jemalloc: TODO
-    target_link_libraries(satdump_core PUBLIC shlwapi)
+    # target_link_libraries(satdump_core PUBLIC shlwapi)
     target_link_libraries(satdump_core PUBLIC volk.dll)
     target_link_libraries(satdump_core PUBLIC libpng16.dll)
     target_link_libraries(satdump_core PUBLIC fftw3f.dll)
     target_link_libraries(satdump_core PUBLIC nng.dll)
     target_link_libraries(satdump_core PUBLIC tiff.dll)
     target_link_libraries(satdump_core PUBLIC libcurl.dll)
+
+    #TODOUWP
+    find_package(cppwinrt CONFIG REQUIRED)
+    target_link_libraries(satdump_core PRIVATE Microsoft::CppWinRT)
 
     if(BUILD_ZIQ)
         target_link_libraries(satdump_core PUBLIC zstd.dll)

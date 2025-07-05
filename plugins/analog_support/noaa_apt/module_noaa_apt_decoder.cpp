@@ -1225,7 +1225,7 @@ namespace noaa_apt
         {
             if (textureID == 0)
             {
-                textureID = makeImageTexture();
+                textureID = makeImageTexture(512, 512);
                 textureBuffer = new uint32_t[262144]; // 512x512
                 memset(textureBuffer, 0, sizeof(uint32_t) * 262144);
                 has_to_update = true;

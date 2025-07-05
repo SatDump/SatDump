@@ -8,8 +8,10 @@
 #include <sysdir.h>
 #include <glob.h>
 #elif defined(_WIN32)
-#include <direct.h>
-#include <Shlobj.h>
+//#include <direct.h> //TODOUWP
+//#include <Shlobj.h> //TODOUWP
+//TODOUWP
+#include <winrt/windows.storage.h>
 #endif
 
 namespace satdump
@@ -52,6 +54,10 @@ namespace satdump
             globfree(&globbuf);
 
 #elif defined(_WIN32)
+            // TODOUWP
+            documents_dir = winrt::to_string(winrt::Windows::Storage::ApplicationData::Current().LocalFolder().Path()) + "\\Documents";
+
+            /* TODOUWP
             // Only set output to Documents if the current dir is not writable
             HANDLE test_handle = CreateFile(".", GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, NULL);
             if (test_handle == INVALID_HANDLE_VALUE)
@@ -65,6 +71,7 @@ namespace satdump
             }
             else
                 CloseHandle(test_handle);
+            */
 #endif
             if (documents_dir == "")
                 return;

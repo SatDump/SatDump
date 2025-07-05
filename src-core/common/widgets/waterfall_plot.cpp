@@ -53,13 +53,17 @@ namespace widgets
         }
         if (texture_id == 0)
         {
-            texture_id = makeImageTexture();
+            texture_id = makeImageTexture(curr_width, curr_height);
             need_update = buffer_alloc(curr_width * curr_height * sizeof(uint32_t));
             if ((int)palette.size() != resolution)
                 set_palette(colormaps::loadMap(resources::getResourcePath("waterfall/classic.json")), false);
         }
         if (active && (last_curr_width != curr_width || last_curr_height != curr_height))
         {
+            //TODOUWP - Cannot resize texture on the fly
+            deleteImageTexture(texture_id);
+            texture_id = makeImageTexture(curr_width, curr_height);
+
             if (raw_img_buffer != nullptr && last_curr_width != curr_width)
             {
                 free(raw_img_buffer);

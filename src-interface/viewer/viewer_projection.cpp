@@ -418,7 +418,7 @@ namespace satdump
                     if (layer.enabled)
                     {
                         // ImGui::DragFloat(std::string("Opacity##opacitylayer" + layer.name + std::to_string(i)).c_str(), &layer.opacity, 1.0, 0, 100);
-                        ImGui::Image((void *)(intptr_t)layer.getPreview(), {50 * ui_scale, 50 * ui_scale});
+                        ImGui::Image((void *)layer.getPreview(), {50 * ui_scale, 50 * ui_scale});
                         ImGui::SameLine();
 
                         ImGui::BeginGroup();

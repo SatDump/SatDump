@@ -7,7 +7,7 @@
 #include "gl3w/gl3w.h"
 #include "logger.h"
 
-void funcUpdateMMImageTexture_GL3(unsigned int gl_text, uint32_t* buffer, int width, int height)
+void funcUpdateMMImageTexture_GL3(intptr_t gl_text, uint32_t* buffer, int width, int height)
 {
     glBindTexture(GL_TEXTURE_2D, gl_text);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

@@ -27,10 +27,24 @@ void ImageViewWidget::update(image::Image &image)
     else if (image.width() <= maxTextureSize && image.height() <= maxTextureSize)
     {
         img_chunks.resize(1);
-        fimg_width = img_chunks[0].img_width = image.width();
-        fimg_height = img_chunks[0].img_height = image.height();
 
-        img_chunks[0].texture_buffer.resize(img_chunks[0].img_width * img_chunks[0].img_height);
+        // TODOUWP
+        if (fimg_width != image.width() ||
+            fimg_height != image.height() ||
+            fimg_width != img_chunks[0].img_width ||
+            fimg_height != img_chunks[0].img_height)
+        {
+            fimg_width = img_chunks[0].img_width = image.width();
+            fimg_height = img_chunks[0].img_height = image.height();
+            if (img_chunks[0].texture_id != 0)
+            {
+                deleteImageTexture(img_chunks[0].texture_id);
+                img_chunks[0].texture_id = 0;
+            }
+
+            img_chunks[0].texture_buffer.resize(img_chunks[0].img_width * img_chunks[0].img_height);
+        }
+
         image::image_to_rgba(image, img_chunks[0].texture_buffer.data());
     }
     else
@@ -135,7 +149,7 @@ void ImageViewWidget::draw(ImVec2 win_size)
 
     for (auto &chunk : img_chunks)
         if (chunk.texture_id == 0)
-            chunk.texture_id = makeImageTexture();
+            chunk.texture_id = makeImageTexture(chunk.img_width, chunk.img_height);
 
     if (has_to_update)
     {

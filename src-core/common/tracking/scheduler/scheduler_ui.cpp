@@ -3,7 +3,6 @@
 
 #include "scheduler.h"
 #include "logger.h"
-#include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
 #include "imgui/imgui_stdlib.h"
 #include "core/style.h"

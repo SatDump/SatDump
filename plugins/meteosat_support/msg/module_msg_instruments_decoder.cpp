@@ -84,7 +84,7 @@ namespace meteosat
             {
                 if (seviri_reader->textureID == 0)
                 {
-                    seviri_reader->textureID = makeImageTexture();
+                    seviri_reader->textureID = makeImageTexture(1000, 1000);
                     seviri_reader->textureBuffer = new uint32_t[1000 * 1000];
                     memset(seviri_reader->textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
                     seviri_reader->hasToUpdate = true;

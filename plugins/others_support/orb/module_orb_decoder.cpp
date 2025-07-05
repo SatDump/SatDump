@@ -97,7 +97,7 @@ namespace orb
 
                 if (dec.textureID == 0)
                 {
-                    dec.textureID = makeImageTexture();
+                    dec.textureID = makeImageTexture(1000, 1000);
                     dec.textureBuffer = new uint32_t[1000 * 1000];
                     memset(dec.textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
                     dec.hasToUpdate = true;
@@ -139,7 +139,7 @@ namespace orb
 
                 if (dec.textureID == 0)
                 {
-                    dec.textureID = makeImageTexture();
+                    dec.textureID = makeImageTexture(1000, 1000);
                     dec.textureBuffer = new uint32_t[1000 * 1000];
                     memset(dec.textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
                     dec.hasToUpdate = true;

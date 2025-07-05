@@ -49,7 +49,7 @@ namespace satdump
                         px[image.width() * 4 * y + x * 4 + c] = image.get(c, image.width() * y + x);
         }
 
-        image_texture = makeImageTexture();
+        image_texture = makeImageTexture(image.width(), image.height());
         updateImageTexture(image_texture, (uint32_t *)px, image.width(), image.height());
         backend::setIcon(px, image.width(), image.height());
         delete[] px;

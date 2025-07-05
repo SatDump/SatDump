@@ -83,7 +83,7 @@ namespace goes
             std::vector<int> vis_width_stats, ir_width_stats;
 
             // UI Stuff
-            unsigned int textureID = 0;
+            intptr_t textureID = 0;
             uint32_t *textureBuffer;
 
         public:

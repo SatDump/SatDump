@@ -277,7 +277,7 @@ static BOOL MyEnumProcessModules( HANDLE hProcess, HMODULE *lphModule, DWORD cb,
         if( EnumProcessModulesPtr == NULL )
         {
             /* Do not let Windows display the critical-error-handler message box */
-            uMode = SetErrorMode( SEM_FAILCRITICALERRORS );
+            // uMode = SetErrorMode( SEM_FAILCRITICALERRORS ); //TODOUWP
             psapi = LoadLibraryA( "Psapi.dll" );
             if( psapi != NULL )
             {
@@ -307,7 +307,7 @@ void *dlopen( const char *file, int mode )
     error_occurred = FALSE;
 
     /* Do not let Windows display the critical-error-handler message box */
-    uMode = SetErrorMode( SEM_FAILCRITICALERRORS );
+    // uMode = SetErrorMode( SEM_FAILCRITICALERRORS ); //TODOUWP
 
     if( file == NULL )
     {

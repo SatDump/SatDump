@@ -124,7 +124,7 @@ namespace satdump
                     if (part.visible)
                     {
                         if (part.image_id == 0)
-                            part.image_id = makeImageTexture();
+                            part.image_id = makeImageTexture(d_chunk_size, d_chunk_size);
 
                         if (d_display_mode == 0) // Bit display
                         {

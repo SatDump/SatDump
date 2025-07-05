@@ -13,7 +13,7 @@ extern "C" {
 #ifndef _MSC_VER
 #include <sys/time.h>
 #else
-#include <winsock.h>
+#include <winsock2.h>
 #endif
 #include <aero/libacars/hash.h>
 

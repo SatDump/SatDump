@@ -130,6 +130,7 @@ namespace satdump
 
         // Export
         ui_thread_pool.push([this, exported_config](int) {
+            /* TODOUWP
             auto result = pfd::save_file("Export config as...", "", {"JSON files", "*.json"});
             while (!result.ready(1000))
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -140,7 +141,7 @@ namespace satdump
                 test_output << exported_config.dump(4);
                 test_output.close();
                 export_message.set_message(style::theme.green, "Successfully exported config");
-            }
+            } */
         });
     }
 

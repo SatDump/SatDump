@@ -106,8 +106,8 @@ if(MSVC OR BUILD_MSVC)
     # Speed up this to object-level, Suppress type conversion warnings, suppress
     # POSIX function warnings, suppress warnings about DLL-exported functions, and
     # Suppress warnings about template methods defined in another C++ file
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP8 /EHsc /wd4305 /wd4267 /wd4244 /wd4273 /wd4661")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP8 /EHsc /wd4305 /wd4267 /wd4244 /wd4273 /wd4661")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP8 /EHsc /wd4305 /wd4267 /wd4244 /wd4273 /wd4661 /wd4146 /wd4996 /wd4430 /wd4700")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP8 /EHsc /wd4305 /wd4267 /wd4244 /wd4273 /wd4661 /wd4146 /wd4996 /wd4430 /wd4700")
 
     #Suppress pointless (to us) warnings about DLL-exported functions
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ignore:4286,4217")
@@ -204,7 +204,7 @@ if(BUILD_GUI)
     message("Building the GUI")
     add_subdirectory(src-interface)
 
-    if(NOT ANDROID)
+    if(NOT ANDROID AND NOT CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
         add_subdirectory(src-ui)
     endif()
 endif()

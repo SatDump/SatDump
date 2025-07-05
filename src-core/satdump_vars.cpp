@@ -9,8 +9,8 @@
 #define RESOURCES_SEARCH_PATH "/../Resources/"
 #elif defined (_WIN32)
 #include <filesystem>
-#include <Windows.h>
-#include <shlwapi.h>
+//#include <Windows.h>
+//#include <shlwapi.h>
 #define LIBRARIES_SEARCH_PATH "\\..\\lib\\satdump\\"
 #define RESOURCES_SEARCH_PATH "\\..\\share\\satdump\\"
 #endif
@@ -33,16 +33,19 @@ namespace satdump
 #elif defined (_WIN32)
         std::string get_search_path(const char *target)
         {
+            /* TODOUWP
             char exe_path[MAX_PATH], ret_val[MAX_PATH];
             GetModuleFileNameA(NULL, exe_path, MAX_PATH);
             PathRemoveFileSpecA(exe_path);
             strcat_s(exe_path, MAX_PATH, target);
             PathCanonicalizeA(ret_val, exe_path);
             return std::string(ret_val);
+            */
+            return std::string(target);
         }
 #endif
 
-#if defined (__APPLE__) || defined (_WIN32)
+#if defined (__APPLE__) //|| defined (_WIN32) //TODOUWP
         std::string init_res_path()
         {
             std::string search_dir = get_search_path(RESOURCES_SEARCH_PATH);

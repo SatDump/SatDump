@@ -476,7 +476,7 @@ namespace goes
         {
             if (textureID == 0)
             {
-                textureID = makeImageTexture();
+                textureID = makeImageTexture(1354 * 2, 5236);
                 textureBuffer = new uint32_t[1354 * 2 * 5236];
                 memset(textureBuffer, 0, sizeof(uint32_t) * 1354 * 2 * 5236);
             }

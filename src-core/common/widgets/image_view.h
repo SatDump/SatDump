@@ -12,7 +12,7 @@ class ImageViewWidget
 private:
     struct ImageContainer
     {
-        unsigned int texture_id = 0;
+        intptr_t texture_id = 0;
         std::vector<uint32_t> texture_buffer;
 
         int img_width = 0;

@@ -10,7 +10,12 @@
 
 #include "common/tracking/tle.h"
 #include "products/products.h"
-#include "imgui/pfd/portable-file-dialogs.h"
+//#include "imgui/pfd/portable-file-dialogs.h" //TODOUWP
+
+//TODOUWP
+#ifdef _MSC_VER
+#include <winrt/windows.storage.h>
+#endif
 
 #include "core/opencl.h"
 
@@ -34,10 +39,17 @@ namespace satdump
         logger->info("");
 
 #ifdef _WIN32
+        // TODOUWP
+        std::string uwpAppDir = winrt::to_string(winrt::Windows::Storage::ApplicationData::Current().LocalFolder().Path());
+        user_path = uwpAppDir + "\\Config";
+        if (!std::filesystem::exists(uwpAppDir + "\\Documents"))
+            std::filesystem::create_directories(uwpAppDir + "\\Documents");
+        /*
         if (std::filesystem::exists("satdump_cfg.json"))
             user_path = "./config";
         else 
             user_path = std::string(getenv("APPDATA")) + "/satdump";
+            */
 #elif __ANDROID__
         user_path = ".";
 #else
@@ -54,9 +66,9 @@ namespace satdump
         catch (std::exception &e)
         {
             logger->critical("Error loading SatDump config! SatDump will now exit. Error:\n%s", e.what());
-            if(is_gui)
+            /* if (is_gui) //TODOUWP
                 pfd::message("SatDump", "Error loading SatDump config! SatDump will now exit. Error:\n\n" +
-                    std::string(e.what()), pfd::choice::ok, pfd::icon::error);
+                    std::string(e.what()), pfd::choice::ok, pfd::icon::error); */
             exit(1);
         }
 

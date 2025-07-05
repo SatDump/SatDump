@@ -508,7 +508,7 @@ char *strptime(const char *buf, const char *fmt, struct tm *tm)
         case 'Z': // time zone name
         case 'z': //
 #ifdef _WIN32
-            _tzset();
+            //_tzset(); //TODOUWP
 #else
             tzset();
 #endif

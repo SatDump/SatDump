@@ -27,12 +27,12 @@ namespace satdump
         bool old_algo = false;
         bool allow_editor = false;
 
-        unsigned int preview_texid = 0;
-        unsigned int getPreview()
+        intptr_t preview_texid = 0;
+        intptr_t getPreview()
         {
             if (preview_texid == 0)
             {
-                preview_texid = makeImageTexture();
+                preview_texid = makeImageTexture(100, 100);
                 auto img8 = img.resize_to(100, 100).to8bits();
                 uint32_t *tmp_rgba = new uint32_t[img8.width() * img8.height()];
                 image::image_to_rgba(img8, tmp_rgba);

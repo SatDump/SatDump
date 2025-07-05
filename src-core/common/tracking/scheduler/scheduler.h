@@ -1,5 +1,6 @@
 #pragma once
 
+#include "imgui/imgui.h"
 #include "common/widgets/pipeline_selector.h"
 #include "passes.h"
 #include <functional>

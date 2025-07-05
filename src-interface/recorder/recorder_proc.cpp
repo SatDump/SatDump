@@ -263,9 +263,11 @@ namespace satdump
 #endif
 
 #ifdef _MSC_VER
+        /* //TODOUWP
         ULARGE_INTEGER bytes_available;
         if (GetDiskFreeSpaceEx(recording_path.c_str(), &bytes_available, NULL, NULL))
             disk_available = bytes_available.QuadPart;
+            */
 #else
         struct statvfs stat_buffer;
         if (statvfs(recording_path.c_str(), &stat_buffer) == 0)

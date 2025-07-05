@@ -22,7 +22,7 @@ namespace satdump
     private:
         struct PartImage
         {
-            unsigned int image_id = 0;
+            intptr_t image_id = 0;
             double pos1_x = 0;
             double pos1_y = 0;
             double pos2_x = 0;

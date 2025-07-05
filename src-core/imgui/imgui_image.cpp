@@ -2,10 +2,10 @@
 #include "imgui_image.h"
 
 SATDUMP_DLL size_t maxTextureSize;
-SATDUMP_DLL std::function<unsigned int()> makeImageTexture;
-SATDUMP_DLL std::function<void(unsigned int, uint32_t *, int, int)> updateImageTexture;
-SATDUMP_DLL std::function<void(unsigned int, uint32_t*, int, int)> updateMMImageTexture;
-SATDUMP_DLL std::function<void(unsigned int)> deleteImageTexture;
+SATDUMP_DLL std::function<intptr_t(int, int)> makeImageTexture;
+SATDUMP_DLL std::function<void(intptr_t, uint32_t *, int, int)> updateImageTexture;
+SATDUMP_DLL std::function<void(intptr_t, uint32_t*, int, int)> updateMMImageTexture;
+SATDUMP_DLL std::function<void(intptr_t)> deleteImageTexture;
 
 void ushort_to_rgba(uint16_t *input, uint32_t *output, int size, int channels)
 {

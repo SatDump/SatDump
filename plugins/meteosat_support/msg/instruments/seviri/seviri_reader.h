@@ -41,7 +41,7 @@ namespace meteosat
 
             // UI Stuff
             bool hasToUpdate = false;
-            unsigned int textureID = 0;
+            intptr_t textureID = 0;
             uint32_t *textureBuffer;
             bool is_saving = false;
 

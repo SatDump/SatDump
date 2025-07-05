@@ -1,5 +1,7 @@
 #pragma once
-#include "portable-file-dialogs.h"
+//TODOUWP
+//#include "portable-file-dialogs.h"
+#include "imfilebrowser.h"
 
 class FileSelectWidget
 {
@@ -15,7 +17,14 @@ public:
 private:
     std::string label, selection_text, id, btnid, default_dir, path;
     bool directory, waiting_for_res, allow_url;
-    pfd::open_file *fileselect;
-    pfd::select_folder *dirselect;
+
+    //TODOUWP
+    //pfd::open_file *fileselect;
+    //pfd::select_folder *dirselect;
+
+    //TODOUWP
+    ImGui::FileBrowser fileselect;
+    ImGui::FileBrowser dirselect;
+
     bool file_valid, url_valid;
 };

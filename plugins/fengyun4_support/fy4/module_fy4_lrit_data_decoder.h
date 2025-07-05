@@ -29,7 +29,7 @@ namespace fy4
 
                 // UI Stuff
                 bool hasToUpdate = false;
-                unsigned int textureID = 0;
+                intptr_t textureID = 0;
                 uint32_t *textureBuffer;
             };
 
