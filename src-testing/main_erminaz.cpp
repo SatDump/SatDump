@@ -10,12 +10,12 @@
  * Don't judge the code you might see in there! :)
  **********************************************************************/
 
-#include "common/ccsds/ccsds_tm/mpdu.h"
 #include "logger.h"
 
 #include "common/ccsds/ccsds_tm/demuxer.h"
 #include "common/ccsds/ccsds_tm/vcdu.h"
 #include "common/simple_deframer.h"
+#include <cstdint>
 #include <cstdio>
 #include <fstream>
 
@@ -37,9 +37,9 @@ int main(int argc, char *argv[])
 
     std::ifstream data_in(argv[1], std::ios::binary);
 
-    uint8_t cadu[1279];
+    uint8_t cadu[259];
 
-    ccsds::ccsds_tm::Demuxer vcid_demuxer(1094, true, 15, 0);
+    ccsds::ccsds_tm::Demuxer vcid_demuxer(105, false);
 
     std::ofstream test_t("/tmp/test.bin");
 
@@ -50,60 +50,48 @@ int main(int argc, char *argv[])
     while (!data_in.eof())
     {
         // Read buffer
-        data_in.read((char *)&cadu, 1279);
-
-        // // Check RS
-        // int errors[5];
-        // rs_check.decode_interlaved(cadu, true, 5, errors);
-        // if (errors[0] < 0 || errors[1] < 0 || errors[2] < 0 || errors[3] < 0 || errors[4] < 0)
-        //     continue;
+        data_in.read((char *)&cadu, 259);
 
         // Parse this transport frame
         ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
 
-        // printf("VCID %d\n", vcdu.vcid);
+        //  printf("VCID %d\n", vcdu.vcid);
 
-        printf("SCID %d\n", vcdu.spacecraft_id);
-
-        if (vcdu.vcid != 7)
+        if (vcdu.vcid == 1)
         {
-#if 0
             auto pkts = vcid_demuxer.work(cadu);
 
             for (auto pkt : pkts)
             {
-                printf("APID %d \n", pkt.header.apid);
-                if (pkt.header.apid == 1228)
+                //  printf("APID %d \n", pkt.header.apid);
+                if (pkt.header.apid == 300)
                 {
                     // 1027 ?
                     // 1028 ?
                     // 1031 !!!!!
                     // 1032 !!!!!
 
-                    //  printf("APID %d SIZE %d\n", pkt.header.apid, pkt.payload.size());
+                    // printf("APID %d SIZE %d\n", pkt.header.apid, pkt.payload.size());
 
-                    pkt.payload.resize(3000);
+                    // printf("APID %d SIZE %d PKTSIZE %d\n", pkt.header.apid, pkt.payload.size(), pkt.header.packet_length);
 
-                    int id = pkt.payload[23];
+                    uint16_t current = pkt.payload[0] << 8 | pkt.payload[1];
+                    uint16_t volage = pkt.payload[2] << 8 | pkt.payload[3];
 
-                    if (id == 0)
-                    {
-                        test_t.write((char *)pkt.header.raw, 6);
-                        test_t.write((char *)pkt.payload.data(), pkt.payload.size());
+                    //                    printf("------------- %d A %f V \n", current, volage / 1000.0);
 
-                        for (int i = 0; i < 218; i++)
-                        {
-                            uint16_t val = pkt.payload[28 + i * 2 + 0] << 8 | pkt.payload[28 + i * 2 + 1];
-                            msi_channel.push_back(val);
-                        }
-                    }
+                    // pkt.payload.resize(150);
+
+                    // test_t.write((char *)pkt.header.raw, 6);
+                    // test_t.write((char *)pkt.payload.data(), pkt.payload.size() - 6);
+                }
+                else if (pkt.header.apid == 500)
+                {
+                    printf("APID %d SIZE %d PKTSIZE %d\n", pkt.header.apid, pkt.payload.size(), pkt.header.packet_length);
+
+                    test_t.write((char *)pkt.payload.data(), pkt.payload.size());
                 }
             }
-#endif
-
-            // auto mpdu = ccsds::ccsds_tm::parseMPDU(cadu, false, 0, 15);
-            // if (mpdu.first_header_pointer == 0)
-            test_t.write((char *)cadu, 1279);
         }
     }
 

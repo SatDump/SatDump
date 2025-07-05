@@ -130,15 +130,21 @@ namespace satdump
                         float hue = huesaturation_cfg_img.hue[i] * 180.0;
                         float saturation = huesaturation_cfg_img.saturation[i] * 100.0;
                         float lightness = huesaturation_cfg_img.lightness[i] * 100.0;
-                        needs_to_update |= ImGui::SliderFloat(std::string(cname[i] + " Hue").c_str(), &hue, -180, 180);
-                        needs_to_update |= ImGui::SliderFloat(std::string(cname[i] + " Saturation").c_str(), &saturation, -100, 100);
-                        needs_to_update |= ImGui::SliderFloat(std::string(cname[i] + " Ligntess").c_str(), &lightness, -100, 100);
+                        ImGui::SliderFloat(std::string(cname[i] + " Hue").c_str(), &hue, -180, 180);
+                        needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
+                        ImGui::SliderFloat(std::string(cname[i] + " Saturation").c_str(), &saturation, -100, 100);
+                        needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
+                        ImGui::SliderFloat(std::string(cname[i] + " Ligntess").c_str(), &lightness, -100, 100);
+                        needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
                         huesaturation_cfg_img.hue[i] = hue / 180.0;
                         huesaturation_cfg_img.saturation[i] = saturation / 100.0;
                         huesaturation_cfg_img.lightness[i] = lightness / 100.0;
                     }
-
-                    ImGui::InputDouble("Overlap", &huesaturation_cfg_img.overlap);
+                    
+                    float overlap = huesaturation_cfg_img.overlap * 100.0;
+                    ImGui::SliderFloat("Overlap", &overlap, -100.0, 100.0);
+                    needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
+                    huesaturation_cfg_img.overlap = overlap / 100.0;
                 }
 
                 needs_to_update |= ImGui::Checkbox("Remove Background", &remove_background_img);

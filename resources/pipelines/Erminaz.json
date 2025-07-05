@@ -1,0 +1,35 @@
+{
+    "erminaz": {
+        "name": "ERMINAZ UHF Link",
+        "live": [
+            1,
+            2
+        ],
+        "parameters": {},
+        "frequencies": [
+            [
+                "Main UHF",
+                435.775e6
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "xfsk_burst_demod",
+                "parameters": {
+                    "symbolrate": 9600
+                }
+            },
+            "cadu": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
+                    "constellation": "bpsk",
+                    "cadu_size": 2072,
+                    "rs_i": 1,
+                    "rs_type": "rs223",
+                    "rs_usecheck": false
+                }
+            }
+        }
+    }
+}

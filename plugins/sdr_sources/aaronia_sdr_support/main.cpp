@@ -1,18 +1,16 @@
+#include "aaronia_sdr.h"
+#include "aaroniartsaapi.h"
 #include "core/plugin.h"
 #include "logger.h"
-#include "aaronia_sdr.h"
 
 class AaroniaSDRSupport : public satdump::Plugin
 {
 public:
-    std::string getID()
-    {
-        return "aaronia_sdr_support";
-    }
+    std::string getID() { return "aaronia_sdr_support"; }
 
     void init()
     {
-        if (AARTSAAPI_Init(AARTSAAPI_MEMORY_SMALL) != AARTSAAPI_OK)
+        if (AARTSAAPI_Init(AARTSAAPI_MEMORY_LARGE) != AARTSAAPI_OK)
             logger->error("Could not init Aaronia API!");
         else
             logger->info("Loaded Aaronia API!");
