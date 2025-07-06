@@ -1,6 +1,6 @@
+#include "common/imgui_utils.h"
 #define SATDUMP_DLL_EXPORT2 1
 
-#include "main_ui.h"
 #include "common/audio/audio_sink.h"
 #include "common/widgets/markdown_helper.h"
 #include "core/backend.h"
@@ -9,6 +9,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_flags.h"
 #include "imgui_notify/imgui_notify.h"
+#include "main_ui.h"
 #include "notify_logger_sink.h"
 #include "offline.h"
 #include "processing.h"
@@ -78,6 +79,8 @@ namespace satdump
 
     // TODOREWORKUI
     bool offline_en = false;
+    bool about_en = false;
+    bool settings_en = false;
 
     void renderMainUI()
     {
@@ -102,19 +105,25 @@ namespace satdump
             {
                 if (ImGui::BeginMenu("Others"))
                 {
-                    if (ImGui::MenuItem("Offline Processing", NULL, offline_en))
-                        offline_en = !offline_en;
+                    if (ImGui::MenuItem("Offline Processing"))
+                        offline_en = true;
+                    if (ImGui::MenuItem("About"))
+                        about_en = true;
+                    if (ImGui::MenuItem("Settings"))
+                        settings_en = true;
                     ImGui::EndMenu();
                 }
 
                 ImGui::EndMenuBar();
             }
 
-            explorer_app->draw(false);
-
             if (offline_en)
+                ImGui::OpenPopup("offline");
+
+            //   if (offline_en)
+            if (ImGui::BeginPopupModal("offline", &offline_en, ImGuiWindowFlags_AlwaysAutoResize))
             {
-                ImGui::Begin("Offline Processing");
+                // ImGui::BeginChild("Offline Processing");
 
                 if (processing::is_processing)
                 {
@@ -138,13 +147,34 @@ namespace satdump
                 }
                 else
                 {
-                    ImGui::BeginChild("offlineprocessing", ImGui::GetContentRegionAvail());
+                    // ImGui::BeginChild("offlineprocessing", ImGui::GetContentRegionAvail());
                     offline::render();
-                    ImGui::EndChild();
+                    // ImGui::EndChild();
                 }
 
-                ImGui::End();
+                //  ImGui::EndChild();
+                ImGui::EndPopup();
             }
+
+            if (settings_en)
+                ImGui::OpenPopup("Settings");
+
+            if (ImGui::BeginPopupModal("Settings", &settings_en, /*ImGuiWindowFlags_AlwaysAutoResize |*/ ImGuiWindowFlags_AlwaysVerticalScrollbar))
+            {
+                settings::render();
+                ImGui::EndPopup();
+            }
+
+            if (about_en)
+                ImGui::OpenPopup("About");
+
+            if (ImGui::BeginPopupModal("About", &about_en, /*ImGuiWindowFlags_AlwaysAutoResize |*/ ImGuiWindowFlags_AlwaysVerticalScrollbar))
+            {
+                credits_md.render();
+                ImGui::EndPopup();
+            }
+
+            explorer_app->draw(false);
 
 #else
             if (ImGui::BeginTabBar("Main TabBar", ImGuiTabBarFlags_None))
