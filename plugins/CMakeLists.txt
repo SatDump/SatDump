@@ -469,3 +469,9 @@ option(PLUGIN_WIPSETTINGS_EDITOR_APP "Enable WIP Settings Editor Application" ON
 if (PLUGIN_WIPSETTINGS_EDITOR_APP)
   add_subdirectory(wip_settings_editor_app)
 endif()
+
+option(PLUGIN_SPECTROGRAM_APP "Enable WIP Spectrogram Application" OFF)
+
+if(PLUGIN_SPECTROGRAM_APP)
+  add_subdirectory(wip_spectrogram_app)
+endif()
