@@ -169,8 +169,9 @@ uint64_t HarogicSource::get_samplerate() {
 }
 
 void HarogicSource::update_settings() {
-    if (!dev_handle) return;
+    if (!dev_handle) return; // Don't do anything if the stream isn't active
     
+    // Set all current parameters into the profile struct
     current_samplerate = available_samplerates[selected_samplerate_idx];
     samps_int8 = (current_samplerate > RESOLTRIG);
     
@@ -185,12 +186,19 @@ void HarogicSource::update_settings() {
     RxPort_TypeDef antenna_ports[] = {ExternalPort, InternalPort, ANT_Port, TR_Port, SWR_Port, INT_Port};
     profile.RxPort = antenna_ports[d_antenna_idx];
 
+    // Re-configure the device with the new settings
     IQS_StreamInfo_TypeDef info;
-    if (IQS_Configuration(&dev_handle, &profile, &profile, &info) < 0) {
-        logger->error("Failed to apply new settings to Harogic device.");
+    int ret = IQS_Configuration(&dev_handle, &profile, &profile, &info);
+    if (ret < 0) {
+        logger->error("Failed to apply new settings to Harogic device: %d", ret);
+        return; // Stop here if configuration failed
+    }
+
+    ret = IQS_BusTriggerStart(&dev_handle);
+    if (ret < 0) {
+        logger->error("Failed to re-start stream after settings change: %d", ret);
     } else {
-        logger->debug("Applied new settings. Freq: %.2f MHz, SR: %.2f MS/s, RefLvl: %.1f dBm", 
-            profile.CenterFreq_Hz / 1e6, current_samplerate / 1e6, profile.RefLevel_dBm);
+        logger->debug("Applied new settings and restarted stream. Freq: %.2f MHz", profile.CenterFreq_Hz / 1e6);
     }
 }
 
