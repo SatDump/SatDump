@@ -107,6 +107,14 @@ namespace satdump
                 {
                     if (ImGui::MenuItem("Offline Processing"))
                         offline_en = true;
+
+                    ImGui::EndMenu();
+                }
+
+                if (ImGui::BeginMenu("File"))
+                {
+                    if (ImGui::MenuItem("Documentation"))
+                        ;
                     if (ImGui::MenuItem("About"))
                         about_en = true;
                     if (ImGui::MenuItem("Settings"))
