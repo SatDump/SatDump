@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 
     uint8_t cadu[1279];
 
-    ccsds::ccsds_tm::Demuxer vcid_demuxer(1094, true, 15, 0);
+    ccsds::ccsds_tm::Demuxer vcid_demuxer(1101, true, 0, 4);
 
     std::ofstream test_t("/tmp/test.bin");
 
@@ -63,33 +63,35 @@ int main(int argc, char *argv[])
 
         // printf("VCID %d\n", vcdu.vcid);
 
-        printf("SCID %d\n", vcdu.spacecraft_id);
+        //   printf("SCID %d\n", vcdu.spacecraft_id);
 
-        if (vcdu.vcid != 7)
+        if (vcdu.vcid == 1)
         {
-#if 0
+#if 1
             auto pkts = vcid_demuxer.work(cadu);
 
             for (auto pkt : pkts)
             {
-                printf("APID %d \n", pkt.header.apid);
-                if (pkt.header.apid == 1228)
+                //  printf("APID %d \n", pkt.header.apid);
+                if (pkt.header.apid == 1024)
                 {
                     // 1027 ?
                     // 1028 ?
                     // 1031 !!!!!
                     // 1032 !!!!!
 
-                    //  printf("APID %d SIZE %d\n", pkt.header.apid, pkt.payload.size());
+                    printf("APID %d SIZE %d\n", pkt.header.apid, pkt.payload.size());
 
-                    pkt.payload.resize(3000);
+                    pkt.payload.resize(1018);
 
-                    int id = pkt.payload[23];
+                    // int id = pkt.payload[23];
 
-                    if (id == 0)
+                    //   if (id == 0)
                     {
-                        test_t.write((char *)pkt.header.raw, 6);
-                        test_t.write((char *)pkt.payload.data(), pkt.payload.size());
+                        //  test_t.write((char *)pkt.header.raw, 6);
+                        //  test_t.write((char *)pkt.payload.data(), pkt.payload.size());
+
+                        test_t.write((char *)pkt.payload.data() + 2, pkt.payload.size() - 2);
 
                         for (int i = 0; i < 218; i++)
                         {
@@ -103,7 +105,7 @@ int main(int argc, char *argv[])
 
             // auto mpdu = ccsds::ccsds_tm::parseMPDU(cadu, false, 0, 15);
             // if (mpdu.first_header_pointer == 0)
-            test_t.write((char *)cadu, 1279);
+            // test_t.write((char *)cadu, 1279);
         }
     }
 

@@ -103,7 +103,7 @@ namespace satdump
 #if 1
             if (ImGui::BeginMenuBar())
             {
-                if (ImGui::BeginMenu("Others"))
+                if (ImGui::BeginMenu("File"))
                 {
                     if (ImGui::MenuItem("Offline Processing"))
                         offline_en = true;
