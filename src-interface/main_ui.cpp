@@ -111,7 +111,7 @@ namespace satdump
                     ImGui::EndMenu();
                 }
 
-                if (ImGui::BeginMenu("File"))
+                if (ImGui::BeginMenu("Help"))
                 {
                     if (ImGui::MenuItem("Documentation"))
                         ;
