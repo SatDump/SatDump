@@ -127,10 +127,11 @@ namespace satdump
 
                 if (processing::is_processing)
                 {
+#if 0
                     // ImGui::BeginChild("OfflineProcessingChild");
                     processing::ui_call_list_mutex->lock();
                     int live_width = dims.first; // ImGui::GetWindowWidth();
-                    int live_height = /*ImGui::GetWindowHeight()*/ dims.second - ImGui::GetCursorPos().y;
+                    int live_height = /*ImGui::GetWindowHeight();*/ dims.second - ImGui::GetCursorPos().y;
                     float winheight = processing::ui_call_list->size() > 0 ? live_height / processing::ui_call_list->size() : live_height;
                     float currentPos = ImGui::GetCursorPos().y;
                     ImGui::PushStyleColor(ImGuiCol_TitleBg, ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive));
@@ -144,6 +145,16 @@ namespace satdump
                     ImGui::PopStyleColor();
                     processing::ui_call_list_mutex->unlock();
                     // ImGui::EndChild();
+#else
+                    processing::ui_call_list_mutex->lock();
+                    ImGui::PushStyleColor(ImGuiCol_TitleBg, ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive));
+                    for (std::shared_ptr<pipeline::ProcessingModule> module : *processing::ui_call_list)
+                    {
+                        module->drawUI(true);
+                    }
+                    ImGui::PopStyleColor();
+                    processing::ui_call_list_mutex->unlock();
+#endif
                 }
                 else
                 {
