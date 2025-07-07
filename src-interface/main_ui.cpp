@@ -111,17 +111,6 @@ namespace satdump
                     ImGui::EndMenu();
                 }
 
-                if (ImGui::BeginMenu("Help"))
-                {
-                    if (ImGui::MenuItem("Documentation"))
-                        ;
-                    if (ImGui::MenuItem("About"))
-                        about_en = true;
-                    if (ImGui::MenuItem("Settings"))
-                        settings_en = true;
-                    ImGui::EndMenu();
-                }
-
                 ImGui::EndMenuBar();
             }
 
@@ -194,6 +183,22 @@ namespace satdump
             }
 
             explorer_app->draw(false);
+
+            if (ImGui::BeginMenuBar())
+            {
+                if (ImGui::BeginMenu("Help"))
+                {
+                    if (ImGui::MenuItem("Documentation"))
+                        ;
+                    if (ImGui::MenuItem("About"))
+                        about_en = true;
+                    if (ImGui::MenuItem("Settings"))
+                        settings_en = true;
+                    ImGui::EndMenu();
+                }
+
+                ImGui::EndMenuBar();
+            }
 
 #else
             if (ImGui::BeginTabBar("Main TabBar", ImGuiTabBarFlags_None))
