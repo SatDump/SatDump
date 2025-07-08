@@ -1,9 +1,9 @@
+#include "explorer/processing/processing.h"
 #include "recorder.h"
 
 #include "common/utils.h"
 #include "logger.h"
 #include "main_ui.h"
-#include "processing.h"
 #include "utils/time.h"
 
 namespace satdump
@@ -130,7 +130,8 @@ namespace satdump
                     std::string input_level = pipeline.steps[start_level].level;
                     std::string output_dir = it->output_dir;
                     nlohmann::json pipeline_params = it->pipeline_params;
-                    ui_thread_pool.push([=](int) { processing::process(pipeline, input_level, input_file, output_dir, pipeline_params); }); // TODOPIPELINE
+                    eventBus->fire_event<explorer::ExplorerApplication::ExplorerAddHandlerEvent>(
+                        {std::make_shared<handlers::OffProcessingHandler>(pipeline, input_level, input_file, output_dir, pipeline_params)}); // TODOPIPELINE
                 }
             }
 

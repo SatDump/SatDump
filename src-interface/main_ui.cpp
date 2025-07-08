@@ -1,4 +1,5 @@
 #include "common/imgui_utils.h"
+#include "recorder/recorder.h"
 #define SATDUMP_DLL_EXPORT2 1
 
 #include "common/audio/audio_sink.h"
@@ -12,7 +13,6 @@
 #include "main_ui.h"
 #include "notify_logger_sink.h"
 #include "offline.h"
-#include "processing.h"
 #include "satdump_vars.h"
 #include "settings.h"
 #include "status_logger_sink.h"
@@ -22,7 +22,6 @@
 
 namespace satdump
 {
-    SATDUMP_DLL2 std::shared_ptr<RecorderApplication> recorder_app;
     SATDUMP_DLL2 std::shared_ptr<explorer::ExplorerApplication> explorer_app;
     std::vector<std::shared_ptr<Application>> other_apps;
 
@@ -48,7 +47,6 @@ namespace satdump
         std::string credits_markdown((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
         credits_md.set_md(credits_markdown);
 
-        recorder_app = std::make_shared<RecorderApplication>();
         explorer_app = std::make_shared<explorer::ExplorerApplication>();
         open_recorder = satdump_cfg.main_cfg.contains("cli") && satdump_cfg.main_cfg["cli"].contains("start_recorder_device");
 
@@ -70,10 +68,8 @@ namespace satdump
 
     void exitMainUI()
     {
-        recorder_app->save_settings();
         // TODOREWORK SAVING AGAIN? explorer_app->save_settings();
         satdump_cfg.saveUser();
-        recorder_app.reset();
         explorer_app.reset();
     }
 
@@ -108,6 +104,12 @@ namespace satdump
                     if (ImGui::MenuItem("Offline Processing"))
                         offline_en = true;
 
+                    if (ImGui::MenuItem("Add Recorder"))
+                    {
+                        auto h = std::make_shared<RecorderApplication>();
+                        eventBus->fire_event<explorer::ExplorerApplication::ExplorerAddHandlerEvent>({h});
+                    }
+
                     ImGui::EndMenu();
                 }
 
@@ -120,47 +122,7 @@ namespace satdump
             //   if (offline_en)
             if (ImGui::BeginPopupModal("offline", &offline_en, ImGuiWindowFlags_AlwaysAutoResize))
             {
-                // ImGui::BeginChild("Offline Processing");
-
-                if (processing::is_processing)
-                {
-#if 0
-                    // ImGui::BeginChild("OfflineProcessingChild");
-                    processing::ui_call_list_mutex->lock();
-                    int live_width = dims.first; // ImGui::GetWindowWidth();
-                    int live_height = /*ImGui::GetWindowHeight();*/ dims.second - ImGui::GetCursorPos().y;
-                    float winheight = processing::ui_call_list->size() > 0 ? live_height / processing::ui_call_list->size() : live_height;
-                    float currentPos = ImGui::GetCursorPos().y;
-                    ImGui::PushStyleColor(ImGuiCol_TitleBg, ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive));
-                    for (std::shared_ptr<pipeline::ProcessingModule> module : *processing::ui_call_list)
-                    {
-                        ImGui::SetNextWindowPos({0, currentPos});
-                        currentPos += winheight;
-                        ImGui::SetNextWindowSize({(float)live_width, (float)winheight});
-                        module->drawUI(false);
-                    }
-                    ImGui::PopStyleColor();
-                    processing::ui_call_list_mutex->unlock();
-                    // ImGui::EndChild();
-#else
-                    processing::ui_call_list_mutex->lock();
-                    ImGui::PushStyleColor(ImGuiCol_TitleBg, ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive));
-                    for (std::shared_ptr<pipeline::ProcessingModule> module : *processing::ui_call_list)
-                    {
-                        module->drawUI(true);
-                    }
-                    ImGui::PopStyleColor();
-                    processing::ui_call_list_mutex->unlock();
-#endif
-                }
-                else
-                {
-                    // ImGui::BeginChild("offlineprocessing", ImGui::GetContentRegionAvail());
-                    offline::render();
-                    // ImGui::EndChild();
-                }
-
-                //  ImGui::EndChild();
+                offline::render();
                 ImGui::EndPopup();
             }
 

@@ -1,8 +1,7 @@
 #include "status_logger_sink.h"
-#include "imgui/imgui_internal.h"
-#include "processing.h"
-#include "core/config.h"
 #include "common/imgui_utils.h"
+#include "core/config.h"
+#include "imgui/imgui_internal.h"
 
 SATDUMP_DLL extern float ui_scale;
 
@@ -14,14 +13,9 @@ namespace satdump
         show_log = false;
     }
 
-    StatusLoggerSink::~StatusLoggerSink()
-    {
-    }
+    StatusLoggerSink::~StatusLoggerSink() {}
 
-    bool StatusLoggerSink::is_shown()
-    {
-        return show_bar;
-    }
+    bool StatusLoggerSink::is_shown() { return show_bar; }
 
     void StatusLoggerSink::receive(slog::LogMsg log)
     {
@@ -49,15 +43,15 @@ namespace satdump
         if (!show_bar)
             return 0;
 
-        if (processing::is_processing && ImGuiUtils_OfflineProcessingSelected())
-            for (std::shared_ptr<pipeline::ProcessingModule> module : *processing::ui_call_list)
-                if (module->getIDM() == "products_processor")
-                    return 0;
+        // if (processing::is_processing && ImGuiUtils_OfflineProcessingSelected())
+        //     for (std::shared_ptr<pipeline::ProcessingModule> module : *processing::ui_call_list)
+        //         if (module->getIDM() == "products_processor")
+        //             return 0; TODOREWORK
 
         // Draw status bar
         int height = 0;
         if (ImGui::BeginViewportSideBar("##MainStatusBar", ImGui::GetMainViewport(), ImGuiDir_Down, ImGui::GetFrameHeight(),
-            ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoNavFocus))
+                                        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoNavFocus))
         {
             if (ImGui::BeginMenuBar())
             {
@@ -92,4 +86,4 @@ namespace satdump
 
         return height;
     }
-}
+} // namespace satdump
