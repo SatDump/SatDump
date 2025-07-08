@@ -1,4 +1,5 @@
 #include "common/imgui_utils.h"
+#include "core/style.h"
 #include "recorder/recorder.h"
 #define SATDUMP_DLL_EXPORT2 1
 
@@ -117,10 +118,11 @@ namespace satdump
             }
 
             if (offline_en)
-                ImGui::OpenPopup("offline");
+                ImGui::OpenPopup("Offline Processing");
 
             //   if (offline_en)
-            if (ImGui::BeginPopupModal("offline", &offline_en, ImGuiWindowFlags_AlwaysAutoResize))
+            ImGui::SetNextWindowSize({600 * ui_scale, 0});
+            if (ImGui::BeginPopupModal("Offline Processing", &offline_en, ImGuiWindowFlags_AlwaysAutoResize))
             {
                 offline::render();
                 ImGui::EndPopup();
