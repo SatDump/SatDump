@@ -102,10 +102,10 @@ namespace satdump
 
                 if (prev_curr != curr_handler)
                     last_selected_handler.insert_or_assign(curr_handler->getID(), curr_handler);
-
-                if (curr_handler)
-                    curr_handler->drawMenu();
             }
+
+            if (curr_handler)
+                curr_handler->drawMenu();
         }
 
         void ExplorerApplication::drawMenuBar()
