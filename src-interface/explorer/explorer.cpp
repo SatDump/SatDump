@@ -53,7 +53,13 @@ namespace satdump
                 });
 
             // Enable adding handlers to the explorer externally
-            eventBus->register_handler<ExplorerAddHandlerEvent>([this](const ExplorerAddHandlerEvent &e) { master_handler->addSubHandler(e.h); });
+            eventBus->register_handler<ExplorerAddHandlerEvent>(
+                [this](const ExplorerAddHandlerEvent &e)
+                {
+                    master_handler->addSubHandler(e.h);
+                    if (e.open)
+                        curr_handler = e.h;
+                });
 
             // TODOREWORK. Returns the last selected handler of a specific type if available
             eventBus->register_handler<GetLastSelectedOfTypeEvent>(
