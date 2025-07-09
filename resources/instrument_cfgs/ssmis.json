@@ -8,6 +8,14 @@
                 "invert": true,
                 "individual_equalize": true
             }
+        },
+        {
+            "name": "Microwave Airmass",
+            "expression": "ch4,ch3,ch2",
+            "image": {
+                "invert": true,
+                "individual_equalize": true
+            }
         }
     ]
 }
