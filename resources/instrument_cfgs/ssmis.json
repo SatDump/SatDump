@@ -1,0 +1,13 @@
+{
+    "name": "SSMIS",
+    "presets": [
+        {
+            "name": "ATMS False Color",
+            "expression": "ch6,ch1,ch4",
+            "image": {
+                "invert": true,
+                "individual_equalize": true
+            }
+        }
+    ]
+}
