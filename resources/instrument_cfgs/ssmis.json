@@ -1,0 +1,21 @@
+{
+    "name": "SSMIS",
+    "presets": [
+        {
+            "name": "ATMS False Color",
+            "expression": "ch6,ch1,ch4",
+            "image": {
+                "invert": true,
+                "individual_equalize": true
+            }
+        },
+        {
+            "name": "Microwave Airmass",
+            "expression": "ch4,ch3,ch2",
+            "image": {
+                "invert": true,
+                "individual_equalize": true
+            }
+        }
+    ]
+}
