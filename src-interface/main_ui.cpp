@@ -97,7 +97,6 @@ namespace satdump
             ImGui::SetNextWindowSize({(float)dims.first, (float)dims.second});
             ImGui::Begin("SatDump UI", nullptr, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_MenuBar);
 
-#if 1
             if (ImGui::BeginMenuBar())
             {
                 if (ImGui::BeginMenu("File"))
@@ -164,76 +163,6 @@ namespace satdump
                 ImGui::EndMenuBar();
             }
 
-#else
-            if (ImGui::BeginTabBar("Main TabBar", ImGuiTabBarFlags_None))
-            {
-                if (ImGui::BeginTabItem("Offline processing"))
-                {
-                    if (processing::is_processing)
-                    {
-                        // ImGui::BeginChild("OfflineProcessingChild");
-                        processing::ui_call_list_mutex->lock();
-                        int live_width = dims.first; // ImGui::GetWindowWidth();
-                        int live_height = /*ImGui::GetWindowHeight()*/ dims.second - ImGui::GetCursorPos().y;
-                        float winheight = processing::ui_call_list->size() > 0 ? live_height / processing::ui_call_list->size() : live_height;
-                        float currentPos = ImGui::GetCursorPos().y;
-                        ImGui::PushStyleColor(ImGuiCol_TitleBg, ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive));
-                        for (std::shared_ptr<pipeline::ProcessingModule> module : *processing::ui_call_list)
-                        {
-                            ImGui::SetNextWindowPos({0, currentPos});
-                            currentPos += winheight;
-                            ImGui::SetNextWindowSize({(float)live_width, (float)winheight});
-                            module->drawUI(false);
-                        }
-                        ImGui::PopStyleColor();
-                        processing::ui_call_list_mutex->unlock();
-                        // ImGui::EndChild();
-                    }
-                    else
-                    {
-                        ImGui::BeginChild("offlineprocessing", ImGui::GetContentRegionAvail());
-                        offline::render();
-                        ImGui::EndChild();
-                    }
-
-                    ImGui::EndTabItem();
-                }
-                if (ImGui::BeginTabItem("Recorder", nullptr, open_recorder ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None))
-                {
-                    open_recorder = false;
-                    recorder_app->draw();
-                    ImGui::EndTabItem();
-                }
-                if (ImGui::BeginTabItem("Explorer"))
-                {
-                    explorer_app->draw();
-                    ImGui::EndTabItem();
-                }
-                for (auto &app : other_apps)
-                {
-                    if (ImGui::BeginTabItem(std::string(app->get_name() + "##appsoption").c_str()))
-                    {
-                        app->draw();
-                        ImGui::EndTabItem();
-                    }
-                }
-                if (ImGui::BeginTabItem("Settings"))
-                {
-                    ImGui::BeginChild("settings", ImGui::GetContentRegionAvail());
-                    settings::render();
-                    ImGui::EndChild();
-                    ImGui::EndTabItem();
-                }
-                if (ImGui::BeginTabItem("About"))
-                {
-                    ImGui::BeginChild("credits_md", ImGui::GetContentRegionAvail(), false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
-                    credits_md.render();
-                    ImGui::EndChild();
-                    ImGui::EndTabItem();
-                }
-            }
-            ImGui::EndTabBar();
-#endif
             ImGuiUtils_SendCurrentWindowToBack();
             ImGui::End();
 
