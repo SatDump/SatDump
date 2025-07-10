@@ -1,11 +1,12 @@
-#include <unistd.h>
-#include <android/log.h>
-#include <android/asset_manager.h>
 #include "backend.h"
-#include "main_ui.h"
-#include "logger.h"
+#include "core/config.h"
 #include "init.h"
 #include "loader/loader.h"
+#include "logger.h"
+#include "main_ui.h"
+#include <android/asset_manager.h>
+#include <android/log.h>
+#include <unistd.h>
 
 // Data
 EGLDisplay g_EglDisplay = EGL_NO_DISPLAY;
@@ -110,8 +111,7 @@ void init(struct android_app *app)
         eglSwapInterval(g_EglDisplay, 1);
 
         // TLE
-        satdump::ui_thread_pool.push([&](int)
-                                     { satdump::autoUpdateTLE(satdump::user_path + "/satdump_tles.txt"); });
+        satdump::ui_thread_pool.push([&](int) { satdump::autoUpdateTLE(satdump::user_path + "/satdump_tles.txt"); });
 
         was_init = true;
     }
@@ -186,17 +186,14 @@ static void handleAppCmd(struct android_app *app, int32_t appCmd)
         shutdown();
         break;
     case APP_CMD_SAVE_STATE:
-        satdump::recorder_app->save_settings();
+        // satdump::recorder_app->save_settings(); // TODOREWORK!!!!
         // satdump::explorer_app->save_settings(); // TODOREWORK!!!!
-        satdump::config::saveUserConfig();
+        satdump::satdump_cfg.saveUser();
         break;
     }
 }
 
-static int32_t handleInputEvent(struct android_app *app, AInputEvent *inputEvent)
-{
-    return ImGui_ImplAndroid_HandleInputEvent(inputEvent);
-}
+static int32_t handleInputEvent(struct android_app *app, AInputEvent *inputEvent) { return ImGui_ImplAndroid_HandleInputEvent(inputEvent); }
 
 std::string getAppFilesDir(struct android_app *app)
 {

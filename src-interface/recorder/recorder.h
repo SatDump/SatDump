@@ -2,6 +2,7 @@
 
 #include "../app.h"
 
+#include "handlers/handler.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
 
@@ -73,11 +74,13 @@ namespace satdump
         float fft_avgn = -1;
     };
 
-    class RecorderApplication : public Application
+    class RecorderApplication : public handlers::Handler
     {
-    protected:
-        void drawUI();
+    public:
+        void drawMenu();
+        void drawContents(ImVec2 win_size);
 
+    protected:
         uint64_t frequency_hz = 100000000;
         bool show_waterfall = true;
         bool is_started = false, is_recording = false, is_processing = false, is_stopping_processing = false;
@@ -222,8 +225,7 @@ namespace satdump
         void save_settings() { satdump_cfg.main_cfg["user"]["recorder_state"] = serialize_config(); }
 
     public:
-        static std::string getID() { return "recorder"; }
-        std::string get_name() { return "Recorder"; }
-        static std::shared_ptr<Application> getInstance() { return std::make_shared<RecorderApplication>(); }
+        std::string getID() { return "recorder"; }
+        std::string getName() { return "Recorder"; }
     };
 }; // namespace satdump

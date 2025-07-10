@@ -1,8 +1,8 @@
+#include "explorer/processing/processing.h"
 #include "recorder.h"
 
 #include "logger.h"
 #include "main_ui.h"
-#include "processing.h"
 #include "utils/time.h"
 
 #ifndef _MSC_VER
@@ -223,7 +223,8 @@ namespace satdump
                 logger->critical(input_file);
                 int start_level = pipeline.live_cfg.normal_live[pipeline.live_cfg.normal_live.size() - 1];
                 std::string input_level = pipeline.steps[start_level].level;
-                ui_thread_pool.push([=](int) { processing::process(pipeline, input_level, input_file, pipeline_output_dir, pipeline_params); });
+                eventBus->fire_event<explorer::ExplorerApplication::ExplorerAddHandlerEvent>(
+                    {std::make_shared<handlers::OffProcessingHandler>(pipeline, input_level, input_file, pipeline_output_dir, pipeline_params)});
             }
 
             live_pipeline.reset();

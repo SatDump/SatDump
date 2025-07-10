@@ -1,13 +1,13 @@
 #include "archive_loader.h"
 
 #include "common/utils.h"
-#include "logger.h"
-#include "nlohmann/json.hpp"
-#include "processing.h"
-#include "main_ui.h"
+#include "explorer/processing/processing.h"
 #include "libs/base64/base64.h"
-#include "utils/time.h"
+#include "logger.h"
+#include "main_ui.h"
+#include "nlohmann/json.hpp"
 #include "utils/http.h"
+#include "utils/time.h"
 
 namespace satdump
 {
@@ -100,11 +100,8 @@ namespace satdump
                 day = timeReadable->tm_mday;
             }
 
-            std::string url = "https://api.eumetsat.int/data/browse/1.0.0/collections/" + std::string(eumetsat_products[eumetsat_selected_dataset].id) + "/dates/" +
-                              std::to_string(year) + "/" +
-                              (month < 10 ? "0" : "") + std::to_string(month) + "/" +
-                              (day < 10 ? "0" : "") + std::to_string(day) +
-                              "/products?format=json";
+            std::string url = "https://api.eumetsat.int/data/browse/1.0.0/collections/" + std::string(eumetsat_products[eumetsat_selected_dataset].id) + "/dates/" + std::to_string(year) + "/" +
+                              (month < 10 ? "0" : "") + std::to_string(month) + "/" + (day < 10 ? "0" : "") + std::to_string(day) + "/products?format=json";
             std::string resp;
             logger->info(url);
             if (satdump::perform_http_request(url, resp, "") != 1)
@@ -122,10 +119,8 @@ namespace satdump
                         std::tm timeS;
                         memset(&timeS, 0, sizeof(std::tm));
 
-                        if (sscanf(prod["date"].get<std::string>().c_str(),
-                                   "%4d-%2d-%2dT%2d:%2d:%2d.%*dZ/%*d-%*d-%*dT%*d:%*d:%*d.%*dZ",
-                                   &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
-                                   &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec) == 6)
+                        if (sscanf(prod["date"].get<std::string>().c_str(), "%4d-%2d-%2dT%2d:%2d:%2d.%*dZ/%*d-%*d-%*dT%*d:%*d:%*d.%*dZ", &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour,
+                                   &timeS.tm_min, &timeS.tm_sec) == 6)
                         {
                             timeS.tm_year -= 1900;
                             timeS.tm_mon -= 1;
@@ -147,7 +142,7 @@ namespace satdump
 
     void ArchiveLoader::renderEumetsat(ImVec2 wsize)
     {
-        bool should_disable = file_downloader.is_busy() || satdump::processing::is_processing;
+        bool should_disable = file_downloader.is_busy();
 
         if (should_disable)
             style::beginDisabled();
@@ -174,8 +169,8 @@ namespace satdump
             request_time.set(time(0));
 
         float target_height = wsize.y - 260 * ui_scale;
-        ImGui::BeginChild("##archiveloader_subwindow", {ImGui::GetContentRegionAvail().x, target_height < 5 * ui_scale ? 5 * ui_scale : target_height },
-            false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+        ImGui::BeginChild("##archiveloader_subwindow", {ImGui::GetContentRegionAvail().x, target_height < 5 * ui_scale ? 5 * ui_scale : target_height}, false,
+                          ImGuiWindowFlags_AlwaysVerticalScrollbar);
         if (ImGui::BeginTable("##archiveloadertable", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
         {
             ImGui::TableSetupColumn("##archiveloadertable_name", ImGuiTableColumnFlags_None);
@@ -221,12 +216,11 @@ namespace satdump
                                 }
                         }
 
-                        //logger->trace("\n%s\n", nat_link.c_str());
+                        // logger->trace("\n%s\n", nat_link.c_str());
 
                         std::string download_path = products_download_and_process_directory + "/" + file_name;
-                        std::string process_path = (download_location && output_selection.isValid() ?
-                            output_selection.getPath() : products_download_and_process_directory) +
-                            "/" + std::filesystem::path(file_name).stem().string();
+                        std::string process_path = (download_location && output_selection.isValid() ? output_selection.getPath() : products_download_and_process_directory) + "/" +
+                                                   std::filesystem::path(file_name).stem().string();
 
                         auto func = [this, nat_link, download_path, process_path](int)
                         {
@@ -234,11 +228,8 @@ namespace satdump
                             {
                                 if (file_downloader.download_file(nat_link, download_path, "Authorization: Bearer " + getEumetSatToken()) != 1)
                                 {
-                                    processing::process("off2pro",
-                                                        "file",
-                                                        download_path,
-                                                        process_path,
-                                                        {});
+                                    eventBus->fire_event<explorer::ExplorerApplication::ExplorerAddHandlerEvent>(
+                                        {std::make_shared<handlers::OffProcessingHandler>("off2pro", "file", download_path, process_path, nlohmann::json())});
                                 }
                             }
                             catch (std::exception &e)
@@ -258,4 +249,4 @@ namespace satdump
         if (should_disable)
             style::endDisabled();
     }
-}
+} // namespace satdump

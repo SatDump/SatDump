@@ -1,14 +1,18 @@
 #include "offline.h"
 #include "common/widgets/pipeline_selector.h"
 #include "common/widgets/timed_message.h"
+#include "core/plugin.h"
 #include "core/style.h"
+#include "explorer/explorer.h"
+#include "explorer/processing/processing.h"
 #include "imgui/imgui.h"
 #include "main_ui.h"
-#include "processing.h"
 #include <string>
 
 namespace satdump
 {
+    extern bool offline_en;
+
     namespace offline
     {
         std::unique_ptr<PipelineUISelector> pipeline_selector;
@@ -46,12 +50,14 @@ namespace satdump
                 else if (!pipeline_selector->outputdirselect.isValid())
                     error_message.set_message(style::theme.red, "Output folder is invalid!");
                 else
-                    ui_thread_pool.push(
-                        [&, params2](int)
-                        {
-                            processing::process(pipeline_selector->selected_pipeline, pipeline_selector->selected_pipeline.steps[pipeline_selector->pipelines_levels_select_id].level,
-                                                pipeline_selector->inputfileselect.getPath(), pipeline_selector->outputdirselect.getPath(), params2);
-                        });
+                {
+                    eventBus->fire_event<explorer::ExplorerApplication::ExplorerAddHandlerEvent>(
+                        {std::make_shared<handlers::OffProcessingHandler>(pipeline_selector->selected_pipeline,
+                                                                          pipeline_selector->selected_pipeline.steps[pipeline_selector->pipelines_levels_select_id].level,
+                                                                          pipeline_selector->inputfileselect.getPath(), pipeline_selector->outputdirselect.getPath(), params2),
+                         true});
+                    offline_en = false;
+                }
             }
 
             error_message.draw();

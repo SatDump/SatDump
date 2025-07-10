@@ -53,7 +53,13 @@ namespace satdump
                 });
 
             // Enable adding handlers to the explorer externally
-            eventBus->register_handler<ExplorerAddHandlerEvent>([this](const ExplorerAddHandlerEvent &e) { master_handler->addSubHandler(e.h); });
+            eventBus->register_handler<ExplorerAddHandlerEvent>(
+                [this](const ExplorerAddHandlerEvent &e)
+                {
+                    master_handler->addSubHandler(e.h);
+                    if (e.open)
+                        curr_handler = e.h;
+                });
 
             // TODOREWORK. Returns the last selected handler of a specific type if available
             eventBus->register_handler<GetLastSelectedOfTypeEvent>(
@@ -96,10 +102,10 @@ namespace satdump
 
                 if (prev_curr != curr_handler)
                     last_selected_handler.insert_or_assign(curr_handler->getID(), curr_handler);
-
-                if (curr_handler)
-                    curr_handler->drawMenu();
             }
+
+            if (curr_handler)
+                curr_handler->drawMenu();
         }
 
         void ExplorerApplication::drawMenuBar()
@@ -240,6 +246,8 @@ namespace satdump
 
         void ExplorerApplication::drawUI()
         {
+            drawMenuBar();
+
             ImVec2 explorer_size = ImGui::GetContentRegionAvail();
 
             if (ImGui::BeginTable("##wiever_table", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInnerV))
@@ -254,8 +262,7 @@ namespace satdump
                     panel_ratio = left_width / explorer_size.x;
                 last_width = left_width;
 
-                ImGui::BeginChild("ExplorerChildPanel", {left_width, float(explorer_size.y - 10)}, false, ImGuiWindowFlags_MenuBar);
-                drawMenuBar();
+                ImGui::BeginChild("ExplorerChildPanel", {left_width, float(explorer_size.y - 10)}, false);
                 drawPanel();
                 ImGui::EndChild();
 

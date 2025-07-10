@@ -317,6 +317,11 @@ namespace satdump
     {
         if (ImGui::BeginTable("##pipelineoptions", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
         {
+            // TODOREWORKUI?
+            int label_width = ImGui::CalcTextSize("Output Directory").x;
+            ImGui::TableSetupColumn("##pipelinesmaincolumn1", ImGuiTableColumnFlags_WidthStretch, label_width);
+            ImGui::TableSetupColumn("##pipelinesmaincolumn2", ImGuiTableColumnFlags_WidthStretch, label_width);
+
             for (std::pair<std::string, satdump::params::EditableParameter> &p : parameters_ui)
                 p.second.draw();
             for (std::pair<std::string, satdump::params::EditableParameter> &p : parameters_ui_pipeline)

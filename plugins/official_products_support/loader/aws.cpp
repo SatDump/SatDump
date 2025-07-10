@@ -1,17 +1,17 @@
 #include "archive_loader.h"
 
-#include "utils/http.h"
+#include "explorer/processing/processing.h"
 #include "logger.h"
-#include "nlohmann/json.hpp"
-#include "processing.h"
 #include "main_ui.h"
+#include "nlohmann/json.hpp"
+#include "utils/http.h"
 #include "utils/time.h"
 
 #include "libs/rapidxml.hpp"
 
 namespace satdump
 {
-    void ArchiveLoader::queryAWS(std::string url_host, std::string url_path, std::string filter, void (ArchiveLoader::* parseTimestamp)(std::string, time_t &, std::string &))
+    void ArchiveLoader::queryAWS(std::string url_host, std::string url_path, std::string filter, void (ArchiveLoader::*parseTimestamp)(std::string, time_t &, std::string &))
     {
         std::string url_req = url_host + url_path;
         std::string result;
@@ -20,7 +20,7 @@ namespace satdump
             // logger->trace("\nURL WAS : %s\n", url_req.c_str());
 
             rapidxml::xml_document<> doc;
-            doc.parse<0>((char*)result.c_str());
+            doc.parse<0>((char *)result.c_str());
 
             if (doc.first_node("ListBucketResult") == 0)
                 throw satdump_exception("XML missing ListBucketResult!");
@@ -46,10 +46,10 @@ namespace satdump
                 std::string next_token = doc.first_node("ListBucketResult")->first_node("NextContinuationToken")->value();
                 logger->trace("Continuation token : " + next_token);
 
-                CURL* curl = curl_easy_init();
+                CURL *curl = curl_easy_init();
                 if (curl)
                 {
-                    char* output = curl_easy_escape(curl, next_token.c_str(), next_token.length());
+                    char *output = curl_easy_escape(curl, next_token.c_str(), next_token.length());
                     if (output)
                     {
                         url_req = url_host + url_path + "&continuation-token=" + std::string(output);
@@ -76,8 +76,8 @@ namespace satdump
         int day_of_year = 0;
         int channel_int = 0;
         memset(&timeS, 0, sizeof(std::tm));
-        if (sscanf(filename.c_str(), "OR_ABI-L1b-Rad%*[FCM12]-M%*dC%2d_G%*d_s%4d%3d%2d%2d%2d%*d_e%*llu_c%*llu",
-            &channel_int, &timeS.tm_year, &day_of_year, &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec) == 6)
+        if (sscanf(filename.c_str(), "OR_ABI-L1b-Rad%*[FCM12]-M%*dC%2d_G%*d_s%4d%3d%2d%2d%2d%*d_e%*llu_c%*llu", &channel_int, &timeS.tm_year, &day_of_year, &timeS.tm_hour, &timeS.tm_min,
+                   &timeS.tm_sec) == 6)
         {
             channel = std::to_string(channel_int);
             timeS.tm_year -= 1900;
@@ -102,8 +102,8 @@ namespace satdump
             }
 
             queryAWS(std::string("https://noaa-") + aws_options[aws_selected_dataset].satid + ".s3.amazonaws.com/",
-                std::string("?list-type=2&prefix=") + aws_options[aws_selected_dataset].pathid + "%2F" + year + "%2F" +
-                dofy, aws_options[aws_selected_dataset].subpathid, &ArchiveLoader::parseGOESTimestamp);
+                     std::string("?list-type=2&prefix=") + aws_options[aws_selected_dataset].pathid + "%2F" + year + "%2F" + dofy, aws_options[aws_selected_dataset].subpathid,
+                     &ArchiveLoader::parseGOESTimestamp);
         }
         catch (std::exception &e)
         {
@@ -114,10 +114,9 @@ namespace satdump
     void ArchiveLoader::parseGK2ATimestamp(std::string filename, time_t &timestamp, std::string &channel)
     {
         std::tm timeS;
-        char channel_char[6] = { 0 };
+        char channel_char[6] = {0};
         memset(&timeS, 0, sizeof(std::tm));
-        if (sscanf(filename.c_str(), "gk2a_ami_le1b_%5c_%*5cge_%4d%2d%2d%2d%2d",
-            channel_char, &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min) == 6)
+        if (sscanf(filename.c_str(), "gk2a_ami_le1b_%5c_%*5cge_%4d%2d%2d%2d%2d", channel_char, &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min) == 6)
         {
             channel = std::string(channel_char);
             timeS.tm_year -= 1900;
@@ -154,8 +153,8 @@ namespace satdump
             }
 
             queryAWS(std::string("https://noaa-" + aws_options[aws_selected_dataset].satid + ".s3.amazonaws.com/"),
-                std::string("?list-type=2&prefix=AMI%2FL1B%2F" + aws_options[aws_selected_dataset].pathid +
-                "%2F" + yearmonth + "%2F" + date), aws_options[aws_selected_dataset].subpathid, &ArchiveLoader::parseGK2ATimestamp);
+                     std::string("?list-type=2&prefix=AMI%2FL1B%2F" + aws_options[aws_selected_dataset].pathid + "%2F" + yearmonth + "%2F" + date), aws_options[aws_selected_dataset].subpathid,
+                     &ArchiveLoader::parseGK2ATimestamp);
         }
         catch (std::exception &e)
         {
@@ -168,12 +167,12 @@ namespace satdump
         std::tm timeS;
         int channel_int;
 
-        char subtime[3] = { 0 };
-        char region[3] = { 0 };
+        char subtime[3] = {0};
+        char region[3] = {0};
 
         memset(&timeS, 0, sizeof(std::tm));
-        if (sscanf(filename.c_str(), "HS_H%*d_%4d%2d%2d_%2d%2d_B%2d_%2c%2c_R%*2d_S%*4d.DAT",
-            &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min, &channel_int, region, subtime) == 8)
+        if (sscanf(filename.c_str(), "HS_H%*d_%4d%2d%2d_%2d%2d_B%2d_%2c%2c_R%*2d_S%*4d.DAT", &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min, &channel_int, region,
+                   subtime) == 8)
         {
             channel = std::to_string(channel_int);
             timeS.tm_year -= 1900;
@@ -220,10 +219,10 @@ namespace satdump
             }
 
             queryAWS(std::string("https://noaa-" + aws_options[aws_selected_dataset].satid + ".s3.amazonaws.com/"),
-                std::string("?list-type=2&prefix=" + aws_options[aws_selected_dataset].pathid + "%2F" + year + "%2F" + month + "%2F" + date),
-                aws_options[aws_selected_dataset].subpathid, &ArchiveLoader::parseHimawariTimestamp);
+                     std::string("?list-type=2&prefix=" + aws_options[aws_selected_dataset].pathid + "%2F" + year + "%2F" + month + "%2F" + date), aws_options[aws_selected_dataset].subpathid,
+                     &ArchiveLoader::parseHimawariTimestamp);
         }
-        catch (std::exception& e)
+        catch (std::exception &e)
         {
             logger->error("Error updating Himawari Sector list! %s", e.what());
         }
@@ -231,7 +230,7 @@ namespace satdump
 
     void ArchiveLoader::renderAWS(ImVec2 wsize)
     {
-        bool should_disable = file_downloader.is_busy() || satdump::processing::is_processing;
+        bool should_disable = file_downloader.is_busy();
 
         if (should_disable)
             style::beginDisabled();
@@ -260,8 +259,8 @@ namespace satdump
             request_time.set(time(0));
 
         float target_height = wsize.y - 260 * ui_scale;
-        ImGui::BeginChild("##archiveloader_subwindow", { ImGui::GetContentRegionAvail().x, target_height < 5 * ui_scale ? 5 * ui_scale : target_height },
-            false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+        ImGui::BeginChild("##archiveloader_subwindow", {ImGui::GetContentRegionAvail().x, target_height < 5 * ui_scale ? 5 * ui_scale : target_height}, false,
+                          ImGuiWindowFlags_AlwaysVerticalScrollbar);
 
         if (ImGui::BeginTable("##archiveloadertable", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
         {
@@ -284,9 +283,7 @@ namespace satdump
                             bool success = true;
                             for (auto &c : str.second)
                             {
-                                std::string download_path = products_download_and_process_directory + "/" +
-                                    std::filesystem::path(c).stem().string() +
-                                    std::filesystem::path(c).extension().string();
+                                std::string download_path = products_download_and_process_directory + "/" + std::filesystem::path(c).stem().string() + std::filesystem::path(c).extension().string();
 
                                 if (file_downloader.download_file(c, download_path, "") == 1)
                                 {
@@ -297,16 +294,12 @@ namespace satdump
                                 l_download_path = download_path;
                             }
 
-                            std::string process_path = (download_location && output_selection.isValid() ?
-                                output_selection.getPath() : products_download_and_process_directory) +
-                                "/" + std::filesystem::path(l_download_path).stem().string();
+                            std::string process_path = (download_location && output_selection.isValid() ? output_selection.getPath() : products_download_and_process_directory) + "/" +
+                                                       std::filesystem::path(l_download_path).stem().string();
 
                             if (success)
-                                processing::process("off2pro",
-                                                    "file",
-                                                    l_download_path,
-                                                    process_path,
-                                                    {});
+                                eventBus->fire_event<explorer::ExplorerApplication::ExplorerAddHandlerEvent>(
+                                    {std::make_shared<handlers::OffProcessingHandler>("off2pro", "file", l_download_path, process_path, nlohmann::json())});
                         }
                         catch (std::exception &e)
                         {
@@ -324,4 +317,4 @@ namespace satdump
         if (should_disable)
             style::endDisabled();
     }
-}
+} // namespace satdump

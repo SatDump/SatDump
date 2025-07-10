@@ -12,7 +12,7 @@
 #include "logger.h"
 #include "main_ui.h"
 #include "nfd.h"
-#include "processing.h"
+// #include "processing.h"
 #include "satdump_vars.h"
 #include <exception>
 #include <filesystem>
@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
 {
     initLogger();
 
+#if 0
     if (argc < 5) // Check overall command
     {
         logger->error("Usage : " + std::string(argv[0]) + " [downlink] [input_level] [input_file] [output_file_or_directory] [additional options as required]");
@@ -72,6 +73,7 @@ int main(int argc, char *argv[])
 
     // Parse flags
     nlohmann::json parameters = satdump::processing::is_processing ? parse_common_flags(argc - 5, &argv[5]) : "";
+#endif // TODOREWORKUI
 
     // logger->warn("\n" + parameters.dump(4));
     // exit(0);
@@ -182,6 +184,7 @@ int main(int argc, char *argv[])
     satdump::tle_do_update_on_init = false;
     satdump::initSatdump(true);
 
+#if 0
     // Check if we need to start a pipeline
     try
     {
@@ -196,6 +199,7 @@ int main(int argc, char *argv[])
     satdump::satdump_cfg.main_cfg["cli"] = {};
     if (argc > 1 && !satdump::processing::is_processing)
         satdump::satdump_cfg.main_cfg["cli"] = parse_common_flags(argc - 1, &argv[1], {{"source_id", typeid(std::string)}});
+#endif // TODOREWORKUI
 
     // Init UI
     satdump::initMainUI();
@@ -205,11 +209,13 @@ int main(int argc, char *argv[])
     loading_screen_sink.reset();
     glfwSwapInterval(1); // Enable vsync for the rest of the program
 
+#if 0
     if (satdump::processing::is_processing)
     {
         try_get_params_from_input_file(parameters, input_file);
         satdump::ui_thread_pool.push([&](int) { satdump::processing::process(downlink_pipeline, input_level, input_file, output_file, parameters); });
     }
+#endif // TODOREWORKUI
 
     // Set window position
     int x, y, xs, ys;
@@ -282,6 +288,7 @@ int main(int argc, char *argv[])
 
     logger->info("UI Exit");
 
+#if 0
     // If we're doing live processing, we want this to kill all threads quickly. Hence don't call destructors
     if (satdump::processing::is_processing)
 #ifdef __APPLE__
@@ -289,6 +296,7 @@ int main(int argc, char *argv[])
 #else
         quick_exit(0);
 #endif
+#endif // TODOREWORKUI
 
     satdump::ui_thread_pool.stop();
 

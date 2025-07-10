@@ -55,6 +55,7 @@ namespace satdump
             struct ExplorerAddHandlerEvent
             {
                 std::shared_ptr<handlers::Handler> h;
+                bool open = false;
             };
 
         public:
