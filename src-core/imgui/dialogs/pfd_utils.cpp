@@ -43,7 +43,7 @@ namespace satdump
 
     done_ext:
 #ifdef __ANDROID__
-        *default_ext = satdump_cfg.getValueFromSatDumpGeneral<std::string>["image_format");
+        *default_ext = satdump_cfg.getValueFromSatDumpGeneral<std::string>("image_format");
 #endif
 
 #if defined(_MSC_VER)
