@@ -357,6 +357,11 @@ if((CMAKE_BUILD_TYPE MATCHES "^[Rr]elease") AND BUILD_DOCS)
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
             COMMENT "Generating API documentation with Doxygen"
             VERBATIM)
+
+        add_custom_command(TARGET docs_doxygen POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    ${CMAKE_CURRENT_SOURCE_DIR}/docs/res
+                    ${CMAKE_CURRENT_BINARY_DIR}/documentation/html/res)
     else(DOXYGEN_FOUND)
         message("Doxygen need to be installed to generate the doxygen documentation")
     endif(DOXYGEN_FOUND)
