@@ -203,7 +203,12 @@
                 ]
             ]
         },
-        "frequencies": [],
+        "frequencies": [
+            [
+                "GRB",
+                1686.6e6
+            ]
+        ],
         "samplerate": 6e6,
         "work": {
             "baseband": {},
@@ -304,10 +309,16 @@
     },
     "goes_mdl": {
         "name": "GOES-N MDL",
-        "samplerate": 3e6,
         "live": [
             1,
             2
+        ],
+        "samplerate": 3e6,
+        "frequencies": [
+            [
+                "MDL",
+                1681.5
+            ]
         ],
         "work": {
             "baseband": {},
@@ -396,6 +407,12 @@
             1,
             2
         ],
+        "frequencies": [
+            [
+                "CDA",
+                1694e6
+            ]
+        ],
         "work": {
             "baseband": {},
             "soft": {
@@ -433,6 +450,12 @@
             2
         ],
         "samplerate": 1e6,
+        "frequencies": [
+            [
+                "GOES-N Sensor data",
+                1676e6
+            ]
+        ],
         "work": {
             "baseband": {},
             "soft": {
@@ -460,12 +483,17 @@
         }
     },
     "goesn_sd": {
-        "name": "GOES-N Sensor Data",
+        "name": "GOES-N Imager SD",
         "live": [
             1,
             2
         ],
-        "frequencies": [],
+        "frequencies": [
+            [
+                "GOES-N Sensor data",
+                1676e6
+            ]
+        ],        
         "parameters": {
             "samplerate": {
                 "value": 6e6
@@ -493,6 +521,12 @@
     "goesr_raw": {
         "name": "GOES-R Raw Data",
         "samplerate": 20e6,
+        "frequencies": [
+            [
+                "GOES Raw Data Link",
+                8220e6
+            ]
+        ],
         "work": {
             "baseband": {},
             "soft": {

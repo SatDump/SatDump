@@ -5,7 +5,12 @@
             1,
             2
         ],
-        "frequencies": [],
+        "frequencies": [
+            [
+                "Telemetry",
+                8431e6
+            ]
+        ],
         "parameters": {},
         "work": {
             "baseband": {},
