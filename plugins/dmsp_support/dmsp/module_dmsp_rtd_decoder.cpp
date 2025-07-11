@@ -1,8 +1,10 @@
 #include "module_dmsp_rtd_decoder.h"
-#include "common/utils.h"
 #include "imgui/imgui.h"
 #include "logger.h"
+#include "nlohmann/json_utils.h"
 #include <cstdint>
+#include <fstream>
+#include <string>
 #include <volk/volk.h>
 
 #define BUFFER_SIZE 8192
@@ -29,6 +31,14 @@ namespace dmsp
 
     void DMSPRTDDecoderModule::process()
     {
+        double start_timestamp = getValueOrDefault(d_parameters["start_timestamp"], -1);
+        size_t accumulated_samples = 0;
+
+        std::ofstream timestamps_out;
+
+        if (start_timestamp != -1)
+            timestamps_out = std::ofstream(d_output_file_hint + "_timestamps.txt", std::ios::binary);
+
         while (should_run())
         {
             // Read a buffer
@@ -44,8 +54,24 @@ namespace dmsp
 
             // Write to file
             if (nframes > 0)
+            {
                 write_data((uint8_t *)output_frames, nframes * RTD_FRAME_SIZE);
+
+                accumulated_samples += BUFFER_SIZE;
+
+                if (start_timestamp != -1)
+                {
+                    for (int i = 0; i < nframes; i++)
+                    {
+                        double curr_timestamp = start_timestamp + double(accumulated_samples) / 1.024e6;
+                        timestamps_out << std::to_string(curr_timestamp) << '\n';
+                    }
+                }
+            }
         }
+
+        if (start_timestamp != -1)
+            timestamps_out.close();
 
         logger->info("Decoding finished");
 

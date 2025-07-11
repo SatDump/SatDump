@@ -145,7 +145,16 @@ int main(int argc, char *argv[])
                         // logger->critical(s33->get_name().substr(2));
                         auto optname = s33->get_name().substr(2);
                         if (pipeline_opts[pipeline.id].count(optname))
-                            params[optname] = nlohmann::json::parse(s33->as<std::string>());
+                        {
+                            try
+                            {
+                                params[optname] = nlohmann::json::parse(s33->as<std::string>());
+                            }
+                            catch (std::exception &e)
+                            {
+                                params[optname] = s33->as<std::string>();
+                            }
+                        }
                     }
                 }
 
