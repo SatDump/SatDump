@@ -1,7 +1,8 @@
+#define SATDUMP_DLL_EXPORT2 1
+
 #include "common/imgui_utils.h"
 #include "core/style.h"
 #include "recorder/recorder.h"
-#define SATDUMP_DLL_EXPORT2 1
 
 #include "common/audio/audio_sink.h"
 #include "common/widgets/markdown_helper.h"
@@ -91,7 +92,6 @@ namespace satdump
         std::pair<int, int> dims = backend::beginFrame();
         dims.second -= status_logger_sink->draw();
 
-        // else
         {
             ImGui::SetNextWindowPos({0, 0});
             ImGui::SetNextWindowSize({(float)dims.first, (float)dims.second});

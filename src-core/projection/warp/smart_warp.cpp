@@ -1,9 +1,9 @@
 #include "warp_bkd.h"
 
-#include "logger.h"
-#include "core/exception.h"
-#include "projection/utils/equirectangular.h"
 #include "common/geodetic/vincentys_calculations.h"
+#include "core/exception.h"
+#include "logger.h"
+#include "projection/utils/equirectangular.h"
 
 #define MAX_IMAGE_RAM_USAGE 4e9 // 4GB of RAM max
 #define SEGMENT_SIZE_KM 3000    // Average segment size to try and keep as max
@@ -35,10 +35,7 @@ namespace satdump
             std::vector<satdump::projection::GCP> gcps_curr = operation_t.ground_control_points;
             // Filter GCPs, only keep each first y in x
             std::sort(gcps_curr.begin(), gcps_curr.end(),
-                      [&operation_t](auto &el1, auto &el2)
-                      {
-                          return el1.y * operation_t.input_image->width() + el1.x < el2.y * operation_t.input_image->width() + el2.x;
-                      });
+                      [&operation_t](auto &el1, auto &el2) { return el1.y * operation_t.input_image->width() + el1.x < el2.y * operation_t.input_image->width() + el2.x; });
             {
                 std::vector<satdump::projection::GCP> gcps_curr_bkp = gcps_curr;
                 gcps_curr.clear();
@@ -231,10 +228,7 @@ namespace satdump
 
                 // Filter GCPs, only keep each first y in x
                 std::sort(gcps_curr.begin(), gcps_curr.end(),
-                          [&operation_t](auto &el1, auto &el2)
-                          {
-                              return el1.y * operation_t.input_image->width() + el1.x < el2.y * operation_t.input_image->width() + el2.x;
-                          });
+                          [&operation_t](auto &el1, auto &el2) { return el1.y * operation_t.input_image->width() + el1.x < el2.y * operation_t.input_image->width() + el2.x; });
                 {
                     std::vector<satdump::projection::GCP> gcps_curr_bkp = gcps_curr;
                     gcps_curr.clear();
@@ -250,8 +244,7 @@ namespace satdump
                 // Check if this segment is cut (eg, los of signal? Different recorded dump?)
                 std::vector<int> cutPositions;
                 for (int y = 0; y < (int)gcps_curr.size() - 1 && gcps_curr.size() > 1; y++)
-                    if (geodetic::vincentys_inverse(geodetic::geodetic_coords_t(gcps_curr[y].lat, gcps_curr[y].lon, 0),
-                                                    geodetic::geodetic_coords_t(gcps_curr[y + 1].lat, gcps_curr[y + 1].lon, 0))
+                    if (geodetic::vincentys_inverse(geodetic::geodetic_coords_t(gcps_curr[y].lat, gcps_curr[y].lon, 0), geodetic::geodetic_coords_t(gcps_curr[y + 1].lat, gcps_curr[y + 1].lon, 0))
                             .distance > (8 * median_dist))
                         cutPositions.push_back(gcps_curr[y + 1].y);
 
@@ -289,8 +282,7 @@ namespace satdump
 
             // Prepare the output
             result.output_image = image::Image(16, // TODOIMG not just 8-bits
-                                                crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min,
-                                                nchannels);
+                                               crop_set.x_max - crop_set.x_min, crop_set.y_max - crop_set.y_min, nchannels);
             result.top_left = {0, 0, (double)crop_set.lon_min, (double)crop_set.lat_max};                                                                                  // 0,0
             result.top_right = {(double)result.output_image.width() - 1, 0, (double)crop_set.lon_max, (double)crop_set.lat_max};                                           // 1,0
             result.bottom_left = {0, (double)result.output_image.height() - 1, (double)crop_set.lon_min, (double)crop_set.lat_min};                                        // 0,1
@@ -307,8 +299,10 @@ namespace satdump
             // Generate all segments
             std::vector<SegmentConfig> segmentConfigs = prepareSegmentsAndSplitCuts(nsegs, operation_t, median_dist);
 
-#pragma omp parallel for
-            //  Solve all TPS transforms, multithreaded
+            // #pragma omp parallel for
+            // Solve all TPS transforms, multithreaded
+            // TODOREWORK there is a bug when this gets multithreaded!? Only on Windows if OpenMP is used,
+            // also on Linux (SIGSEV) if running via threads manually?
             for (int64_t ns = 0; ns < (int64_t)segmentConfigs.size(); ns++)
                 segmentConfigs[ns].tps = initTPSTransform(segmentConfigs[ns].gcps, segmentConfigs[ns].shift_lon, segmentConfigs[ns].shift_lat);
 
@@ -397,5 +391,5 @@ namespace satdump
 
             return result;
         }
-    }
-}
+    } // namespace warp
+} // namespace satdump
