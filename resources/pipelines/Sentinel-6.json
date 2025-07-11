@@ -6,6 +6,12 @@
                 "value": 20e6
             }
         },
+        "frequencies": [
+            [
+                "Main",
+                8090e6
+            ]
+        ],
         "work": {
             "baseband": {},
             "soft": {

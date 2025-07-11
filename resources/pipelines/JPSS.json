@@ -12,6 +12,12 @@
                 "description": "Use Ephemeris data from HRD instead of TLE"
             }
         },
+        "frequencies": [
+            [
+                "Main",
+                7812e6
+            ]
+        ],
         "work": {
             "baseband": {},
             "soft": {
@@ -59,6 +65,12 @@
                 "description": "Use Ephemeris data from HRD instead of TLE"
             }
         },
+        "frequencies": [
+            [
+                "Main",
+                7812e6
+            ]
+        ],
         "work": {
             "baseband": {},
             "soft": {

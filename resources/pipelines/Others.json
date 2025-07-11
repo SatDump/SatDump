@@ -204,6 +204,12 @@
         "live": [
             1
         ],
+        "frequencies": [
+            [
+                "Telemetry",
+                7705e6
+            ]
+        ],
         "work": {
             "baseband": {},
             "soft": {
