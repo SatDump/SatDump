@@ -12,6 +12,10 @@ The decision to include those here followed some of them being taken offline as 
 
 - [FY2VISSR2.0_en.pdf](res/fy2/FY2VISSR2.0_en.pdf) : Documents the entire S-VISSR protocol
 
+### NOAA (POES)
+
+- [noaa/0.0 NOAA KLM Users Guide.pdf](res/noaa/0.0 NOAA KLM Users Guide.pdf) : The ubiquitous document for NOAA KLM. No GAC/LAC formats
+
 ### DMSP
 
 - [DMSP_data_Specifications_15January1977.pdf](res/dmsp/DMSP_data_Specifications_15January1977.pdf) : DMSP Raw Data formats and more. 1977 Version
