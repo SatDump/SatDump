@@ -8,6 +8,10 @@ The decision to include those here followed some of them being taken offline as 
 
 - [G023_504.02_DCN3_Sect_3.pdf](res/goes/G023_504.02_DCN3_Sect_3.pdf) : Documents the entire GVAR protocol
 
+### FengYun-2
+
+- [FY2VISSR2.0_en.pdf](res/fy2/FY2VISSR2.0_en.pdf) : Documents the entire S-VISSR protocol
+
 ### DMSP
 
 - [DMSP_data_Specifications_15January1977.pdf](res/dmsp/DMSP_data_Specifications_15January1977.pdf) : DMSP Raw Data formats and more. 1977 Version
