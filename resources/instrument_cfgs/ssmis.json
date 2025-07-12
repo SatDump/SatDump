@@ -17,7 +17,7 @@
                 "individual_equalize": true
             }
         },
-                {
+        {
             "name": "MHS False Color",
             "expression": "ch1,ch3,ch6",
             "image": {
@@ -27,15 +27,15 @@
         },
         {
             "name": "91.65 GHz channel 17",
-            "expression": "cch1=(6, equalized, 0.000000, 100.000000);lut=lut(lut/cal/purpleorange.png);lut(1-cch1, 0, 0), lut(1-cch1, 0, 1), lut(1-cch1, 0, 2)",
+            "expression": "cch1=(6, equalized, 0.000000, 100.000000);lut=lut(lut/cal/purpleorange.png);lut(1-cch1, 0, 0), lut(1-cch1, 0, 1), lut(1-cch1, 0, 2)"
         },
         {
             "name": "183 GHz channel 10",
-            "expression": "cch1=(3, equalized, 0.000000, 100.000000);lut=lut(lut/cal/purpleorange.png);lut(1-cch1, 0, 0), lut(1-cch1, 0, 1), lut(1-cch1, 0, 2)",
+            "expression": "cch1=(3, equalized, 0.000000, 100.000000);lut=lut(lut/cal/purpleorange.png);lut(1-cch1, 0, 0), lut(1-cch1, 0, 1), lut(1-cch1, 0, 2)"
         },
         {
             "name": "150 GHz channel 8",
-            "expression": "cch1=(1, equalized, 0.000000, 100.000000);lut=lut(lut/cal/purpleorange.png);lut(1-cch1, 0, 0), lut(1-cch1, 0, 1), lut(1-cch1, 0, 2)",
+            "expression": "cch1=(1, equalized, 0.000000, 100.000000);lut=lut(lut/cal/purpleorange.png);lut(1-cch1, 0, 0), lut(1-cch1, 0, 1), lut(1-cch1, 0, 2)"
         }
     ]
 }
