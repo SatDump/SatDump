@@ -1,17 +1,18 @@
 #include "product_expression.h"
 #include "image/image.h"
 #include "image/meta.h"
+#include "image/processing.h"
 #include "libs/muparser/muParser.h"
 #include "logger.h"
 
-#include "utils/string.h"
 #include "products2/image/image_calibrator.h"
+#include "utils/string.h"
 
 #include "image/io.h"
 
-#include "projection/utils/equirectangular.h"
-#include "projection/projection.h"
 #include "core/resources.h"
+#include "projection/projection.h"
+#include "projection/utils/equirectangular.h"
 
 namespace satdump
 {
@@ -393,7 +394,13 @@ namespace satdump
                         std::string index = calib_cfgs[tkt].channel;
                         logger->trace("Needs calibrated channel " + index + " as " + c.unit);
                         auto &h = product->get_channel_image(index);
-                        other_images[ntkts] = generate_calibrated_product_channel(product, index, c.min, c.max, c.unit, progress); // TODOREWORK handle progress?
+                        if (c.unit == "equalized") // TODOREWORK this is an exception?
+                        {
+                            other_images[ntkts] = h.image;
+                            image::equalize(other_images[ntkts]);
+                        }
+                        else
+                            other_images[ntkts] = generate_calibrated_product_channel(product, index, c.min, c.max, c.unit, progress); // TODOREWORK handle progress?
                         auto &image = other_images[ntkts];
                         auto nt = new TokenS(image, h.ch_transform);
                         nt->ch_idx = h.abs_index;

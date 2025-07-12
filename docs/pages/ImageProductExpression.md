@@ -46,6 +46,8 @@ variable_name=(CHNAME, CALIBRATION_UNIT, MINCALVAL, MAXCALVAL);
 - `MINCALVAL` value of the unit to be used as a minimum (scaled to 0)
 - `MAXCALVAL` value of the unit to be used as a maximum (scaled to 1)
 
+If `CALIBRATION_UNIT` is set to `equalized`, this will return the raw channel equalized (useful to stretch it on uncalibrated instruments for example).
+
 ### Look-up table (1D/2D)
 
 This lets you loading and utilizing a Look-Up Table in the expression.
