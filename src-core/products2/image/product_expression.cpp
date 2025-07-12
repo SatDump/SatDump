@@ -313,7 +313,7 @@ namespace satdump
                 for (auto &t : calib_cfgs)
                 {
                     product->get_channel_image(t.second.channel);
-                    if (!product->has_calibration())
+                    if (!product->has_calibration() && t.second.unit != "equalized")
                         *progress = 0;
                 }
 
