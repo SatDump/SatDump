@@ -12,9 +12,14 @@ The decision to include those here followed some of them being taken offline as 
 
 - [FY2VISSR2.0_en.pdf](res/fy2/FY2VISSR2.0_en.pdf) : Documents the entire S-VISSR protocol
 
+### FengYun-3
+
+- [FY-3_Satellites_to_Ground_Interface_Control_Document.pdf](res/fy3/FY-3_Satellites_to_Ground_Interface_Control_Document.pdf) : FY-3 A/B/C Physical Layer  (AHRPT/MPT/DPT)
+- [Space-to-Ground Interface Control Documents of FY3D Meteorological Satellite.pdf](res/fy3/Space-to-Ground Interface Control Documents of FY3D Meteorological Satellite.pdf) : FY-3 D Physical Layer (AHRPT/DPT)
+
 ### NOAA (POES)
 
-- [noaa/0.0 NOAA KLM Users Guide.pdf](res/noaa/0.0 NOAA KLM Users Guide.pdf) : The ubiquitous document for NOAA KLM. No GAC/LAC formats
+- [0.0 NOAA KLM Users Guide.pdf](res/noaa/0.0 NOAA KLM Users Guide.pdf) : The ubiquitous document for NOAA KLM. No GAC/LAC formats
 
 ### DMSP
 
