@@ -101,7 +101,7 @@ namespace satdump
             {
                 if (ImGui::BeginMenu("File"))
                 {
-                    if (ImGui::MenuItem("Offline Processing"))
+                    if (ImGui::MenuItem("Processing"))
                         offline_en = true;
 
                     if (ImGui::MenuItem("Add Recorder"))
@@ -117,11 +117,11 @@ namespace satdump
             }
 
             if (offline_en)
-                ImGui::OpenPopup("Offline Processing");
+                ImGui::OpenPopup("Processing");
 
             //   if (offline_en)
             ImGui::SetNextWindowSize({600 * ui_scale, 0});
-            if (ImGui::BeginPopupModal("Offline Processing", &offline_en, ImGuiWindowFlags_AlwaysAutoResize))
+            if (ImGui::BeginPopupModal("Processing", &offline_en, ImGuiWindowFlags_AlwaysAutoResize))
             {
                 offline::render();
                 ImGui::EndPopup();

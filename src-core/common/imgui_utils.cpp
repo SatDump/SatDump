@@ -13,13 +13,3 @@ void ImGuiUtils_SendCurrentWindowToBack()
     if(ImGui::FindBottomMostVisibleWindowWithinBeginStack(current_window) != current_window)
         ImGui::BringWindowToDisplayBack(current_window);
 }
-
-bool ImGuiUtils_OfflineProcessingSelected()
-{
-    for (int i = 0; i < GImGui->TabBars.GetMapSize(); i++)
-        if (ImGuiTabBar* tab_bar = GImGui->TabBars.TryGetMapData(i))
-            if (tab_bar->SelectedTabId != 0 &&
-                strcmp(ImGui::TabBarGetTabName(tab_bar, ImGui::TabBarFindTabByID(tab_bar, tab_bar->SelectedTabId)), "Offline processing") == 0)
-                    return true;
-    return false;
-}
