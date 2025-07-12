@@ -28,4 +28,15 @@ namespace satdump
      * @return String in YYYY/MM/DD HH:MM:SS format
      */
     std::string timestamp_to_string(double timestamp, bool local = false);
+
+    /**
+     * @brief Get a UNIX Timestamp
+     * in seconds from a formatted
+     * timestamp in a filename.
+     *
+     * @param filename Entire file name string
+     * @return timestamp Double in UNIX Timestamps in seconds
+     */
+    double timestamp_from_filename(std::string filename);
+
 } // namespace satdump
