@@ -19,6 +19,14 @@
             }
         },
         {
+            "name": "7.2 µm Water Vapor",
+            "expression": "cch12=(12, equalized, 0, 0);lut=lut(lut/cal/purpleorange.png);lut(cch12, 0, 0), lut(cch12,0,1), lut(cch12,0,2)",
+            "image": {
+                "equalize": true,
+                "geo_correct": true
+            }
+        },
+        {
             "name": "MERSI Airmass",
             "expression": "ch9, ch12, ch11",
             "image": {
