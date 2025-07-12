@@ -13,6 +13,12 @@
                 "description": "Checks frames for errors. This is usually \ndesireable, but sometimes ignoring \nerrors may decode a bit more!"
             }
         },
+        "frequencies": [
+            [
+                "Main",
+                8392.5e6
+            ]
+        ],
         "work": {
             "baseband": {},
             "soft": {

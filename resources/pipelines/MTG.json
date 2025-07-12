@@ -39,6 +39,12 @@
             1,
             2
         ],
+        "frequencies": [
+            [
+                "MDA",
+                26360e6
+            ]
+        ],
         "work": {
             "baseband": {},
             "soft": {

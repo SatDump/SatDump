@@ -5,6 +5,12 @@
             1,
             2
         ],
+        "frequencies": [
+            [
+                "Main",
+                8443.52e6
+            ]
+        ],
         "work": {
             "baseband": {},
             "soft": {
@@ -42,6 +48,12 @@
         "live": [
             1,
             2
+        ],
+        "frequencies": [
+            [
+                "Main",
+                8443.52e6
+            ]
         ],
         "work": {
             "baseband": {},
