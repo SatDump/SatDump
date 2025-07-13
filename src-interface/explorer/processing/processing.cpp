@@ -110,7 +110,7 @@ namespace satdump
             }
             else
             {
-                ImGui::Text("Done processing! You can close this. TODOREWORK");
+                ImGui::Text("Done processing! You can close this, if it didn't close itself.");
             }
 
             ui_call_list_mutex->unlock();
