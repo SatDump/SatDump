@@ -14,6 +14,7 @@
 
 // TODOREWORK MOVE
 #include "common/calibration.h"
+#include "utils/unit_parser.h"
 #include <limits>
 #include <string>
 
@@ -186,6 +187,25 @@ namespace satdump
                 if (out == nullptr)
                     throw satdump_exception("Product Channel Close to Wavelength " + std::to_string(wavenumber) + " is not present!");
                 return *out;
+            }
+
+            /**
+             * @brief Get image channel by unit string. Returns the closest one
+             * @param str Unit string
+             * @return the image channel struct
+             */
+            ImageHolder &get_channel_image_by_unitstr(std::string str)
+            {
+                double val = 0;
+
+                if (parseUnitFromString(str, val, UNIT_METER))
+                    val = freq_to_wavenumber(SPEED_OF_LIGHT_M_S / val);
+                else if (parseUnitFromString(str, val, UNIT_HERTZ))
+                    val = freq_to_wavenumber(val);
+                else
+                    throw satdump_exception("Couldn't parse unit and value from " + str);
+
+                return get_channel_image_by_wavenumber(val);
             }
 
             /**

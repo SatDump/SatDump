@@ -266,16 +266,7 @@ namespace satdump
 
                 for (auto tkt : all_found)
                 {
-                    double val = 0;
-
-                    if (parseUnitFromString(tkt, val, UNIT_METER))
-                        val = freq_to_wavenumber(SPEED_OF_LIGHT_M_S / val);
-                    else if (parseUnitFromString(tkt, val, UNIT_HERTZ))
-                        val = freq_to_wavenumber(val);
-                    else
-                        throw satdump_exception("Couldn't parse unit and value from " + tkt);
-
-                    auto atkt = product->get_channel_image_by_wavenumber(val).channel_name;
+                    auto atkt = product->get_channel_image_by_unitstr(tkt).channel_name;
                     replaceAllStr(expression, "{" + tkt + "}", atkt);
                 }
             }
