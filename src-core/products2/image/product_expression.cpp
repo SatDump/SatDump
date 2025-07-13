@@ -1,4 +1,7 @@
 #include "product_expression.h"
+#include "common/calibration.h"
+#include "common/physics_constants.h"
+#include "core/exception.h"
 #include "image/image.h"
 #include "image/meta.h"
 #include "image/processing.h"
@@ -236,6 +239,60 @@ namespace satdump
             expression.erase(std::remove(expression.begin(), expression.end(), '\r'), expression.end());
             expression.erase(std::remove(expression.begin(), expression.end(), '\n'), expression.end());
             expression.erase(std::remove(expression.begin(), expression.end(), ' '), expression.end());
+
+            // See if we have some token macros
+            {
+                std::vector<std::string> all_found;
+                std::string curr;
+                bool in_tkt = false;
+                for (auto &c : expression)
+                {
+                    if (c == '{')
+                    {
+                        in_tkt = true;
+                    }
+                    else if (c == '}' && in_tkt)
+                    {
+                        all_found.push_back(curr);
+                        curr.clear();
+                        in_tkt = false;
+                    }
+                    else if (in_tkt)
+                    {
+                        curr += c;
+                    }
+                }
+
+                // TODOREWORK make this less junk
+                for (auto tkt : all_found)
+                {
+                    std::string rtkt = "{" + tkt + "}";
+                    double val = 0;
+
+                    if (tkt.find("um") != std::string::npos)
+                    {
+                        replaceAllStr(tkt, "um", "");
+                        val = freq_to_wavenumber(SPEED_OF_LIGHT_M_S / (std::stod(tkt) * 1e-6));
+                    }
+                    else if (tkt.find("nm") != std::string::npos)
+                    {
+                        replaceAllStr(tkt, "nm", "");
+                        val = freq_to_wavenumber(SPEED_OF_LIGHT_M_S / (std::stod(tkt) * 1e-9));
+                    }
+                    else if (tkt.find("GHz") != std::string::npos)
+                    {
+                        replaceAllStr(tkt, "Ghz", "");
+                        val = freq_to_wavenumber(std::stod(tkt) * 1e9);
+                    }
+                    else
+                    {
+                        throw satdump_exception("Couldn't parse unit and value from " + tkt);
+                    }
+
+                    auto atkt = product->get_channel_image_by_wavenumber(val).channel_name;
+                    replaceAllStr(expression, rtkt, atkt);
+                }
+            }
 
             // See if we ave some setup string present
             std::map<std::string, CalibChannelCfg> calib_cfgs;

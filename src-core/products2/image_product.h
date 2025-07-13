@@ -4,16 +4,18 @@
  * @file image_product.h
  */
 
-#include "image/image.h"
-#include "utils/stats.h"
 #include "image/channel_transform.h"
+#include "image/image.h"
 #include "product.h"
+#include "utils/stats.h"
 
 #include "common/physics_constants.h"
 #include "image/calibration_units.h" // TODOREWORK MOVE!!!! + Conversion
 
 // TODOREWORK MOVE
 #include "common/calibration.h"
+#include <limits>
+#include <string>
 
 namespace satdump
 {
@@ -162,6 +164,28 @@ namespace satdump
                     if (img.channel_name == name)
                         return img;
                 throw satdump_exception("Product Channel Name " + name + " is not present!");
+            }
+
+            /**
+             * @brief Get image channel by wavenumber. Returns the closest one
+             * @param double wavenumber
+             * @return the image channel struct
+             */
+            ImageHolder &get_channel_image_by_wavenumber(double wavenumber)
+            {
+                double best = std::numeric_limits<double>::max();
+                ImageHolder *out = nullptr;
+                for (auto &img : images)
+                {
+                    if (img.wavenumber != -1 && best > abs(img.wavenumber - wavenumber))
+                    {
+                        out = &img;
+                        best = abs(img.wavenumber - wavenumber);
+                    }
+                }
+                if (out == nullptr)
+                    throw satdump_exception("Product Channel Close to Wavelength " + std::to_string(wavenumber) + " is not present!");
+                return *out;
             }
 
             /**
