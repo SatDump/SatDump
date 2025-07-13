@@ -1,5 +1,4 @@
 #include "unit_parser.h"
-#include "logger.h"
 #include "utils/string.h"
 #include <algorithm>
 
@@ -15,7 +14,6 @@ namespace satdump
             if (str.find(u.name) != std::string::npos)
             {
                 replaceAllStr(str, u.name, "");
-                logger->critical(str);
                 out = (std::stod(str) * u.scale);
                 return true;
             }
