@@ -65,6 +65,11 @@ namespace satdump
                 handler_name = product->instrument_name;
             }
 
+            // Sort in alphabetical order (to make lego11 happy)
+            if (!instrument_cfg["presets"].is_null())
+                std::sort(instrument_cfg["presets"].begin(), instrument_cfg["presets"].end(),
+                          [&](const nlohmann::ordered_json &a, const nlohmann::ordered_json &b) { return a["name"].get<std::string>() < b["name"].get<std::string>(); });
+
             if (!dataset_mode && p->has_product_source())
                 handler_name = p->get_product_source() + " " + handler_name;
             if (!dataset_mode && p->has_product_timestamp())
