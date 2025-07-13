@@ -16,6 +16,7 @@
 #include "core/resources.h"
 #include "projection/projection.h"
 #include "projection/utils/equirectangular.h"
+#include "utils/unit_parser.h"
 
 namespace satdump
 {
@@ -263,34 +264,19 @@ namespace satdump
                     }
                 }
 
-                // TODOREWORK make this less junk
                 for (auto tkt : all_found)
                 {
-                    std::string rtkt = "{" + tkt + "}";
                     double val = 0;
 
-                    if (tkt.find("um") != std::string::npos)
-                    {
-                        replaceAllStr(tkt, "um", "");
-                        val = freq_to_wavenumber(SPEED_OF_LIGHT_M_S / (std::stod(tkt) * 1e-6));
-                    }
-                    else if (tkt.find("nm") != std::string::npos)
-                    {
-                        replaceAllStr(tkt, "nm", "");
-                        val = freq_to_wavenumber(SPEED_OF_LIGHT_M_S / (std::stod(tkt) * 1e-9));
-                    }
-                    else if (tkt.find("GHz") != std::string::npos)
-                    {
-                        replaceAllStr(tkt, "Ghz", "");
-                        val = freq_to_wavenumber(std::stod(tkt) * 1e9);
-                    }
+                    if (parseUnitFromString(tkt, val, UNIT_METER))
+                        val = freq_to_wavenumber(SPEED_OF_LIGHT_M_S / val);
+                    else if (parseUnitFromString(tkt, val, UNIT_HERTZ))
+                        val = freq_to_wavenumber(val);
                     else
-                    {
                         throw satdump_exception("Couldn't parse unit and value from " + tkt);
-                    }
 
                     auto atkt = product->get_channel_image_by_wavenumber(val).channel_name;
-                    replaceAllStr(expression, rtkt, atkt);
+                    replaceAllStr(expression, "{" + tkt + "}", atkt);
                 }
             }
 
