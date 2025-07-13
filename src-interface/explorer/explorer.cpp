@@ -44,6 +44,13 @@ namespace satdump
             trash_handler->addSubHandler(trash_h);
             trash_handler->setCanBeDraggedTo(false);
 
+            // Add processing handler "spot"
+            processing_handler = std::make_shared<handlers::DummyHandler>("ProcessingHandlerExplorer");
+            processing_handler_sub = std::make_shared<handlers::DummyHandler>("Processing");
+            processing_handler_sub->setCanBeDragged(false);
+            processing_handler->addSubHandler(processing_handler_sub);
+            processing_handler->setCanBeDraggedTo(false);
+
             // Enable dropping files onto the explorer. TODOREWORK, check the explorer IS active!?
             eventBus->register_handler<imgui_utils::FileDropEvent>(
                 [this](const imgui_utils::FileDropEvent &v)
@@ -56,7 +63,10 @@ namespace satdump
             eventBus->register_handler<ExplorerAddHandlerEvent>(
                 [this](const ExplorerAddHandlerEvent &e)
                 {
-                    master_handler->addSubHandler(e.h);
+                    if (e.is_processing)
+                        processing_handler_sub->addSubHandler(e.h);
+                    else
+                        master_handler->addSubHandler(e.h);
                     if (e.open)
                         curr_handler = e.h;
                 });
@@ -94,6 +104,13 @@ namespace satdump
                     ImGui::TableSetupColumn("##masterhandlertable_col", ImGuiTableColumnFlags_None);
                     ImGui::TableNextColumn();
 
+                    if (processing_handler_sub->hasSubhandlers())
+                    {
+                        processing_handler->drawTreeMenu(curr_handler);
+                        for (auto &h : processing_handler_sub->getAllSubHandlers())
+                            if (h->getName() == "PROCESSING_DONE") // TODOREWORK MASSIVE HACK
+                                processing_handler_sub->delSubHandler(h);
+                    }
                     master_handler->drawTreeMenu(curr_handler);
                     trash_handler->drawTreeMenu(curr_handler);
 

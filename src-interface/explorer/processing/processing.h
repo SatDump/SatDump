@@ -20,6 +20,8 @@ namespace satdump
 
             std::thread proc_thread;
 
+            std::string pipeline_name = "Pipeline";
+
         public:
             OffProcessingHandler(pipeline::Pipeline downlink_pipeline, std::string input_level, std::string input_file, std::string output_file, nlohmann::json parameters);
 
@@ -31,7 +33,7 @@ namespace satdump
             void drawMenu();
             void drawContents(ImVec2 win_size);
 
-            std::string getName() { return "Processing..."; }
+            std::string getName() { return pipeline_name; }
 
             std::string getID() { return "processing_handler"; }
         };

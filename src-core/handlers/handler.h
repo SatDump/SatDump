@@ -115,6 +115,12 @@ namespace satdump
             virtual void delSubHandler(std::shared_ptr<Handler> handler, bool now = false);
 
             /**
+             * @brief Get all current subhandlers
+             * @return List of all subhandlers
+             */
+            virtual std::vector<std::shared_ptr<Handler>> getAllSubHandlers();
+
+            /**
              * @brief Set if a handler can be dragged around in the tree
              * @param v true to have it be draggable
              */

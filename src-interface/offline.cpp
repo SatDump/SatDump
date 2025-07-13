@@ -55,7 +55,7 @@ namespace satdump
                         {std::make_shared<handlers::OffProcessingHandler>(pipeline_selector->selected_pipeline,
                                                                           pipeline_selector->selected_pipeline.steps[pipeline_selector->pipelines_levels_select_id].level,
                                                                           pipeline_selector->inputfileselect.getPath(), pipeline_selector->outputdirselect.getPath(), params2),
-                         true});
+                         true, true});
                     offline_en = false;
                 }
             }

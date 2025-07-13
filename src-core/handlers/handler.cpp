@@ -155,6 +155,15 @@ namespace satdump
                 delSubHandlersNow();
         }
 
+        std::vector<std::shared_ptr<Handler>> Handler::getAllSubHandlers()
+        {
+            std::vector<std::shared_ptr<Handler>> sh;
+            subhandlers_mtx.lock();
+            sh = subhandlers;
+            subhandlers_mtx.unlock();
+            return sh;
+        }
+
         nlohmann::json Handler::getConfig() { return {}; }
     } // namespace handlers
 } // namespace satdump

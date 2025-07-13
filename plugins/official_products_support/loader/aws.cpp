@@ -299,7 +299,7 @@ namespace satdump
 
                             if (success)
                                 eventBus->fire_event<explorer::ExplorerApplication::ExplorerAddHandlerEvent>(
-                                    {std::make_shared<handlers::OffProcessingHandler>("off2pro", "file", l_download_path, process_path, nlohmann::json())});
+                                    {std::make_shared<handlers::OffProcessingHandler>("off2pro", "file", l_download_path, process_path, nlohmann::json()), true, true});
                         }
                         catch (std::exception &e)
                         {

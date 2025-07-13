@@ -131,7 +131,7 @@ namespace satdump
                     std::string output_dir = it->output_dir;
                     nlohmann::json pipeline_params = it->pipeline_params;
                     eventBus->fire_event<explorer::ExplorerApplication::ExplorerAddHandlerEvent>(
-                        {std::make_shared<handlers::OffProcessingHandler>(pipeline, input_level, input_file, output_dir, pipeline_params)}); // TODOPIPELINE
+                        {std::make_shared<handlers::OffProcessingHandler>(pipeline, input_level, input_file, output_dir, pipeline_params), false, true}); // TODOPIPELINE
                 }
             }
 

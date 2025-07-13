@@ -43,6 +43,8 @@ namespace satdump
 
         void OffProcessingHandler::process(pipeline::Pipeline downlink_pipeline, std::string input_level, std::string input_file, std::string output_file, nlohmann::json parameters)
         {
+            pipeline_name = downlink_pipeline.name;
+
             logger->info("Starting processing pipeline " + downlink_pipeline.id + "...");
             logger->debug("Input file (" + input_level + ") : " + input_file);
             logger->debug("Output file : " + output_file);
@@ -75,6 +77,8 @@ namespace satdump
                     explorer_app->tryOpenFileInExplorer(output_file + "/dataset.json"); // TODOREWORK Maybe just try to open the final file produced?
                 }
             }
+
+            pipeline_name = "PROCESSING_DONE"; // TODOREWORK MASSIVE HACK!
         }
 
         void OffProcessingHandler::drawMenu() {}

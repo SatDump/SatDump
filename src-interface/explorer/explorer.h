@@ -34,6 +34,8 @@ namespace satdump
             // Explorer main handlers
             std::shared_ptr<handlers::Handler> curr_handler;
             std::shared_ptr<handlers::Handler> master_handler;
+            std::shared_ptr<handlers::Handler> processing_handler;
+            std::shared_ptr<handlers::Handler> processing_handler_sub;
             std::shared_ptr<handlers::Handler> trash_handler;
 
             // File open
@@ -56,6 +58,7 @@ namespace satdump
             {
                 std::shared_ptr<handlers::Handler> h;
                 bool open = false;
+                bool is_processing = false;
             };
 
         public:
