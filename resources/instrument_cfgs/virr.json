@@ -30,7 +30,7 @@
             "geo_correct": true}
         },
         {
-            "name": "10.8µm Thermal IR",
+            "name": "10.8µm Thermal IR (Uncalibrated)",
             "expression": "ch4",
             "image": {
             "individual_equalize": true,

@@ -63,7 +63,7 @@
             }
         },
         {
-            "name": "10.8µm Thermal IR",
+            "name": "10.8µm Thermal IR (Uncalibrated)",
             "expression": "1-ch9",
             "image": {
                 "remove_background": true

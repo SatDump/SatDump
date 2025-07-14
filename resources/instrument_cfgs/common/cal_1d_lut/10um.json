@@ -132,15 +132,6 @@
                 "geo_correct": true
             },
             "description": "descriptions/ColorGeneralIR.md"
-        },
-        {
-            "name": "10.8µm Thermal IR",
-            "expression": "cch1=(1, reflective_radiance, 30, 120); 1-cch1",
-            "image": {
-                "individual_equalize": true,
-                "geo_correct": true
-            },
-            "description": "descriptions/ThermalCal.md"
         }
     ],
     "instruments": [

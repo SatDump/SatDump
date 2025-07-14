@@ -23,13 +23,6 @@
             "name": "Urban False Color",
             "expression": "ch6,ch5,ch2",
             "equalize": true
-        },
-        {
-            "name": "10.8µm Thermal IR",
-            "expression": "1-ch8",
-            "equalize": true,
-            "white_balance": true,
-            "description": "descriptions/ThermalUncal.md"
         }
     ]
 }
