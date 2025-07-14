@@ -15,7 +15,6 @@
 // TODOREWORK MOVE
 #include "common/calibration.h"
 #include "utils/unit_parser.h"
-#include <climits>
 #include <string>
 
 namespace satdump
@@ -174,7 +173,7 @@ namespace satdump
              */
             ImageHolder &get_channel_image_by_wavenumber(double wavenumber)
             {
-                double best = std::numeric_limits<double>::max();
+                double best = 1e40;
                 ImageHolder *out = nullptr;
                 for (auto &img : images)
                 {
