@@ -15,7 +15,7 @@
 // TODOREWORK MOVE
 #include "common/calibration.h"
 #include "utils/unit_parser.h"
-#include <limits>
+#include <climits>
 #include <string>
 
 namespace satdump
