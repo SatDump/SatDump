@@ -123,13 +123,6 @@
             }
         },*/
         {
-            "name": "Automatic IR False Color",
-            "expression": "IR11=(31, brightness_temperature_celsius, -60, 40);lm=equp(maps/landmask.png);land=lut(lut/2dfc/2dfc_ir_land.png);sea=lut(lut/2dfc/2dfc_ir_sea.png);lm(0) == 1 ? land(IR11, 0, 0) : sea(IR11, 0, 0),lm(0) == 1 ? land(IR11, 0, 1) : sea(IR11, 0, 1),lm(0) == 1 ? land(IR11, 0, 2) : sea(IR11, 0, 2)",
-            "image": {
-                "geo_correct": true
-            }
-        },
-        {
             "name": "MeCIDA T6a Cirrus Detection (transparent)",
             "expression": "cch11=(33, brightness_temperature, 000.000000, 1000.000000);cch8=(30, brightness_temperature, 000.000000, 1000.000000);0, (cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : 0 : 0, (cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : 0 : 0,(cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : 0 : 0",
             "image": {

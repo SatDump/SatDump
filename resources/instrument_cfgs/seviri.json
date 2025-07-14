@@ -68,22 +68,6 @@
             "description": "descriptions/Snow.md"
         },
         {
-            "name": "NDVI",
-            "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0.000000, 46.203000);cch2=(2, sun_angle_compensated_reflective_radiance, 0.000000, 97.050700);lut=lut(lut/NDVI.png);lut(0, ((cch2-cch1)/((cch2+cch1) == 0 ? 0.000001 : (cch1+cch2))+1)/2, 0),lut(0, ((cch2-cch1)/((cch2+cch1) == 0 ? 0.000001 : (cch1+cch2))+1)/2, 1),lut(0, ((cch2-cch1)/((cch2+cch1) == 0 ? 0.000001 : (cch1+cch2))+1)/2, 2)",
-            "image": {
-                "remove_background": true
-            },
-            "description": "descriptions/NDVI.md"
-        },
-        {
-            "name": "NDWI",
-            "expression": "cch2=(2, sun_angle_compensated_reflective_radiance, 0.000000, 97.050700);cch3a=(3, sun_angle_compensated_reflective_radiance, 0.000000, 5.416650);lut=lut(lut/NDWI.png);lut(0, 1-((cch2-cch3a)/((cch2+cch3a) == 0 ? 0.000001 : (cch3a+cch2))+1)/2, 0),lut(0, 1-((cch2-cch3a)/((cch2+cch3a) == 0 ? 0.000001 : (cch3a+cch2))+1)/2, 1),lut(0, 1-((cch2-cch3a)/((cch2+cch3a) == 0 ? 0.000001 : (cch3a+cch2))+1)/2, 2)",
-            "image": {
-                "remove_background": true
-            },
-            "description": "descriptions/NDWI.md"
-        },
-        {
             "name": "MeCIDA T6a Cirrus Detection (full)",
             "expression": "cch3=(3, reflective_radiance, 0.000000, 16.850000);cch2=(2, reflective_radiance, 0.000000, 20.240000);cch1=(1, reflective_radiance, 0.000000, 17.760000);cch11=(11, brightness_temperature, 000.000000, 1000.000000);cch8=(8, brightness_temperature, 000.000000, 1000.000000);(cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 0 : cch3  : cch3,(cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : cch2  : cch2,(cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : cch1  : cch1",
             "image": {
@@ -96,36 +80,7 @@
             "image": {
                 "remove_background": true
             }
-        },
-        {
-            "name": "Night Hotspot Detection (3.9µm)",
-            "expression": "cch4=(4, brightness_temperature_celsius, -90.000000, 40.000000);lut=lut(lut/cal/abi_ir39_-90+40.png);lut(cch4,0,0), lut(cch4,0,1), lut(cch4,0,2)",
-            "image": {
-                "remove_background": true
-            }
-        },
-        {
-            "name": "Automatic IR False Color",
-            "expression": "IR11=(9, brightness_temperature_celsius, -60, 40);lm=equp(maps/landmask.png);land=lut(lut/2dfc/2dfc_ir_land.png);sea=lut(lut/2dfc/2dfc_ir_sea.png);lm(0) == 1 ? land(IR11, 0, 0) : sea(IR11, 0, 0),lm(0) == 1 ? land(IR11, 0, 1) : sea(IR11, 0, 1),lm(0) == 1 ? land(IR11, 0, 2) : sea(IR11, 0, 2)",
-            "image": {
-                "remove_background": true
-            }
-        },
-        {
-            "name": "Automatic Visible False Color (VIS2-IR9)",
-            "expression": "cch2=(2, sun_angle_compensated_reflective_radiance, 0.000000, 95.050700);cch4=(9, brightness_temperature_celsius, -60.000000, 40.000000);lut=lut(lut/2dfc/2dfc_vis.png);lut(cch4,cch2^0.9,0),lut(cch4,cch2^0.9,1),lut(cch4,cch2^0.9,2)",
-            "image": {
-                "remove_background": true
-            }
-        },
-        {
-            "name": "Automatic WEFAX-like False Color",
-            "expression": "VIS=(1, reflective_radiance, 0.000000, 20.760000);lm=equp(maps/landmask.png);land=lut(lut/2dfc/2dfc_vis_wefax_land.png);sea=lut(lut/2dfc/2dfc_vis_wefax_sea.png);lm(0) == 1 ? land(VIS, 0, 0) : sea(VIS, 0, 0),lm(0) == 1 ? land(VIS, 0, 1) : sea(VIS, 0, 1),lm(0) == 1 ? land(VIS, 0, 2) : sea(VIS, 0, 2)",
-            "image": {
-                "remove_background": true
-            }
         }
-
     ],
     "default": {
         "calibration_ranges": {
