@@ -116,14 +116,6 @@
             "description": "descriptions/NightMicro.md"
         },
         {
-            "name": "Night Fog Difference",
-            "expression": "a=(14, brightness_temperature, 230, 310);b=(9, brightness_temperature, 230, 310);lut=lut(lut/cal/fog_btd.png);lut((a-b-(-0.2))/0.4, 0, 0),lut((a-b-(-0.2))/0.4, 0, 1),lut((a-b-(-0.2))/0.4, 0, 2)",
-            "image": {
-                "geo_correct": true,
-                "remove_background": true
-            }
-        },
-        {
             "name": "Water Vapor Blend",
             "expression": "ch12 ==  0 ? 0 : 1-ch12, ch11 ==  0 ? 0 : 1-ch11, ch10 ==  0 ? 0 : 1-ch10",
             "image": {
@@ -160,27 +152,7 @@
                 "remove_background": true
             }
         },
-        {
-            "name": "Split Water Vapor",
-            "expression": "a=(10, brightness_temperature, 150, 300);b=(11, brightness_temperature, 150, 300);lut=lut(lut/cal/CIMSSLUT.png);lut((a-b-(-0.23333333333333334))/0.26666666666666666, 0, 0), lut((a-b-(-0.23333333333333334))/0.26666666666666666, 0, 1), lut((a-b-(-0.23333333333333334))/0.26666666666666666, 0, 2)",
-            "image": {
-                "remove_background": true
-            }
-        },
-        {
-            "name": "Split Ozone",
-            "expression": "a=(13, brightness_temperature, 150, 300);b=(14, brightness_temperature, 150, 300);lut=lut(lut/cal/CIMSSLUT.png);lut((a-b-(-0.3))/0.3333333333333333, 0, 0), lut((a-b-(-0.3))/0.3333333333333333, 0, 1), lut((a-b-(-0.3))/0.3333333333333333, 0, 2)",
-            "image": {
-                "remove_background": true
-            }
-        },
-        {
-            "name": "Split Cloud Phase",
-            "expression":"a=(14, brightness_temperature, 150, 350);b=(13, brightness_temperature, 150, 350);lut=lut(lut/cal/CIMSSLUT.png);lut((a-b-(-0.05))/0.175, 0, 0), lut((a-b-(-0.05))/0.175, 0, 1), lut((a-b-(-0.05))/0.175, 0, 2)",
-            "image": {
-                "remove_background": true
-            }
-        },
+        
         {
             "name": "Cloud Top IR",
             "expression": "cch9=(14, brightness_temperature, 183.15, 323.15);lut=lut(lut/cal/CloudTopIR.png);lut(cch9, 0, 0), lut(cch9, 0, 1), lut(cch9, 0, 2)",

@@ -17,13 +17,6 @@
             "expression": "bm=equp(maps/nasa_night.jpg);\nlut2=lut(lut/goes/abi/wxstar/ch2_curve.png);\nlut=lut(lut/goes/abi/usradioguycustomlut.png);\ns=(2, sun_angle, 0.000000, 8.000000);\n(lut(ch13, lut2(ch2, 0, 0), 0)) * s + (ch13 * (ch13) + (1-ch13) * bm(0)) * (1-s),\n(lut(ch13, lut2(ch2, 0, 0), 1)) * s + (ch13 * (ch13) + (1-ch13) * bm(1)) * (1-s),\n(lut(ch13, lut2(ch2, 0, 0), 2)) * s + (ch13 * (ch13) + (1-ch13) * bm(2)) * (1-s)"
         },
         {
-            "name": "Night Fog Difference",
-            "expression": "cch7=(7, brightness_temperature, 163.000000, 300.000000);\ncch13=(13, brightness_temperature, 163.000000, 300.000000);\nval=(cch13 - cch7 - numerator) / denominator;\nnumerator=minval/input_range;\ndenominator=(maxval-minval)/input_range;\nminval=-16;\nmaxval=16;\ninput_range=137;\nlut=lut(lut/cal/fog_btd.png);\nlut(val, 0, 0),\nlut(val, 0, 1),\nlut(val, 0, 2)",
-            "image": {
-                "remove_background": true
-            }
-        },
-        {
             "name": "Day Cloud Phase Distinction",
             "expression": "cch13=(13, brightness_temperature, 219.650000, 280.650000);cch5=(5, albedo, 0.010000, 0.590000);cch2=(2, albedo, 0.000000, 0.780000);1-cch13, cch2, cch5",
             "image": {

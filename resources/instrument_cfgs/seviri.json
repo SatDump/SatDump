@@ -73,13 +73,6 @@
             }
         },
         {
-            "name": "Night Fog Difference",
-            "expression": "a=(9, brightness_temperature, 230, 310);b=(4, brightness_temperature, 230, 310);lut=lut(lut/cal/fog_btd.png);lut((a-b-(-0.2))/0.4, 0, 0),lut((a-b-(-0.2))/0.4, 0, 1),lut((a-b-(-0.2))/0.4, 0, 2)",
-            "image": {
-                "remove_background": true
-            }
-        },
-        {
             "name": "Water Vapor Blend",
             "expression": "ch7 ==  0 ? 0 : 1-ch7, ch6 ==  0 ? 0 : 1-ch6, ch5 ==  0 ? 0 : 1-ch5",
             "image": {

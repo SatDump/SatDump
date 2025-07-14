@@ -197,10 +197,6 @@
             "description": "descriptions/EnhancedIR.md"
         },
         {
-            "name": "IR 10.8µm - IR 6.2 µm Difference",
-            "expression": ""
-        },
-        {
             "name": "Night Microphysics",
             "expression": "cch32=(32, brightness_temperature, 200, 400); cch31=(31, brightness_temperature, 200, 400); cch20=(20, brightness_temperature, 200, 400); 1-(3/200-cch32+cch31)*(200/10.5), 1-(7/200-cch31+cch20)*(200/9.9), ((cch31*200+200-243.7)/(293.2-243.7))",
             "image": {

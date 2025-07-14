@@ -1,0 +1,33 @@
+{
+    "presets": [
+        {
+            "name": "Split Water Vapor",
+            "expression": "a=({6.3um}, brightness_temperature, 150, 300);b=({7.35um}, brightness_temperature, 150, 300);lut=lut(lut/cal/CIMSSLUT.png);lut((a-b-(-0.23333333333333334))/0.26666666666666666, 0, 0), lut((a-b-(-0.23333333333333334))/0.26666666666666666, 0, 1), lut((a-b-(-0.23333333333333334))/0.26666666666666666, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Split Ozone",
+            "expression": "a=({9.66um}, brightness_temperature, 150, 300);b=({10.5um}, brightness_temperature, 150, 300);lut=lut(lut/cal/CIMSSLUT.png);lut((a-b-(-0.3))/0.3333333333333333, 0, 0), lut((a-b-(-0.3))/0.3333333333333333, 0, 1), lut((a-b-(-0.3))/0.3333333333333333, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "Split Cloud Phase",
+            "expression": "a=({10.5um}, brightness_temperature, 150, 350);b=({9.66um}, brightness_temperature, 150, 350);lut=lut(lut/cal/CIMSSLUT.png);lut((a-b-(-0.05))/0.175, 0, 0), lut((a-b-(-0.05))/0.175, 0, 1), lut((a-b-(-0.05))/0.175, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        }
+    ],
+    "instruments": [
+        "fci",
+        "modis",
+        "abi",
+        "ahi",
+        "seviri",
+        "goesn_imager"
+    ]
+}
