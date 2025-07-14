@@ -49,11 +49,60 @@ void glfw_drop_callback(GLFWwindow *window, int count, const char **paths)
     satdump::eventBus->fire_event<satdump::imgui_utils::FileDropEvent>({files});
 }
 
-#include "nfd/include/nfd.hpp"
-#include "nfd/include/nfd_glfw3.h"
+#ifdef WIN32_
+#define WINVER 0x0501 // Allow use of features specific to Windows XP or later.
+#define _WIN32_WINNT 0x0501
+#define WIN32_LEAN_AND_MEAN
+#include "fcntl.h"
+#include "io.h"
+#include "stdio.h"
+#include "stdlib.h"
+#include "windows.h"
+#pragma comment(lib, "User32.lib")
+
+// https://www.tillett.info/2013/05/13/how-to-create-a-windows-program-that-works-as-both-as-a-gui-and-console-application/
+// Attach output of application to parent console
+static BOOL attachOutputToConsole(void)
+{
+    HANDLE consoleHandleOut, consoleHandleError;
+
+    if (AttachConsole(ATTACH_PARENT_PROCESS))
+    {
+        // Redirect unbuffered STDOUT to the console
+        consoleHandleOut = GetStdHandle(STD_OUTPUT_HANDLE);
+        if (consoleHandleOut != INVALID_HANDLE_VALUE)
+        {
+            freopen("CONOUT$", "w", stdout);
+            setvbuf(stdout, NULL, _IONBF, 0);
+        }
+        else
+        {
+            return FALSE;
+        }
+        // Redirect unbuffered STDERR to the console
+        consoleHandleError = GetStdHandle(STD_ERROR_HANDLE);
+        if (consoleHandleError != INVALID_HANDLE_VALUE)
+        {
+            freopen("CONOUT$", "w", stderr);
+            setvbuf(stderr, NULL, _IONBF, 0);
+        }
+        else
+        {
+            return FALSE;
+        }
+        return TRUE;
+    }
+    // Not a console application
+    return FALSE;
+}
+#endif
 
 int main(int argc, char *argv[])
 {
+#ifdef WIN32_
+    attachOutputToConsole();
+#endif
+
     initLogger();
 
 #if 0
