@@ -16,6 +16,13 @@
             "name": "3.75µm IR (Rainbow, transparent)",
             "expression": "cch3b=({3.75um}, brightness_temperature, 190, 400);lut=lut(lut/cal/abi_ir_7_transparent.png);lut(cch3b, 0, 0), lut(cch3b, 0, 1), lut(cch3b, 0, 2)",
             "description": "descriptions/ABISW.md"
+        },
+        {
+            "name": "Night Hotspot Detection (3.9µm)",
+            "expression": "cch4=(3b, brightness_temperature_celsius, -90.000000, 40.000000);lut=lut(lut/cal/abi_ir39_-90+40.png);lut(cch4,0,0), lut(cch4,0,1), lut(cch4,0,2)",
+            "image": {
+                "geo_correct": true
+            }
         }
     ],
     "instruments": [

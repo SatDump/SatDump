@@ -1,0 +1,32 @@
+{
+    "presets": [
+        {
+            "name": "NDVI",
+            "expression": "cch1=({0.67um}, sun_angle_compensated_reflective_radiance, 0.000000, 46.203000);cch2=({0.86um}, sun_angle_compensated_reflective_radiance, 0.000000, 97.050700);lut=lut(lut/NDVI.png);lut(0, ((cch2-cch1)/((cch2+cch1) == 0 ? 0.000001 : (cch1+cch2))+1)/2, 0),lut(0, ((cch2-cch1)/((cch2+cch1) == 0 ? 0.000001 : (cch1+cch2))+1)/2, 1),lut(0, ((cch2-cch1)/((cch2+cch1) == 0 ? 0.000001 : (cch1+cch2))+1)/2, 2)",
+            "image": {
+                "geo_correct": true
+            },
+            "description": "descriptions/NDVI.md"
+        },
+        {
+            "name": "NDWI",
+            "expression": "cch2=({0.86um}, sun_angle_compensated_reflective_radiance, 0.000000, 97.050700);cch3a=({1.61um},  sun_angle_compensated_reflective_radiance, 0.000000, 5.416650);lut=lut(lut/NDWI.png);lut(0, 1-((cch2-cch3a)/((cch2+cch3a) == 0 ? 0.000001 : (cch3a+cch2))+1)/2, 0),lut(0, 1-((cch2-cch3a)/((cch2+cch3a) == 0 ? 0.000001 : (cch3a+cch2))+1)/2, 1),lut(0, 1-((cch2-cch3a)/((cch2+cch3a) == 0 ? 0.000001 : (cch3a+cch2))+1)/2, 2)",
+            "image": {
+                "geo_correct": true
+            },
+            "description": "descriptions/NDWI.md"
+        }
+    ],
+    "instruments": [
+        "avhrr_3",
+        "msu_mr",
+        "fci",
+        "modis",
+        "abi",
+        "ahi",
+        "seviri",
+        "slstr_nadir",
+        "slstr_offset",
+        "olci"
+    ]
+}
