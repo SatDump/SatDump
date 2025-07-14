@@ -1,14 +1,6 @@
 {
     "presets": [
         {
-            "name": "Color convection longwave IR",
-            "expression": "cch5=({12um}, brightness_temperature, 180, 320);lut=lut(lut/cal/ConvectionLWIR.png);lut(cch5, 0, 0), lut(cch5, 0, 1), lut(cch5, 0, 2)",
-            "image": {
-                "geo_correct": true
-            },
-            "description": "descriptions/ConvectionLWIR.md"
-        },
-        {
             "name": "Differential Water Vapor RGB",
             "expression": "cch6=({7.35um}, brightness_temperature, 180, 400); cch5=({6.25um}, brightness_temperature, 180, 400); 1-(((cch6-cch5+0.01363636363)/0.15)^3.86548125242),1-(((cch6-0.15068181818)/0.29545454545)^2.5),1-(((cch5-0.12954545454)/0.1609090909)^2.5)",
             "image": {
