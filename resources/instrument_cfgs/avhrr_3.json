@@ -80,14 +80,6 @@
             "description": "descriptions/124.md"
         },
         {
-            "name": "Night Microphysics",
-            "expression": "cch5=(5, brightness_temperature, 200, 400); cch4=(4, brightness_temperature, 200, 400); cch3b=(3b, brightness_temperature, 200, 400); 1-(3/200-cch5+cch4)*(200/10.5), 1-(7/200-cch4+cch3b)*(200/9.9), ((cch4*200+200-243.7)/(293.2-243.7))",
-            "image": {
-                "geo_correct": true
-            },
-            "description": "descriptions/NightMicro.md"
-        },
-        {
             "name": "Day Microphysics (Metop)",
             "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0, 46.203); cch3a=(3a, sun_angle_compensated_reflective_radiance, 0, 1.4); cch4=(4, brightness_temperature, 203, 323); cch1, cch3a, cch4",
             "image": {

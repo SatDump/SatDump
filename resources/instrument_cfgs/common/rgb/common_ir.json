@@ -1,0 +1,22 @@
+{
+    "presets": [
+        {
+            "name": "Night Microphysics",
+            "expression": "cch5=({12um}, brightness_temperature, 200, 400); cch4=({10.5um}, brightness_temperature, 200, 400); cch3b=({3.75um}, brightness_temperature, 200, 400); 1-(3/200-cch5+cch4)*(200/10.5), 1-(7/200-cch4+cch3b)*(200/9.9), ((cch4*200+200-243.7)/(293.2-243.7))",
+            "image": {
+                "geo_correct": true
+            },
+            "description": "descriptions/NightMicro.md"
+        }
+    ],
+    "instruments": [
+        "avhrr_3",
+        "msu_mr",
+        "fci",
+        "modis",
+        "abi",
+        "ahi",
+        "seviri",
+        "goesn_imager"
+    ]
+}

@@ -58,30 +58,6 @@
             "description": "descriptions/DayMicro.md"
         },
         {
-            "name": "Differential Water Vapor RGB",
-            "expression": "cch6=(6, brightness_temperature, 180, 400); cch5=(5, brightness_temperature, 180, 400); 1-(((cch6-cch5+0.01363636363)/0.15)^3.86548125242),1-(((cch6-0.15068181818)/0.29545454545)^2.5),1-(((cch5-0.12954545454)/0.1609090909)^2.5)",
-            "image": {
-                "remove_background": true
-            }
-        },
-        {
-            "name": "Night Microphysics",
-            "expression": "cch9=(9, brightness_temperature, 200, 400); cch10=(10, brightness_temperature, 200, 400); cch4=(4, brightness_temperature, 200, 400); 1-(0.015+cch9-cch10)*19.047619047619047, 1-(0.035+cch4-cch9)*20.2020202020202, ((cch9*200-43.7)/49.5)",
-            "description": "descriptions/NightMicro.md",
-            "image": {
-                "remove_background": true
-            }
-        },
-        {
-            "name": "Water Vapor Blend",
-            "expression": "ch7 ==  0 ? 0 : 1-ch7, ch6 ==  0 ? 0 : 1-ch6, ch5 ==  0 ? 0 : 1-ch5",
-            "image": {
-                "individual_equalize": true,
-                "white_balance": true,
-                "remove_background": true
-            }
-        },
-        {
             "name": "Snow enhancement",
             "expression": "cch1=(1, reflective_radiance, 0, 20.76); cch9=(9, reflective_radiance, 5, 100); cch3=(3, reflective_radiance, 0, 19.85); ((3*cch1-cch9)/2)^1.7, ((3*cch1+cch9)/4)^1.7, (cch1-cch3)^1.7",
             "image": {
