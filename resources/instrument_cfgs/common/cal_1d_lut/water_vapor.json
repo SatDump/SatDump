@@ -1,0 +1,52 @@
+{
+    "presets": [
+        {
+            "name": "6.25µm Calibrated Water Vapor",
+            "expression": "cch5=({6.25um}, emissive_radiance, 0, 5.2);lut=lut(lut/cal/star_abi_wv_8-10.png);lut(cch5, 0, 0), lut(cch5, 0, 1), lut(cch5, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "6.25µm Calibrated Water Vapor (RAMSDIS)",
+            "expression": "cch5=({6.25um}, brightness_temperature, 165.15, 328.15);lut=lut(lut/cal/RAMSDIS_WV+55-108.png);lut(cch5, 0, 0), lut(cch5, 0, 1), lut(cch5, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "7.35µm Calibrated Water Vapor",
+            "expression": "cch6=({7.35um}, emissive_radiance, 0, 23.2);lut=lut(lut/cal/star_abi_wv_8-10.png);lut(cch6, 0, 0), lut(cch6, 0, 1), lut(cch6, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "7.35µm Calibrated Water Vapor (RAMSDIS)",
+            "expression": "cch6=(7.35um}, brightness_temperature, 165.15, 328.15);lut=lut(lut/cal/RAMSDIS_WV+55-108.png);lut(cch6, 0, 0), lut(cch6, 0, 1), lut(cch6, 0, 2)",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "7.35 µm Uncalibrated Water Vapor",
+            "expression": "cch12=({7.35um}, equalized, 0, 0);lut=lut(lut/cal/purpleorange.png);lut(cch12, 0, 0), lut(cch12,0,1), lut(cch12,0,2)",
+            "image": {
+                "equalize": true,
+                "geo_correct": true
+            }
+        },
+    ],
+    "instruments": [
+        "fci",
+        "modis",
+        "abi",
+        "ahi",
+        "seviri",
+        "goesn_imager",
+        "hirs",
+        "mersi2",
+        "mersi3",
+        "mersill"
+    ]
+}

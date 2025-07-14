@@ -45,13 +45,6 @@
             "description": "descriptions/ThermalUncal.md"
         },
         {
-            "name": "7.2 µm Water Vapor",
-            "expression": "cch12=(6, equalized, 0, 0);lut=lut(lut/cal/purpleorange.png);lut(cch12, 0, 0), lut(cch12,0,1), lut(cch12,0,2)",
-            "image": {
-                "geo_correct": true
-            }
-        },
-        {
             "name": "NO enhancement (Uncalibrated)",
             "expression": "lut(lut/WXtoImg-NO_mod_meteor.png);lut(ch1, ch2, 0), lut(ch1, ch2, 1), lut(ch1, ch2, 2)",
             "image": {

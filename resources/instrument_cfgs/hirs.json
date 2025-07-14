@@ -56,34 +56,6 @@
             }
         },
         {
-            "name": "6.25µm Calibrated Water Vapor",
-            "expression": "cch=(12, emissive_radiance, 0, 5.2);lut=lut(lut/cal/star_abi_wv_8-10.png);lut(cch, 0, 0), lut(cch, 0, 1), lut(cch, 0, 2)",
-            "image": {
-                "individual_equalize": false
-            }
-        },
-        {
-            "name": "6.25µm Calibrated Water Vapor (RAMSDIS)",
-            "expression": "cch=(12, brightness_temperature, 165.15, 328.15);lut=lut(lut/cal/RAMSDIS_WV+55-108.png);lut(cch, 0, 0), lut(cch, 0, 1), lut(cch, 0, 2)",
-            "image": {
-                "individual_equalize": false
-            }
-        },
-        {
-            "name": "7.35µm Calibrated Water Vapor",
-            "expression": "cch=(11, emissive_radiance, 0, 23.2);lut=lut(lut/cal/star_abi_wv_8-10.png);lut(cch, 0, 0), lut(cch, 0, 1), lut(cch, 0, 2)",
-            "image": {
-                "individual_equalize": false
-            }
-        },
-        {
-            "name": "7.35µm Calibrated Water Vapor (RAMSDIS)",
-            "expression": "cch=(11, brightness_temperature, 165.15, 328.15);lut=lut(lut/cal/RAMSDIS_WV+55-108.png);lut(cch, 0, 0), lut(cch, 0, 1), lut(cch, 0, 2)",
-            "image": {
-                "individual_equalize": false
-            }
-        },
-        {
             "name": "Mid Stratosphere CO2 Temperature",
             "description": "descriptions/sounders/MidStratoCO2T.md",
             "expression": "cch=(2, brightness_temperature, 213.15, 243.15);lut=lut(lut/cal/bluered.png);lut(cch, 0, 0), lut(cch, 0, 1), lut(cch, 0, 2)",
