@@ -190,7 +190,7 @@
             "expression": "lut=lut(lut/goes/abi/L2/lst_tmbates.png);lut(chLST, 0, 0),lut(chLST, 0, 1),lut(chLST, 0, 2)"
         },
         {
-            "name": "Sea Surface Temperature",
+            "name": "Sea Surface Temperature (GOES L2)",
             "expression": "lut=lut(lut/goes/abi/L2/sst.png);lut(chSST, 0, 0),lut(chSST, 0, 1),lut(chSST, 0, 2)"
         },
         {

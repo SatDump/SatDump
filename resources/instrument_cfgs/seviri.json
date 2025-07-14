@@ -277,14 +277,6 @@
             "description": "descriptions/NDWI.md"
         },
         {
-            "name": "Sea Surface Temperature",
-            "expression": "IR11=(9, brightness_temperature, 270.15, 308.15);IR12=(10, brightness_temperature, 270.15, 308.15);lm=equp(maps/landmask.png);bm=equp(maps/nasa_hd.jpg);lut=lut(lut/cal/bluered.png);lm(0) == 0 ? (IR11-IR12 > 0.05 ? 1 : (IR11 < 0.25 ? 1 : lut(IR11, 0, 0))) : bm(0),lm(0) == 0 ? (IR11-IR12 > 0.05 ? 1 : (IR11 < 0.25 ? 1 : lut(IR11, 0, 1))) : bm(1),lm(0) == 0 ? (IR11-IR12 > 0.05 ? 1 : (IR11 < 0.25 ? 1 : lut(IR11, 0, 2))) : bm(2)",
-            "description": "descriptions/SST.md",
-            "image": {
-                "remove_background": true
-            }
-        },
-        {
             "name": "MeCIDA T6a Cirrus Detection (full)",
             "expression": "cch3=(3, reflective_radiance, 0.000000, 16.850000);cch2=(2, reflective_radiance, 0.000000, 20.240000);cch1=(1, reflective_radiance, 0.000000, 17.760000);cch11=(11, brightness_temperature, 000.000000, 1000.000000);cch8=(8, brightness_temperature, 000.000000, 1000.000000);(cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 0 : cch3  : cch3,(cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : cch2  : cch2,(cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : cch1  : cch1",
             "image": {

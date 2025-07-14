@@ -321,14 +321,6 @@
             "description": "descriptions/NDWI.md"
         },
         {
-            "name": "Sea Surface Temperature",
-            "expression": "IR11=(14, brightness_temperature, 270.15, 308.15);IR12=(15, brightness_temperature, 270.15, 308.15);lm=equp(maps/landmask.png);bm=equp(maps/nasa_hd.jpg);lut=lut(lut/cal/bluered.png);lm(0) == 0 ? (IR11-IR12 > 0.05 ? 1 : (IR11 < 0.25 ? 1 : lut(IR11, 0, 0))) : bm(0),lm(0) == 0 ? (IR11-IR12 > 0.05 ? 1 : (IR11 < 0.25 ? 1 : lut(IR11, 0, 1))) : bm(1),lm(0) == 0 ? (IR11-IR12 > 0.05 ? 1 : (IR11 < 0.25 ? 1 : lut(IR11, 0, 2))) : bm(2)",
-            "description": "descriptions/SST.md",
-            "image": {
-                "remove_background": true
-            }
-        },
-        {
             "name": "Night Hotspot Detection (3.9µm)",
             "expression": "cch4=(9, brightness_temperature_celsius, -90.000000, 40.000000);lut=lut(lut/cal/abi_ir39_-90+40.png);lut(cch4,0,0), lut(cch4,0,1), lut(cch4,0,2)",
             "image": {

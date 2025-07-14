@@ -1,0 +1,25 @@
+
+{
+    "presets": [
+{
+            "name": "Sea Surface Temperature",
+            "expression": "IR11=({10.5um}, brightness_temperature, 269.15, 309.15);IR12=({12um}, brightness_temperature, 269.15, 309.15);lm=equp(maps/landmask.png);bm=equp(maps/nasa_hd.jpg);lut=lut(lut/cal/SST_-4+36.png);lm(0) == 0 ? (IR11-IR12 > 0.09 ? 1 : (IR11 < 0.25 ? 1 : lut(IR11, 0, 0))) : bm(0),lm(0) == 0 ? (IR11-IR12 > 0.09 ? 1 : (IR11 < 0.25 ? 1 : lut(IR11, 0, 1))) : bm(1),lm(0) == 0 ? (IR11-IR12 > 0.09 ? 1 : (IR11 < 0.25 ? 1 : lut(IR11, 0, 2))) : bm(2)",
+            "description": "descriptions/SST.md",
+            "image": {
+                "geo_correct": true
+            }
+}
+
+    ],
+    "instruments": [
+        "avhrr_3",
+        "msu_mr",
+        "fci",
+        "modis",
+        "abi",
+        "ahi",
+        "seviri",
+        "slstr_nadir",
+        "slstr_offset"
+    ]
+}
