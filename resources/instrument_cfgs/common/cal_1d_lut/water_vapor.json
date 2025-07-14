@@ -35,7 +35,7 @@
                 "equalize": true,
                 "geo_correct": true
             }
-        },
+        }
     ],
     "instruments": [
         "fci",
