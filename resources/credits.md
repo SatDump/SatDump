@@ -97,6 +97,7 @@ First time here? See the reference documents below to get started using SatDump.
 - Arved MØKDS
 - Aria Horak (@aweeri)
 - Blobtoe
+- Bosslike5 (@tec_msat)
 - CO2ESP
 - Daniel Ekman (SA2KNG)
 - Digitelektro
