@@ -76,6 +76,10 @@ namespace satdump
                     show_log = true;
 
                 height = ImGui::GetWindowHeight();
+
+                ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.75);
+                ImGui::Separator();
+
                 ImGui::EndMenuBar();
             }
 
