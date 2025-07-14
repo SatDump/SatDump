@@ -130,7 +130,7 @@ namespace satdump
                     std::string input_level = pipeline.steps[start_level].level;
                     std::string output_dir = it->output_dir;
                     nlohmann::json pipeline_params = it->pipeline_params;
-                    eventBus->fire_event<explorer::ExplorerApplication::ExplorerAddHandlerEvent>(
+                    eventBus->fire_event<explorer::ExplorerAddHandlerEvent>(
                         {std::make_shared<handlers::OffProcessingHandler>(pipeline, input_level, input_file, output_dir, pipeline_params), false, true}); // TODOPIPELINE
                 }
             }

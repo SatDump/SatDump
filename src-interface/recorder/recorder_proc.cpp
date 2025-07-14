@@ -223,7 +223,7 @@ namespace satdump
                 logger->critical(input_file);
                 int start_level = pipeline.live_cfg.normal_live[pipeline.live_cfg.normal_live.size() - 1];
                 std::string input_level = pipeline.steps[start_level].level;
-                eventBus->fire_event<explorer::ExplorerApplication::ExplorerAddHandlerEvent>(
+                eventBus->fire_event<explorer::ExplorerAddHandlerEvent>(
                     {std::make_shared<handlers::OffProcessingHandler>(pipeline, input_level, input_file, pipeline_output_dir, pipeline_params), false, true});
             }
 

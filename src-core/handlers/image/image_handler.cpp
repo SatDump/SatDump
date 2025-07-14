@@ -271,14 +271,14 @@ namespace satdump
                     if (ImGui::MenuItem("Add To Proj"))
                     { // TODOREWORK
                         std::shared_ptr<Handler> h;
-                        eventBus->fire_event<explorer::ExplorerApplication::GetLastSelectedOfTypeEvent>({"projection_handler", h});
+                        eventBus->fire_event<explorer::GetLastSelectedOfTypeEvent>({"projection_handler", h});
                         if (h)
                             h->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()));
                         else
                         {
                             auto p = std::make_shared<ProjectionHandler>();
                             p->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()));
-                            eventBus->fire_event<explorer::ExplorerApplication::ExplorerAddHandlerEvent>({p});
+                            eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({p});
                         }
                     }
                 }

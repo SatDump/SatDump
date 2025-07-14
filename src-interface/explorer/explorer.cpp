@@ -28,6 +28,7 @@
 #include "image/io.h"
 
 #include "imgui/imgui_filedrop.h"
+#include "main_ui.h"
 
 namespace satdump
 {
@@ -302,6 +303,8 @@ namespace satdump
                 file_open_thread.join();
             auto fun = [this, path]()
             {
+                eventBus->fire_event<SetIsProcessingEvent>({});
+
                 try
                 {
                     if (!std::filesystem::path(path).has_extension())
@@ -362,6 +365,8 @@ namespace satdump
                 {
                     logger->error("Error opening file! => %s", e.what());
                 }
+
+                eventBus->fire_event<SetIsDoneProcessingEvent>({});
             };
             file_open_thread = std::thread(fun);
         }

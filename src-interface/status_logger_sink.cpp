@@ -1,8 +1,10 @@
 #include "status_logger_sink.h"
 #include "common/imgui_utils.h"
 #include "core/config.h"
+#include "core/plugin.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
+#include "main_ui.h"
 #include "utils/time.h"
 
 SATDUMP_DLL extern float ui_scale;
@@ -13,6 +15,15 @@ namespace satdump
     {
         show_bar = satdump_cfg.main_cfg["user_interface"]["status_bar"]["value"].get<bool>();
         show_log = false;
+
+        eventBus->register_handler<SetIsProcessingEvent>([this](const SetIsProcessingEvent &) { processing_tasks_n++; });
+        eventBus->register_handler<SetIsDoneProcessingEvent>(
+            [this](const SetIsDoneProcessingEvent &)
+            {
+                processing_tasks_n--;
+                if (processing_tasks_n < 0)
+                    processing_tasks_n = 0;
+            });
     }
 
     StatusLoggerSink::~StatusLoggerSink() {}
@@ -69,7 +80,7 @@ namespace satdump
             }
 
             // TODOREWORK
-            if (true)
+            if (processing_tasks_n > 0)
             {
                 size_t pos = getTime() * 200;
                 size_t offset = ImGui::GetWindowSize().x * 0.75 - 200 * ui_scale;

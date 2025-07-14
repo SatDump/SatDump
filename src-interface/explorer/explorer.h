@@ -48,19 +48,6 @@ namespace satdump
             // TODOREWORK last opened by time
             std::map<std::string, std::shared_ptr<handlers::Handler>> last_selected_handler;
 
-            struct GetLastSelectedOfTypeEvent
-            {
-                std::string type;
-                std::shared_ptr<handlers::Handler> &h;
-            };
-
-            struct ExplorerAddHandlerEvent
-            {
-                std::shared_ptr<handlers::Handler> h;
-                bool open = false;
-                bool is_processing = false;
-            };
-
         public:
             void tryOpenFileInExplorer(std::string path);
 
@@ -72,6 +59,20 @@ namespace satdump
             static std::string getID() { return "explorer"; }
             std::string get_name() { return "Explorer"; }
             static std::shared_ptr<Application> getInstance() { return std::make_shared<ExplorerApplication>(); }
+        };
+
+        // Events
+        struct GetLastSelectedOfTypeEvent
+        {
+            std::string type;
+            std::shared_ptr<handlers::Handler> &h;
+        };
+
+        struct ExplorerAddHandlerEvent
+        {
+            std::shared_ptr<handlers::Handler> h;
+            bool open = false;
+            bool is_processing = false;
         };
     } // namespace explorer
 }; // namespace satdump

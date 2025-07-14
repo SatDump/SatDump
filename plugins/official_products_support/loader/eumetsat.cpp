@@ -228,7 +228,7 @@ namespace satdump
                             {
                                 if (file_downloader.download_file(nat_link, download_path, "Authorization: Bearer " + getEumetSatToken()) != 1)
                                 {
-                                    eventBus->fire_event<explorer::ExplorerApplication::ExplorerAddHandlerEvent>(
+                                    eventBus->fire_event<explorer::ExplorerAddHandlerEvent>(
                                         {std::make_shared<handlers::OffProcessingHandler>("off2pro", "file", download_path, process_path, nlohmann::json()), true, true});
                                 }
                             }

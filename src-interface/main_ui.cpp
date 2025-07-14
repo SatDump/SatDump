@@ -107,7 +107,7 @@ namespace satdump
                     if (ImGui::MenuItem("Add Recorder"))
                     {
                         auto h = std::make_shared<RecorderApplication>();
-                        eventBus->fire_event<explorer::ExplorerApplication::ExplorerAddHandlerEvent>({h});
+                        eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({h});
                     }
 
                     ImGui::EndMenu();
