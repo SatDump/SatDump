@@ -1,15 +1,6 @@
 {
     "name": "IASI Imaging",
     "presets": [
-        {
-            "name": "10.8µm Thermal IR",
-            "expression": "cch1=(1, emissive_radiance, 30, 120); 1-cch1",
-            "image": {
-                "individual_equalize": true,
-                "geo_correct": true
-            },
-            "description": "descriptions/ThermalCal.md"
-        }
     ],
     "default": {
         "calibration_ranges": {
