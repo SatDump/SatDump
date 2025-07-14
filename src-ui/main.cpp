@@ -49,7 +49,7 @@ void glfw_drop_callback(GLFWwindow *window, int count, const char **paths)
     satdump::eventBus->fire_event<satdump::imgui_utils::FileDropEvent>({files});
 }
 
-#ifdef WIN32_
+#ifdef _WIN32
 #define WINVER 0x0501 // Allow use of features specific to Windows XP or later.
 #define _WIN32_WINNT 0x0501
 #define WIN32_LEAN_AND_MEAN
@@ -99,7 +99,7 @@ static BOOL attachOutputToConsole(void)
 
 int main(int argc, char *argv[])
 {
-#ifdef WIN32_
+#ifdef _WIN32
     attachOutputToConsole();
 #endif
 
