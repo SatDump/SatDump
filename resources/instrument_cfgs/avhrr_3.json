@@ -94,27 +94,6 @@
             "description": "descriptions/DayCloudConv.md"
         },
         {
-            "name": "MCIR",
-            "expression": "cch4=(4, emissive_radiance, 120.000000, 20.000000); bm=equp(maps/map_aweeri.jpg); cch4 * (cch4) + (1-cch4) * bm(0), cch4 * (cch4) + (1-cch4) * bm(1), cch4 * (cch4) + (1-cch4) * bm(2)",
-            "description": "descriptions/MCIR.md"
-        },
-        {
-            "name": "MSA (channel 1)",
-            "image": {
-                "geo_correct": true
-            },
-            "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0.000000, 46.203000); bm=equp(maps/map_aweeri.jpg); cch1 * (cch1) + (1-cch1) * bm(0), cch1 * (cch1) + (1-cch1) * bm(1), cch1 * (cch1) + (1-cch1) * bm(2)",
-            "description": "descriptions/MSA.md"
-        },
-        {
-            "name": "MSA (channel 2)",
-            "image": {
-                "geo_correct": true
-            },
-            "expression": "cch2=(2, sun_angle_compensated_reflective_radiance, 0.000000, 46.203000); bm=equp(maps/map_aweeri.jpg); cch2 * (cch2) + (1-cch2) * bm(0), cch2 * (cch2) + (1-cch2) * bm(1), cch2 * (cch2) + (1-cch2) * bm(2)",
-            "description": "descriptions/MSA.md"
-        },
-        {
             "name": "Snow enhancement",
             "expression": "((3*ch1-ch4)/2)^1.7, ((3*ch1+ch4)/4)^1.7, (ch1-ch3a)^1.7",
             "image": {
@@ -125,107 +104,9 @@
             "description": "descriptions/Snow.md"
         },
         {
-            "name": "NDVI",
-            "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0.000000, 46.203000);cch2=(2, sun_angle_compensated_reflective_radiance, 0.000000, 97.050700);lut=lut(lut/NDVI.png);lut(0, ((cch2-cch1)/((cch2+cch1) == 0 ? 0.000001 : (cch1+cch2))+1)/2, 0),lut(0, ((cch2-cch1)/((cch2+cch1) == 0 ? 0.000001 : (cch1+cch2))+1)/2, 1),lut(0, ((cch2-cch1)/((cch2+cch1) == 0 ? 0.000001 : (cch1+cch2))+1)/2, 2)",
-            "image": {
-                "geo_correct": true
-            },
-            "description": "descriptions/NDVI.md"
-        },
-        {
-            "name": "NDWI",
-            "expression": "cch2=(2, sun_angle_compensated_reflective_radiance, 0.000000, 97.050700);cch3a=(3a,  sun_angle_compensated_reflective_radiance, 0.000000, 5.416650);lut=lut(lut/NDWI.png);lut(0, 1-((cch2-cch3a)/((cch2+cch3a) == 0 ? 0.000001 : (cch3a+cch2))+1)/2, 0),lut(0, 1-((cch2-cch3a)/((cch2+cch3a) == 0 ? 0.000001 : (cch3a+cch2))+1)/2, 1),lut(0, 1-((cch2-cch3a)/((cch2+cch3a) == 0 ? 0.000001 : (cch3a+cch2))+1)/2, 2)",
-            "image": {
-                "geo_correct": true
-            },
-            "description": "descriptions/NDWI.md"
-        },
-        {
             "name": "Night Time Fire Detection (transparent)",
             // TODOREWORK
             "description": "descriptions/NightFire.md"
-        },
-        {
-            "name": "APT channel A",
-            "expression": "cha",
-            "image": {
-                "equalize": true,
-                "geo_correct": true
-            }
-        },
-        {
-            "name": "APT channel B",
-            "expression": "chb",
-            "image": {
-                "equalize": true,
-                "geo_correct": true
-            }
-        },
-        {
-            "name": "MCIR (Uncalibrated)",
-            "description": "descriptions/MCIR.md",
-            "expression": "bm=equp(maps/map_aweeri.jpg); chb * (chb) + (1-chb) * bm(0), chb * (chb) + (1-chb) * bm(1), chb * (chb) + (1-chb) * bm(2)"
-        },
-        {
-            "name": "MSA (Uncalibrated)",
-            "description": "descriptions/MSA.md",
-            "expression": "bm=equp(maps/map_aweeri.jpg); ch=(cha) * 1.5;ch * (ch) + (1-ch) * bm(0), ch * (ch) + (1-ch) * bm(1), ch * (ch) + (1-ch) * bm(2)"
-        },
-        {
-            "name": "MCIR Rain (Uncalibrated)",
-            "description": "descriptions/MCIR_precip.md",
-            "expression": "bm=equp(maps/map_aweeri.jpg);lut=lut(lut/cal/WXtoImg-NO.png);lut(1-chb, 0, 0) * (chb) + (1-chb) * bm(0), lut(1-chb, 0, 1) * (chb) + (1-chb) * bm(1),lut(1-chb, 0, 2) * (chb) + (1-chb) * bm(2)"
-        },
-        {
-            "name": "HVC (channel 1)",
-            "expression": "lut=lut(lut/WXtoImg-HVC-1.png); lut(ch1, ch4, 0), lut(ch1, ch4, 1), lut(ch1, ch4, 2)",
-            "image": {
-                "geo_correct": true
-            },
-            "description": "descriptions/HVC.md"
-        },
-        {
-            "name": "HVC (channel 2)",
-            "expression": "lut=lut(lut/WXtoImg-HVC-2.png); lut(ch2, ch4, 0), lut(ch2, ch4, 1), lut(ch2, ch4, 2)",
-            "image": {
-                "geo_correct": true
-            },
-            "description": "descriptions/HVC.md"
-        },
-        {
-            "name": "Night Hotspot Detection (3.9µm)",
-            "expression": "cch4=(3b, brightness_temperature_celsius, -90.000000, 40.000000);lut=lut(lut/cal/abi_ir39_-90+40.png);lut(cch4,0,0), lut(cch4,0,1), lut(cch4,0,2)",
-            "image": {
-                "geo_correct": true
-            }
-        },
-        {
-            "name": "Automatic IR False Color",
-            "expression": "IR11=(4, brightness_temperature_celsius, -60, 40);lm=equp(maps/landmask.png);land=lut(lut/2dfc/2dfc_ir_land.png);sea=lut(lut/2dfc/2dfc_ir_sea.png);lm(0) == 1 ? land(IR11, 0, 0) : sea(IR11, 0, 0),lm(0) == 1 ? land(IR11, 0, 1) : sea(IR11, 0, 1),lm(0) == 1 ? land(IR11, 0, 2) : sea(IR11, 0, 2)",
-            "image": {
-                "geo_correct": true
-            }
-        },
-        {
-            "name": "Automatic Visible False Color (2-4, uncal)",
-            "expression": "cch4=(4, brightness_temperature_celsius, -60.000000, 40.000000);lut=lut(lut/2dfc/2dfc_vis.png);lut(cch4,ch2^0.9,0),lut(cch4,ch2^0.9,1),lut(cch4,ch2^0.9,2)",
-            "image": {
-                "geo_correct": true
-            }
-        },
-                {
-            "name": "Automatic Visible False Color (2-4)",
-            "expression": "cch2=(2, sun_angle_compensated_reflective_radiance, 0.000000, 95.050700);cch4=(4, brightness_temperature_celsius, -60.000000, 40.000000);lut=lut(lut/2dfc/2dfc_vis.png);lut(cch4,cch2^0.9,0),lut(cch4,cch2^0.9,1),lut(cch4,cch2^0.9,2)",
-            "image": {
-                "geo_correct": true
-            }
-        },
-        {
-            "name": "Automatic WEFAX-like False Color",
-            "expression": "VIS=(2, reflective_radiance, 0.000000, 56.760000);lm=equp(maps/landmask.png);land=lut(lut/2dfc/2dfc_vis_wefax_land.png);sea=lut(lut/2dfc/2dfc_vis_wefax_sea.png);lm(0) == 1 ? land(VIS, 0, 0) : sea(VIS, 0, 0),lm(0) == 1 ? land(VIS, 0, 1) : sea(VIS, 0, 1),lm(0) == 1 ? land(VIS, 0, 2) : sea(VIS, 0, 2)",
-            "image": {
-                "geo_correct": true
-            }
         }
     ],
     "default": {
