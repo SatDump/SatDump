@@ -61,11 +61,11 @@ public:
 
         ImGui::Checkbox("Enable Loader", &_enable_loader);
 
-        ImGui::Text("EUMETSAT User Credentials Key");
+        ImGui::Text("EUMETSAT User «Consumer Key»");
         ImGui::SameLine();
         ImGui::InputText("##eumetsattokenloader_key", &_loader->eumetsat_user_consumer_credential);
 
-        ImGui::Text("EUMETSAT User Credentials Secret");
+        ImGui::Text("EUMETSAT User «Consumer Secret»");
         ImGui::SameLine();
         ImGui::InputText("##eumetsattokenloader_secret", &_loader->eumetsat_user_consumer_secret);
     }
