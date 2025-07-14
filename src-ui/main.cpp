@@ -105,25 +105,6 @@ int main(int argc, char *argv[])
 
     initLogger();
 
-#if 0
-    if (argc < 5) // Check overall command
-    {
-        logger->error("Usage : " + std::string(argv[0]) + " [downlink] [input_level] [input_file] [output_file_or_directory] [additional options as required]");
-        logger->error("Extra options (examples. Any parameter used in modules can be used here) :");
-        logger->error(" --samplerate [baseband_samplerate] --baseband_format [cf32/cs32/cs16/cs8/wav16] --dc_block --iq_swap");
-    }
-    else
-        satdump::processing::is_processing = true;
-
-    std::string downlink_pipeline = satdump::processing::is_processing ? argv[1] : "";
-    std::string input_level = satdump::processing::is_processing ? argv[2] : "";
-    std::string input_file = satdump::processing::is_processing ? argv[3] : "";
-    std::string output_file = satdump::processing::is_processing ? argv[4] : "";
-
-    // Parse flags
-    nlohmann::json parameters = satdump::processing::is_processing ? parse_common_flags(argc - 5, &argv[5]) : "";
-#endif // TODOREWORKUI
-
     // logger->warn("\n" + parameters.dump(4));
     // exit(0);
 
@@ -233,23 +214,6 @@ int main(int argc, char *argv[])
     satdump::tle_do_update_on_init = false;
     satdump::initSatdump(true);
 
-#if 0
-    // Check if we need to start a pipeline
-    try
-    {
-        satdump::pipeline::Pipeline pipeline = satdump::pipeline::getPipelineFromID(downlink_pipeline);
-        satdump::processing::is_processing = true;
-    }
-    catch (std::exception &)
-    {
-    }
-
-    // See if we need to add arguments
-    satdump::satdump_cfg.main_cfg["cli"] = {};
-    if (argc > 1 && !satdump::processing::is_processing)
-        satdump::satdump_cfg.main_cfg["cli"] = parse_common_flags(argc - 1, &argv[1], {{"source_id", typeid(std::string)}});
-#endif // TODOREWORKUI
-
     // Init UI
     satdump::initMainUI();
 
@@ -257,14 +221,6 @@ int main(int argc, char *argv[])
     logger->del_sink(loading_screen_sink);
     loading_screen_sink.reset();
     glfwSwapInterval(1); // Enable vsync for the rest of the program
-
-#if 0
-    if (satdump::processing::is_processing)
-    {
-        try_get_params_from_input_file(parameters, input_file);
-        satdump::ui_thread_pool.push([&](int) { satdump::processing::process(downlink_pipeline, input_level, input_file, output_file, parameters); });
-    }
-#endif // TODOREWORKUI
 
     // Set window position
     int x, y, xs, ys;

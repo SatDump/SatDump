@@ -51,7 +51,7 @@ namespace satdump
 
         public:
             void run(std::string input_file, std::string output_directory, nlohmann::json parameters, std::string input_level, bool ui = false,
-                     std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> uiCallList = nullptr, std::shared_ptr<std::mutex> uiCallListMutex = nullptr);
+                     std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> uiCallList = nullptr, std::shared_ptr<std::mutex> uiCallListMutex = nullptr, std::string *final_file = nullptr);
 
         public:
             static nlohmann::json prepareParameters(nlohmann::json &module_params, nlohmann::json &pipeline_params);

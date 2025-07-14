@@ -56,9 +56,11 @@ namespace satdump
             ui_call_list->clear();
             ui_call_list_mutex->unlock();
 
+            std::string final_file;
+
             try
             {
-                downlink_pipeline.run(input_file, output_file, parameters, input_level, true, ui_call_list, ui_call_list_mutex);
+                downlink_pipeline.run(input_file, output_file, parameters, input_level, true, ui_call_list, ui_call_list_mutex, &final_file);
             }
             catch (std::exception &e)
             {
@@ -67,6 +69,8 @@ namespace satdump
             }
 
             logger->info("Done! Goodbye");
+
+            logger->critical("FINAL FILE : " + final_file); // TODOREWORK!
 
             // TODOREWORKUI
             if (satdump_cfg.main_cfg["user_interface"]["open_explorer_post_processing"]["value"].get<bool>())

@@ -12,7 +12,7 @@ namespace satdump
     namespace pipeline
     {
         void Pipeline::run(std::string input_file, std::string output_directory, nlohmann::json parameters, std::string input_level, bool ui,
-                           std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> uiCallList, std::shared_ptr<std::mutex> uiCallListMutex)
+                           std::shared_ptr<std::vector<std::shared_ptr<ProcessingModule>>> uiCallList, std::shared_ptr<std::mutex> uiCallListMutex, std::string *final_file)
         {
             if (!std::filesystem::exists(input_file))
             {
@@ -207,6 +207,9 @@ namespace satdump
             }
 
             eventBus->fire_event<events::PipelineDoneProcessingEvent>({id, output_directory});
+
+            if (final_file != nullptr)
+                *final_file = lastFile;
         }
 
         nlohmann::json Pipeline::prepareParameters(nlohmann::json &module_params, nlohmann::json &pipeline_params)

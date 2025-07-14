@@ -1,7 +1,9 @@
 #include "status_logger_sink.h"
 #include "common/imgui_utils.h"
 #include "core/config.h"
+#include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
+#include "utils/time.h"
 
 SATDUMP_DLL extern float ui_scale;
 
@@ -65,6 +67,23 @@ namespace satdump
                 height = ImGui::GetWindowHeight();
                 ImGui::EndMenuBar();
             }
+
+            // TODOREWORK
+            if (true)
+            {
+                size_t pos = getTime() * 200;
+                size_t offset = ImGui::GetWindowSize().x * 0.75 - 200 * ui_scale;
+                auto p1 = ImGui::GetWindowPos();
+                p1.x += offset + pos % (size_t)(ImGui::GetWindowSize().x * 0.25 + 200 * ui_scale);
+                for (int i = 0; i < 10; i++)
+                {
+                    int xpos1 = p1.x + (i * 6) * ui_scale;
+                    int xpos2 = p1.x + (i * 6 + 3) * ui_scale;
+                    if (xpos1 >= ImGui::GetWindowSize().x * 0.75)
+                        ImGui::GetForegroundDrawList()->AddRectFilled(ImVec2(xpos1, p1.y), ImVec2(xpos2, p1.y + height), ImGui::GetColorU32(ImGuiCol_CheckMark));
+                }
+            }
+
             ImGui::End();
         }
 
