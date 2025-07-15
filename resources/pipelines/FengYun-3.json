@@ -345,7 +345,7 @@
         "frequencies": [
             [
                 "FengYun-3 A/B",
-                8145.95
+                8145.95e6
             ]
         ],
         "parameters": {
