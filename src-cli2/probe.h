@@ -1,6 +1,17 @@
 #pragma once
 
+#include "subcommand.h"
+
 namespace satdump
 {
-    void probeDevices(bool tx, bool rx, bool params);
-}
+    class ProbeCmdHandler : public CmdHandler
+    {
+    public:
+        ProbeCmdHandler() : CmdHandler("probe") {}
+
+        void reg(CLI::App *app);
+        void run(CLI::App *app, CLI::App *subcom);
+
+        void probeDevices(bool tx, bool rx, bool params);
+    };
+} // namespace satdump

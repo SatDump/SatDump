@@ -62,7 +62,26 @@ namespace satdump
         }
     }
 
-    int runAngelScript(std::string file, bool lint, bool predef)
+    void ScriptCmdHandler::reg(CLI::App *app)
+    {
+        CLI::App *sub_run = app->add_subcommand("run", "Run a script");
+        sub_run->add_option("script", "The script to run")->required();
+        // auto sub_run_group = sub_run->add_option_group("--lua,--as");
+        // sub_run_group->add_flag("--lua", "Run a Lua script");
+        // sub_run_group->add_flag("--as", "Run an AngelScript script");
+        // sub_run_group->require_option(1); TODOREWORK
+        sub_run->add_flag("--lint", "Lint the script, without executing it");
+        sub_run->add_flag("--predef", "Dump as.predefined");
+        sub_run->require_option(1, 3);
+    }
+
+    void ScriptCmdHandler::run(CLI::App *app, CLI::App *subcom)
+    {
+        std::string script = subcom->get_option("script")->as<std::string>();
+        runAngelScript(script, subcom->count("--lint"), subcom->count("--predef"));
+    }
+
+    int ScriptCmdHandler::runAngelScript(std::string file, bool lint, bool predef)
     {
         // Create the script engine
         asIScriptEngine *engine = asCreateScriptEngine();

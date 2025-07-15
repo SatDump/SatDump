@@ -1,8 +1,17 @@
 #pragma once
 
-#include <string>
+#include "subcommand.h"
 
 namespace satdump
 {
-    int runAngelScript(std::string file, bool lint, bool predef);
-}
+    class ScriptCmdHandler : public CmdHandler
+    {
+    public:
+        ScriptCmdHandler() : CmdHandler("run") {}
+
+        void reg(CLI::App *app);
+        void run(CLI::App *app, CLI::App *subcom);
+
+        int runAngelScript(std::string file, bool lint, bool predef);
+    };
+} // namespace satdump

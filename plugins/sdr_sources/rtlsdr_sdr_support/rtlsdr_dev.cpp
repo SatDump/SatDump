@@ -213,7 +213,6 @@ namespace satdump
 
             for (int i = 0; i < c; i++)
             {
-
                 const char *name = rtlsdr_get_device_name(i);
                 char manufact[256], product[256], serial[256];
                 std::string _name;

@@ -1,8 +1,17 @@
 #pragma once
 
-#include <string>
+#include "subcommand.h"
 
 namespace satdump
 {
-    void processProductsOrDataset(std::string product, std::string directory);
-}
+    class ProcessCmdHandler : public CmdHandler
+    {
+    public:
+        ProcessCmdHandler() : CmdHandler("process") {}
+
+        void reg(CLI::App *app);
+        void run(CLI::App *app, CLI::App *subcom);
+
+        void processProductsOrDataset(std::string product, std::string directory);
+    };
+} // namespace satdump
