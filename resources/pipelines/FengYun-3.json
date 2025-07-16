@@ -135,7 +135,7 @@
                     "satellite": "fy3ab",
                     "downlink": "mpt",
                     "mersi_bowtie": true,
-                    "mersi_histmatch": true
+                    "mersi_histmatch": false
                 }
             }
         }
@@ -176,7 +176,7 @@
                 "parameters": {
                     "satellite": "fy3d",
                     "mersi_bowtie": true,
-                    "mersi_histmatch": true
+                    "mersi_histmatch": false
                 }
             }
         }
@@ -217,7 +217,7 @@
                 "parameters": {
                     "satellite": "fy3e",
                     "mersi_bowtie": true,
-                    "mersi_histmatch": true
+                    "mersi_histmatch": false
                 }
             }
         }
@@ -258,7 +258,7 @@
                 "parameters": {
                     "satellite": "fy3f",
                     "mersi_bowtie": true,
-                    "mersi_histmatch": true
+                    "mersi_histmatch": false
                 }
             }
         }
@@ -305,7 +305,7 @@
                 "parameters": {
                     "satellite": "fy3g",
                     "mersi_bowtie": true,
-                    "mersi_histmatch": true
+                    "mersi_histmatch": false
                     // "mersi_rotate": false // Not turned 180 anymore
                 }
             }
@@ -348,7 +348,7 @@
                     "satellite": "fy3ab",
                     "downlink": "dpt",
                     "mersi_bowtie": true,
-                    "mersi_histmatch": true
+                    "mersi_histmatch": false
                 }
             }
         }
@@ -389,7 +389,7 @@
                 "parameters": {
                     "satellite": "fy3d",
                     "mersi_bowtie": true,
-                    "mersi_histmatch": true
+                    "mersi_histmatch": false
                 }
             }
         }
@@ -432,7 +432,7 @@
                 "parameters": {
                     "satellite": "fy3e",
                     "mersi_bowtie": true,
-                    "mersi_histmatch": true
+                    "mersi_histmatch": false
                 }
             }
         }
@@ -475,7 +475,7 @@
                 "parameters": {
                     "satellite": "fy3f",
                     "mersi_bowtie": true,
-                    "mersi_histmatch": true
+                    "mersi_histmatch": false
                 }
             }
         }

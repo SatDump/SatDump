@@ -55,6 +55,6 @@ int main(int argc, char *argv[])
 
         for (auto &c : cmd_handlers)
             if (subcom->get_name() == c->cmd)
-                c->reg(&app);
+                c->run(&app, subcom);
     }
 }
