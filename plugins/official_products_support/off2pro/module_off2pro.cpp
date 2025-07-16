@@ -121,7 +121,7 @@ namespace off2pro
                 logger->error("Unknown File Type!");
         }
 
-        if (std::filesystem::exists(pro_output_file + "/product.cbor") || product_paths.size() > 0)
+        if (/*std::filesystem::exists(pro_output_file + "/product.cbor") ||*/ product_paths.size() > 0)
         {
             // Products dataset
             satdump::products::DataSet dataset;
@@ -132,6 +132,11 @@ namespace off2pro
             else
                 dataset.products_list = product_paths;
             dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
+            d_output_file = pro_output_file + "/dataset.json";
+        }
+        else if (std::filesystem::exists(pro_output_file + "/product.cbor"))
+        {
+            d_output_file = pro_output_file + "/product.cbor";
         }
     }
 

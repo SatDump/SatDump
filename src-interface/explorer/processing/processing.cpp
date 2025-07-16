@@ -4,6 +4,7 @@
 #include "imgui/imgui_internal.h"
 #include "logger.h"
 #include "main_ui.h"
+#include <filesystem>
 #include <thread>
 
 namespace satdump
@@ -79,6 +80,11 @@ namespace satdump
                 {
                     logger->info("Opening explorer!");
                     explorer_app->tryOpenFileInExplorer(output_file + "/dataset.json"); // TODOREWORK Maybe just try to open the final file produced?
+                }
+                else if (std::filesystem::exists(final_file))
+                {
+                    logger->info("Opening explorer!");
+                    explorer_app->tryOpenFileInExplorer(final_file); // TODOREWORK Maybe just try to open the final file produced?
                 }
             }
 
