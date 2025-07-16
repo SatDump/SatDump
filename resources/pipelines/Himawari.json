@@ -12,6 +12,12 @@
                 "description": "Input TS instead of BBFrame"
             }
         },
+        "frequencies": [
+            [
+                "HimawariCast",
+                4148e6
+            ]
+        ],
         "work": {
             "baseband": {},
             "bbframe": {

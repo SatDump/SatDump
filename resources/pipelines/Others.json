@@ -45,48 +45,6 @@
         }
     },
     ///////////////////////////////////////////////////////////////
-    "saral_l_band": {
-        "name": "Saral L-Band",
-        "live": [
-            1,
-            2
-        ],
-        "frequencies": [
-            [
-                "DB",
-                1698.4e6
-            ]
-        ],
-        "samplerate": 3e6,
-        "work": {
-            "baseband": {},
-            "soft": {
-                "module": "psk_demod",
-                "parameters": {
-                    "constellation": "qpsk",
-                    "symbolrate": 400e3,
-                    "rrc_alpha": 0.5,
-                    "pll_bw": 0.002
-                }
-            },
-            "cadu": {
-                "module": "ccsds_conv_concat_decoder",
-                "parameters": {
-                    "constellation": "qpsk",
-                    "cadu_size": 8192,
-                    "viterbi_ber_thresold": 0.300,
-                    "viterbi_outsync_after": 20,
-                    "derandomize": true,
-                    "nrzm": true,
-                    "rs_i": 4,
-                    "rs_type": "rs223"
-                }
-            },
-            "products": {
-                "module": "saral_argos"
-            }
-        }
-    },
     "angels_l_band": {
         "name": "ANGELS L-Band",
         "live": [
@@ -203,6 +161,12 @@
         "name": "Syracuse 3B TLM",
         "live": [
             1
+        ],
+        "frequencies": [
+            [
+                "Telemetry",
+                7705e6
+            ]
         ],
         "work": {
             "baseband": {},

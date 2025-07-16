@@ -16,6 +16,12 @@
                 "description": "SEVIRI can either scan in 15 or 5 mins intervals. RSS is 5 mins."
             }
         },
+        "frequencies": [
+            [
+                "MSG Raw",
+                1686.83e6
+            ]
+        ],
         "work": {
             "baseband": {},
             "soft": {

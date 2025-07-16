@@ -25,6 +25,12 @@
         "live": [
             1
         ],
+        "frequencies": [
+            [
+                "Default (Tune here!)",
+                137.5e6
+            ]
+        ],
         "work": {
             "baseband": {},
             "frm": {
@@ -40,6 +46,12 @@
         "live": [
             1,
             2
+        ],
+        "frequencies": [
+            [
+                "Default (Tune here!)",
+                137.5e6
+            ]
         ],
         "work": {
             "baseband": {},

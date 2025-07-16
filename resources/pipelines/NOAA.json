@@ -64,15 +64,19 @@
         ],
         "frequencies": [
             [
-                "NOAA-19",
+                "NOAA-18 L-band",
+                1707e6
+            ],
+            [
+                "NOAA-19 L-band",
+                1698e6
+            ],
+            [
+                "NOAA-15 L-band",
                 1702.5e6
             ],
             [
-                "NOAA-18",
-                1698.0e6
-            ],
-            [
-                "NOAA-15",
+                "NOAA POES S-Band",
                 2247.5e6
             ]
         ],
