@@ -7,7 +7,8 @@
             "image": { 
                 "image": { 
                 "individual_equalize": true
-            }
+            },
+            "autogen": true
             }
         },
         {

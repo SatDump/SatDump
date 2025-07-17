@@ -67,7 +67,8 @@
             "image": {
                 "white_balance": true,
                 "geo_correct": true
-            }
+            },
+            "autogen": true
         }
     ]
 }

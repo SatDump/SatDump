@@ -7,7 +7,8 @@
             "image": {
                 "individual_equalize": true
             },
-            "description": "descriptions/sounders/ATMSFC.md"
+            "description": "descriptions/sounders/ATMSFC.md",
+            "autogen": true
         },
         {
             "name": "MHS 221",

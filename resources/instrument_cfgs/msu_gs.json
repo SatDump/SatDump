@@ -8,7 +8,8 @@
         },
         {
             "name": "MSU-GS 321 False Color",
-            "expression": "ch3,ch2,ch1"
+            "expression": "ch3,ch2,ch1",
+            "autogen": true
         },
         {
             "name": "Natural Color",

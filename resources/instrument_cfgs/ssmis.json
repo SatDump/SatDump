@@ -7,7 +7,8 @@
             "image": {
                 "invert": true,
                 "individual_equalize": true
-            }
+            },
+            "autogen": true
         },
         {
             "name": "Microwave Airmass",
@@ -15,7 +16,8 @@
             "image": {
                 "invert": true,
                 "individual_equalize": true
-            }
+            },
+            "autogen": true
         },
         {
             "name": "MHS False Color",
@@ -23,7 +25,8 @@
             "image": {
                 "invert": true,
                 "individual_equalize": true
-            }
+            },
+            "autogen": true
         },
         {
             "name": "91.65 GHz channel 17",

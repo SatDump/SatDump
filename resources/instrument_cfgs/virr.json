@@ -6,7 +6,9 @@
             "expression": "ch2, ch2, ch1",
             "image": {
             "individual_equalize": true,
-            "geo_correct": true}
+            "geo_correct": true,
+            "autogen": true
+        }
         },
         {
             "name": 621,

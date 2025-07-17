@@ -115,7 +115,8 @@
             "image": {
                 "geo_correct": true
             },
-            "description": "descriptions/CloudTopIR.md"
+            "description": "descriptions/CloudTopIR.md",
+            "autogen": true
         },
         {
             "name": "Enhanced IR (Transparent)",

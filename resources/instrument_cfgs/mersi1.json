@@ -7,7 +7,8 @@
             "image": { 
                 "individual_equalize": true,
                 "geo_correct": true
-            }
+            },
+            "autogen": true
         },
         {
             "name": "MERSI-1 441",

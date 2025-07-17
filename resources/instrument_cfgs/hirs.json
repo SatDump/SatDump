@@ -7,7 +7,8 @@
             "description": "descriptions/sounders/HIRSFalseColor.md",
             "image": {
                 "individual_equalize": true
-            }
+            },
+            "autogen": true
         },
                 {
             "name": "Cloud Detection Channel",

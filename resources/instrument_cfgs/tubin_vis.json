@@ -6,7 +6,8 @@
             "expression": "ch2, ch1, ch1",
             "image": {
                 "individual_equalize": true
-            }
+            },
+            "autogen": true
         },
         {
             "name": 231,

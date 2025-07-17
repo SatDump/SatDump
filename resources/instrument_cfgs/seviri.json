@@ -17,7 +17,8 @@
                 "white_balance": true,
                 "remove_background": true
             },
-            "description": "descriptions/321.md"
+            "description": "descriptions/321.md",
+            "autogen": true
         },
         {
             "name": "Natural Color",

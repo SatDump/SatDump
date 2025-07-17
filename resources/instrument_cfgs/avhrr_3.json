@@ -8,7 +8,8 @@
                 "geo_correct": true,
                 "white_balance": true
             },
-            "description": "descriptions/221.md"
+            "description": "descriptions/221.md",
+            "autogen": true
         },
         {
             "name": "AVHRR 3a21 False Color",
@@ -60,7 +61,8 @@
                 "individual_equalize": true,
                 "geo_correct": true
             },
-            "description": "descriptions/543b.md"
+            "description": "descriptions/543b.md",
+            "autogen": true
         },
         {
             "name": "AVHRR 3b45 IR False Color",

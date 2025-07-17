@@ -2,7 +2,7 @@
     "name": "ASCAT",
     "presets": [
         {
-            "name": "Outgoing shortwave IR",
+            "name": "Channel 1",
             "expression": "ch1",
             "image": {
                 "individual_equalize": true

@@ -27,7 +27,8 @@
             "expression": "ch9, ch10, ch11",
             "image": {
                 "individual_equalize": true
-            }
+            },
+            "autogen": true
         },
         {
             "name": "Microwave Airmass",
@@ -41,14 +42,16 @@
             "expression": "ch9,ch11,ch19",
             "image": {
                 "individual_equalize": true
-            }
+            },
+            "autogen": true
         },
         {
             "name": "MWR 325 GHz Airmass",
             "expression": "ch19, ch18, ch17",
             "image": {
                 "individual_equalize": true
-            }
+            },
+            "autogen": true
         },
         {
             "name": "19,10,1",

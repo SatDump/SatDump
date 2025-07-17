@@ -4,7 +4,8 @@
         {
             "name": "AIRS-HD 321",
             "expression": "ch3,ch2,ch1",
-            "equalize": true
+            "equalize": true,
+            "autogen": true
         }
     ]
 }

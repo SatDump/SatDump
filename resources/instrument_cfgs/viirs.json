@@ -15,7 +15,8 @@
             "image": {
                 "equalize": true
             },
-            "description": "descriptions/321.md"
+            "description": "descriptions/321.md",
+            "autogen": true
         },
         {
             "name": "VIIRS I321/I221 Mix",

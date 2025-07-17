@@ -5,7 +5,9 @@
             "name": "MWRI-2 10.20.23 like MWRI 123",
             "expression": "ch10, ch20, ch23",
             "image": { 
-                "individual_equalize": true}
+                "individual_equalize": true
+            },
+            "autogen": true
         },
         {
             "name": "Low Level Water Vapor",

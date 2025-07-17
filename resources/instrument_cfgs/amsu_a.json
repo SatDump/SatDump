@@ -6,7 +6,8 @@
             "expression": "ch5, ch4, ch3",
             "image": {
                 "individual_equalize": true
-            }
+            },
+            "autogen": true
         },
         {
             "name": "550hPa Temperature (~5 km)",

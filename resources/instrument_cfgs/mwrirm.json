@@ -6,7 +6,8 @@
             "expression": "ch10, ch20, ch23",
             "image": {
                 "individual_equalize": true
-            }
+            },
+            "autogen": true
         },
         {
             "name": "MHS 221",

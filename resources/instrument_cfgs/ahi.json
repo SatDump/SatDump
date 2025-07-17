@@ -3,7 +3,8 @@
     "presets": [
         {
             "name": "AHI Visible False Color",
-            "expression": "cch1=(1, albedo, 0.000000, 1.000000);cch2=(2, albedo, 0.000000, 1.000000);cch3=(3, albedo, 0.000000, 1.000000);cch4=(4, albedo, 0.000000, 1.000000);cch3^0.45454545454,(cch2^0.45454545454)*0.93+(cch4^0.45454545454)*0.07,cch1^0.45454545454"
+            "expression": "cch1=(1, albedo, 0.000000, 1.000000);cch2=(2, albedo, 0.000000, 1.000000);cch3=(3, albedo, 0.000000, 1.000000);cch4=(4, albedo, 0.000000, 1.000000);cch3^0.45454545454,(cch2^0.45454545454)*0.93+(cch4^0.45454545454)*0.07,cch1^0.45454545454",
+            "autogen": true
         },
         {
             "name": "AHI False Color (WIP)",
