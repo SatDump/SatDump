@@ -5,7 +5,7 @@ project(aaronia_sdr_support)
 if(MSVC)
     set(AARONIA_RTSA_SUITE_PATH "C:/Program Files/Aaronia AG/Aaronia RTSA-Suite PRO/" CACHE STRING "Path of RTSA Aaronia SW")
 else()
-    set(AARONIA_RTSA_SUITE_PATH "~/Aaronia/RTSA/Aaronia-RTSA-Suite-PRO" CACHE STRING "Path of RTSA Aaronia SW")
+    set(AARONIA_RTSA_SUITE_PATH "/opt/aaronia-rtsa-suite/Aaronia-RTSA-Suite-PRO" CACHE STRING "Path of RTSA Aaronia SW")
 endif()
 
 if(UNIX OR MSVC)

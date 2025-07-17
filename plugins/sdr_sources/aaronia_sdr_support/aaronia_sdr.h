@@ -15,6 +15,8 @@
 class AaroniaSource : public dsp::DSPSampleSource
 {
 protected:
+    bool device_is_eco = false;
+
     bool is_open = false, is_started = false;
     AARTSAAPI_Handle aaronia_handle;
     AARTSAAPI_DeviceInfo aaronia_dinfo;

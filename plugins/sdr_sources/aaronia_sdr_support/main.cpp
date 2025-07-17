@@ -2,7 +2,6 @@
 #include "core/config.h"
 #include "core/plugin.h"
 #include "dynload.h"
-#include "logger.h"
 
 class AaroniaSDRSupport : public satdump::Plugin
 {
