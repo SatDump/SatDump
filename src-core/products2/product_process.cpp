@@ -19,6 +19,12 @@ namespace satdump
             {
                 for (auto &cfg : instr_cfg["presets"])
                 {
+                    // TODOREWORK REMOVE THIS ASAP!!!!!!
+                    if (!cfg.contains("autogen"))
+                        continue;
+                    if (!cfg["autogen"].get<bool>())
+                        continue;
+
                     try
                     {
                         handler->resetConfig();
