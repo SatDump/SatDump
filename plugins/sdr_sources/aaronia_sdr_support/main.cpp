@@ -40,7 +40,7 @@ public:
 };
 
 #ifdef RTSA_LIB_PATH
-std::string rtsa_api_path = SDRPLAY_LIB_PATH;
+std::string rtsa_api_path = RTSA_LIB_PATH;
 #else
 std::string rtsa_api_path = "/opt/aaronia-rtsa-suite/Aaronia-RTSA-Suite-PRO/libAaroniaRTSAAPI.so";
 #endif
