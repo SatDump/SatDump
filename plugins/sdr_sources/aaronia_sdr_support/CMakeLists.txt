@@ -21,7 +21,7 @@ if(UNIX OR MSVC)
         install(TARGETS aaronia_sdr_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins RUNTIME_DEPENDENCY_SET satdump_deps)
     else()
         target_compile_definitions(sdrplay_sdr_support PUBLIC RTSA_LIB_PATH="${AARONIA_RTSA_SUITE_PATH}/libAaroniaRTSAAPI.so")
-        install(TARGETS sdrplay_sdr_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+        install(TARGETS aaronia_sdr_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
     endif()
 
     target_include_directories(aaronia_sdr_support PUBLIC src)
