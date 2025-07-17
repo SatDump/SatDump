@@ -1,8 +1,10 @@
 #include "aaronia_sdr.h"
-#include "utils/string.h"
+#include "common/utils.h"
 #include "dynload.h"
+#include "utils/string.h"
 
-#define SPECTRAN_SAMPLERATE_46M 46080000
+// #define SPECTRAN_SAMPLERATE_46M 46080000
+#define SPECTRAN_SAMPLERATE_61_44M 61440000
 #define SPECTRAN_SAMPLERATE_92M 92160000
 #define SPECTRAN_SAMPLERATE_122M 122880000
 #define SPECTRAN_SAMPLERATE_184M 184320000
@@ -10,8 +12,10 @@
 
 std::wstring get_spectran_samplerate_str(uint64_t rate)
 {
-    if (rate == SPECTRAN_SAMPLERATE_46M)
-        return L"46MHz";
+    // if (rate == SPECTRAN_SAMPLERATE_46M)
+    //     return L"46MHz";
+    if (rate == SPECTRAN_SAMPLERATE_61_44M)
+        return L"49MHz";
     else if (rate == SPECTRAN_SAMPLERATE_92M)
         return L"92MHz";
     else if (rate == SPECTRAN_SAMPLERATE_122M)
@@ -121,19 +125,36 @@ nlohmann::json AaroniaSource::get_settings()
 
 void AaroniaSource::open()
 {
+    device_is_eco = d_sdr_id.find("eco_") != std::string::npos;
+    logger->critical("DEVICE IS ECO? %d", (int)device_is_eco);
+
     // Get available samplerates
     available_samplerates.clear();
-    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 128);
-    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 64);
-    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 32);
-    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 16);
-    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 8);
-    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 4);
-    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 2);
-    available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M);
-    available_samplerates.push_back(SPECTRAN_SAMPLERATE_122M);
-    available_samplerates.push_back(SPECTRAN_SAMPLERATE_184M);
-    available_samplerates.push_back(SPECTRAN_SAMPLERATE_245M);
+    if (device_is_eco)
+    {
+        available_samplerates.push_back(SPECTRAN_SAMPLERATE_61_44M / 128);
+        available_samplerates.push_back(SPECTRAN_SAMPLERATE_61_44M / 64);
+        available_samplerates.push_back(SPECTRAN_SAMPLERATE_61_44M / 32);
+        available_samplerates.push_back(SPECTRAN_SAMPLERATE_61_44M / 16);
+        available_samplerates.push_back(SPECTRAN_SAMPLERATE_61_44M / 8);
+        available_samplerates.push_back(SPECTRAN_SAMPLERATE_61_44M / 4);
+        available_samplerates.push_back(SPECTRAN_SAMPLERATE_61_44M / 2);
+        available_samplerates.push_back(SPECTRAN_SAMPLERATE_61_44M);
+    }
+    else
+    {
+        available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 128);
+        available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 64);
+        available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 32);
+        available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 16);
+        available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 8);
+        available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 4);
+        available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M / 2);
+        available_samplerates.push_back(SPECTRAN_SAMPLERATE_92M);
+        available_samplerates.push_back(SPECTRAN_SAMPLERATE_122M);
+        available_samplerates.push_back(SPECTRAN_SAMPLERATE_184M);
+        available_samplerates.push_back(SPECTRAN_SAMPLERATE_245M);
+    }
 
     // Init UI stuff
     samplerate_option_str = "";
@@ -156,21 +177,26 @@ void AaroniaSource::start()
     bool foundDevice = false;
     std::wstring device_type;
 
-    // Try to find the ECO first
-    for (uint64_t i = 0; !foundDevice && rtsa_api->AARTSAAPI_EnumDevice(&aaronia_handle, L"spectranv6eco", i, &aaronia_dinfo) == AARTSAAPI_OK; i++)
+    if (device_is_eco)
     {
-        device_type = L"spectranv6eco";
-        foundDevice = true;
-    }
-    // If no ECO was found we try the PLUS next
-    if (!foundDevice)
-    {
-        for (uint64_t i = 0; !foundDevice && rtsa_api->AARTSAAPI_EnumDevice(&aaronia_handle, L"spectranv6", i, &aaronia_dinfo) == AARTSAAPI_OK; i++)
+        for (uint64_t i = 0; !foundDevice && rtsa_api->AARTSAAPI_EnumDevice(&aaronia_handle, L"spectranv6eco", i, &aaronia_dinfo) == AARTSAAPI_OK; i++)
         {
-            device_type = L"spectranv6";
+            device_type = L"spectranv6eco";
             foundDevice = true;
         }
     }
+    else
+    {
+        if (!foundDevice)
+        {
+            for (uint64_t i = 0; !foundDevice && rtsa_api->AARTSAAPI_EnumDevice(&aaronia_handle, L"spectranv6", i, &aaronia_dinfo) == AARTSAAPI_OK; i++)
+            {
+                device_type = L"spectranv6";
+                foundDevice = true;
+            }
+        }
+    }
+
     // No ECO and no PLUS found
     if (!foundDevice)
         throw satdump_exception("Could not find any Aaronia device (Spectran V6 Eco nor Spectran V6 Plus)!");
@@ -196,24 +222,56 @@ void AaroniaSource::start()
     if (rtsa_api->AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"device/outputformat") == AARTSAAPI_OK)
         rtsa_api->AARTSAAPI_ConfigSetString(&aaronia_device, &config, L"iq");
 
-    if (rtsa_api->AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"device/receiverclock") == AARTSAAPI_OK)
-        rtsa_api->AARTSAAPI_ConfigSetString(&aaronia_device, &config, get_spectran_samplerate_str(current_samplerate < SPECTRAN_SAMPLERATE_46M ? SPECTRAN_SAMPLERATE_46M : current_samplerate).c_str());
-    logger->info("Set Spectran receiver clock to %s", satdump::ws2s(get_spectran_samplerate_str(current_samplerate < SPECTRAN_SAMPLERATE_46M ? SPECTRAN_SAMPLERATE_46M : current_samplerate)).c_str());
+    if (device_is_eco)
+    {
+        if (rtsa_api->AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"device/receiverclock") == AARTSAAPI_OK)
+            rtsa_api->AARTSAAPI_ConfigSetString(&aaronia_device, &config, get_spectran_samplerate_str(SPECTRAN_SAMPLERATE_61_44M).c_str());
+        logger->info("Set Spectran receiver clock to %s", satdump::ws2s(get_spectran_samplerate_str(SPECTRAN_SAMPLERATE_61_44M)).c_str());
+    }
+    else
+    {
+        if (rtsa_api->AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"device/receiverclock") == AARTSAAPI_OK)
+            rtsa_api->AARTSAAPI_ConfigSetString(&aaronia_device, &config,
+                                                get_spectran_samplerate_str(current_samplerate < SPECTRAN_SAMPLERATE_92M ? SPECTRAN_SAMPLERATE_92M : current_samplerate).c_str());
+        logger->info("Set Spectran receiver clock to %s",
+                     satdump::ws2s(get_spectran_samplerate_str(current_samplerate < SPECTRAN_SAMPLERATE_92M ? SPECTRAN_SAMPLERATE_92M : current_samplerate)).c_str());
+    }
 
     int current_decimation = 1;
-    if (current_samplerate < SPECTRAN_SAMPLERATE_46M)
+    if (device_is_eco)
     {
-        int decim = 1;
-        while (decim <= 128)
+        if (current_samplerate < SPECTRAN_SAMPLERATE_61_44M)
         {
-            uint64_t samprate = SPECTRAN_SAMPLERATE_46M / decim;
-            logger->info("%llu %llu", current_samplerate, samprate);
-            if (samprate == current_samplerate)
+            int decim = 1;
+            while (decim <= 128)
             {
-                current_decimation = decim;
-                break;
+                uint64_t samprate = SPECTRAN_SAMPLERATE_61_44M / decim;
+                logger->info("%llu %llu", current_samplerate, samprate);
+                if (samprate == current_samplerate)
+                {
+                    current_decimation = decim;
+                    break;
+                }
+                decim *= 2;
             }
-            decim *= 2;
+        }
+    }
+    else
+    {
+        if (current_samplerate < SPECTRAN_SAMPLERATE_92M)
+        {
+            int decim = 1;
+            while (decim <= 128)
+            {
+                uint64_t samprate = SPECTRAN_SAMPLERATE_92M / decim;
+                logger->info("%llu %llu", current_samplerate, samprate);
+                if (samprate == current_samplerate)
+                {
+                    current_decimation = decim;
+                    break;
+                }
+                decim *= 2;
+            }
         }
     }
     std::wstring decimation_str = L"Full";
@@ -381,7 +439,7 @@ std::vector<dsp::SourceDescriptor> AaroniaSource::getAvailableSources()
     {
         std::stringstream ss;
         ss << std::hex << dinfo.serialNumber;
-        results.push_back({"aaronia", "Spectran V6 ECO " + ss.str(), std::to_string(i)});
+        results.push_back({"aaronia", "Spectran V6 ECO " + ss.str(), "eco_" + std::to_string(i)});
     }
 
     // Then enumerate PLUS next
@@ -389,7 +447,7 @@ std::vector<dsp::SourceDescriptor> AaroniaSource::getAvailableSources()
     {
         std::stringstream ss;
         ss << std::hex << dinfo.serialNumber;
-        results.push_back({"aaronia", "Spectran V6 PLUS" + ss.str(), std::to_string(i)});
+        results.push_back({"aaronia", "Spectran V6 PLUS" + ss.str(), "plus_" + std::to_string(i)});
     }
 
     rtsa_api->AARTSAAPI_Close(&h);
