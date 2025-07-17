@@ -1,10 +1,11 @@
 #pragma once
 
 #include "common/dsp_source_sink/dsp_sample_source.h"
-#include <aaroniartsaapi.h>
-#include "logger.h"
 #include "common/rimgui.h"
+#include "dynload.h" //#include <aaroniartsaapi.h>
+#include "logger.h"
 #include <thread>
+
 #ifdef _WIN32
 #include <Windows.h>
 #else
@@ -48,7 +49,7 @@ protected:
 
         while (thread_should_run)
         {
-            while ((res = AARTSAAPI_GetPacket(&aaronia_device, 0, 0, &packet)) == AARTSAAPI_EMPTY)
+            while ((res = rtsa_api->AARTSAAPI_GetPacket(&aaronia_device, 0, 0, &packet)) == AARTSAAPI_EMPTY)
 #ifdef _WIN32
                 Sleep(1);
 #else
@@ -82,7 +83,7 @@ protected:
 
                 output_stream->swap(cnt);
 
-                AARTSAAPI_ConsumePackets(&aaronia_device, 0, 1);
+                rtsa_api->AARTSAAPI_ConsumePackets(&aaronia_device, 0, 1);
             }
         }
     }

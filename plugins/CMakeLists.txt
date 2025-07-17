@@ -367,7 +367,7 @@ if(PLUGIN_SDRPP_SERVER_SUPPORT)
   add_subdirectory(sdr_sources/sdrpp_server_support)
 endif()
 
-option(PLUGIN_AARONIA_SDR_SUPPORT "Enable Aaronia Spectran Support plugin" OFF)
+option(PLUGIN_AARONIA_SDR_SUPPORT "Enable Aaronia Spectran Support plugin" ON)
 
 if(PLUGIN_AARONIA_SDR_SUPPORT)
   add_subdirectory(sdr_sources/aaronia_sdr_support)
