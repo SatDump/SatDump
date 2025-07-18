@@ -26,6 +26,7 @@ namespace satdump
             {
                 dbf_file = dbf_file::readDbfFile(db);
                 logger->critical("JSON : \n%s\n", dbf_file.dump(4).c_str());
+                has_dbf = true;
             }
 
             if (!satdump_cfg.main_cfg["user"]["shapefile_defaults"][std::filesystem::path(shapefile_name).stem().string()].is_null())
@@ -64,10 +65,13 @@ namespace satdump
                         }
 
                         std::string shapeID = "Polygon " + std::to_string(num);
-                        if (dbf_file[num]["NAME_1"].is_string())
-                            shapeID = dbf_file[num]["NAME_1"];
-                        if (dbf_file[num]["name"].is_string())
-                            shapeID = dbf_file[num]["name"];
+                        if (has_dbf)
+                        {
+                            if (dbf_file[num]["NAME_1"].is_string())
+                                shapeID = dbf_file[num]["NAME_1"];
+                            if (dbf_file[num]["name"].is_string())
+                                shapeID = dbf_file[num]["name"];
+                        }
 
                         ImPlot::PlotLine(shapeID.c_str(), line_x.data(), line_y.data(), line_x.size());
                     }
@@ -76,10 +80,13 @@ namespace satdump
                 auto pointDraw = [this](shapefile::point_t coordinates, int num)
                 {
                     std::string shapeID = "Point " + std::to_string(num);
-                    if (dbf_file[num]["NAME_1"].is_string())
-                        shapeID = dbf_file[num]["NAME_1"];
-                    if (dbf_file[num]["name"].is_string())
-                        shapeID = dbf_file[num]["name"];
+                    if (has_dbf)
+                    {
+                        if (dbf_file[num]["NAME_1"].is_string())
+                            shapeID = dbf_file[num]["NAME_1"];
+                        if (dbf_file[num]["name"].is_string())
+                            shapeID = dbf_file[num]["name"];
+                    }
 
                     ImPlot::PlotScatter(shapeID.c_str(), &coordinates.x, &coordinates.y, 1);
                 };

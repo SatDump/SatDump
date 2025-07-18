@@ -1,23 +1,20 @@
 #include "notify_logger_sink.h"
 #include "imgui/imgui.h"
 #include "imgui_notify/imgui_notify.h"
+#include "logger.h"
 
 namespace satdump
 {
-    NotifyLoggerSink::NotifyLoggerSink()
-    {
-    }
+    NotifyLoggerSink::NotifyLoggerSink() {}
 
-    NotifyLoggerSink::~NotifyLoggerSink()
-    {
-    }
+    NotifyLoggerSink::~NotifyLoggerSink() {}
 
     void NotifyLoggerSink::receive(slog::LogMsg log)
     {
         if (log.lvl == slog::LOG_WARN || log.lvl == slog::LOG_ERROR)
         {
-            std::string title = log.lvl == slog::LOG_WARN ? "Warning" : "Error";
-            ImGuiToastType type = log.lvl == slog::LOG_WARN ? ImGuiToastType_Warning : ImGuiToastType_Error;
+            std::string title = log.lvl == slog::LOG_CRIT ? "Critical" : (log.lvl == slog::LOG_WARN ? "Warning" : "Error");
+            ImGuiToastType type = log.lvl == slog::LOG_WARN ? ImGuiToastType_Error : (log.lvl == slog::LOG_WARN ? ImGuiToastType_Warning : ImGuiToastType_Error);
             notify_mutex.lock();
 
             for (size_t i = 0; i < ImGui::notifications.size(); i++)
@@ -42,4 +39,4 @@ namespace satdump
             notify_mutex.unlock();
         }
     }
-}
+} // namespace satdump

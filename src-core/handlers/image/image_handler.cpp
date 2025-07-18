@@ -3,6 +3,7 @@
 #include "core/plugin.h"
 #include "core/style.h"
 #include "handlers/projection/projection_handler.h"
+#include "handlers/vector/addmenu.h"
 #include "image/hue_saturation.h"
 #include "image/image_background.h"
 #include "image/meta.h"
@@ -24,11 +25,8 @@
 #include "utils/string.h"
 
 // TODOREWORK!
-#include "core/resources.h"
 #include "handlers/vector/shapefile_handler.h"
 #include "products2/image/channel_transform.h"
-#include <cstddef>
-#include <filesystem>
 #include <memory>
 #include <utility>
 
@@ -202,19 +200,7 @@ namespace satdump
         {
             drawSaveMenu();
 
-            // TODOREWORK move out?!
-            if (ImGui::BeginMenu("Add Overlay"))
-            {
-                if (ImGui::MenuItem("Shores"))
-                    addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_coastline.shp")), true);
-                if (ImGui::MenuItem("Borders"))
-                    addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")), true);
-                if (ImGui::MenuItem("Cities"))
-                    logger->error("TODOREWORK GeoJSON!"); // TODOREWORK
-                                                          // addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_coastline.shp")));
-
-                ImGui::EndMenu();
-            }
+            renderVectorOverlayMenu(this);
         }
 
         void ImageHandler::drawContents(ImVec2 win_size)

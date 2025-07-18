@@ -2,8 +2,8 @@
 
 #include "../handler.h"
 
-#include "image/image.h"
 #include "common/map/shapefile.h"
+#include "image/image.h"
 
 namespace satdump
 {
@@ -19,6 +19,7 @@ namespace satdump
             std::string shapefile_name;
             std::unique_ptr<shapefile::Shapefile> file;
             nlohmann::json dbf_file;
+            bool has_dbf = false;
 
             ImVec4 color_to_draw = {0, 1, 0, 1};
 
