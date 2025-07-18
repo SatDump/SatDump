@@ -52,7 +52,7 @@ namespace satdump
             processing_handler->addSubHandler(processing_handler_sub);
             processing_handler->setCanBeDraggedTo(false);
 
-            // Enable dropping files onto the explorer. TODOREWORK, check the explorer IS active!?
+            // Enable dropping files onto the explorer.
             eventBus->register_handler<imgui_utils::FileDropEvent>(
                 [this](const imgui_utils::FileDropEvent &v)
                 {
@@ -72,7 +72,7 @@ namespace satdump
                         curr_handler = e.h;
                 });
 
-            // TODOREWORK. Returns the last selected handler of a specific type if available
+            // Returns the last selected handler of a specific type if available
             eventBus->register_handler<GetLastSelectedOfTypeEvent>(
                 [this](const GetLastSelectedOfTypeEvent &v)
                 {
@@ -81,9 +81,6 @@ namespace satdump
                     else
                         v.h = nullptr;
                 });
-
-            // TODOREWORK remove
-            tryOpenFileInExplorer("/home/alan/Downloads/SatDump_NEWPRODS/metop_test/dataset.json");
         }
 
         ExplorerApplication::~ExplorerApplication()
@@ -160,50 +157,6 @@ namespace satdump
                         ImGui::SameLine();
                         if (ImGui::Button("Paste & Load"))
                             tryOpenFileInExplorer(std::string(ImGui::GetClipboardText()));
-                        ImGui::EndMenu();
-                    }
-
-                    // TODOREWORK remove
-                    if (ImGui::BeginMenu("Hardcoded"))
-                    {
-                        if (ImGui::MenuItem("Load KMSS"))
-                            tryOpenFileInExplorer("/home/alan/Downloads/SatDump_NEWPRODS/KMSS_24/dataset.json");
-                        if (ImGui::MenuItem("Load Sterna"))
-                            tryOpenFileInExplorer("/home/alan/Downloads/SatDump_NEWPRODS/aws_pfm_cadu/dataset.json");
-                        if (ImGui::MenuItem("Load MSUGS"))
-                            tryOpenFileInExplorer("/home/alan/Downloads/20241231_132953_ARKTIKA-M 2_dat/MSUGS_VIS1/product.cbor");
-                        if (ImGui::MenuItem("Load MSUGS 2"))
-                            tryOpenFileInExplorer("/home/alan/Downloads/SatDump_NEWPRODS/20250104_071415_ELEKTRO-L_3_dat/dataset.json");
-                        if (ImGui::MenuItem("Load MetOp"))
-                            tryOpenFileInExplorer("/home/alan/Downloads/SatDump_NEWPRODS/metop_test/dataset.json");
-                        if (ImGui::MenuItem("Load L3"))
-                            tryOpenFileInExplorer("/data_ssd/ELEKTRO-L3/20250104_071415_ELEKTRO-L 3.dat_OUT/dataset.json");
-                        if (ImGui::MenuItem("Load JPSS-1"))
-                            tryOpenFileInExplorer("/home/alan/Downloads/SatDump_NEWPRODS/202411271228_NOAA_20/dataset.json");
-                        if (ImGui::MenuItem("Load JPSS-2"))
-                            tryOpenFileInExplorer("/home/alan/Downloads/SatDump_NEWPRODS/n21_day/dataset.json");
-                        if (ImGui::MenuItem("Load APT"))
-                            tryOpenFileInExplorer("/home/alan/Downloads/audio_137912500Hz_11-39-56_04-03-2024_wav/dataset.json");
-                        if (ImGui::MenuItem("Load GOES"))
-                            tryOpenFileInExplorer("/home/alan/Downloads/SatDump_NEWPRODS/goes_hrit_jvital2013_cadu/IMAGES/GOES-16/Full Disk/2024-04-17_18-00-20/product.cbor");
-                        if (ImGui::MenuItem("Load Shapefile"))
-                        {
-                            auto shp_h = std::make_shared<handlers::ShapefileHandler>(resources::getResourcePath("maps/ne_10m_admin_0_countries.shp"));
-                            master_handler->addSubHandler(shp_h);
-                        }
-
-                        if (ImGui::MenuItem("Load Shapefile FRA_1"))
-                        {
-                            auto shp_h = std::make_shared<handlers::ShapefileHandler>("/home/alan/Downloads/gadm41_FRA_shp/gadm41_FRA_1.shp");
-                            master_handler->addSubHandler(shp_h);
-                        }
-
-                        if (ImGui::MenuItem("Load Shapefile FRA_2"))
-                        {
-                            auto shp_h = std::make_shared<handlers::ShapefileHandler>("/home/alan/Downloads/gadm41_FRA_shp/gadm41_FRA_2.shp");
-                            master_handler->addSubHandler(shp_h);
-                        }
-
                         ImGui::EndMenu();
                     }
 
