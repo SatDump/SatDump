@@ -206,9 +206,9 @@ namespace satdump
             if (ImGui::BeginMenu("Add Overlay"))
             {
                 if (ImGui::MenuItem("Shores"))
-                    addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_coastline.shp")));
+                    addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_coastline.shp")), true);
                 if (ImGui::MenuItem("Borders"))
-                    addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")));
+                    addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")), true);
                 if (ImGui::MenuItem("Cities"))
                     logger->error("TODOREWORK GeoJSON!"); // TODOREWORK
                                                           // addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_coastline.shp")));
@@ -273,11 +273,11 @@ namespace satdump
                         std::shared_ptr<Handler> h;
                         eventBus->fire_event<explorer::GetLastSelectedOfTypeEvent>({"projection_handler", h});
                         if (h)
-                            h->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()));
+                            h->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()), true);
                         else
                         {
                             auto p = std::make_shared<ProjectionHandler>();
-                            p->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()));
+                            p->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()), true);
                             eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({p});
                         }
                     }

@@ -138,10 +138,13 @@ namespace satdump
             return has;
         }
 
-        void Handler::addSubHandler(std::shared_ptr<Handler> handler)
+        void Handler::addSubHandler(std::shared_ptr<Handler> handler, bool ontop)
         {
             subhandlers_mtx.lock();
-            subhandlers.insert(subhandlers.begin(), &handler, &handler + 1);
+            if (ontop)
+                subhandlers.insert(subhandlers.begin(), &handler, &handler + 1);
+            else
+                subhandlers.push_back(handler);
             subhandlers_mtx.unlock();
         }
 

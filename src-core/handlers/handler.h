@@ -105,8 +105,9 @@ namespace satdump
             /**
              * @brief Add a new subhandler
              * @param handler the handler to add
+             * @param ontop if true, adds the handler at the start of the list
              */
-            virtual void addSubHandler(std::shared_ptr<Handler> handler);
+            virtual void addSubHandler(std::shared_ptr<Handler> handler, bool ontop = false);
 
             /**
              * @brief Delete a subhandler

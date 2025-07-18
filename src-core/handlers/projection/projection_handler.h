@@ -32,12 +32,6 @@ namespace satdump
             void setConfig(nlohmann::json p);
             nlohmann::json getConfig();
 
-            void addSubHandler(std::shared_ptr<Handler> handler)
-            {
-                Handler::addSubHandler(handler);
-                //   img_handler.addSubHandler(handler);
-            }
-
             void delSubHandler(std::shared_ptr<Handler> handler, bool now = false)
             {
                 //  img_handler.delSubHandler(handler, true);

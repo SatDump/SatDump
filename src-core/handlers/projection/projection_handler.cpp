@@ -1,4 +1,5 @@
 #include "projection_handler.h"
+#include "core/resources.h"
 #include "core/style.h"
 #include "image/image.h"
 #include "image/meta.h"
@@ -457,6 +458,20 @@ namespace satdump
                 addSubHandler(a);
             }*/
             // TODOREWORK
+
+            // TODOREWORK move out?!
+            if (ImGui::BeginMenu("Add Overlay"))
+            {
+                if (ImGui::MenuItem("Shores"))
+                    addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_coastline.shp")), true);
+                if (ImGui::MenuItem("Borders"))
+                    addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")), true);
+                if (ImGui::MenuItem("Cities"))
+                    logger->error("TODOREWORK GeoJSON!"); // TODOREWORK
+                                                          // addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_coastline.shp")));
+
+                ImGui::EndMenu();
+            }
         }
 
         void ProjectionHandler::drawContents(ImVec2 win_size) { img_handler.drawContents(win_size); }
