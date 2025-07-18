@@ -1,4 +1,5 @@
 #include "projection_handler.h"
+#include "core/config.h"
 #include "core/resources.h"
 #include "core/style.h"
 #include "image/image.h"
@@ -24,9 +25,16 @@ namespace satdump
         {
             handler_tree_icon = u8"\uf6e6";
             setCanSubBeReorgTo(true);
+
+            if (!satdump_cfg.main_cfg["user"]["projection_defaults"].is_null())
+                setConfig(satdump_cfg.main_cfg["user"]["projection_defaults"]);
         }
 
-        ProjectionHandler::~ProjectionHandler() {}
+        ProjectionHandler::~ProjectionHandler()
+        {
+            satdump_cfg.main_cfg["user"]["projection_defaults"] = getConfig();
+            satdump_cfg.saveUser();
+        }
 
         void ProjectionHandler::drawMenu()
         {
@@ -61,6 +69,8 @@ namespace satdump
         {
             if (p.contains("image"))
                 img_handler.setConfig(p["image"]);
+            if (p.contains("proj"))
+                projui = p["proj"];
         }
 
         nlohmann::json ProjectionHandler::getConfig()
@@ -68,6 +78,7 @@ namespace satdump
             nlohmann::json p;
 
             p["image"] = img_handler.getConfig();
+            p["proj"] = projui;
 
             return p;
         }

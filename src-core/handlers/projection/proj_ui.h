@@ -1,6 +1,7 @@
 #pragma once
 
 #include "imgui/imgui.h"
+#include "nlohmann/json.hpp"
 #include "projection/projection.h"
 
 namespace satdump
@@ -45,6 +46,13 @@ namespace satdump
             /////////////
             float projections_azeq_lon = 0;
             float projections_azeq_lat = 90;
+
+            NLOHMANN_DEFINE_TYPE_INTRUSIVE(ProjectionConfigUI, projections_image_width, projections_image_height, projections_mode_radio, projection_auto_mode, projection_auto_scale_mode,
+                                           projection_autoscale_x, projection_autoscale_y, projections_current_selected_proj, projections_equirectangular_tl_lon, projections_equirectangular_tl_lat,
+                                           projections_equirectangular_br_lon, projections_equirectangular_br_lat, projections_utm_center_lon, projections_utm_offset_y, projections_utm_scale,
+                                           projections_utm_zone, projections_utm_south, projections_stereo_center_lon, projections_stereo_center_lat, projections_stereo_scale, projections_tpers_lon,
+                                           projections_tpers_lat, projections_tpers_alt, projections_tpers_ang, projections_tpers_azi, projections_tpers_scale, projections_azeq_lon,
+                                           projections_azeq_lat);
 
         public:
             nlohmann::json get_proj()
