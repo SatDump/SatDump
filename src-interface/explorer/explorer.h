@@ -3,6 +3,7 @@
 #include "../app.h"
 
 #include "common/widgets/menuitem_fileopen.h"
+#include "dsp/task_queue.h"
 #include "handlers/handler.h"
 
 #include "imgui/dialogs/widget.h"
@@ -40,7 +41,7 @@ namespace satdump
 
             // File open
             widget::MenuItemFileOpen file_open_dialog;
-            std::thread file_open_thread; // TODOREWORK?
+            TaskQueue file_open_queue;
 
             std::string quickOpenString;
 

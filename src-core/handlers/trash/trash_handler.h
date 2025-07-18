@@ -30,7 +30,7 @@ namespace satdump
             void setConfig(nlohmann::json p);
             nlohmann::json getConfig();
 
-            void addSubHandler(std::shared_ptr<Handler> handler)
+            void addSubHandler(std::shared_ptr<Handler> handler, bool ontop = false)
             {
                 // Do nothing!
             }

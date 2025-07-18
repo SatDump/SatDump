@@ -44,6 +44,8 @@ namespace satdump
 
         void OffProcessingHandler::process(pipeline::Pipeline downlink_pipeline, std::string input_level, std::string input_file, std::string output_file, nlohmann::json parameters)
         {
+            eventBus->fire_event<SetIsProcessingEvent>({});
+
             pipeline_name = downlink_pipeline.name;
 
             logger->info("Starting processing pipeline " + downlink_pipeline.id + "...");
@@ -89,6 +91,8 @@ namespace satdump
             }
 
             pipeline_name = "PROCESSING_DONE"; // TODOREWORK MASSIVE HACK!
+
+            eventBus->fire_event<SetIsDoneProcessingEvent>({});
         }
 
         void OffProcessingHandler::drawMenu() {}

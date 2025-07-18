@@ -71,10 +71,10 @@ namespace satdump
 
             void saveResult(std::string directory);
 
-            void addSubHandler(std::shared_ptr<Handler> handler)
+            void addSubHandler(std::shared_ptr<Handler> handler, bool ontop = false)
             {
-                // Handler::addSubHandler(handler);
-                img_handler->addSubHandler(handler);
+                // Handler::addSubHandler(handler, ontop);
+                img_handler->addSubHandler(handler, ontop);
             }
 
             void delSubHandler(std::shared_ptr<Handler> handler, bool now = false)

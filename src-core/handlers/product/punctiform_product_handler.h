@@ -43,7 +43,7 @@ namespace satdump
             void drawMenuBar();
 
             //
-            void addSubHandler(std::shared_ptr<Handler> handler) { img_handler.addSubHandler(handler); }
+            void addSubHandler(std::shared_ptr<Handler> handler, bool ontop = false) { img_handler.addSubHandler(handler, ontop); }
 
             void delSubHandler(std::shared_ptr<Handler> handler, bool now = false) { img_handler.delSubHandler(handler, true); }
 

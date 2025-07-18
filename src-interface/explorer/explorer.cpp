@@ -83,11 +83,7 @@ namespace satdump
                 });
         }
 
-        ExplorerApplication::~ExplorerApplication()
-        {
-            if (file_open_thread.joinable())
-                file_open_thread.join();
-        }
+        ExplorerApplication::~ExplorerApplication() {}
 
         void ExplorerApplication::drawPanel()
         {
@@ -252,8 +248,6 @@ namespace satdump
 
         void ExplorerApplication::tryOpenFileInExplorer(std::string path)
         {
-            if (file_open_thread.joinable())
-                file_open_thread.join();
             auto fun = [this, path]()
             {
                 eventBus->fire_event<SetIsProcessingEvent>({});
@@ -321,7 +315,7 @@ namespace satdump
 
                 eventBus->fire_event<SetIsDoneProcessingEvent>({});
             };
-            file_open_thread = std::thread(fun);
+            file_open_queue.push(fun);
         }
     } // namespace explorer
 }; // namespace satdump
