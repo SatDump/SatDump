@@ -94,8 +94,17 @@ namespace satdump
                 logger->debug("Dec factor : %f", decimation_factor);
                 logger->debug("Final SPS : %f", final_sps);
 
+                // clang-format off
                 if (input_sps < 1.0)
-                    throw satdump_exception("SPS is invalid. Must be above 1!");
+                    // Formats according to the symbol rate (0.001 Msps would be awful to read)
+                    throw satdump_exception("Your sampling rate is too low! Minimum: " +
+                        (
+                        d_symbolrate > 1e6
+                        ? std::to_string(d_symbolrate / 1e6) + " Msps"
+                        : std::to_string(d_symbolrate / 1e3) + " ksps"
+                        )
+                    );
+                // clang-format on
 
                 // Init DSP Blocks
                 if (input_data_type == DATA_FILE)
