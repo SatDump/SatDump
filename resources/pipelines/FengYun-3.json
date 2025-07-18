@@ -163,6 +163,12 @@
                 "value": false,
                 "name": "Dump MERSI(.bin)",
                 "description": "Dump raw MERSI frames for processing with\nother software, such as Fred's WeatherSat!"
+            },
+            "mersi_histmatch": {
+                "type": "bool",
+                "value": true,
+                "name": "MERSI Line-based histogram equalization",
+                "description": "Toggle line-based histogram equalization for MERSI, to make the image smoother. However, this causes problems with thunderstorm clouds appearing too white."
             }
         },
         "work": {
@@ -209,6 +215,12 @@
                 "value": false,
                 "name": "Dump MERSI(.bin)",
                 "description": "Dump raw MERSI frames for processing with\nother software, such as Fred's WeatherSat!"
+            },
+            "mersi_histmatch": {
+                "type": "bool",
+                "value": true,
+                "name": "MERSI Line-based histogram equalization",
+                "description": "Toggle line-based histogram equalization for MERSI, to make the image smoother. However, this causes problems with thunderstorm clouds appearing too white."
             }
         },
         "work": {
@@ -255,6 +267,12 @@
                 "value": false,
                 "name": "Dump MERSI(.bin)",
                 "description": "Dump raw MERSI frames for processing with\nother software, such as Fred's WeatherSat!"
+            },
+            "mersi_histmatch": {
+                "type": "bool",
+                "value": true,
+                "name": "MERSI Line-based histogram equalization",
+                "description": "Toggle line-based histogram equalization for MERSI, to make the image smoother. However, this causes problems with thunderstorm clouds appearing too white."
             }
         },
         "work": {
@@ -307,6 +325,12 @@
                 "value": false,
                 "name": "Dump MERSI(.bin)",
                 "description": "Dump raw MERSI frames for processing with\nother software, such as Fred's WeatherSat!"
+            },
+            "mersi_histmatch": {
+                "type": "bool",
+                "value": true,
+                "name": "MERSI Line-based histogram equalization",
+                "description": "Toggle line-based histogram equalization for MERSI, to make the image smoother.\nHowever, this causes problems with thunderstorm clouds appearing too white."
             }
         },
         "work": {
