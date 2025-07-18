@@ -141,7 +141,7 @@ namespace satdump
         void Handler::addSubHandler(std::shared_ptr<Handler> handler)
         {
             subhandlers_mtx.lock();
-            subhandlers.push_back(handler);
+            subhandlers.insert(subhandlers.begin(), &handler, &handler + 1);
             subhandlers_mtx.unlock();
         }
 
