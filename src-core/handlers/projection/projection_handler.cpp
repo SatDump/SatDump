@@ -31,7 +31,7 @@ namespace satdump
         {
             bool needs_to_be_disabled = is_processing;
 
-            if (ImGui::CollapsingHeader("Projection"))
+            if (ImGui::CollapsingHeader("Projection", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 if (needs_to_be_disabled)
                     style::beginDisabled();

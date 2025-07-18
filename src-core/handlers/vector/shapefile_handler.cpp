@@ -40,9 +40,9 @@ namespace satdump
 
         void ShapefileHandler::drawMenu()
         {
-            if (ImGui::CollapsingHeader("Settings"))
+            if (ImGui::CollapsingHeader("Settings", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                ImGui::ColorEdit3("##shapefilecolor##Color", (float *)&color_to_draw, ImGuiColorEditFlags_NoInputs /*| ImGuiColorEditFlags_NoLabel*/);
+                ImGui::ColorEdit3("Draw Color##shapefilecolor", (float *)&color_to_draw, ImGuiColorEditFlags_NoInputs /*| ImGuiColorEditFlags_NoLabel*/);
             }
         }
 
