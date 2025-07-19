@@ -139,7 +139,8 @@ namespace satdump
                             std::vector<double> col = {(color[0] - img.getf(0, pos2)) * mf + img.getf(0, pos2), img.channels() > 1 ? ((color[1] - img.getf(1, pos2)) * mf + img.getf(1, pos2)) : 1,
                                                        img.channels() > 2 ? ((color[2] - img.getf(2, pos2)) * mf + img.getf(2, pos2)) : 1,
                                                        img.channels() > 3 ? ((color[3] - img.getf(3, pos2)) * mf + img.getf(3, pos2)) : 1};
-                            img.draw_pixel(x, y, col);
+                            if (x < (int)img.width())
+                                img.draw_pixel(x, y, col);
                         }
                         pos++;
                     }
