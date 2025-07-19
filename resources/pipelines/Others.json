@@ -54,7 +54,7 @@
             },
             "satellite_name": {
                 "type": "string",
-                "value": "ISS",
+                "value": "",
                 "name": "Satellite Name",
                 "units": "Hz",
                 "description": "Human-readable identifier for the satellite."
