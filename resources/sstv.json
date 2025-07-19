@@ -36,7 +36,7 @@
         "line_time": 0.50848,
         "sync_time": 0.020,
         "color_offset_y1": 0.02208,
-        "color_offset_y2": 0.38688,
+        "color_offset_y2": 0.38660, // Should be 38688, but clearly there is an offset
         "color_offset_u": 0.26528,
         "color_offset_v": 0.14368,
         "color_time_y1": 0.1216,
