@@ -203,7 +203,7 @@
                 "module": "pm_demod",
                 "parameters": {
                     "symbolrate": 5e3,
-                    "pll_bw": 0.01,
+                    "pll_bw": 0.02,
                     "rrc_alpha": 0.5
                 }
             },
@@ -238,7 +238,7 @@
                 "module": "pm_demod",
                 "parameters": {
                     "symbolrate": 5e3,
-                    "pll_bw": 0.01,
+                    "pll_bw": 0.02,
                     "rrc_alpha": 0.5
                 }
             },

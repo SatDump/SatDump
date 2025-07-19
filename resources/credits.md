@@ -107,6 +107,7 @@ First time here? See the reference documents below to get started using SatDump.
 - Jpjonte
 - LazzSnazz
 - Mark Pentier
+- Meti (@cpt_dingus)
 - MeteoOleg
 - Oleg Kutkov
 - Peter Kooistra
