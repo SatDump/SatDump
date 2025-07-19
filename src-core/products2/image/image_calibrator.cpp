@@ -28,7 +28,7 @@ namespace satdump
         {
             if (!p->has_calibration())
             {
-                logger->error("No calibration info. Using Dummy (" + p->instrument_name + ")!");
+                logger->warn("No calibration info. Using Dummy (" + p->instrument_name + ")!");
                 return std::make_shared<DummyCalibrator>(p, nlohmann::json());
                 // return nullptr;
             }

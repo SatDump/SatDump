@@ -132,7 +132,7 @@ namespace satdump
                         needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
                         ImGui::SliderFloat(std::string(cname[i] + " Saturation").c_str(), &saturation, -100, 100);
                         needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
-                        ImGui::SliderFloat(std::string(cname[i] + " Ligntess").c_str(), &lightness, -100, 100);
+                        ImGui::SliderFloat(std::string(cname[i] + " Lightness").c_str(), &lightness, -100, 100);
                         needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
                         huesaturation_cfg_img.hue[i] = hue / 180.0;
                         huesaturation_cfg_img.saturation[i] = saturation / 100.0;
