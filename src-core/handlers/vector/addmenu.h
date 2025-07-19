@@ -23,7 +23,7 @@ namespace satdump
                     h->addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")), true);
 
                 if (ImGui::MenuItem("Cities"))
-                    logger->error("TODOREWORK GeoJSON!"); // TODOREWORK
+                    h->addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_populated_places_simple.shp")), true);
 
                 if (ImGui::MenuItem("Lat/Lon Grid"))
                 {

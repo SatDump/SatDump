@@ -23,6 +23,7 @@ namespace satdump
 
             ImVec4 color_to_draw = {0, 1, 0, 1};
             int font_size = 20;
+            int scalerank_filter = 3;
 
             void draw_to_image(image::Image &img, std::function<std::pair<double, double>(double, double, double, double)> projectionFunc);
 

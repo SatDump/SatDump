@@ -48,6 +48,8 @@ namespace satdump
             {
                 ImGui::ColorEdit3("Draw Color##shapefilecolor", (float *)&color_to_draw, ImGuiColorEditFlags_NoInputs /*| ImGuiColorEditFlags_NoLabel*/);
                 ImGui::InputInt("Font Size", &font_size);
+                if (has_dbf)
+                    ImGui::InputInt("Scale Rank (Cities Only)", &scalerank_filter);
             }
         }
 
@@ -124,6 +126,8 @@ namespace satdump
             }
             if (p.contains("font_size"))
                 font_size = p["font_size"];
+            if (p.contains("scalerank_filter"))
+                scalerank_filter = p["scalerank_filter"];
         }
 
         nlohmann::json ShapefileHandler::getConfig()
@@ -131,6 +135,7 @@ namespace satdump
             nlohmann::json p;
             p["color"] = {color_to_draw.x, color_to_draw.y, color_to_draw.z, color_to_draw.w};
             p["font_size"] = font_size;
+            p["scalerank_filter"] = scalerank_filter;
             return p;
         }
 
@@ -171,6 +176,13 @@ namespace satdump
 
                     if (cc.first == -1 || cc.second == -1)
                         return;
+
+                    if (has_dbf)
+                    {
+                        if (dbf_file[num]["scalerank"].is_string())
+                            if (scalerank_filter < std::stoi(dbf_file[num]["scalerank"].get<std::string>()))
+                                return;
+                    }
 
 #if 0
                      img.draw_pixel(cc.first, cc.second, color);
