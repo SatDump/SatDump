@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/map/shapefile.h"
+#include "core/config.h"
 #include "core/resources.h"
 #include "handlers/handler.h"
 #include "handlers/vector/shapefile_handler.h"
@@ -52,6 +53,24 @@ namespace satdump
 
                     h2->file = std::make_unique<shapefile::Shapefile>();
                     h2->file->polyline_records.push_back(r);
+
+                    h->addSubHandler(h2, true);
+                }
+
+                if (ImGui::MenuItem("QTH"))
+                {
+                    auto h2 = std::make_shared<ShapefileHandler>();
+                    h2->shapefile_name = "QTH";
+
+                    shapefile::PointRecord r;
+                    r.record_number = 1;
+                    r.point.y = satdump::satdump_cfg.getValueFromSatDumpGeneral<double>("qth_lat");
+                    r.point.x = satdump::satdump_cfg.getValueFromSatDumpGeneral<double>("qth_lon");
+
+                    h2->file = std::make_unique<shapefile::Shapefile>();
+                    h2->file->point_records.push_back(r);
+                    h2->dbf_file[0]["name"] = "QTH";
+                    h2->has_dbf = true;
 
                     h->addSubHandler(h2, true);
                 }

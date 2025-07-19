@@ -111,6 +111,7 @@ namespace shapefile
     {
         point_t point;
 
+        PointRecord() {}
         PointRecord(std::istream &stream, RecordHeader &header);
     };
 
