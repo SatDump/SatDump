@@ -175,8 +175,6 @@ int main(int argc, char *argv[])
         benchmarkNDSPBlock<complex_t>(p, 10, "FIR New RRC, 361 taps, omega 2.0");
     }
 
-    return 0;
-
     logger->debug("Benchmarking MM Recovery...");
     benchmarkBlock(complex_t, complex_t, dsp::MMClockRecoveryBlock<complex_t>, 10, "MM Recovery, omega 1.2", 1.0, /**/ 1.2, 0.1, 0.5, 0.01, 0.01);
     benchmarkBlock(complex_t, complex_t, dsp::MMClockRecoveryBlock<complex_t>, 10, "MM Recovery, omega 2.0", 1.0, /**/ 2.0, 0.1, 0.5, 0.01, 0.01);
