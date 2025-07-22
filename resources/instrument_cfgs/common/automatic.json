@@ -30,7 +30,7 @@
         },
         {
             "name": "HVC",
-            "expression": "lut=lut(lut/WXtoImg-HVC-1.png); lut({0.86um}, {10.4um}, 0), lut({0.86um}, {10.4um}, 1), lut({0.86um}, {10.4um}, 2)",
+            "expression": "lut=lut(lut/WXtoImg-HVC-2.png);  lut(ch{0.86um}, ch{10.4um}, 0),  lut(ch{0.86um}, ch{10.4um}, 1),  lut(ch{0.86um}, ch{10.4um}, 2)",
             "image": {
                 "geo_correct": true
             },
