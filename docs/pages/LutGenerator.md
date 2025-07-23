@@ -28,7 +28,8 @@ The `Current` menu in the top menu bar serves to save and load a LUT. Only the `
     ![Fill 50](lut_generator/interpolate_a.png)
     ![Interpolate from 0 to 50 and from 50 to 100](lut_generator/interpolate_b.png)
 * `Color`: controls the current color. By clicking on the box a new color can be chosen or inputted using RGBA, HSVA or HTML-style notations.
-    > **WARNING:** This function is not currently supported on Windows and MacOS platforms.
+    > [!warning]
+    > This function is not currently supported on Windows and MacOS platforms.
 
 * `Pick`: leverages `grabc` to pick colors from any location on the computer screen, such as a Web image or another program.
 * `Undo`: reverts the last change.
