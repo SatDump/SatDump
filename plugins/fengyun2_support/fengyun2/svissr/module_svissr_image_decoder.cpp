@@ -61,33 +61,53 @@ namespace fengyun_svissr
 
         std::string disk_folder = buffer.directory + "/" + timestamp;
 
-        // TODOREWORK Get the correct SC/IDs
-        // Is the SC/ID we pull correct? It's 64 on both FY-2G and FY-2H
-        // Verify it's correct with some sample files if able, alternatively
-        // figure out a different way to identify the satellite (last resort is a manual selection)
-        sat_name = "FY-2x";
-        /*
-        // Get the sat name
-        switch (buffer.scid) {
-
-            case (0):
-            {
-                sat_name = "FY-2H";
-            }
-            break;
-
-            default:
-            {
-                sat_name = "Unknown FY-2";
-            }
-
-        }
-        */
-
         // Save products
         satdump::products::ImageProduct svissr_product;
+
+        sat_name = "";
+
+        // Get the sat name
+        switch (buffer.scid)
+        {
+        case (40):
+            sat_name = "FY-2H";
+            svissr_product.set_product_source("FengYun-2H");
+            break;
+        case (39):
+            sat_name = "FY-2G";
+            svissr_product.set_product_source("FengYun-2G");
+            break;
+        // Below ones are inferred due to the lack of sample SVISSR data
+        case (38):
+            sat_name = "FY-2F";
+            svissr_product.set_product_source("FengYun-2F");
+            break;
+        case (37):
+            sat_name = "FY-2E";
+            svissr_product.set_product_source("FengYun-2E");
+            break;
+        case (36):
+            sat_name = "FY-2D";
+            svissr_product.set_product_source("FengYun-2D");
+            break;
+        case (35):
+            sat_name = "FY-2C";
+            svissr_product.set_product_source("FengYun-2C");
+            break;
+        case (34):
+            sat_name = "FY-2B";
+            svissr_product.set_product_source("FengYun-2B");
+            break;
+        case (33):
+            sat_name = "FY-2A";
+            svissr_product.set_product_source("FengYun-2A");
+            break;
+        default:
+            sat_name = "Unknown FY-2";
+        }
+
+
         svissr_product.instrument_name = "fy2-svissr";
-        svissr_product.set_product_source(sat_name);
         svissr_product.set_product_timestamp(buffer.timestamp);
 
         // Raw Images
@@ -103,51 +123,6 @@ namespace fengyun_svissr
         svissr_product.set_channel_wavenumber(2, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 7.15e-6));
         svissr_product.set_channel_wavenumber(3, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 10.8e-6));
         svissr_product.set_channel_wavenumber(4, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 12e-6));
-
-        // TODOREWORK Uncomment when able to automate
-        /*
-        // If we can, generate false color
-        if (resources::resourceExists("fy2/svissr/lut.png"))
-        {
-            logger->trace("Scale Ch1 to 8-bits...");
-            image::Image channel1(8, buffer.image5.width(), buffer.image5.height(), 1);
-            for (size_t i = 0; i < channel1.width() * channel1.height(); i++)
-                channel1.set(i, buffer.image5.get(i) / 255);
-            buffer.image5.clear(); // We're done with Ch1. Free up memory
-
-            logger->trace("Scale Ch4 to 8-bits...");
-            image::Image channel5(8, buffer.image4.width(), buffer.image4.height(), 1);
-            for (size_t i = 0; i < channel5.width() * channel5.height(); i++)
-                channel5.set(i, buffer.image4.get(i) / 255);
-            buffer.image4.clear(); // We're done with Ch4. Free up memory
-
-            logger->trace("Resize images...");
-            channel5.resize(channel1.width(), channel1.height());
-
-            logger->trace("Loading LUT...");
-            image::Image lutImage;
-            image::load_png(lutImage, resources::getResourcePath("fy2/svissr/lut.png").c_str());
-            lutImage = lutImage.to8bits();
-            lutImage.resize(256, 256);
-
-            image::Image compoImage(8, channel1.width(), channel1.height(), 3);
-
-            logger->trace("Applying LUT...");
-            for (size_t i = 0; i < channel1.width() * channel1.height(); i++)
-            {
-                uint8_t x = 255 - channel1.get(i);
-                uint8_t y = channel5.get(i);
-
-                for (int c = 0; c < 3; c++)
-                    compoImage.set(c * compoImage.width() * compoImage.height() + i, lutImage.get(c * lutImage.width() * lutImage.height() + x * lutImage.width() + y));
-            }
-
-            image::save_img(compoImage, std::string(disk_folder + "/" + getSvissrFilename(timeReadable, "FC")).c_str());
-        }
-        else
-        {
-            logger->warn("fy2/svissr/lut.png LUT is missing! False Color will not be generated");
-        }*/
 
         svissr_product.save(disk_folder);
 
@@ -268,7 +243,7 @@ namespace fengyun_svissr
                 if (group_id == 0)
                 {
 
-                    // R6*8 -> Big endian 6 byte integer, needs 10e-8 to read the value
+                    // R6*8 -> Big endian 6 byte integer, needs 10^-8 to read the value
                     uint64_t raw =
                         ((uint64_t)frame[296] << 40 | (uint64_t)frame[297] << 32 | (uint64_t)frame[298] << 24 | (uint64_t)frame[299] << 16 | (uint64_t)frame[300] << 8 | (uint64_t)frame[301]);
 
@@ -282,7 +257,7 @@ namespace fengyun_svissr
                 }
 
                 // Parse SCID
-                int scid = frame[89];
+                int scid = frame[91];
 
                 scid_stats.push_back(scid);
 
