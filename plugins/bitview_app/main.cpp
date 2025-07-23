@@ -2,7 +2,6 @@
 #include "explorer/explorer.h"
 #include "logger.h"
 
-#include "app.h"
 #include "bitview.h"
 #include "explorer/explorer.h"
 
