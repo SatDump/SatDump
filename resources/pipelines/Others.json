@@ -56,7 +56,6 @@
                 "type": "string",
                 "value": "",
                 "name": "Satellite Name",
-                "units": "Hz",
                 "description": "Human-readable identifier for the satellite."
             },
             "modulation_type": {
