@@ -91,7 +91,7 @@ namespace satdump
             void drawContents(ImVec2 win_size);
             void drawMenuBar();
 
-            std::string getName() { return "Lut Generator"; }
+            std::string getName() { return "LUT Generator"; }
 
             std::string getID() { return "lut_generator_handler"; }
         };

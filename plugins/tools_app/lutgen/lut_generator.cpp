@@ -135,7 +135,7 @@ namespace satdump
                 range_max = lut.size();
             }
 
-            if (ImPlot::BeginPlot("LutPlot", {win_size.x - 10 * ui_scale, 200 * ui_scale}))
+            if (ImPlot::BeginPlot("LUT plot", {win_size.x - 10 * ui_scale, 200 * ui_scale}))
             {
                 // ImPlot::SetupAxes("", "", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
                 ImPlot::SetupAxisLimits(ImAxis_X1, range_min, range_max, ImPlotCond_Always);

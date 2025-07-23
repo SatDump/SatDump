@@ -19,7 +19,7 @@ public:
         {
             if (ImGui::BeginMenu("Tools"))
             {
-                if (ImGui::MenuItem("Lut Generator"))
+                if (ImGui::MenuItem("LUT Generator"))
                     evt.master_handler->addSubHandler(std::make_shared<satdump::lutgen::LutGeneratorHandler>());
                 ImGui::EndMenu();
             }
