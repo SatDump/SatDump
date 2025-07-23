@@ -30,7 +30,7 @@ namespace satdump
 
         void LutGeneratorHandler::drawMenu()
         {
-            if (ImGui::CollapsingHeader("Lut", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::CollapsingHeader("LUT", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 if (ImGui::Button("--"))
                     for (int i = 0; i < 10; i++)
@@ -51,7 +51,9 @@ namespace satdump
                 if (ImGui::Button("++"))
                     for (int i = 0; i < 10; i++)
                         lut.push_back(current_col);
-
+                
+                ImGui::Text("Mode:");
+                ImGui::SameLine();
                 if (ImGui::RadioButton("Fill", mouse_mode == 0))
                     mouse_mode = 0;
                 ImGui::SameLine();
@@ -70,18 +72,14 @@ namespace satdump
                 if (ImGui::Button("Pick"))
                     current_col = getColorFromScreen();
 
-                image_select.draw();
-                if (ImGui::Button("Update"))
-                    should_regen_image = true;
-
                 bool has_hist = history_vector.size();
                 if (!has_hist)
                     style::beginDisabled();
-                if (ImGui::Button("History Back"))
+                if (ImGui::Button("Undo"))
                     restoreHistory();
                 if (!has_hist)
                     style::endDisabled();
-
+                ImGui::SameLine();
                 if (ImGui::Button("Invert"))
                     std::reverse(lut.begin(), lut.end());
 
@@ -118,6 +116,12 @@ namespace satdump
                     for (int i = 0; i < interpolate_size; i++)
                         lut.push_back({(uint8_t)img.get(0, i, 0), (uint8_t)img.get(1, i, 0), (uint8_t)img.get(2, i, 0), (uint8_t)img.get(3, i, 0)});
                 }
+            }
+            if (ImGui::CollapsingHeader("Preview Image", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                image_select.draw();
+                if (ImGui::Button("Refresh Preview"))
+                    should_regen_image = true;
             }
         }
 
@@ -202,7 +206,7 @@ namespace satdump
 
                 ImPlot::EndPlot();
             }
-
+            ImGui::Text("Preview Image");
             if (lutaction_started && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
                 should_regen_image = true;
             if (ImGui::IsKeyDown(ImGuiKey_ModCtrl) && ImGui::IsKeyPressed(ImGuiKey_Z))
