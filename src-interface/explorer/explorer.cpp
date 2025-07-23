@@ -34,7 +34,7 @@ namespace satdump
 {
     namespace explorer
     {
-        ExplorerApplication::ExplorerApplication() : Application("explorer")
+        ExplorerApplication::ExplorerApplication()
         {
             master_handler = std::make_shared<handlers::DummyHandler>("MasterHandlerExplorer");
 
@@ -211,13 +211,13 @@ namespace satdump
 
         void ExplorerApplication::drawContents() { ImGui::Text("No handler selected!"); }
 
-        void ExplorerApplication::drawUI()
+        void ExplorerApplication::draw()
         {
             drawMenuBar();
 
             ImVec2 explorer_size = ImGui::GetContentRegionAvail();
 
-            if (ImGui::BeginTable("##wiever_table", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInnerV))
+            if (ImGui::BeginTable("##explorer_table", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInnerV))
             {
                 ImGui::TableSetupColumn("##panel_v", ImGuiTableColumnFlags_None, explorer_size.x * panel_ratio);
                 ImGui::TableSetupColumn("##view", ImGuiTableColumnFlags_None, explorer_size.x * (1.0f - panel_ratio));

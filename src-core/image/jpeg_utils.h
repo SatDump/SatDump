@@ -2,6 +2,7 @@
 
 /**
  * @file jpeg_utils.h
+ * @brief Utilities specific to JPEG manipulation (from memory)
  */
 
 #include "image.h"

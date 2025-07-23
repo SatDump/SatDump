@@ -7,7 +7,7 @@
 #include <map>
 #include <memory>
 #include "nlohmann/json.hpp"
-#include "products2/dataset.h"
+#include "products/dataset.h"
 
 namespace proba
 {

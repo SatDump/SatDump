@@ -1,10 +1,10 @@
 #pragma once
 
 /**
- * @file em_rad_to_bright_temp.h
+ * @file kelvin_celcius.h
  */
 
-#include "products2/image/calibration_converter.h"
+#include "products/image/calibration_converter.h"
 
 namespace satdump
 {
@@ -13,29 +13,29 @@ namespace satdump
         namespace conv
         {
             /**
-             * @brief Emissive Radiance to Brightness
-             * Temperature converter
+             * @brief Kelvin <=> Celsius converter
              *
-             * Given a wavenumber, this will convert a
-             * radiance value to its equivalent brightness
-             * temperature in Kelvins.
+             * Converts between Kelvin and Celsius
              */
-            class EmRadToBrightTempConverter : public ConverterBase
+            class KelvinCelsiusConverter : public ConverterBase
             {
             private:
-                const bool celsius = false;
+                const bool ktc;
 
             public:
-                EmRadToBrightTempConverter(bool celsius) : celsius(celsius) {}
+                /**
+                 * @brief Constructor
+                 *
+                 * @param ktc if true, Kelvin => Celcius
+                 */
+                KelvinCelsiusConverter(bool ktc) : ktc(ktc) {}
 
                 double convert(const UnitConverter *c, double x, double y, double val)
                 {
                     if (val == CALIBRATION_INVALID_VALUE)
                         return val; // Special case
 
-                    if (c->wavenumber == -1)
-                        return CALIBRATION_INVALID_VALUE;
-                    return radiance_to_temperature(val, c->wavenumber) - (celsius ? 273.15 : 0.0);
+                    return val + (ktc ? -273.15 : 273.15);
                 }
 
                 bool convert_range(const UnitConverter *c, double &min, double &max)

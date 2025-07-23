@@ -1,6 +1,6 @@
 #pragma once
 
-#include "products2/image/image_calibrator.h"
+#include "products/image/image_calibrator.h"
 #include "modis_emiss_table.h"
 // #include "modis_reflec_table.h"
 

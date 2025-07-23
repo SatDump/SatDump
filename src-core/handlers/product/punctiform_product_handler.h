@@ -2,7 +2,7 @@
 
 #include "handlers/image/image_handler.h"
 #include "product_handler.h"
-#include "products2/punctiform_product.h"
+#include "products/punctiform_product.h"
 
 namespace satdump
 {

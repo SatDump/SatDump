@@ -12,12 +12,12 @@
 
 #include "logger.h"
 #include "init.h"
-#include "products2/image_product.h"
+#include "products/image_product.h"
 #include "image/io.h"
 #include "image/processing.h"
 
-#include "products2/image/product_expression.h"
-#include "products2/image/image_calibrator.h"
+#include "products/image/product_expression.h"
+#include "products/image/image_calibrator.h"
 
 #include "common/utils.h"
 

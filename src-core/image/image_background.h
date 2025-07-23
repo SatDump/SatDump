@@ -2,6 +2,7 @@
 
 /**
  * @file image_background.h
+ * @brief Projection-based image cropping
  */
 
 #include "image.h"

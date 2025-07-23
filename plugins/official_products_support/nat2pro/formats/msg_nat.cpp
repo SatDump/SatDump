@@ -1,6 +1,6 @@
 #include "projection/standard/proj_json.h"
 #include "formats.h"
-#include "products2/image_product.h"
+#include "products/image_product.h"
 #include "common/repack.h"
 #include "logger.h"
 #include "image/io.h"

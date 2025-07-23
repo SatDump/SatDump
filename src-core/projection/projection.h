@@ -8,7 +8,7 @@
 #include "nlohmann/json.hpp"
 
 // Needed for projs. Maybe hide later? TBD TODOREWORK
-#include "products2/image/channel_transform.h"
+#include "products/image/channel_transform.h"
 #include "raytrace/satellite_raytracer.h"
 #include "standard/proj.h"
 #include "tps/latlontps_proj.h"

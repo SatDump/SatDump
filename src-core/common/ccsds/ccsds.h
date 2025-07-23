@@ -2,6 +2,7 @@
 
 /**
  * @file  ccsds.h
+ * @brief Space Packet definition
  */
 
 #include <cstdint>

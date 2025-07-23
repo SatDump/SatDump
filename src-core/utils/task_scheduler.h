@@ -2,13 +2,14 @@
 
 /**
  * @file task_scheduler.h
+ * @brief Time-based task scheduler
  */
 
-#include <string>
-#include <thread>
-#include <mutex>
 #include <condition_variable>
 #include <map>
+#include <mutex>
+#include <string>
+#include <thread>
 
 namespace satdump
 {
@@ -67,9 +68,9 @@ namespace satdump
 
         /**
          * @brief Add a new scheduled task
-         * 
+         *
          * If a task is added with a name that already exists, the old task will be overwritten.
-         * 
+         *
          * @param task_name the name of the scheduled task. Arbitrary, but must be used to delete
          *        the task later
          * @param evt a shared pointer to the EventBus event struct you want to schedule
@@ -82,10 +83,10 @@ namespace satdump
             // Add Task
             {
                 std::lock_guard<std::mutex> lock(task_mtx);
-                scheduled_tasks[task_name] = { evt, typeid(T).name(), last_run, run_interval };
+                scheduled_tasks[task_name] = {evt, typeid(T).name(), last_run, run_interval};
                 needs_update = true;
             }
-            
+
             // Notify thread
             cv.notify_one();
         }
@@ -104,9 +105,9 @@ namespace satdump
                 scheduled_tasks.erase(task_name);
                 needs_update = true;
             }
-            
+
             // Notify thread
             cv.notify_one();
         }
     };
-}
+} // namespace satdump

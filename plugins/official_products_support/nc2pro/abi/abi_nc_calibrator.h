@@ -1,7 +1,7 @@
 #pragma once
 
 #include "nlohmann/json.hpp"
-#include "products2/image/image_calibrator.h"
+#include "products/image/image_calibrator.h"
 #include <cstdio>
 #include <string>
 

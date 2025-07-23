@@ -1,11 +1,11 @@
 #pragma once
 
 #include "common/dsp/buffer.h"
-#include <thread>
-#include <memory>
 #include "complex.h"
-#include "logger.h"
 #include "core/exception.h"
+#include "logger.h"
+#include <memory>
+#include <thread>
 
 #define BRANCHLESS_CLIP(x, clip) (0.5 * (std::abs(x + clip) - std::abs(x - clip)))
 #ifndef M_PI
@@ -74,18 +74,15 @@ namespace dsp
         std::shared_ptr<dsp::stream<OUT_T>> output_stream;
 
     public:
-        HierBlock(std::shared_ptr<dsp::stream<IN_T>> input) : input_stream(input)
-        {
-        }
-        ~HierBlock()
-        {
-        }
+        HierBlock(std::shared_ptr<dsp::stream<IN_T>> input) : input_stream(input) {}
+        ~HierBlock() {}
         virtual void start() = 0;
         virtual void stop() = 0;
     };
 
     // This is here as many blocks require it
     float branchless_clip(float x, float clip);
+    float branched_clip(float x, float clip);
     double hz_to_rad(double freq, double samplerate);
     double rad_to_hz(double rad, double samplerate);
-}
+} // namespace dsp

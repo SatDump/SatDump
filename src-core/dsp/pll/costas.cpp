@@ -1,4 +1,5 @@
 #include "costas.h"
+#include "common/dsp/block.h"
 
 namespace satdump
 {
@@ -52,7 +53,7 @@ namespace satdump
                 }
 
                 // Clip error
-                error = branchless_clip(error, 1.0);
+                error = dsp::branched_clip(error, 1.0);
 
                 // Compute new freq and phase.
                 freq += beta * error;

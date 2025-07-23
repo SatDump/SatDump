@@ -2,15 +2,16 @@
 
 #include "common/dsp/block.h"
 
+#include "common/dsp/clock_recovery/clock_recovery_mm.h"
+#include "common/dsp/demod/quadrature_demod.h"
+#include "common/dsp/filter/fir.h"
 #include "common/dsp/resamp/smart_resampler.h"
 #include "common/dsp/utils/agc.h"
-#include "common/dsp/demod/quadrature_demod.h"
 #include "common/dsp/utils/correct_iq.h"
-#include "common/dsp/filter/fir.h"
-#include "common/dsp/clock_recovery/clock_recovery_mm.h"
 
-#include "stx_deframer.h"
 #include "common/dsp/utils/snr_estimator.h"
+#include "stx_deframer.h"
+#include "utils/binary.h"
 #include <functional>
 
 namespace orbcomm
@@ -29,14 +30,6 @@ namespace orbcomm
             uint8_t *frames;
 
         private:
-            uint8_t reverseBits(uint8_t byte)
-            {
-                byte = (byte & 0xF0) >> 4 | (byte & 0x0F) << 4;
-                byte = (byte & 0xCC) >> 2 | (byte & 0x33) << 2;
-                byte = (byte & 0xAA) >> 1 | (byte & 0x55) << 1;
-                return byte;
-            }
-
             void work()
             {
                 int dat_size = input_stream->read();
@@ -63,15 +56,14 @@ namespace orbcomm
 
                 for (int i = 0; i < framen; i++)
                     for (int y = 0; y < (ORBCOMM_STX_FRM_SIZE / 8); y++)
-                        frames[i * (ORBCOMM_STX_FRM_SIZE / 8) + y] = reverseBits(frames[i * (ORBCOMM_STX_FRM_SIZE / 8) + y]);
+                        frames[i * (ORBCOMM_STX_FRM_SIZE / 8) + y] = satdump::reverseBits(frames[i * (ORBCOMM_STX_FRM_SIZE / 8) + y]);
 
                 if (framen > 0)
                     callback(frames, framen);
             }
 
         public:
-            STXDeframerBlock(std::shared_ptr<dsp::stream<float>> input)
-                : dsp::Block<float, uint8_t>(input), stx_deframer(ORBCOMM_STX_FRM_SIZE)
+            STXDeframerBlock(std::shared_ptr<dsp::stream<float>> input) : dsp::Block<float, uint8_t>(input), stx_deframer(ORBCOMM_STX_FRM_SIZE)
             {
                 bits_buf = new uint8_t[ORBCOMM_STX_FRM_SIZE * 50 * 8];
                 frames = new uint8_t[ORBCOMM_STX_FRM_SIZE * 50];
@@ -118,4 +110,4 @@ namespace orbcomm
                 return 0;
         }
     };
-}
+} // namespace orbcomm

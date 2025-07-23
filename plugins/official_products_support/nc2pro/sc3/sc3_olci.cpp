@@ -5,7 +5,7 @@
 #include <filesystem>
 #include "logger.h"
 #include <array>
-#include "products2/image_product.h"
+#include "products/image_product.h"
 #include "libs/miniz/miniz.h"
 
 #include "common/calibration.h"

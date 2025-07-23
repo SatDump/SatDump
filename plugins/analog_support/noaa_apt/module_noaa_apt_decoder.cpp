@@ -16,8 +16,8 @@
 #include "common/wav.h"
 
 #include "common/calibration.h"
-#include "products2/dataset.h"
-#include "products2/image_product.h"
+#include "products/dataset.h"
+#include "products/image_product.h"
 
 #define MAX_STDDEV_VALID 2100
 

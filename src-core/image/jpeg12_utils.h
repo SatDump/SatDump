@@ -2,6 +2,7 @@
 
 /**
  * @file jpeg12_utils.h
+ * @brief Utilities specific to 12-bit JPEG manipulation (from memory)
  */
 
 #include "image.h"

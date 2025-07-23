@@ -4,7 +4,7 @@
  * @file ref_rad_to_sun_cor_ref_rad.h
  */
 
-#include "products2/image/calibration_converter.h"
+#include "products/image/calibration_converter.h"
 #include <exception>
 
 namespace satdump

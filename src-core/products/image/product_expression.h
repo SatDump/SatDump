@@ -4,7 +4,7 @@
  * @file product_expression.h
  */
 
-#include "products2/image_product.h"
+#include "products/image_product.h"
 
 namespace satdump
 {

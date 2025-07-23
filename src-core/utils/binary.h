@@ -53,4 +53,8 @@ namespace satdump
             ret.push_back(ptr[i]);
         return ret;
     }
+
+    uint8_t reverseBits(uint8_t byte);
+
+    uint16_t reverse16Bits(uint16_t v);
 } // namespace satdump

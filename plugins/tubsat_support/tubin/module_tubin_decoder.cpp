@@ -5,8 +5,8 @@
 #include "image/io.h"
 #include "imgui/imgui.h"
 #include "logger.h"
-#include "products2/dataset.h"
-#include "products2/image_product.h"
+#include "products/dataset.h"
+#include "products/image_product.h"
 #include <cstdint>
 #include <filesystem>
 #include <fstream>

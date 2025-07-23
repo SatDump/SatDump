@@ -1,7 +1,7 @@
 #include "earth_curvature.h"
 #include "logger.h"
 #include "meta.h"
-#include "products2/image/channel_transform.h"
+#include "products/image/channel_transform.h"
 #include <cmath>
 
 namespace satdump

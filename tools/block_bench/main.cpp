@@ -1,5 +1,9 @@
+#include "common/dsp/path/splitter.h"
 #include "common/dsp_source_sink/format_notated.h"
 #include "common/utils.h"
+#include "dsp/clock_recovery/clock_recovery_mm.h"
+#include "dsp/path/splitter.h"
+#include "dsp/utils/freq_shift.h"
 #include "init.h"
 #include "logger.h"
 #include "utils/time.h"
@@ -8,10 +12,13 @@
 #include "common/dsp/filter/fft_filter.h"
 #include "common/dsp/filter/fir.h"
 #include "common/dsp/filter/firdes.h"
+#include "common/dsp/path/splitter.h"
 #include "common/dsp/pll/costas_loop.h"
 #include "common/dsp/resamp/smart_resampler.h"
 #include "common/dsp/utils/agc.h"
 #include "common/dsp/utils/freq_shift.h"
+#include <complex.h>
+#include <string>
 
 #define benchmarkBlock(T_IN, T_OUT, T_BLK, DURATION, BLOCKNAME, MULTIPICATOR, ...)                                                                                                                     \
     {                                                                                                                                                                                                  \
@@ -152,10 +159,10 @@ int main(int argc, char *argv[])
         benchmarkNDSPBlock<complex_t>(p, 10, "AGC, New");
     }
 
-    //    logger->debug("Benchmarking Costas Loop...");
-    //    benchmarkBlock(complex_t, complex_t, dsp::CostasLoopBlock, 10, "Costas Loop, Order 2", 1.0, /**/ 0.02, 2);
-    //    benchmarkBlock(complex_t, complex_t, dsp::CostasLoopBlock, 10, "Costas Loop, Order 4", 1.0, /**/ 0.02, 4);
-    //    benchmarkBlock(complex_t, complex_t, dsp::CostasLoopBlock, 10, "Costas Loop, Order 8", 1.0, /**/ 0.02, 8);
+    logger->debug("Benchmarking Costas Loop...");
+    benchmarkBlock(complex_t, complex_t, dsp::CostasLoopBlock, 10, "Costas Loop, Order 2", 1.0, /**/ 0.02, 2);
+    benchmarkBlock(complex_t, complex_t, dsp::CostasLoopBlock, 10, "Costas Loop, Order 4", 1.0, /**/ 0.02, 4);
+    benchmarkBlock(complex_t, complex_t, dsp::CostasLoopBlock, 10, "Costas Loop, Order 8", 1.0, /**/ 0.02, 8);
 
     logger->debug("Benchmarking FIR RRC...");
     // benchmarkBlock(complex_t, complex_t, dsp::FIRBlock<complex_t>, 10, "FIR RRC, 31 taps, omega 1.2", 1.0, /**/ dsp::firdes::root_raised_cosine(1.0, 1.2e6, 1e6, 0.35, 31));
@@ -175,13 +182,35 @@ int main(int argc, char *argv[])
         benchmarkNDSPBlock<complex_t>(p, 10, "FIR New RRC, 361 taps, omega 2.0");
     }
 
+    // return 0;
+
     logger->debug("Benchmarking MM Recovery...");
     benchmarkBlock(complex_t, complex_t, dsp::MMClockRecoveryBlock<complex_t>, 10, "MM Recovery, omega 1.2", 1.0, /**/ 1.2, 0.1, 0.5, 0.01, 0.01);
     benchmarkBlock(complex_t, complex_t, dsp::MMClockRecoveryBlock<complex_t>, 10, "MM Recovery, omega 2.0", 1.0, /**/ 2.0, 0.1, 0.5, 0.01, 0.01);
     benchmarkBlock(complex_t, complex_t, dsp::MMClockRecoveryBlock<complex_t>, 10, "MM Recovery, omega 3.0", 1.0, /**/ 3.0, 0.1, 0.5, 0.01, 0.01);
+    for (float v : {1.2, 2.0, 3.0})
+    {
+        auto p = std::make_shared<satdump::ndsp::MMClockRecoveryBlock<complex_t>>();
+        p->set_cfg("omega", v);
+        benchmarkNDSPBlock<complex_t>(p, 10, "MM NEW Recovery, omega " + std::to_string(v));
+    }
+
+    logger->debug("Benchmarking Splitter (1 out)...");
+    // benchmarkBlock(complex_t, complex_t, dsp::SplitterBlock, 10, "Freq Shift, Default", 1.0);
+    {
+        auto p = std::make_shared<satdump::ndsp::SplitterBlock<complex_t>>();
+        p->set_cfg("noutputs", 1);
+        benchmarkNDSPBlock<complex_t>(p, 10, "Splitter, New");
+    }
 
     logger->debug("Benchmarking Freq Shift...");
     benchmarkBlock(complex_t, complex_t, dsp::FreqShiftBlock, 10, "Freq Shift, Default", 1.0, /**/ 1e6, 100e3);
+    {
+        auto p = std::make_shared<satdump::ndsp::FreqShiftBlock>();
+        p->set_cfg("samplerate", 1e6);
+        p->set_cfg("freq_shift", 100e3);
+        benchmarkNDSPBlock<complex_t>(p, 10, "Freq Shift, New");
+    }
 
     logger->debug("Benchmarking Resamplers...");
     benchmarkBlock(complex_t, complex_t, dsp::SmartResamplerBlock<complex_t>, 10, "Smart Resampler, Dec 10", 10.0, /**/ 1, 10);

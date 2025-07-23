@@ -26,7 +26,7 @@
 
 // TODOREWORK!
 #include "handlers/vector/shapefile_handler.h"
-#include "products2/image/channel_transform.h"
+#include "products/image/channel_transform.h"
 #include <memory>
 #include <utility>
 

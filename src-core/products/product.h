@@ -2,6 +2,7 @@
 
 /**
  * @file product.h
+ * @brief Core Product implementation
  */
 
 #include "nlohmann/json.hpp"

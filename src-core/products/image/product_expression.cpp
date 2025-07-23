@@ -8,7 +8,7 @@
 #include "libs/muparser/muParser.h"
 #include "logger.h"
 
-#include "products2/image/image_calibrator.h"
+#include "products/image/image_calibrator.h"
 #include "utils/string.h"
 
 #include "image/io.h"

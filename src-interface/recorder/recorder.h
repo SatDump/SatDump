@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../app.h"
-
 #include "handlers/handler.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"

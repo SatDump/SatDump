@@ -2,8 +2,8 @@
 
 #include "common/calibration.h"
 #include "nlohmann/json.hpp"
-#include "products2/image/calibration_units.h"
-#include "products2/image/image_calibrator.h"
+#include "products/image/calibration_units.h"
+#include "products/image/image_calibrator.h"
 
 namespace nc2pro
 {

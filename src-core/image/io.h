@@ -1,7 +1,8 @@
 #pragma once
 
 /**
- * @file  io.h
+ * @file io.h
+ * @brief Image saving/loading
  */
 
 #include "image.h"

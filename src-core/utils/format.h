@@ -2,6 +2,7 @@
 
 /**
  * @file format.h
+ * @brief String formatting utils
  */
 
 #include <sstream>

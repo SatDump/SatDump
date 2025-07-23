@@ -2,7 +2,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
 #include "logger.h"
-#include "products2/image_product.h"
+#include "products/image_product.h"
 #include "utils/stats.h"
 #include <cstdint>
 #include <filesystem>

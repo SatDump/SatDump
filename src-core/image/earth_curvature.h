@@ -2,6 +2,7 @@
 
 /**
  * @file earth_curvature.h
+ * @brief Earth curvature correction for simple instruments (eg, AVHRR)
  */
 
 #include "image.h"

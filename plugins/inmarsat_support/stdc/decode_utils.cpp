@@ -1,6 +1,6 @@
 #include "decode_utils.h"
+#include "utils/binary.h"
 #include <cstring>
-
 #include <iostream>
 
 namespace inmarsat
@@ -8,10 +8,8 @@ namespace inmarsat
     namespace stdc
     {
         // Syncword. Copied from Scytale-C as I was unable to find it somewhere else
-        const uint8_t syncword[] = {0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0,
-                                    1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0,
-                                    0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1,
-                                    0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0};
+        const uint8_t syncword[] = {0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0,
+                                    0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0};
 
         int compute_frame_match(int8_t *syms, bool &inverted)
         {
@@ -52,35 +50,15 @@ namespace inmarsat
                     out[col * 64 + row] = in[row * 162 + col + 2];
         }
 
-        const uint8_t scrambling[] = {0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
-                                      1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0,
-                                      1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1,
-                                      0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0,
-                                      1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0,
-                                      1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,
-                                      0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0,
-                                      0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0,
-                                      1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0,
-                                      1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1,
-                                      0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0,
-                                      0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0,
-                                      1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0,
-                                      0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1,
-                                      0, 0, 1, 1, 1, 0};
-
-        uint8_t reverseBits(uint8_t byte)
-        {
-            byte = (byte & 0xF0) >> 4 | (byte & 0x0F) << 4;
-            byte = (byte & 0xCC) >> 2 | (byte & 0x33) << 2;
-            byte = (byte & 0xAA) >> 1 | (byte & 0x55) << 1;
-            return byte;
-        }
+        const uint8_t scrambling[] = {0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0,
+                                      0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0,
+                                      1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0};
 
         void descramble(uint8_t *pkt)
         {
             for (int i = 0; i < 160; i++)
                 for (int j = 0; j < 4; j++)
-                    pkt[i * 4 + j] = reverseBits(pkt[i * 4 + j]) ^ (scrambling[i] ? 0xFF : 0x00);
+                    pkt[i * 4 + j] = satdump::reverseBits(pkt[i * 4 + j]) ^ (scrambling[i] ? 0xFF : 0x00);
         }
-    }
-}
+    } // namespace stdc
+} // namespace inmarsat

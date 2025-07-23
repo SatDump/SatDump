@@ -2,6 +2,7 @@
 
 /**
  * @file brightness_contrast.h
+ * @brief Brightness/Contrast manipulation
  */
 
 #include "image.h"

@@ -4,7 +4,7 @@
 
 #include "common/lrit/generic_xrit_calibrator.h"
 #include "nlohmann/json.hpp"
-#include "products2/image/calibration_converter.h"
+#include "products/image/calibration_converter.h"
 #include <memory>
 
 namespace satdump

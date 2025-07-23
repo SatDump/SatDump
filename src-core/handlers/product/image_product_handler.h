@@ -2,10 +2,10 @@
 
 #include "../image/image_handler.h"
 #include "product_handler.h"
-#include "products2/image/calibration_converter.h"
-#include "products2/image/calibration_units.h"
-#include "products2/image/image_calibrator.h"
-#include "products2/image_product.h"
+#include "products/image/calibration_converter.h"
+#include "products/image/calibration_units.h"
+#include "products/image/image_calibrator.h"
+#include "products/image_product.h"
 #include <vector>
 
 namespace satdump

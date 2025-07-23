@@ -9,4 +9,4 @@ target_include_directories(satdump-testing PUBLIC /home/alan/Downloads/supernova
 target_link_directories(satdump-testing PUBLIC /home/alan/Downloads/supernovas/lib/ /home/alan/Downloads/calceph/build/src)
 
 # Link against the core
-target_link_libraries(satdump-testing PUBLIC satdump_core supernovas calceph solsys-calceph) # mfhdf)
+target_link_libraries(satdump-testing PUBLIC satdump_core supernovas calceph solsys-calceph sqlite3) # mfhdf)

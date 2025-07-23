@@ -1,9 +1,9 @@
 #include "calibration_converter.h"
 #include "core/plugin.h"
 #include "logger.h"
-#include "products2/image/calibration_units.h"
-#include "products2/image/converters/kelvin_celcius.h"
-#include "products2/image_product.h"
+#include "products/image/calibration_units.h"
+#include "products/image/converters/kelvin_celcius.h"
+#include "products/image_product.h"
 
 #include "converters/bright_temp_to_em_rad.h"
 #include "converters/em_rad_to_bright_temp.h"

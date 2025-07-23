@@ -2,8 +2,8 @@
 #include "imgui/imgui.h"
 #include "logger.h"
 
-#include "products2/dataset.h"
-#include "products2/product_process.h"
+#include "products/dataset.h"
+#include "products/product_process.h"
 
 namespace satdump
 {

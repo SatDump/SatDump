@@ -2,6 +2,7 @@
 
 /**
  * @file color.h
+ * @brief Color manipulation utilities
  */
 
 #include <cstdint>

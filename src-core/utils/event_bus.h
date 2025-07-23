@@ -2,6 +2,7 @@
 
 /**
  * @file event_bus.h
+ * @brief Event bus implementation
  */
 
 #include <functional>

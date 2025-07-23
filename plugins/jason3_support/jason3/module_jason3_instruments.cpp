@@ -15,9 +15,9 @@
 #include "common/tracking/tle.h"
 #include "core/resources.h"
 #include "nlohmann/json_utils.h"
-#include "products2/dataset.h"
-#include "products2/image_product.h"
-#include "products2/punctiform_product.h"
+#include "products/dataset.h"
+#include "products/image_product.h"
+#include "products/punctiform_product.h"
 
 namespace jason3
 {

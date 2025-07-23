@@ -1,7 +1,7 @@
 #include "lrit_productizer.h"
 #include "common/utils.h"
 #include "logger.h"
-#include "products2/image_product.h"
+#include "products/image_product.h"
 #include "utils/string.h"
 #include <filesystem>
 

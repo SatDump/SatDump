@@ -1,7 +1,6 @@
 #include "core/plugin.h"
 #include "logger.h"
 
-#include "app.h"
 #include "explorer/explorer.h"
 #include "tracking.h"
 

@@ -105,14 +105,6 @@ namespace inmarsat
             delete[] buffer_vitdecoded;
         }
 
-        uint8_t reverseBits(uint8_t byte)
-        {
-            byte = (byte & 0xF0) >> 4 | (byte & 0x0F) << 4;
-            byte = (byte & 0xCC) >> 2 | (byte & 0x33) << 2;
-            byte = (byte & 0xAA) >> 1 | (byte & 0x55) << 1;
-            return byte;
-        }
-
         void AeroDecoderModule::process()
         {
 
@@ -193,7 +185,7 @@ namespace inmarsat
                         for (int i = 0; i < d_aero_info_size / 16; i++)
                         {
                             buffer_vitdecoded[i] ^= randomization_seq[i];
-                            buffer_vitdecoded[i] = reverseBits(buffer_vitdecoded[i]);
+                            buffer_vitdecoded[i] = satdump::reverseBits(buffer_vitdecoded[i]);
                         }
 
                         write_data((uint8_t *)buffer_vitdecoded, d_aero_info_size / 16);

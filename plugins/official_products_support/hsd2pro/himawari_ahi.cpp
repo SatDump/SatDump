@@ -5,7 +5,7 @@
 #include "core/exception.h"
 #include "libs/bzlib_utils.h"
 #include "logger.h"
-#include "products2/image_product.h"
+#include "products/image_product.h"
 #include "utils/string.h"
 
 #include <filesystem>

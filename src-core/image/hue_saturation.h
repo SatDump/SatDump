@@ -2,6 +2,7 @@
 
 /**
  * @file hue_saturation.h
+ * @brief Hue/Saturation manipulation
  */
 
 #include "image.h"

@@ -2,6 +2,7 @@
 
 /**
  * @file j2k_utils.h
+ * @brief Utilities specific to JPEG2000 manipulation (from memory)
  */
 
 #include "image/image.h"

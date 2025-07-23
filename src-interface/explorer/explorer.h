@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../app.h"
-
 #include "common/widgets/menuitem_fileopen.h"
 #include "dsp/task_queue.h"
 #include "handlers/handler.h"
@@ -12,7 +10,7 @@ namespace satdump
 {
     namespace explorer
     {
-        class ExplorerApplication : public Application
+        class ExplorerApplication
         {
         public:
             struct RenderLoadMenuElementsEvent
@@ -21,9 +19,11 @@ namespace satdump
                 std::shared_ptr<handlers::Handler> &master_handler;
             };
 
+        public:
+            void draw();
+
         protected:
             const std::string app_id;
-            void drawUI();
 
             float panel_ratio = 0.23;
             float last_width = -1.0f;
@@ -55,11 +55,6 @@ namespace satdump
         public:
             ExplorerApplication();
             ~ExplorerApplication();
-
-        public:
-            static std::string getID() { return "explorer"; }
-            std::string get_name() { return "Explorer"; }
-            static std::shared_ptr<Application> getInstance() { return std::make_shared<ExplorerApplication>(); }
         };
 
         // Events

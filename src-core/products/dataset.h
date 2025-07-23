@@ -2,9 +2,11 @@
 
 /**
  * @file dataset.h
+ * @brief Core dataset implementation
  */
 
-#include "nlohmann/json.hpp"
+#include <string>
+#include <vector>
 
 namespace satdump
 {
@@ -38,5 +40,5 @@ namespace satdump
              */
             void load(std::string path);
         };
-    }
-}
+    } // namespace products
+} // namespace satdump

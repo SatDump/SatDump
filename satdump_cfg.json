@@ -237,62 +237,6 @@
             "name": "Default QTH Label",
             "description": "Default map label for QTH marker"
         },
-        // TODOREWORK
-        "default_borders_color": {
-            "type": "color",
-            "value": [
-                0,
-                1,
-                0,
-                1
-            ],
-            "name": "Default Borders Color",
-            "description": "Default map borders color"
-        },
-        "default_shores_color": {
-            "type": "color",
-            "value": [
-                1,
-                1,
-                0,
-                1
-            ],
-            "name": "Default Shores Color",
-            "description": "Default map shores color"
-        },
-        "default_cities_color": {
-            "type": "color",
-            "value": [
-                1,
-                0,
-                0,
-                1
-            ],
-            "name": "Default Cities Color",
-            "description": "Default map cities color"
-        },
-        "default_qth_color": {
-            "type": "color",
-            "value": [
-                1,
-                0,
-                1,
-                1
-            ],
-            "name": "Default QTH Color",
-            "description": "Default map QTH color"
-        },
-        "default_latlon_color": {
-            "type": "color",
-            "value": [
-                0,
-                0,
-                1,
-                1
-            ],
-            "name": "Default Lat/Lon Color",
-            "description": "Default map latlon grid overlay color"
-        },
         "tle_update_interval": {
             "type": "options",
             "value": "1 day",

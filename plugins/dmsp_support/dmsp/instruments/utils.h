@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/simple_deframer.h"
+#include "utils/binary.h"
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -78,15 +79,6 @@ namespace dmsp
         int in_terdats_shifter = 0;
         def::SimpleDeframer terdats_def;
 
-        // TODOREWORK should be in utils!
-        uint8_t reverseBits(uint8_t byte)
-        {
-            byte = (byte & 0xF0) >> 4 | (byte & 0x0F) << 4;
-            byte = (byte & 0xCC) >> 2 | (byte & 0x33) << 2;
-            byte = (byte & 0xAA) >> 1 | (byte & 0x55) << 1;
-            return byte;
-        }
-
     private:
         struct ChannelAccumulator
         {
@@ -123,8 +115,8 @@ namespace dmsp
                             // The frame header is reversed 16-bit words!
                             for (int cc = 0; cc < 18 * 2; cc += 2)
                             {
-                                uint8_t v1 = reverseBits(ff[cc + 0]);
-                                uint8_t v2 = reverseBits(ff[cc + 1]);
+                                uint8_t v1 = satdump::reverseBits(ff[cc + 0]);
+                                uint8_t v2 = satdump::reverseBits(ff[cc + 1]);
                                 ff[cc + 1] = v1;
                                 ff[cc + 0] = v2;
                             }

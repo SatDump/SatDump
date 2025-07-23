@@ -3,7 +3,7 @@
 #include "common/calibration.h"
 #include "metop/instruments/ascat/ascat_reader.h"
 #include "nlohmann/json.hpp"
-#include "products2/image/image_calibrator.h"
+#include "products/image/image_calibrator.h"
 
 namespace metop
 {

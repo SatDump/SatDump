@@ -4,7 +4,7 @@
  * @file sun_angle.h
  */
 
-#include "products2/image/calibration_converter.h"
+#include "products/image/calibration_converter.h"
 
 namespace satdump
 {

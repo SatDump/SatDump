@@ -1,9 +1,9 @@
 #include "angelscript/scriptarray/scriptarray.h"
 #include "bind_satdump.h"
 
-#include "products2/image/product_expression.h"
-#include "products2/image_product.h"
-#include "products2/product.h"
+#include "products/image/product_expression.h"
+#include "products/image_product.h"
+#include "products/product.h"
 #include "projection/projection.h"
 
 #include "bind_geodetic.h"

@@ -1,7 +1,6 @@
 #include "core/plugin.h"
 #include "logger.h"
 
-#include "app.h"
 #include "explorer/explorer.h"
 #include "settings_editor.h"
 
@@ -10,10 +9,7 @@ class WipSettingsEditorAppPlugin : public satdump::Plugin
 public:
     std::string getID() { return "wipsettings_app"; }
 
-    void init()
-    {
-        satdump::eventBus->register_handler<satdump::explorer::ExplorerApplication::RenderLoadMenuElementsEvent>(renderExplorerLoaderButton);
-    }
+    void init() { satdump::eventBus->register_handler<satdump::explorer::ExplorerApplication::RenderLoadMenuElementsEvent>(renderExplorerLoaderButton); }
 
     static void renderExplorerLoaderButton(const satdump::explorer::ExplorerApplication::RenderLoadMenuElementsEvent &evt)
     {

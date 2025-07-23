@@ -2,6 +2,7 @@
 
 /**
  * @file  processing.h
+ * @brief Various processing functions (blur, equalize...)
  */
 
 #include "image.h"

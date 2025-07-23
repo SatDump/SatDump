@@ -2,7 +2,7 @@
 #pragma once
 
 #include "bind_json.h"
-#include "products2/product.h"
+#include "products/product.h"
 
 namespace satdump
 {

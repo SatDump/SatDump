@@ -5,8 +5,8 @@
  */
 
 #include "../handler.h"
-#include "products2/dataset.h"
-#include "products2/product.h"
+#include "products/dataset.h"
+#include "products/product.h"
 
 namespace satdump
 {

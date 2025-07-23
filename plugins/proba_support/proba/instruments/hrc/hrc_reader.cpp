@@ -1,37 +1,17 @@
 #include "hrc_reader.h"
-#include "logger.h"
 #include "../crc.h"
 #include "image/io.h"
 #include "image/processing.h"
+#include "logger.h"
+#include "utils/binary.h"
 
 namespace proba
 {
     namespace hrc
     {
-        HRCReader::HRCReader(std::string &outputfolder)
-        {
-            output_folder = outputfolder;
-        }
+        HRCReader::HRCReader(std::string &outputfolder) { output_folder = outputfolder; }
 
-        HRCReader::~HRCReader()
-        {
-        }
-
-        uint8_t reverseBits(uint8_t byte)
-        {
-            byte = (byte & 0xF0) >> 4 | (byte & 0x0F) << 4;
-            byte = (byte & 0xCC) >> 2 | (byte & 0x33) << 2;
-            byte = (byte & 0xAA) >> 1 | (byte & 0x55) << 1;
-            return byte;
-        }
-
-        uint16_t reverse16Bits(uint16_t v)
-        {
-            uint16_t r = 0;
-            for (int i = 0; i < 16; ++i, v >>= 1)
-                r = (r << 1) | (v & 0x01);
-            return r;
-        }
+        HRCReader::~HRCReader() {}
 
         void HRCReader::work(ccsds::CCSDSPacket &packet)
         {
@@ -64,10 +44,14 @@ namespace proba
             {
                 if (count_marker <= 65)
                 {
-                    curr->tempChannelBuffer[count_marker * 17152 + i + 0] = reverse16Bits((reverseBits(packet.payload[pos + 0]) << 2) | (reverseBits(packet.payload[pos + 1]) >> 6));
-                    curr->tempChannelBuffer[count_marker * 17152 + i + 1] = reverse16Bits(((reverseBits(packet.payload[pos + 1]) % 64) << 4) | (reverseBits(packet.payload[pos + 2]) >> 4));
-                    curr->tempChannelBuffer[count_marker * 17152 + i + 2] = reverse16Bits(((reverseBits(packet.payload[pos + 2]) % 16) << 6) | (reverseBits(packet.payload[pos + 3]) >> 2));
-                    curr->tempChannelBuffer[count_marker * 17152 + i + 3] = reverse16Bits(((reverseBits(packet.payload[pos + 3]) % 4) << 8) | reverseBits(packet.payload[pos + 4]));
+                    curr->tempChannelBuffer[count_marker * 17152 + i + 0] =
+                        satdump::reverse16Bits((satdump::reverseBits(packet.payload[pos + 0]) << 2) | (satdump::reverseBits(packet.payload[pos + 1]) >> 6));
+                    curr->tempChannelBuffer[count_marker * 17152 + i + 1] =
+                        satdump::reverse16Bits(((satdump::reverseBits(packet.payload[pos + 1]) % 64) << 4) | (satdump::reverseBits(packet.payload[pos + 2]) >> 4));
+                    curr->tempChannelBuffer[count_marker * 17152 + i + 2] =
+                        satdump::reverse16Bits(((satdump::reverseBits(packet.payload[pos + 2]) % 16) << 6) | (satdump::reverseBits(packet.payload[pos + 3]) >> 2));
+                    curr->tempChannelBuffer[count_marker * 17152 + i + 3] =
+                        satdump::reverse16Bits(((satdump::reverseBits(packet.payload[pos + 3]) % 4) << 8) | satdump::reverseBits(packet.payload[pos + 4]));
                     pos += 5;
                 }
             }

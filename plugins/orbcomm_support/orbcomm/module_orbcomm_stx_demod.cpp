@@ -2,6 +2,7 @@
 #include "common/dsp/filter/firdes.h"
 #include "imgui/imgui.h"
 #include "logger.h"
+#include "utils/binary.h"
 #include <volk/volk.h>
 
 namespace orbcomm
@@ -41,14 +42,6 @@ namespace orbcomm
     }
 
     OrbcommSTXDemodModule::~OrbcommSTXDemodModule() {}
-
-    uint8_t reverseBits(uint8_t byte)
-    {
-        byte = (byte & 0xF0) >> 4 | (byte & 0x0F) << 4;
-        byte = (byte & 0xCC) >> 2 | (byte & 0x33) << 2;
-        byte = (byte & 0xAA) >> 1 | (byte & 0x55) << 1;
-        return byte;
-    }
 
     void OrbcommSTXDemodModule::process()
     {
@@ -109,7 +102,7 @@ namespace orbcomm
 
             for (int i = 0; i < framen; i++)
                 for (int y = 0; y < (ORBCOMM_STX_FRM_SIZE / 8); y++)
-                    frames[i * (ORBCOMM_STX_FRM_SIZE / 8) + y] = reverseBits(frames[i * (ORBCOMM_STX_FRM_SIZE / 8) + y]);
+                    frames[i * (ORBCOMM_STX_FRM_SIZE / 8) + y] = satdump::reverseBits(frames[i * (ORBCOMM_STX_FRM_SIZE / 8) + y]);
 
             if (framen > 0)
             {

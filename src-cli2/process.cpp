@@ -1,6 +1,6 @@
 #include "process.h"
-#include "products2/product.h"
-#include "products2/product_process.h"
+#include "products/product.h"
+#include "products/product_process.h"
 #include <filesystem>
 
 namespace satdump

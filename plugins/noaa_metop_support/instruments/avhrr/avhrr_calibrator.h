@@ -1,6 +1,6 @@
 #pragma once
 
-#include "products2/image/image_calibrator.h"
+#include "products/image/image_calibrator.h"
 #include "nlohmann/json.hpp"
 
 namespace noaa_metop

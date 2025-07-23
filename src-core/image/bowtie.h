@@ -2,6 +2,7 @@
 
 /**
  * @file bowtie.h
+ * @brief BowTie correction for multi-line instruments
  */
 
 #include "image.h"

@@ -12,8 +12,7 @@ namespace satdump
 
         template <typename T>
         MMClockRecoveryBlock<T>::MMClockRecoveryBlock()
-            : Block(std::is_same_v<T, complex_t> ? "clock_recovery_mm_cc" : "clock_recovery_mm_ff",
-                    {{"in", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}},
+            : Block(std::is_same_v<T, complex_t> ? "clock_recovery_mm_cc" : "clock_recovery_mm_ff", {{"in", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}},
                     {{"out", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}})
         {
             // Buffer
@@ -51,8 +50,7 @@ namespace satdump
             omega_limit = omega_relative_limit * omega;
 
             // Init interpolator
-            pfb.init(dsp::windowed_sinc(p_nfilt * p_ntaps, hz_to_rad(0.5 / (double)p_nfilt, 1.0), dsp::window::nuttall,
-                                        p_nfilt),
+            pfb.init(dsp::windowed_sinc(p_nfilt * p_ntaps, hz_to_rad(0.5 / (double)p_nfilt, 1.0), dsp::window::nuttall, p_nfilt),
                      p_nfilt); // TODOREWORK do this in main loop? TODODSP
         }
 
@@ -121,15 +119,14 @@ namespace satdump
                     if (inc < (pfb.ntaps - 1))
                         volk_32f_x2_dot_prod_32f(&sample, &buffer[inc], pfb.taps[imu], pfb.ntaps);
                     else
-                        volk_32f_x2_dot_prod_32f(&sample, &Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1)],
-                                                 pfb.taps[imu], pfb.ntaps);
+                        volk_32f_x2_dot_prod_32f(&sample, &Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1)], pfb.taps[imu], pfb.ntaps);
 #else
                     volk_32f_x2_dot_prod_32f(&sample, &buffer[inc], pfb.taps[imu], pfb.ntaps);
 #endif
 
                     // Phase error
                     phase_error = (last_sample < 0 ? -1.0f : 1.0f) * sample - (sample < 0 ? -1.0f : 1.0f) * last_sample;
-                    phase_error = BRANCHLESS_CLIP(phase_error, 1.0);
+                    phase_error = dsp::branched_clip(phase_error, 1.0);
                     last_sample = sample;
 
                     // Write output sample
@@ -139,15 +136,11 @@ namespace satdump
                 {
 #if MM_DO_BRANCH
                     if (inc < (pfb.ntaps - 1))
-                        volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[inc], pfb.taps[imu],
-                                                    pfb.ntaps);
+                        volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[inc], pfb.taps[imu], pfb.ntaps);
                     else
-                        volk_32fc_32f_dot_prod_32fc(
-                            (lv_32fc_t *)&p_0T, (lv_32fc_t *)&Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1)],
-                            pfb.taps[imu], pfb.ntaps);
+                        volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1)], pfb.taps[imu], pfb.ntaps);
 #else
-                    volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[inc], pfb.taps[imu],
-                                                pfb.ntaps);
+                    volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[inc], pfb.taps[imu], pfb.ntaps);
 #endif
 
                     // Slice it
@@ -155,7 +148,7 @@ namespace satdump
 
                     // Phase error
                     phase_error = (((p_0T - p_2T) * c_1T.conj()) - ((c_0T - c_2T) * p_1T.conj())).real;
-                    phase_error = BRANCHLESS_CLIP(phase_error, 1.0);
+                    phase_error = dsp::branched_clip(phase_error, 1.0);
 
                     // Write output
                     obuf[ouc++] = p_0T;
@@ -163,7 +156,7 @@ namespace satdump
 
                 // Adjust omega
                 omega = omega + omega_gain * phase_error;
-                omega = omega_mid + BRANCHLESS_CLIP((omega - omega_mid), omega_limit);
+                omega = omega_mid + dsp::branched_clip((omega - omega_mid), omega_limit);
 
                 // Adjust phase
                 mu = mu + omega + mu_gain * phase_error;

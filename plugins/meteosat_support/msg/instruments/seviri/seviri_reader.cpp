@@ -3,7 +3,7 @@
 #include "common/ccsds/ccsds_time.h"
 #include "common/repack.h"
 #include "logger.h"
-#include "products2/image_product.h"
+#include "products/image_product.h"
 #include "utils/stats.h"
 #include <cmath>
 #include <filesystem>

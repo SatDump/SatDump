@@ -5,8 +5,8 @@
 #include "image/image.h"
 #include "libs/miniz/miniz.h"
 #include "logger.h"
-#include "products2/image/channel_transform.h"
-#include "products2/image_product.h"
+#include "products/image/channel_transform.h"
+#include "products/image_product.h"
 #include <array>
 #include <filesystem>
 

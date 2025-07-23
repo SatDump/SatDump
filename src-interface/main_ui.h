@@ -1,6 +1,5 @@
 #pragma once
 
-#include "app.h"
 #include "common/tile_map/map.h"
 #include "dll_export.h"
 #include "explorer/explorer.h"

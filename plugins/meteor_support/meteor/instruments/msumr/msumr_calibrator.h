@@ -4,7 +4,7 @@
 #include "utils/stats.h"
 #include "nlohmann/json.hpp"
 #include "nlohmann/json_utils.h"
-#include "products2/image/image_calibrator.h"
+#include "products/image/image_calibrator.h"
 
 namespace meteor
 {
@@ -370,8 +370,8 @@ Full C code
 
 #include "image/processing.h"
 #include "common/utils.h"
-#include "products2/image/product_expression.h"
-#include "products2/image_product.h"
+#include "products/image/product_expression.h"
+#include "products/image_product.h"
 #include "projection/projection.h"
 #include "projection/reprojector.h"
 

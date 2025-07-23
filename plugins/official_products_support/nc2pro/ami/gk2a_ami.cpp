@@ -8,7 +8,7 @@
 #include "gk2a_ami.h"
 #include "../hdf5_utils.h"
 #include "logger.h"
-#include "products2/image_product.h"
+#include "products/image_product.h"
 #include <H5LTpublic.h>
 
 namespace nc2pro

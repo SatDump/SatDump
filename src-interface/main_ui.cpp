@@ -25,7 +25,6 @@
 namespace satdump
 {
     SATDUMP_DLL2 std::shared_ptr<explorer::ExplorerApplication> explorer_app;
-    std::vector<std::shared_ptr<Application>> other_apps;
 
     SATDUMP_DLL2 bool update_ui = true;
     bool open_recorder;
@@ -51,8 +50,6 @@ namespace satdump
 
         explorer_app = std::make_shared<explorer::ExplorerApplication>();
         open_recorder = satdump_cfg.main_cfg.contains("cli") && satdump_cfg.main_cfg["cli"].contains("start_recorder_device");
-
-        eventBus->fire_event<AddGUIApplicationEvent>({other_apps});
 
         // Logger status bar sync
         status_logger_sink = std::make_shared<StatusLoggerSink>();
@@ -117,14 +114,13 @@ namespace satdump
             }
 
             if (offline_en)
-                ImGui::OpenPopup("Processing");
-
-            //   if (offline_en)
-            ImGui::SetNextWindowSize({600 * ui_scale, 0});
-            if (ImGui::BeginPopupModal("Processing", &offline_en, ImGuiWindowFlags_AlwaysAutoResize))
             {
-                offline::render();
-                ImGui::EndPopup();
+                ImGui::SetNextWindowSize({600 * ui_scale, 0});
+                if (ImGui::Begin("Processing", &offline_en, ImGuiWindowFlags_AlwaysAutoResize))
+                {
+                    offline::render();
+                    ImGui::EndPopup();
+                }
             }
 
             if (settings_en)
@@ -145,7 +141,7 @@ namespace satdump
                 ImGui::EndPopup();
             }
 
-            explorer_app->draw(false);
+            explorer_app->draw();
 
             if (ImGui::BeginMenuBar())
             {

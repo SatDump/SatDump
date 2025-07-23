@@ -211,7 +211,7 @@ namespace satdump
                 work_should_exit = false;
             }
 
-            ~Block()
+            virtual ~Block()
             {
                 if (blk_should_run || blk_th.joinable())
                     throw satdump_exception("Block wasn't properly stopped before destructor was called!");
@@ -337,7 +337,9 @@ namespace satdump
                 blk_th = std::thread(&Block::run, this);
 #ifndef _WIN32
 #ifndef __APPLE__
-                pthread_setname_np(blk_th.native_handle(), d_id.c_str());
+                std::string th_id = d_id;
+                th_id.resize(15);
+                pthread_setname_np(blk_th.native_handle(), th_id.c_str());
 #endif
 #endif
             }

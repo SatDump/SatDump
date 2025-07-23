@@ -8,7 +8,7 @@
 #include "../processing_handler.h"
 #include "common/widgets/markdown_helper.h"
 #include "nlohmann/json.hpp"
-#include "products2/product.h"
+#include "products/product.h"
 #include <functional>
 #include <memory>
 #include <vector>

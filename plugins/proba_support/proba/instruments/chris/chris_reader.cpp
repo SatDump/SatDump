@@ -1,15 +1,16 @@
 #include "chris_reader.h"
+#include "../crc.h"
+#include "common/repack.h"
+#include "common/utils.h"
+#include "image/io.h"
+#include "logger.h"
+#include "products/image_product.h"
+#include "utils/binary.h"
+#include "utils/stats.h"
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
-#include "logger.h"
-#include "common/utils.h"
-#include "products2/image_product.h"
-#include <filesystem>
-#include "common/repack.h"
-#include "../crc.h"
-#include "image/io.h"
-#include "utils/stats.h"
 
 #define ALL_MODE 2
 #define WATER_MODE 3
@@ -21,10 +22,7 @@ namespace proba
 {
     namespace chris
     {
-        CHRISReader::CHRISReader(std::string &outputfolder, satdump::products::DataSet &dataset) : dataset(dataset)
-        {
-            output_folder = outputfolder;
-        }
+        CHRISReader::CHRISReader(std::string &outputfolder, satdump::products::DataSet &dataset) : dataset(dataset) { output_folder = outputfolder; }
 
         CHRISImageParser::CHRISImageParser()
         {
@@ -36,26 +34,7 @@ namespace proba
             frame_count = 0;
         }
 
-        CHRISImageParser::~CHRISImageParser()
-        {
-            img_buffer.clear();
-        }
-
-        uint8_t reverseBits(uint8_t byte)
-        {
-            byte = (byte & 0xF0) >> 4 | (byte & 0x0F) << 4;
-            byte = (byte & 0xCC) >> 2 | (byte & 0x33) << 2;
-            byte = (byte & 0xAA) >> 1 | (byte & 0x55) << 1;
-            return byte;
-        }
-
-        uint16_t reverse16Bits(uint16_t v)
-        {
-            uint16_t r = 0;
-            for (int i = 0; i < 16; ++i, v >>= 1)
-                r = (r << 1) | (v & 0x01);
-            return r;
-        }
+        CHRISImageParser::~CHRISImageParser() { img_buffer.clear(); }
 
         void CHRISImageParser::work(ccsds::CCSDSPacket &packet)
         {
@@ -64,7 +43,7 @@ namespace proba
 
             // Reverse bits... Recorder thing
             for (int i = 0; i < (int)packet.payload.size(); i++)
-                packet.payload[i] = reverseBits(packet.payload[i]);
+                packet.payload[i] = satdump::reverseBits(packet.payload[i]);
 
             // Check marker is in range
             if (count_marker > max_value - 1 && count_marker < absolute_max_cnt)
@@ -77,7 +56,7 @@ namespace proba
             // Convert into 12-bits values
             for (int i = 0; i < 7680; i += 1)
                 if (count_marker < absolute_max_cnt)
-                    img_buffer[count_marker * 7680 + (i + 0) + (bad ? 14 : 0)] = std::min<int>(65535, reverse16Bits(words_tmp[i]) << 1);
+                    img_buffer[count_marker * 7680 + (i + 0) + (bad ? 14 : 0)] = std::min<int>(65535, satdump::reverse16Bits(words_tmp[i]) << 1);
 
             frame_count++;
 

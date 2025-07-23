@@ -1,12 +1,12 @@
 #pragma once
 
 /**
- * @file radiation_product.h
+ * @file punctiform_product.h
  */
 
-#include "product.h"
 #include "common/geodetic/json.h"
 #include "core/exception.h"
+#include "product.h"
 
 namespace satdump
 {
@@ -37,20 +37,11 @@ namespace satdump
 
         public:
             // TODOREWORK
-            void set_tle(nlohmann::json tle)
-            {
-                contents["tle"] = tle;
-            }
+            void set_tle(nlohmann::json tle) { contents["tle"] = tle; }
 
-            bool has_tle()
-            {
-                return contents.contains("tle");
-            }
+            bool has_tle() { return contents.contains("tle"); }
 
-            nlohmann::json get_tle()
-            {
-                return contents["tle"];
-            }
+            nlohmann::json get_tle() { return contents["tle"]; }
 
         private:
             void *satellite_tracker = nullptr;
@@ -79,11 +70,10 @@ namespace satdump
             // TODOREWORK
 
         public:
-            virtual void
-            save(std::string directory);
+            virtual void save(std::string directory);
             virtual void load(std::string file);
 
             virtual ~PunctiformProduct();
         };
-    }
-}
+    } // namespace products
+} // namespace satdump

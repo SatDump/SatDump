@@ -2,6 +2,7 @@
 
 /**
  * @file histogram_utils.h
+ * @brief Somewhat generic histogram manipulation utilities
  */
 
 #include "image.h"

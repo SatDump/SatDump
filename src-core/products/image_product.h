@@ -2,6 +2,7 @@
 
 /**
  * @file image_product.h
+ * @brief ImageProduct implementation
  */
 
 #include "image/channel_transform.h"

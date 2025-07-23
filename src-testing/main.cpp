@@ -10,105 +10,157 @@
  * Don't judge the code you might see in there! :)
  **********************************************************************/
 
-#include "common/ccsds/ccsds_tm/mpdu.h"
+#include "common/tracking/tle.h"
+#include "core/exception.h"
+#include "init.h"
 #include "logger.h"
 
-#include "common/ccsds/ccsds_tm/demuxer.h"
-#include "common/ccsds/ccsds_tm/vcdu.h"
-#include "common/simple_deframer.h"
-#include <cstdio>
-#include <fstream>
+#include <chrono>
+#include <sqlite3.h>
+#include <string>
+#include <thread>
+#include <unistd.h>
 
-#include "image/image.h"
-#include "image/io.h"
-#include "image/processing.h"
+class SQLiteHandler
+{
+private:
+    sqlite3 *db = nullptr;
 
-#include <cstring>
+    bool run_sql(std::string sql)
+    {
+        char *err = NULL;
+        if (sqlite3_exec(db, sql.c_str(), NULL, 0, &err))
+        {
+            logger->error(err);
+            sqlite3_free(err);
+            return true;
+        }
+        return false;
+    }
 
-#include "common/repack.h"
+public:
+    SQLiteHandler(std::string path)
+    {
+        // Open
+        if (sqlite3_open(path.c_str(), &db))
+            throw satdump_exception("Couldn't open SQLite database! " + std::string(sqlite3_errmsg(db)));
+        else
+            logger->info("Opened SQLite Database!");
+        sqlite3_busy_timeout(db, 1000);
 
-#include "image/bayer/bayer.h"
+        // Init
+        if (run_sql("PRAGMA journal_mode=WAL;"))
+            throw satdump_exception("Failed setting database to WAL mode!");
 
-#include "common/codings/reedsolomon/reedsolomon.h"
+        // Create TLE Table
+        std::string sql_create_tle = "CREATE TABLE IF NOT EXISTS tle("
+                                     "norad INT PRIMARY KEY NOT NULL,"
+                                     "name TEXT NOT NULL,"
+                                     "line1 TEXT NOT NULL,"
+                                     "line2 TEXT);";
+        if (run_sql(sql_create_tle))
+            throw satdump_exception("Failed creating TLE database!");
+
+        // Create general settings table
+        std::string sql_create_settings = "CREATE TABLE IF NOT EXISTS settings("
+                                          "id TEXT PRIMARY KEY NOT NULL,"
+                                          "val TEXT NOT NULL);";
+        if (run_sql(sql_create_settings))
+            throw satdump_exception("Failed creating Settings database!");
+    }
+
+    ~SQLiteHandler() { sqlite3_close(db); }
+
+    sqlite3 *getdb() { return db; }
+
+    satdump::TLE get_tle_from_norad(int norad)
+    {
+        satdump::TLE r;
+        sqlite3_stmt *res;
+
+        if (sqlite3_prepare_v2(db, ("SELECT name,line1,line2 from tle where norad=" + std::to_string(norad)).c_str(), -1, &res, 0))
+            throw satdump_exception("Couldn't fetch TLE from DB! " + std::string(sqlite3_errmsg(db)));
+
+        if (sqlite3_step(res) == SQLITE_ROW)
+        {
+            r.norad = norad;
+            r.name = (char *)sqlite3_column_text(res, 0);
+            r.line1 = (char *)sqlite3_column_text(res, 1);
+            r.line2 = (char *)sqlite3_column_text(res, 2);
+        }
+
+        sqlite3_finalize(res);
+        return r;
+    }
+};
 
 int main(int argc, char *argv[])
 {
     initLogger();
 
-    std::ifstream data_in(argv[1], std::ios::binary);
+    logger->set_level(slog::LOG_OFF);
+    satdump::initSatdump();
+    completeLoggerInit();
+    logger->set_level(slog::LOG_TRACE);
 
-    uint8_t cadu[1279];
+    SQLiteHandler d("test.db");
 
-    ccsds::ccsds_tm::Demuxer vcid_demuxer(1101, true, 0, 4);
+    auto db = d.getdb();
 
-    std::ofstream test_t("/tmp/test.bin");
-
-    reedsolomon::ReedSolomon rs_check(reedsolomon::RS223);
-
-    std::vector<uint16_t> msi_channel;
-
-    while (!data_in.eof())
     {
-        // Read buffer
-        data_in.read((char *)&cadu, 1279);
-
-        // // Check RS
-        // int errors[5];
-        // rs_check.decode_interlaved(cadu, true, 5, errors);
-        // if (errors[0] < 0 || errors[1] < 0 || errors[2] < 0 || errors[3] < 0 || errors[4] < 0)
-        //     continue;
-
-        // Parse this transport frame
-        ccsds::ccsds_tm::VCDU vcdu = ccsds::ccsds_tm::parseVCDU(cadu);
-
-        // printf("VCID %d\n", vcdu.vcid);
-
-        //   printf("SCID %d\n", vcdu.spacecraft_id);
-
-        if (vcdu.vcid == 1)
+        nlohmann::json v;
+        v["test"] = 4384328;
+        v["v2"] = "djisoadjsoa";
+        v["df"] = 5.66546;
+        char *err = NULL;
+        std::string sql = "INSERT INTO settings (id, val) VALUES ('testval', '" + v.dump() + "') ON CONFLICT(id) DO UPDATE SET val='" + v.dump() + "';";
+        if (sqlite3_exec(db, sql.c_str(), NULL, 0, &err))
         {
-#if 1
-            auto pkts = vcid_demuxer.work(cadu);
-
-            for (auto pkt : pkts)
-            {
-                //  printf("APID %d \n", pkt.header.apid);
-                if (pkt.header.apid == 1024)
-                {
-                    // 1027 ?
-                    // 1028 ?
-                    // 1031 !!!!!
-                    // 1032 !!!!!
-
-                    printf("APID %d SIZE %d\n", pkt.header.apid, pkt.payload.size());
-
-                    pkt.payload.resize(1018);
-
-                    // int id = pkt.payload[23];
-
-                    //   if (id == 0)
-                    {
-                        //  test_t.write((char *)pkt.header.raw, 6);
-                        //  test_t.write((char *)pkt.payload.data(), pkt.payload.size());
-
-                        test_t.write((char *)pkt.payload.data() + 2, pkt.payload.size() - 2);
-
-                        for (int i = 0; i < 218; i++)
-                        {
-                            uint16_t val = pkt.payload[28 + i * 2 + 0] << 8 | pkt.payload[28 + i * 2 + 1];
-                            msi_channel.push_back(val);
-                        }
-                    }
-                }
-            }
-#endif
-
-            // auto mpdu = ccsds::ccsds_tm::parseMPDU(cadu, false, 0, 15);
-            // if (mpdu.first_header_pointer == 0)
-            // test_t.write((char *)cadu, 1279);
+            logger->error(err);
+            sqlite3_free(err);
         }
     }
 
-    image::Image img(msi_channel.data(), 16, 218, msi_channel.size() / 218, 1);
-    image::save_png(img, "test_earthcare.png");
+#if 1
+    {
+        {
+            char *err = NULL;
+            std::string sql = "BEGIN;";
+            if (sqlite3_exec(db, sql.c_str(), NULL, 0, &err))
+            {
+                logger->error(err);
+                sqlite3_free(err);
+            }
+        }
+
+        logger->info("INSERT");
+        for (auto &tle : *satdump::general_tle_registry)
+        {
+            std::string sql = "INSERT INTO tle (norad, name, line1, line2) VALUES (" + std::to_string(tle.norad) + ", \"" + tle.name + "\", '" + tle.line1 + "', '" + tle.line2 +
+                              "') ON CONFLICT(norad) DO UPDATE SET name=\"" + tle.name + "\", line1='" + tle.line1 + "', line2='" + tle.line2 + "';";
+
+            char *err = NULL;
+            if (sqlite3_exec(db, sql.c_str(), NULL, 0, &err))
+            {
+                logger->error(err);
+                logger->info(nlohmann::json(tle).dump());
+                sqlite3_free(err);
+            }
+        }
+        logger->info("DONE");
+
+        {
+            char *err = NULL;
+            std::string sql = "END;";
+            if (sqlite3_exec(db, sql.c_str(), NULL, 0, &err))
+            {
+                logger->error(err);
+                sqlite3_free(err);
+            }
+        }
+    }
+#endif
+
+    auto tle = d.get_tle_from_norad(40069);
+    logger->info(nlohmann::json(tle).dump());
 }

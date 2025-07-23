@@ -2,6 +2,7 @@
 
 /**
  * @file text.h
+ * @brief Image Text drawing
  */
 
 #include "image.h"

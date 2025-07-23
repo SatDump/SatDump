@@ -16,7 +16,7 @@
 #include "noaa/module_noaa_instruments.h"
 
 #include "pipeline/module.h"
-#include "products2/image/image_calibrator.h"
+#include "products/image/image_calibrator.h"
 
 class NOAAMetOpSupport : public satdump::Plugin
 {

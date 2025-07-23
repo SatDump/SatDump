@@ -119,7 +119,7 @@ namespace satdump
 
             // TODOREWORK all channels
             bladerf_set_sample_rate(bladerf_dev_obj, BLADERF_CHANNEL_RX(0), samplerate, NULL);
-            logger->info("Actual samplerate %d (precise)", samplerate);
+            logger->info("Actual samplerate %f (precise)", samplerate);
             bladerf_set_bandwidth(bladerf_dev_obj, BLADERF_CHANNEL_RX(0), samplerate, NULL);
 
             sample_buffer_size = samplerate / 250;
