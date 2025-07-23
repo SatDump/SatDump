@@ -18,6 +18,9 @@ This detailed documentation is intended to provide the user with accurate and up
 * Tracking satellites
 * Rotator control
 * Automation
+* [Satellite Pipelines](Pipelines.md)
+* [SDR Options](SDR_Options.md)
+
 
 ## Post-processing
 
@@ -31,7 +34,7 @@ This detailed documentation is intended to provide the user with accurate and up
 
 * Archive loader
 * DSP Flowgraph
-* LUT Generator
+* [LUT Generator](LutGenerator.md)
 
 ## Advanced topics
 
