@@ -9,9 +9,9 @@ class WipSettingsEditorAppPlugin : public satdump::Plugin
 public:
     std::string getID() { return "wipsettings_app"; }
 
-    void init() { satdump::eventBus->register_handler<satdump::explorer::ExplorerApplication::RenderLoadMenuElementsEvent>(renderExplorerLoaderButton); }
+    void init() { satdump::eventBus->register_handler<satdump::explorer::RenderLoadMenuElementsEvent>(renderExplorerLoaderButton); }
 
-    static void renderExplorerLoaderButton(const satdump::explorer::ExplorerApplication::RenderLoadMenuElementsEvent &evt)
+    static void renderExplorerLoaderButton(const satdump::explorer::RenderLoadMenuElementsEvent &evt)
     {
         if (ImGui::BeginMenu("File"))
         {

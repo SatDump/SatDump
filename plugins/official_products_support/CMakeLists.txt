@@ -41,7 +41,7 @@ if(${HDF5_FOUND}) # TODOREWORK Maybe actually yes ANDROID?
 
   # Loader plugin
   if(BUILD_GUI)
-    file(GLOB_RECURSE loader_CPPS main_loader.cpp loader/*.cpp)
+    file(GLOB_RECURSE loader_CPPS main_loader.cpp loader/*.cpp main_loader_handle.cpp)
     add_library(official_products_loader_support SHARED ${loader_CPPS})
     target_link_libraries(official_products_loader_support
                           PUBLIC official_products_support satdump_interface)

@@ -6,6 +6,7 @@
 // #include "products/dataset.h"
 #include "common/utils.h"
 // #include "core/resources.h"
+#include "core/exception.h"
 #include "core/plugin.h"
 
 #include "core/style.h"
@@ -47,9 +48,6 @@ namespace satdump
 
             // Add processing handler "spot"
             processing_handler = std::make_shared<handlers::DummyHandler>("ProcessingHandlerExplorer");
-            processing_handler_sub = std::make_shared<handlers::DummyHandler>("Processing");
-            processing_handler_sub->setCanBeDragged(false);
-            processing_handler->addSubHandler(processing_handler_sub);
             processing_handler->setCanBeDraggedTo(false);
 
             // Enable dropping files onto the explorer.
@@ -61,16 +59,7 @@ namespace satdump
                 });
 
             // Enable adding handlers to the explorer externally
-            eventBus->register_handler<ExplorerAddHandlerEvent>(
-                [this](const ExplorerAddHandlerEvent &e)
-                {
-                    if (e.is_processing)
-                        processing_handler_sub->addSubHandler(e.h);
-                    else
-                        master_handler->addSubHandler(e.h);
-                    if (e.open)
-                        curr_handler = e.h;
-                });
+            eventBus->register_handler<ExplorerAddHandlerEvent>([this](const ExplorerAddHandlerEvent &e) { addHandler(e.h, e.open, e.is_processing); });
 
             // Returns the last selected handler of a specific type if available
             eventBus->register_handler<GetLastSelectedOfTypeEvent>(
@@ -85,6 +74,35 @@ namespace satdump
 
         ExplorerApplication::~ExplorerApplication() {}
 
+        void ExplorerApplication::addHandler(std::shared_ptr<handlers::Handler> h, bool open, bool is_processing)
+        {
+            if (is_processing)
+                processing_handler->addSubHandler(h);
+            else
+            {
+                // Try adding to a group if possible
+                bool added = false;
+                for (auto &v : group_definitions)
+                {
+                    for (auto &v2 : v.second)
+                    {
+                        if (v2 == h->getID())
+                        {
+                            if (groups_handlers.count(v.first) == 0)
+                                groups_handlers.emplace(v.first, std::make_shared<handlers::DummyHandler>(v.first + "HandlerExplorer"));
+                            groups_handlers[v.first]->addSubHandler(h);
+                            added = true;
+                        }
+                    }
+                }
+
+                if (!added)
+                    master_handler->addSubHandler(h);
+            }
+            if (open)
+                curr_handler = h;
+        }
+
         void ExplorerApplication::drawPanel()
         {
             ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2);
@@ -98,13 +116,42 @@ namespace satdump
                     ImGui::TableSetupColumn("##masterhandlertable_col", ImGuiTableColumnFlags_None);
                     ImGui::TableNextColumn();
 
-                    if (processing_handler_sub->hasSubhandlers())
+                    bool rendering_separators = false;
+
+                    if (processing_handler->hasSubhandlers())
                     {
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::SeparatorText("Processing");
+
                         processing_handler->drawTreeMenu(curr_handler);
-                        for (auto &h : processing_handler_sub->getAllSubHandlers())
+                        for (auto &h : processing_handler->getAllSubHandlers())
                             if (h->getName() == "PROCESSING_DONE") // TODOREWORK MASSIVE HACK
-                                processing_handler_sub->delSubHandler(h);
+                                processing_handler->delSubHandler(h);
+
+                        rendering_separators = true;
                     }
+
+                    for (auto &v : groups_handlers)
+                    {
+                        if (v.second->hasSubhandlers())
+                        {
+                            ImGui::TableNextRow();
+                            ImGui::TableSetColumnIndex(0);
+                            ImGui::SeparatorText(v.first.c_str());
+
+                            v.second->drawTreeMenu(curr_handler);
+                            rendering_separators = true;
+                        }
+                    }
+
+                    if (rendering_separators)
+                    {
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::SeparatorText("Others");
+                    }
+
                     master_handler->drawTreeMenu(curr_handler);
                     trash_handler->drawTreeMenu(curr_handler);
 
@@ -159,15 +206,15 @@ namespace satdump
                     if (ImGui::BeginMenu("Tools"))
                     { // TODOREWORK?
                         if (ImGui::MenuItem("Projection"))
-                            master_handler->addSubHandler(std::make_shared<handlers::ProjectionHandler>());
+                            addHandler(std::make_shared<handlers::ProjectionHandler>());
                         if (ImGui::MenuItem("DSP Flowgraph"))
-                            master_handler->addSubHandler(std::make_shared<handlers::DSPFlowGraphHandler>());
+                            addHandler(std::make_shared<handlers::DSPFlowGraphHandler>());
                         if (ImGui::MenuItem("Waterfall TEST"))
-                            master_handler->addSubHandler(std::make_shared<handlers::WaterfallTestHandler>());
+                            addHandler(std::make_shared<handlers::WaterfallTestHandler>());
                         if (ImGui::MenuItem("NewRec TEST"))
-                            master_handler->addSubHandler(std::make_shared<handlers::NewRecHandler>());
+                            addHandler(std::make_shared<handlers::NewRecHandler>());
                         if (ImGui::MenuItem("CycloHelper TEST"))
-                            master_handler->addSubHandler(std::make_shared<handlers::CycloHelperHandler>());
+                            addHandler(std::make_shared<handlers::CycloHelperHandler>());
                         ImGui::EndMenu();
                     }
 
@@ -254,58 +301,80 @@ namespace satdump
 
                 try
                 {
-                    if (!std::filesystem::path(path).has_extension())
-                    {
-                        logger->error("Invalid file, no extension!");
-                        return;
-                    }
+                    // Get available loaders
+                    std::vector<std::pair<std::string, std::function<void(std::string, ExplorerApplication *)>>> loaders;
 
+                    // Default stuff
                     if (std::filesystem::path(path).extension().string() == ".cbor")
-                    {
-                        logger->trace("Explorer loading product " + path);
+                        loaders.push_back({"Product Loader", [](std::string path, ExplorerApplication *e)
+                                           {
+                                               logger->trace("Explorer loading product " + path);
 
-                        try
-                        {
-                            auto prod_h = handlers::getProductHandlerForProduct(products::loadProduct(path));
-                            master_handler->addSubHandler(prod_h);
-                        }
-                        catch (std::exception &e)
-                        {
-                            logger->error("Error loading product! Maybe not a valid product? (Reminder : Pre-2.0.0 products are NOT compatible with 2.0.0) Details : %s", e.what());
-                        }
-                    }
+                                               try
+                                               {
+                                                   auto prod_h = handlers::getProductHandlerForProduct(products::loadProduct(path));
+                                                   e->addHandler(prod_h);
+                                               }
+                                               catch (std::exception &e)
+                                               {
+                                                   logger->error("Error loading product! Maybe not a valid product? (Reminder : Pre-2.0.0 products are NOT compatible with 2.0.0) Details : %s",
+                                                                 e.what());
+                                               }
+                                           }});
                     else if (std::filesystem::path(path).extension().string() == ".json")
-                    {
-                        logger->trace("Viewer loading dataset " + path);
+                        loaders.push_back(
+                            {"Dataset Loader", [](std::string path, ExplorerApplication *e)
+                             {
+                                 logger->trace("Viewer loading dataset " + path);
 
-                        try
-                        {
-                            products::DataSet dataset;
-                            dataset.load(path);
-                            std::shared_ptr<handlers::DatasetHandler> dat_h = std::make_shared<handlers::DatasetHandler>(std::filesystem::path(path).parent_path().string(), dataset);
-                            master_handler->addSubHandler(dat_h);
-                        }
-                        catch (std::exception &e)
-                        {
-                            logger->error("Error loading dataset! Maybe not a valid dataset? (Reminder : Pre-2.0.0 datasets are NOT compatible with 2.0.0) Details : %s", e.what());
-                        }
-                    }
+                                 try
+                                 {
+                                     products::DataSet dataset;
+                                     dataset.load(path);
+                                     std::shared_ptr<handlers::DatasetHandler> dat_h = std::make_shared<handlers::DatasetHandler>(std::filesystem::path(path).parent_path().string(), dataset);
+                                     e->addHandler(dat_h);
+                                 }
+                                 catch (std::exception &e)
+                                 {
+                                     logger->error("Error loading dataset! Maybe not a valid dataset? (Reminder : Pre-2.0.0 datasets are NOT compatible with 2.0.0) Details : %s", e.what());
+                                 }
+                             }});
                     else if (std::filesystem::path(path).extension().string() == ".shp")
-                    {
-                        logger->trace("Viewer loading shapefile " + path);
+                        loaders.push_back({"Shapefile Loader", [](std::string path, ExplorerApplication *e)
+                                           {
+                                               logger->trace("Viewer loading shapefile " + path);
+                                               e->addHandler(std::make_shared<handlers::ShapefileHandler>(path));
+                                           }});
+#if 0 // TODOREWORK ADD MENU
+                                           else if (std::filesystem::path(path).has_extension())
+                        loaders.push_back({"Image Loader", [](std::string path, ExplorerApplication *e)
+                                           {
+                                               logger->trace("Viewer loading image " + path);
 
-                        master_handler->addSubHandler(std::make_shared<handlers::ShapefileHandler>(path));
+                                               image::Image img;
+                                               image::load_img(img, path);
+                                               if (img.size() > 0)
+                                                   e->addHandler(std::make_shared<handlers::ImageHandler>(img, std::filesystem::path(path).stem().string()));
+                                               else
+                                                   logger->error("Could not open this file as image!");
+                                           }});
+#endif
+
+                    // Plugin loaders
+                    eventBus->fire_event<ExplorerRequestFileLoad>({std::filesystem::path(path).stem().string() + std::filesystem::path(path).extension().string(), loaders});
+
+                    // Load it
+                    if (loaders.size() == 1)
+                    {
+                        loaders[0].second(path, this);
+                    }
+                    else if (loaders.size() > 1)
+                    {
+                        throw satdump_exception("More than one loader available! TODO SELECTION MENU!");
                     }
                     else
                     {
-                        logger->trace("Viewer loading image " + path);
-
-                        image::Image img;
-                        image::load_img(img, path);
-                        if (img.size() > 0)
-                            master_handler->addSubHandler(std::make_shared<handlers::ImageHandler>(img, std::filesystem::path(path).stem().string()));
-                        else
-                            logger->error("Could not open this file as image!");
+                        throw satdump_exception("No loader found for file : " + path + "!");
                     }
                 }
                 catch (std::exception &e)
