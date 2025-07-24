@@ -5,6 +5,7 @@
 #include "handlers/handler.h"
 
 #include "imgui/dialogs/widget.h"
+#include <memory>
 
 namespace satdump
 {
@@ -32,11 +33,17 @@ namespace satdump
             void drawContents();
             void drawMenuBar();
 
+            // Groups definitions. TODOREWORK don't hardcode
+            std::map<std::string, std::vector<std::string>> group_definitions = {
+                {"Recorders", {"recorder", "newrec_test_handler"}},
+                {"Products", {"dataset_handler", "image_product_handler", "punctiform_product_handler"}},
+            };
+
             // Explorer main handlers
             std::shared_ptr<handlers::Handler> curr_handler;
-            std::shared_ptr<handlers::Handler> master_handler;
             std::shared_ptr<handlers::Handler> processing_handler;
-            std::shared_ptr<handlers::Handler> processing_handler_sub;
+            std::map<std::string, std::shared_ptr<handlers::Handler>> groups_handlers;
+            std::shared_ptr<handlers::Handler> master_handler;
             std::shared_ptr<handlers::Handler> trash_handler;
 
             // File open
@@ -50,6 +57,7 @@ namespace satdump
             std::map<std::string, std::shared_ptr<handlers::Handler>> last_selected_handler;
 
         public:
+            void addHandler(std::shared_ptr<handlers::Handler> h, bool open = false, bool is_processing = false);
             void tryOpenFileInExplorer(std::string path);
 
         public:
