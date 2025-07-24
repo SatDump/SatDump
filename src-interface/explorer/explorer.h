@@ -11,15 +11,38 @@ namespace satdump
 {
     namespace explorer
     {
+        // Predef
+        class ExplorerApplication;
+
+        // Events
+        struct RenderLoadMenuElementsEvent
+        {
+            std::shared_ptr<handlers::Handler> &curr_handler;
+            std::shared_ptr<handlers::Handler> &master_handler;
+        };
+
+        struct GetLastSelectedOfTypeEvent
+        {
+            std::string type;
+            std::shared_ptr<handlers::Handler> &h;
+        };
+
+        struct ExplorerAddHandlerEvent
+        {
+            std::shared_ptr<handlers::Handler> h;
+            bool open = false;
+            bool is_processing = false;
+        };
+
+        struct ExplorerRequestFileLoad
+        {
+            std::string file_name;
+            std::vector<std::pair<std::string, std::function<void(std::string, ExplorerApplication *)>>> &loaders;
+        };
+
+        // Actual explorer
         class ExplorerApplication
         {
-        public:
-            struct RenderLoadMenuElementsEvent
-            {
-                std::shared_ptr<handlers::Handler> &curr_handler;
-                std::shared_ptr<handlers::Handler> &master_handler;
-            };
-
         public:
             void draw();
 
@@ -65,18 +88,5 @@ namespace satdump
             ~ExplorerApplication();
         };
 
-        // Events
-        struct GetLastSelectedOfTypeEvent
-        {
-            std::string type;
-            std::shared_ptr<handlers::Handler> &h;
-        };
-
-        struct ExplorerAddHandlerEvent
-        {
-            std::shared_ptr<handlers::Handler> h;
-            bool open = false;
-            bool is_processing = false;
-        };
     } // namespace explorer
 }; // namespace satdump

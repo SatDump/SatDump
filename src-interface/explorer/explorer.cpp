@@ -6,6 +6,7 @@
 // #include "products/dataset.h"
 #include "common/utils.h"
 // #include "core/resources.h"
+#include "core/exception.h"
 #include "core/plugin.h"
 
 #include "core/style.h"
@@ -300,57 +301,80 @@ namespace satdump
 
                 try
                 {
-                    if (!std::filesystem::path(path).has_extension())
-                    {
-                        logger->error("Invalid file, no extension!");
-                        return;
-                    }
+                    // Get available loaders
+                    std::vector<std::pair<std::string, std::function<void(std::string, ExplorerApplication *)>>> loaders;
 
+                    // Default stuff
                     if (std::filesystem::path(path).extension().string() == ".cbor")
-                    {
-                        logger->trace("Explorer loading product " + path);
+                        loaders.push_back({"Product Loader", [](std::string path, ExplorerApplication *e)
+                                           {
+                                               logger->trace("Explorer loading product " + path);
 
-                        try
-                        {
-                            auto prod_h = handlers::getProductHandlerForProduct(products::loadProduct(path));
-                            addHandler(prod_h);
-                        }
-                        catch (std::exception &e)
-                        {
-                            logger->error("Error loading product! Maybe not a valid product? (Reminder : Pre-2.0.0 products are NOT compatible with 2.0.0) Details : %s", e.what());
-                        }
-                    }
+                                               try
+                                               {
+                                                   auto prod_h = handlers::getProductHandlerForProduct(products::loadProduct(path));
+                                                   e->addHandler(prod_h);
+                                               }
+                                               catch (std::exception &e)
+                                               {
+                                                   logger->error("Error loading product! Maybe not a valid product? (Reminder : Pre-2.0.0 products are NOT compatible with 2.0.0) Details : %s",
+                                                                 e.what());
+                                               }
+                                           }});
                     else if (std::filesystem::path(path).extension().string() == ".json")
-                    {
-                        logger->trace("Viewer loading dataset " + path);
+                        loaders.push_back(
+                            {"Dataset Loader", [](std::string path, ExplorerApplication *e)
+                             {
+                                 logger->trace("Viewer loading dataset " + path);
 
-                        try
-                        {
-                            products::DataSet dataset;
-                            dataset.load(path);
-                            std::shared_ptr<handlers::DatasetHandler> dat_h = std::make_shared<handlers::DatasetHandler>(std::filesystem::path(path).parent_path().string(), dataset);
-                            addHandler(dat_h);
-                        }
-                        catch (std::exception &e)
-                        {
-                            logger->error("Error loading dataset! Maybe not a valid dataset? (Reminder : Pre-2.0.0 datasets are NOT compatible with 2.0.0) Details : %s", e.what());
-                        }
-                    }
+                                 try
+                                 {
+                                     products::DataSet dataset;
+                                     dataset.load(path);
+                                     std::shared_ptr<handlers::DatasetHandler> dat_h = std::make_shared<handlers::DatasetHandler>(std::filesystem::path(path).parent_path().string(), dataset);
+                                     e->addHandler(dat_h);
+                                 }
+                                 catch (std::exception &e)
+                                 {
+                                     logger->error("Error loading dataset! Maybe not a valid dataset? (Reminder : Pre-2.0.0 datasets are NOT compatible with 2.0.0) Details : %s", e.what());
+                                 }
+                             }});
                     else if (std::filesystem::path(path).extension().string() == ".shp")
+                        loaders.push_back({"Shapefile Loader", [](std::string path, ExplorerApplication *e)
+                                           {
+                                               logger->trace("Viewer loading shapefile " + path);
+                                               e->addHandler(std::make_shared<handlers::ShapefileHandler>(path));
+                                           }});
+#if 0 // TODOREWORK ADD MENU
+                                           else if (std::filesystem::path(path).has_extension())
+                        loaders.push_back({"Image Loader", [](std::string path, ExplorerApplication *e)
+                                           {
+                                               logger->trace("Viewer loading image " + path);
+
+                                               image::Image img;
+                                               image::load_img(img, path);
+                                               if (img.size() > 0)
+                                                   e->addHandler(std::make_shared<handlers::ImageHandler>(img, std::filesystem::path(path).stem().string()));
+                                               else
+                                                   logger->error("Could not open this file as image!");
+                                           }});
+#endif
+
+                    // Plugin loaders
+                    eventBus->fire_event<ExplorerRequestFileLoad>({std::filesystem::path(path).stem().string() + std::filesystem::path(path).extension().string(), loaders});
+
+                    // Load it
+                    if (loaders.size() == 1)
                     {
-                        logger->trace("Viewer loading shapefile " + path);
-                        addHandler(std::make_shared<handlers::ShapefileHandler>(path));
+                        loaders[0].second(path, this);
+                    }
+                    else if (loaders.size() > 1)
+                    {
+                        throw satdump_exception("More than one loader available! TODO SELECTION MENU!");
                     }
                     else
                     {
-                        logger->trace("Viewer loading image " + path);
-
-                        image::Image img;
-                        image::load_img(img, path);
-                        if (img.size() > 0)
-                            addHandler(std::make_shared<handlers::ImageHandler>(img, std::filesystem::path(path).stem().string()));
-                        else
-                            logger->error("Could not open this file as image!");
+                        throw satdump_exception("No loader found for file : " + path + "!");
                     }
                 }
                 catch (std::exception &e)

@@ -10,88 +10,138 @@
  * Don't judge the code you might see in there! :)
  **********************************************************************/
 
-#include "common/tracking/tle.h"
 #include "core/exception.h"
 #include "init.h"
+#include "libs/miniz/miniz.h"
+#include "libs/miniz/miniz_zip.h"
 #include "logger.h"
+#include <cstdint>
+#include <cstdio>
+#include <filesystem>
+#include <fstream>
+#include <memory>
 
-#include <chrono>
-#include <sqlite3.h>
-#include <string>
-#include <thread>
-#include <unistd.h>
+class FilesIteratorItem
+{
+public:
+    const std::string name;
+    FilesIteratorItem(std::string name) : name(name) {}
+    virtual std::vector<uint8_t> getPayload() = 0;
+};
 
-class SQLiteHandler
+class FilesIterator
+{
+public:
+    virtual bool getNext(std::unique_ptr<FilesIteratorItem> &v) = 0;
+    virtual void reset() = 0;
+};
+
+class FolderFileIteratorItem : public FilesIteratorItem
 {
 private:
-    sqlite3 *db = nullptr;
-
-    bool run_sql(std::string sql)
-    {
-        char *err = NULL;
-        if (sqlite3_exec(db, sql.c_str(), NULL, 0, &err))
-        {
-            logger->error(err);
-            sqlite3_free(err);
-            return true;
-        }
-        return false;
-    }
+    const std::string path;
 
 public:
-    SQLiteHandler(std::string path)
+    FolderFileIteratorItem(std::string path, std::string name) : FilesIteratorItem(name), path(path) {}
+
+    std::vector<uint8_t> getPayload()
     {
-        // Open
-        if (sqlite3_open(path.c_str(), &db))
-            throw satdump_exception("Couldn't open SQLite database! " + std::string(sqlite3_errmsg(db)));
-        else
-            logger->info("Opened SQLite Database!");
-        sqlite3_busy_timeout(db, 1000);
+        std::vector<uint8_t> v;
+        std::ifstream f(path, std::ios::binary);
+        char c;
+        while (!f.eof())
+        {
+            f.read(&c, 1);
+            v.push_back(c);
+        }
+        f.close();
+        return v;
+    }
+};
 
-        // Init
-        if (run_sql("PRAGMA journal_mode=WAL;"))
-            throw satdump_exception("Failed setting database to WAL mode!");
+class FolderFilesIterator : public FilesIterator
+{
+private:
+    const std::string folder;
+    std::filesystem::recursive_directory_iterator filesIterator;
+    std::error_code iteratorError;
 
-        // Create TLE Table
-        std::string sql_create_tle = "CREATE TABLE IF NOT EXISTS tle("
-                                     "norad INT PRIMARY KEY NOT NULL,"
-                                     "name TEXT NOT NULL,"
-                                     "line1 TEXT NOT NULL,"
-                                     "line2 TEXT);";
-        if (run_sql(sql_create_tle))
-            throw satdump_exception("Failed creating TLE database!");
+public:
+    FolderFilesIterator(std::string folder) : folder(folder) { filesIterator = std::filesystem::recursive_directory_iterator(folder); }
 
-        // Create general settings table
-        std::string sql_create_settings = "CREATE TABLE IF NOT EXISTS settings("
-                                          "id TEXT PRIMARY KEY NOT NULL,"
-                                          "val TEXT NOT NULL);";
-        if (run_sql(sql_create_settings))
-            throw satdump_exception("Failed creating Settings database!");
+    bool getNext(std::unique_ptr<FilesIteratorItem> &v)
+    {
+        v.reset();
+
+        std::string path = filesIterator->path();
+
+        if (std::filesystem::is_regular_file(path))
+            v = std::make_unique<FolderFileIteratorItem>(path, std::filesystem::path(path).stem().string() + std::filesystem::path(path).extension().string());
+
+        filesIterator.increment(iteratorError);
+        if (iteratorError)
+            throw satdump_exception(iteratorError.message());
+
+        return filesIterator != std::filesystem::recursive_directory_iterator();
     }
 
-    ~SQLiteHandler() { sqlite3_close(db); }
+    void reset() { filesIterator = std::filesystem::recursive_directory_iterator(folder); }
+};
 
-    sqlite3 *getdb() { return db; }
+class ZipFileIteratorItem : public FilesIteratorItem
+{
+private:
+    const mz_zip_archive *zip;
+    const int num;
 
-    satdump::TLE get_tle_from_norad(int norad)
+public:
+    ZipFileIteratorItem(mz_zip_archive *zip, int num, std::string name) : FilesIteratorItem(name), zip(zip), num(num) {}
+
+    std::vector<uint8_t> getPayload()
     {
-        satdump::TLE r;
-        sqlite3_stmt *res;
+        size_t filesize = 0;
+        void *file_ptr = mz_zip_reader_extract_to_heap((mz_zip_archive *)&zip, num, &filesize, 0);
+        std::vector<uint8_t> vec((uint8_t *)file_ptr, (uint8_t *)file_ptr + filesize);
+        mz_free(file_ptr);
+        return vec;
+    }
+};
 
-        if (sqlite3_prepare_v2(db, ("SELECT name,line1,line2 from tle where norad=" + std::to_string(norad)).c_str(), -1, &res, 0))
-            throw satdump_exception("Couldn't fetch TLE from DB! " + std::string(sqlite3_errmsg(db)));
+class ZipFilesIterator : public FilesIterator
+{
+private:
+    mz_zip_archive zip{};
+    int numfiles;
+    int file_index;
 
-        if (sqlite3_step(res) == SQLITE_ROW)
+public:
+    ZipFilesIterator(std::string zipfile)
+    {
+        if (!mz_zip_reader_init_file(&zip, zipfile.c_str(), 0))
+            throw satdump_exception("Invalid zip file! " + zipfile);
+        numfiles = mz_zip_reader_get_num_files(&zip);
+        file_index = 0;
+    }
+
+    ~ZipFilesIterator() { mz_zip_reader_end(&zip); }
+
+    bool getNext(std::unique_ptr<FilesIteratorItem> &v)
+    {
+        v.reset();
+
+        if (mz_zip_reader_is_file_supported(&zip, file_index))
         {
-            r.norad = norad;
-            r.name = (char *)sqlite3_column_text(res, 0);
-            r.line1 = (char *)sqlite3_column_text(res, 1);
-            r.line2 = (char *)sqlite3_column_text(res, 2);
+            char filename[2000];
+            if (mz_zip_reader_get_filename(&zip, file_index, filename, 2000))
+                v = std::make_unique<ZipFileIteratorItem>(&zip, file_index, std::filesystem::path(filename).stem().string() + std::filesystem::path(filename).extension().string());
         }
 
-        sqlite3_finalize(res);
-        return r;
+        file_index++;
+
+        return file_index < numfiles;
     }
+
+    void reset() { file_index = 0; }
 };
 
 int main(int argc, char *argv[])
@@ -103,64 +153,28 @@ int main(int argc, char *argv[])
     completeLoggerInit();
     logger->set_level(slog::LOG_TRACE);
 
-    SQLiteHandler d("test.db");
+    // std::unique_ptr<FilesIterator> fit = std::make_unique<FolderFilesIterator>(
+    //     "/tmp/satdump_official/W_XX-EUMETSAT-Darmstadt,IMG+SAT,MTI1+FCI-1C-RRAD-FDHSI-FD--x-x---x_C_EUMT_20250724111342_IDPFI_OPE_20250724111007_20250724111935_N__O_0068_0000 (2)");
 
-    auto db = d.getdb();
+    std::unique_ptr<FilesIterator> fit = std::make_unique<ZipFilesIterator>(
+        "/tmp/satdump_official/W_XX-EUMETSAT-Darmstadt,IMG+SAT,MTI1+FCI-1C-RRAD-FDHSI-FD--x-x---x_C_EUMT_20250724120349_IDPFI_OPE_20250724120007_20250724120935_N__O_0073_0000.zip");
 
+    std::unique_ptr<FilesIteratorItem> f;
+
+    while (fit->getNext(f))
     {
-        nlohmann::json v;
-        v["test"] = 4384328;
-        v["v2"] = "djisoadjsoa";
-        v["df"] = 5.66546;
-        char *err = NULL;
-        std::string sql = "INSERT INTO settings (id, val) VALUES ('testval', '" + v.dump() + "') ON CONFLICT(id) DO UPDATE SET val='" + v.dump() + "';";
-        if (sqlite3_exec(db, sql.c_str(), NULL, 0, &err))
+        if (f)
         {
-            logger->error(err);
-            sqlite3_free(err);
-        }
-    }
 
-#if 1
-    {
-        {
-            char *err = NULL;
-            std::string sql = "BEGIN;";
-            if (sqlite3_exec(db, sql.c_str(), NULL, 0, &err))
+            uint32_t test1, test2, test3;
+            if (sscanf(f->name.c_str(), "W_XX-EUMETSAT-Darmstadt,IMG+SAT,MTI%*d+FCI-1C-RRAD-FDHSI-FD--CHK-BODY---NC4E_C_EUMT_%14u_IDPFI_OPE_%14u_%14u_N__O_%*d_%*d.nc", &test1, &test2, &test3) == 3)
             {
-                logger->error(err);
-                sqlite3_free(err);
+                logger->trace(f->name + " MTG FCI Images");
             }
-        }
-
-        logger->info("INSERT");
-        for (auto &tle : *satdump::general_tle_registry)
-        {
-            std::string sql = "INSERT INTO tle (norad, name, line1, line2) VALUES (" + std::to_string(tle.norad) + ", \"" + tle.name + "\", '" + tle.line1 + "', '" + tle.line2 +
-                              "') ON CONFLICT(norad) DO UPDATE SET name=\"" + tle.name + "\", line1='" + tle.line1 + "', line2='" + tle.line2 + "';";
-
-            char *err = NULL;
-            if (sqlite3_exec(db, sql.c_str(), NULL, 0, &err))
+            else
             {
-                logger->error(err);
-                logger->info(nlohmann::json(tle).dump());
-                sqlite3_free(err);
-            }
-        }
-        logger->info("DONE");
-
-        {
-            char *err = NULL;
-            std::string sql = "END;";
-            if (sqlite3_exec(db, sql.c_str(), NULL, 0, &err))
-            {
-                logger->error(err);
-                sqlite3_free(err);
+                logger->info(f->name);
             }
         }
     }
-#endif
-
-    auto tle = d.get_tle_from_norad(40069);
-    logger->info(nlohmann::json(tle).dump());
 }
