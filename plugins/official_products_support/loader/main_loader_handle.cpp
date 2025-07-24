@@ -318,6 +318,13 @@ namespace nat2pro
     }
 } // namespace nat2pro
 
+namespace test
+{
+    struct FileInfo
+    {
+    };
+} // namespace test
+
 void provideExplorerFileLoader(const satdump::explorer::ExplorerRequestFileLoad &evt)
 {
     logger->critical(evt.file_name);
