@@ -119,7 +119,7 @@ namespace satdump
                 if (ImGui::Begin("Processing", &offline_en, ImGuiWindowFlags_AlwaysAutoResize))
                 {
                     offline::render();
-                    ImGui::EndPopup();
+                    ImGui::End();
                 }
             }
 

@@ -36,7 +36,7 @@ namespace satdump
 
         struct ExplorerRequestFileLoad
         {
-            std::string file_name;
+            std::string path;
             std::vector<std::pair<std::string, std::function<void(std::string, ExplorerApplication *)>>> &loaders;
         };
 

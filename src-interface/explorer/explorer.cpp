@@ -361,7 +361,7 @@ namespace satdump
 #endif
 
                     // Plugin loaders
-                    eventBus->fire_event<ExplorerRequestFileLoad>({std::filesystem::path(path).stem().string() + std::filesystem::path(path).extension().string(), loaders});
+                    eventBus->fire_event<ExplorerRequestFileLoad>({path, loaders});
 
                     // Load it
                     if (loaders.size() == 1)
