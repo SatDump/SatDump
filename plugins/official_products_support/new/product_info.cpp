@@ -69,9 +69,12 @@ namespace satdump
                      int sat_num, len;
                      std::tm timeS;
                      memset(&timeS, 0, sizeof(std::tm));
-                     if (sscanf(f->name.c_str(), "AVHR_xxx_1B_M%2d_%4d%2d%2d%2d%2d%2dZ_%*dZ_N_O_%*dZ.nat%n", &sat_num, &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min,
-                                &timeS.tm_sec, &len) == 7 &&
-                         len == f->name.size())
+                     if ((sscanf(f->name.c_str(), "AVHR_xxx_1B_M%2d_%4d%2d%2d%2d%2d%2dZ_%*dZ_N_O_%*dZ.nat%n", &sat_num, &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min,
+                                 &timeS.tm_sec, &len) == 7 &&
+                          len == f->name.size()) ||
+                         (sscanf(f->name.c_str(), "AVHR_xxx_1B_M%2d_%4d%2d%2d%2d%2d%2dZ_%*dZ_N_O_%*dZ.bz2%n", &sat_num, &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min,
+                                 &timeS.tm_sec, &len) == 7 && // TODOREWORK the rest can be compressed too perhaps?
+                          len == f->name.size()))
                      {
                          i.type = NATIVE_METOP_AVHRR;
 

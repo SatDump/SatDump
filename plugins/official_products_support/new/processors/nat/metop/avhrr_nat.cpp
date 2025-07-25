@@ -1,12 +1,15 @@
 #include "avhrr_nat.h"
 #include "common/repack.h"
+#include "core/exception.h"
 #include "core/resources.h"
+#include "libs/bzlib_utils.h"
 #include "logger.h"
 #include "metop_helper.h"
 #include "metop_nat.h"
 #include "nlohmann/json_utils.h"
 #include "projection/standard/proj_json.h"
 #include "utils/time.h"
+#include <cstdint>
 
 namespace satdump
 {
@@ -14,6 +17,8 @@ namespace satdump
     {
         void AVHRRNatProcessor::ingestFile(std::vector<uint8_t> nat_file)
         {
+            tryDecompressBzip2(nat_file);
+
             int image_width = 0;
             std::vector<uint16_t> avhrr_data[6];
             int number_of_lines = 0;

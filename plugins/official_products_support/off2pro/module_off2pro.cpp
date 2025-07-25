@@ -3,8 +3,6 @@
 #include "logger.h"
 #include "products/dataset.h"
 
-
-
 #include "../file_utils/file_utils.h"
 #include "../nc2pro/sc3/sc3_olci.h"
 #include "../nc2pro/sc3/sc3_slstr.h"
@@ -32,10 +30,6 @@ namespace off2pro
         {
             std::string eum_id = satdump::try_get_eumetsat_id(source_off_file);
 
-            // // MTG-I FCI
-            // if (eum_id == "FCI-1C-RRAD-FDHSI-FD" || eum_id == "FCI-1C-RRAD-HRFI-FD")
-            //     nc2pro::process_mtg_fci(source_off_file, pro_output_file, &progress);
-
             // Sentinel-3 OCLI
             if (eum_id.find("SEN3") != std::string::npos && eum_id.find("OL_1_EF") != std::string::npos)
                 nc2pro::process_sc3_ocli(source_off_file, pro_output_file, &progress);
@@ -50,72 +44,12 @@ namespace off2pro
         {
             std::string prefix = source_off_path.stem().string().substr(0, 14);
             std::string prefix2 = source_off_path.stem().string().substr(0, 5);
-            // if (prefix == "OR_ABI-L1b-Rad")
-            //     nc2pro::process_goesr_abi(source_off_file, pro_output_file, &progress);
             if (prefix == "gk2a_ami_le1b_")
                 nc2pro::process_gk2a_ami(source_off_file, pro_output_file, &progress);
             else if (prefix2 == "VNP02")
                 nc2pro::process_jpss_viirs(source_off_file, pro_output_file, &progress);
             else
                 logger->error("Unknown .nc file type!");
-        }
-        // else if (source_off_path.extension() == ".bz2")
-        // {
-        //     std::string prefix = source_off_path.stem().string().substr(0, 4);
-        //     if (prefix == "HS_H")
-        //         hsd2pro::process_himawari_ahi(source_off_file, pro_output_file, &progress);
-        //     else
-        //         logger->error("Unknown .bz2 file type!");
-        // }
-        // Otherwise, for now assume it's a .nat
-        else
-        {
-            // We will in the future want to decode from memory, so load it all up in RAM
-            std::vector<uint8_t> nat_file;
-            {
-                std::ifstream input_file(source_off_file, std::ios::binary);
-                input_file.seekg(0, std::ios::end);
-                const size_t nat_size = input_file.tellg();
-                nat_file.resize(nat_size);
-                input_file.seekg(0, std::ios::beg);
-                input_file.read((char *)&nat_file[0], nat_size);
-                input_file.close();
-            }
-            progress = 1;
-
-            char *identifier = (char *)&nat_file[0];
-
-            // MSG Nat
-            // if (identifier[0] == 'F' && identifier[1] == 'o' && identifier[2] == 'r' && identifier[3] == 'm' && identifier[4] == 'a' && identifier[5] == 't' && identifier[6] == 'N' &&
-            //     identifier[7] == 'a' && identifier[8] == 'm' && identifier[9] == 'e')
-            //     nat2pro::decodeMSGNat(nat_file, pro_output_file);
-
-            // // MetOp AVHRR Nat
-            // if (identifier[552] == 'A' && identifier[553] == 'V' && identifier[554] == 'H' && identifier[555] == 'R')
-            //     nat2pro::decodeAVHRRNat(nat_file, pro_output_file);
-
-            // MetOp MHS Nat
-            // if (identifier[552] == 'M' && identifier[553] == 'H' && identifier[554] == 'S' && identifier[555] == 'x')
-            //     nat2pro::decodeMHSNat(nat_file, pro_output_file);
-
-            // MetOp AMSU(A) Nat
-            // if (identifier[552] == 'A' && identifier[553] == 'M' && identifier[554] == 'S' && identifier[555] == 'A')
-            //     nat2pro::decodeAMSUNat(nat_file, pro_output_file);
-
-            // // MetOp HIRS Nat
-            // if (identifier[552] == 'H' && identifier[553] == 'I' && identifier[554] == 'R' && identifier[555] == 'S')
-            //     nat2pro::decodeHIRSNat(nat_file, pro_output_file);
-
-            // // MetOp IASI Nat
-            // else if (identifier[552] == 'I' && identifier[553] == 'A' && identifier[554] == 'S' && identifier[555] == 'I')
-            //     nat2pro::decodeIASINat(nat_file, pro_output_file);
-
-            // // MetOp GOME Nat
-            // else if (identifier[552] == 'G' && identifier[553] == 'O' && identifier[554] == 'M' && identifier[555] == 'E')
-            //     nat2pro::decodeGOMENat(nat_file, pro_output_file);
-
-            // else
-                logger->error("Unknown File Type!");
         }
 
         if (/*std::filesystem::exists(pro_output_file + "/product.cbor") ||*/ product_paths.size() > 0)
