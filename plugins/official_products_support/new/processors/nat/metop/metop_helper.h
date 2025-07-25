@@ -42,7 +42,7 @@ namespace satdump
             return info;
         }
 
-        void tryDecompressBzip2(std::vector<uint8_t> nat_file)
+        inline void tryDecompressBzip2(std::vector<uint8_t> nat_file)
         {
             // TODDOREWORK Don't hardcode mazimum size!
             if (nat_file[0] == 0x42 && nat_file[1] == 0x5a && nat_file[2] == 0x68)
