@@ -304,6 +304,7 @@ namespace satdump
             virtual void save(std::string directory);
             virtual void load(std::string file);
 
+            ImageProduct() { type = "image"; }
             virtual ~ImageProduct();
         };
     } // namespace products

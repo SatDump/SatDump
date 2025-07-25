@@ -17,8 +17,6 @@ namespace satdump
     {
         void ImageProduct::save(std::string directory)
         {
-            type = "image";
-
             if (save_as_matrix)
                 contents["save_as_matrix"] = save_as_matrix;
 

@@ -6,12 +6,10 @@
 #include "../nat2pro/formats/formats.h"
 
 #include "../file_utils/file_utils.h"
-#include "../nc2pro/fci/mtg_fci.h"
 #include "../nc2pro/sc3/sc3_olci.h"
 #include "../nc2pro/sc3/sc3_slstr.h"
 
 #include "../hsd2pro/himawari_ahi.h"
-#include "../nc2pro/abi/goesr_abi.h"
 #include "../nc2pro/ami/gk2a_ami.h"
 
 #include "../nc2pro/jpss/jpss_viirs.h"
@@ -35,12 +33,12 @@ namespace off2pro
         {
             std::string eum_id = satdump::try_get_eumetsat_id(source_off_file);
 
-            // MTG-I FCI
-            if (eum_id == "FCI-1C-RRAD-FDHSI-FD" || eum_id == "FCI-1C-RRAD-HRFI-FD")
-                nc2pro::process_mtg_fci(source_off_file, pro_output_file, &progress);
+            // // MTG-I FCI
+            // if (eum_id == "FCI-1C-RRAD-FDHSI-FD" || eum_id == "FCI-1C-RRAD-HRFI-FD")
+            //     nc2pro::process_mtg_fci(source_off_file, pro_output_file, &progress);
 
             // Sentinel-3 OCLI
-            else if (eum_id.find("SEN3") != std::string::npos && eum_id.find("OL_1_EF") != std::string::npos)
+            if (eum_id.find("SEN3") != std::string::npos && eum_id.find("OL_1_EF") != std::string::npos)
                 nc2pro::process_sc3_ocli(source_off_file, pro_output_file, &progress);
 
             else if (eum_id.find("SEN3") != std::string::npos && eum_id.find("SL_1_RBT") != std::string::npos)
@@ -53,9 +51,9 @@ namespace off2pro
         {
             std::string prefix = source_off_path.stem().string().substr(0, 14);
             std::string prefix2 = source_off_path.stem().string().substr(0, 5);
-            if (prefix == "OR_ABI-L1b-Rad")
-                nc2pro::process_goesr_abi(source_off_file, pro_output_file, &progress);
-            else if (prefix == "gk2a_ami_le1b_")
+            // if (prefix == "OR_ABI-L1b-Rad")
+            //     nc2pro::process_goesr_abi(source_off_file, pro_output_file, &progress);
+            if (prefix == "gk2a_ami_le1b_")
                 nc2pro::process_gk2a_ami(source_off_file, pro_output_file, &progress);
             else if (prefix2 == "VNP02")
                 nc2pro::process_jpss_viirs(source_off_file, pro_output_file, &progress);
@@ -89,12 +87,12 @@ namespace off2pro
             char *identifier = (char *)&nat_file[0];
 
             // MSG Nat
-            if (identifier[0] == 'F' && identifier[1] == 'o' && identifier[2] == 'r' && identifier[3] == 'm' && identifier[4] == 'a' && identifier[5] == 't' && identifier[6] == 'N' &&
-                identifier[7] == 'a' && identifier[8] == 'm' && identifier[9] == 'e')
-                nat2pro::decodeMSGNat(nat_file, pro_output_file);
+            // if (identifier[0] == 'F' && identifier[1] == 'o' && identifier[2] == 'r' && identifier[3] == 'm' && identifier[4] == 'a' && identifier[5] == 't' && identifier[6] == 'N' &&
+            //     identifier[7] == 'a' && identifier[8] == 'm' && identifier[9] == 'e')
+            //     nat2pro::decodeMSGNat(nat_file, pro_output_file);
 
             // MetOp AVHRR Nat
-            else if (identifier[552] == 'A' && identifier[553] == 'V' && identifier[554] == 'H' && identifier[555] == 'R')
+            if (identifier[552] == 'A' && identifier[553] == 'V' && identifier[554] == 'H' && identifier[555] == 'R')
                 nat2pro::decodeAVHRRNat(nat_file, pro_output_file);
 
             // MetOp MHS Nat

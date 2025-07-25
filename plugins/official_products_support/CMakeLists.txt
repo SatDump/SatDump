@@ -17,7 +17,8 @@ if(${HDF5_FOUND}) # TODOREWORK Maybe actually yes ANDROID?
     hsd2pro/*.cpp
     off2pro/*.cpp
     nc2pro/*.cpp
-    nat2pro/*.cpp)
+    nat2pro/*.cpp
+    new/*.cpp)
 
   add_library(official_products_support SHARED
               ${official_products_support_CPPS})
