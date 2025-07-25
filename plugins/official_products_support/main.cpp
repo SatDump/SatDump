@@ -3,17 +3,17 @@
 
 #include "off2pro/module_off2pro.h"
 
-#include "nc2pro/abi/abi_nc_calibrator.h"
-#include "nc2pro/fci/fci_nc_calibrator.h"
+#include "new/processors/nc/goes/abi_nc_calibrator.h"
+#include "new/processors/nc/mtg/fci_nc_calibrator.h"
 
 #include "nc2pro/jpss/viirs_nc_calibrator.h"
 
 //////////
 
-#include "nat2pro/amsu_nat_calibrator.h"
-#include "nat2pro/avhrr_nat_calibrator.h"
-#include "nat2pro/mhs_nat_calibrator.h"
-#include "nat2pro/msg_nat_calibrator.h"
+#include "new/processors/nat/metop/amsu_nat_calibrator.h"
+#include "new/processors/nat/metop/avhrr_nat_calibrator.h"
+#include "new/processors/nat/metop/mhs_nat_calibrator.h"
+#include "new/processors/nat/msg/msg_nat_calibrator.h"
 
 class OfficalProductsSupport : public satdump::Plugin
 {

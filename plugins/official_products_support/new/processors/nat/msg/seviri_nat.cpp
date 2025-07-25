@@ -36,7 +36,7 @@ namespace satdump
             return *((double *)sw);
         }
 
-        void SEVIRINatProcessor ::ingestFile(std::vector<uint8_t> file)
+        void SEVIRINatProcessor::ingestFile(std::vector<uint8_t> file)
         {
             uint8_t *buf = file.data();
 

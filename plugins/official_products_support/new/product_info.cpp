@@ -2,6 +2,11 @@
 #include "core/exception.h"
 #include "logger.h"
 #include "processors/hsd/himawari/ahi_hsd.h"
+#include "processors/nat/metop/amsu_nat.h"
+#include "processors/nat/metop/avhrr_nat.h"
+#include "processors/nat/metop/hirs_nat.h"
+#include "processors/nat/metop/iasi_nat.h"
+#include "processors/nat/metop/mhs_nat.h"
 #include "type.h"
 #include "utils/time.h"
 #include <cmath>
@@ -56,7 +61,7 @@ namespace satdump
                  },
                  []() { return std::make_shared<SEVIRINatProcessor>(); }},
 
-                {NATIVE_METOP_AVHRR, // TODOREWORK
+                {NATIVE_METOP_AVHRR,
                  [](std::unique_ptr<satdump::utils::FilesIteratorItem> &f)
                  {
                      OfficialProductInfo i;
@@ -78,7 +83,108 @@ namespace satdump
                      }
 
                      return i;
-                 }},
+                 },
+                 []() { return std::make_shared<AVHRRNatProcessor>(); }},
+
+                {NATIVE_METOP_MHS,
+                 [](std::unique_ptr<satdump::utils::FilesIteratorItem> &f)
+                 {
+                     OfficialProductInfo i;
+
+                     int sat_num, len;
+                     std::tm timeS;
+                     memset(&timeS, 0, sizeof(std::tm));
+                     if (sscanf(f->name.c_str(), "MHSx_xxx_1B_M%2d_%4d%2d%2d%2d%2d%2dZ_%*dZ_N_O_%*dZ.nat%n", &sat_num, &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min,
+                                &timeS.tm_sec, &len) == 7 &&
+                         len == f->name.size())
+                     {
+                         i.type = NATIVE_METOP_MHS;
+
+                         timeS.tm_year -= 1900;
+                         timeS.tm_mon -= 1;
+                         i.timestamp = timegm(&timeS);
+
+                         i.name = MetOpNumToName(sat_num) + " MHS " + timestamp_to_string(i.timestamp);
+                     }
+
+                     return i;
+                 },
+                 []() { return std::make_shared<MHSNatProcessor>(); }},
+
+                {NATIVE_METOP_AMSUA,
+                 [](std::unique_ptr<satdump::utils::FilesIteratorItem> &f)
+                 {
+                     OfficialProductInfo i;
+
+                     int sat_num, len;
+                     std::tm timeS;
+                     memset(&timeS, 0, sizeof(std::tm));
+                     if (sscanf(f->name.c_str(), "AMSA_xxx_1B_M%2d_%4d%2d%2d%2d%2d%2dZ_%*dZ_N_O_%*dZ.nat%n", &sat_num, &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min,
+                                &timeS.tm_sec, &len) == 7 &&
+                         len == f->name.size())
+                     {
+                         i.type = NATIVE_METOP_AMSUA;
+
+                         timeS.tm_year -= 1900;
+                         timeS.tm_mon -= 1;
+                         i.timestamp = timegm(&timeS);
+
+                         i.name = MetOpNumToName(sat_num) + " AMSU-A " + timestamp_to_string(i.timestamp);
+                     }
+
+                     return i;
+                 },
+                 []() { return std::make_shared<AMSUNatProcessor>(); }},
+
+                {NATIVE_METOP_HIRS,
+                 [](std::unique_ptr<satdump::utils::FilesIteratorItem> &f)
+                 {
+                     OfficialProductInfo i;
+
+                     int sat_num, len;
+                     std::tm timeS;
+                     memset(&timeS, 0, sizeof(std::tm));
+                     if (sscanf(f->name.c_str(), "HIRS_xxx_1B_M%2d_%4d%2d%2d%2d%2d%2dZ_%*dZ_N_O_%*dZ.nat%n", &sat_num, &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min,
+                                &timeS.tm_sec, &len) == 7 &&
+                         len == f->name.size())
+                     {
+                         i.type = NATIVE_METOP_HIRS;
+
+                         timeS.tm_year -= 1900;
+                         timeS.tm_mon -= 1;
+                         i.timestamp = timegm(&timeS);
+
+                         i.name = MetOpNumToName(sat_num) + " HIRS " + timestamp_to_string(i.timestamp);
+                     }
+
+                     return i;
+                 },
+                 []() { return std::make_shared<HIRSNatProcessor>(); }},
+
+                {NATIVE_METOP_IASI,
+                 [](std::unique_ptr<satdump::utils::FilesIteratorItem> &f)
+                 {
+                     OfficialProductInfo i;
+
+                     int sat_num, len;
+                     std::tm timeS;
+                     memset(&timeS, 0, sizeof(std::tm));
+                     if (sscanf(f->name.c_str(), "IASI_xxx_1C_M%2d_%4d%2d%2d%2d%2d%2dZ_%*dZ_N_O_%*dZ.nat%n", &sat_num, &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min,
+                                &timeS.tm_sec, &len) == 7 &&
+                         len == f->name.size())
+                     {
+                         i.type = NATIVE_METOP_IASI;
+
+                         timeS.tm_year -= 1900;
+                         timeS.tm_mon -= 1;
+                         i.timestamp = timegm(&timeS);
+
+                         i.name = MetOpNumToName(sat_num) + " IASI " + timestamp_to_string(i.timestamp);
+                     }
+
+                     return i;
+                 },
+                 []() { return std::make_shared<IASINatProcessor>(); }},
 
                 {NETCDF_MTG_FCI,
                  [](std::unique_ptr<satdump::utils::FilesIteratorItem> &f)

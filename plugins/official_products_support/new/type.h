@@ -14,6 +14,11 @@ namespace satdump
 
             // MetOp
             NATIVE_METOP_AVHRR,
+            NATIVE_METOP_MHS,
+            NATIVE_METOP_AMSUA,
+            NATIVE_METOP_HIRS,
+            NATIVE_METOP_IASI,
+            NATIVE_METOP_GOME,
 
             // MTG
             NETCDF_MTG_FCI,

@@ -3,7 +3,7 @@
 #include "logger.h"
 #include "products/dataset.h"
 
-#include "../nat2pro/formats/formats.h"
+
 
 #include "../file_utils/file_utils.h"
 #include "../nc2pro/sc3/sc3_olci.h"
@@ -90,31 +90,31 @@ namespace off2pro
             //     identifier[7] == 'a' && identifier[8] == 'm' && identifier[9] == 'e')
             //     nat2pro::decodeMSGNat(nat_file, pro_output_file);
 
-            // MetOp AVHRR Nat
-            if (identifier[552] == 'A' && identifier[553] == 'V' && identifier[554] == 'H' && identifier[555] == 'R')
-                nat2pro::decodeAVHRRNat(nat_file, pro_output_file);
+            // // MetOp AVHRR Nat
+            // if (identifier[552] == 'A' && identifier[553] == 'V' && identifier[554] == 'H' && identifier[555] == 'R')
+            //     nat2pro::decodeAVHRRNat(nat_file, pro_output_file);
 
             // MetOp MHS Nat
-            else if (identifier[552] == 'M' && identifier[553] == 'H' && identifier[554] == 'S' && identifier[555] == 'x')
-                nat2pro::decodeMHSNat(nat_file, pro_output_file);
+            // if (identifier[552] == 'M' && identifier[553] == 'H' && identifier[554] == 'S' && identifier[555] == 'x')
+            //     nat2pro::decodeMHSNat(nat_file, pro_output_file);
 
             // MetOp AMSU(A) Nat
-            else if (identifier[552] == 'A' && identifier[553] == 'M' && identifier[554] == 'S' && identifier[555] == 'A')
-                nat2pro::decodeAMSUNat(nat_file, pro_output_file);
+            // if (identifier[552] == 'A' && identifier[553] == 'M' && identifier[554] == 'S' && identifier[555] == 'A')
+            //     nat2pro::decodeAMSUNat(nat_file, pro_output_file);
 
-            // MetOp HIRS Nat
-            else if (identifier[552] == 'H' && identifier[553] == 'I' && identifier[554] == 'R' && identifier[555] == 'S')
-                nat2pro::decodeHIRSNat(nat_file, pro_output_file);
+            // // MetOp HIRS Nat
+            // if (identifier[552] == 'H' && identifier[553] == 'I' && identifier[554] == 'R' && identifier[555] == 'S')
+            //     nat2pro::decodeHIRSNat(nat_file, pro_output_file);
 
-            // MetOp IASI Nat
-            else if (identifier[552] == 'I' && identifier[553] == 'A' && identifier[554] == 'S' && identifier[555] == 'I')
-                nat2pro::decodeIASINat(nat_file, pro_output_file);
+            // // MetOp IASI Nat
+            // else if (identifier[552] == 'I' && identifier[553] == 'A' && identifier[554] == 'S' && identifier[555] == 'I')
+            //     nat2pro::decodeIASINat(nat_file, pro_output_file);
 
-            // MetOp GOME Nat
-            else if (identifier[552] == 'G' && identifier[553] == 'O' && identifier[554] == 'M' && identifier[555] == 'E')
-                nat2pro::decodeGOMENat(nat_file, pro_output_file);
+            // // MetOp GOME Nat
+            // else if (identifier[552] == 'G' && identifier[553] == 'O' && identifier[554] == 'M' && identifier[555] == 'E')
+            //     nat2pro::decodeGOMENat(nat_file, pro_output_file);
 
-            else
+            // else
                 logger->error("Unknown File Type!");
         }
 
