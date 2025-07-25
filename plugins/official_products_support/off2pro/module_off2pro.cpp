@@ -9,7 +9,6 @@
 #include "../nc2pro/sc3/sc3_olci.h"
 #include "../nc2pro/sc3/sc3_slstr.h"
 
-#include "../hsd2pro/himawari_ahi.h"
 #include "../nc2pro/ami/gk2a_ami.h"
 
 #include "../nc2pro/jpss/jpss_viirs.h"
@@ -60,14 +59,14 @@ namespace off2pro
             else
                 logger->error("Unknown .nc file type!");
         }
-        else if (source_off_path.extension() == ".bz2")
-        {
-            std::string prefix = source_off_path.stem().string().substr(0, 4);
-            if (prefix == "HS_H")
-                hsd2pro::process_himawari_ahi(source_off_file, pro_output_file, &progress);
-            else
-                logger->error("Unknown .bz2 file type!");
-        }
+        // else if (source_off_path.extension() == ".bz2")
+        // {
+        //     std::string prefix = source_off_path.stem().string().substr(0, 4);
+        //     if (prefix == "HS_H")
+        //         hsd2pro::process_himawari_ahi(source_off_file, pro_output_file, &progress);
+        //     else
+        //         logger->error("Unknown .bz2 file type!");
+        // }
         // Otherwise, for now assume it's a .nat
         else
         {

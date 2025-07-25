@@ -21,6 +21,9 @@ namespace satdump
 
             // GOES
             NETCDF_GOES_ABI,
+
+            // Himawari
+            HSD_HIMAWARI_AHI,
         };
     } // namespace official
 } // namespace satdump

@@ -32,7 +32,8 @@ namespace satdump
                     if (f)
                     {
                         toproc_info = parseOfficialInfo(f);
-                        break;
+                        if (toproc_info.type != satdump::official::PRODUCT_NONE)
+                            break;
                     }
                 }
             }

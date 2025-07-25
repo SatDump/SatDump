@@ -22,14 +22,13 @@ namespace satdump
             std::vector<uint8_t> getPayload()
             {
                 std::vector<uint8_t> v;
-                std::ifstream f(path, std::ios::binary);
-                char c;
-                while (!f.eof())
-                {
-                    f.read(&c, 1);
-                    v.push_back(c);
-                }
-                f.close();
+                std::ifstream input_file(path, std::ios::binary);
+                input_file.seekg(0, std::ios::end);
+                const size_t fsize = input_file.tellg();
+                v.resize(fsize);
+                input_file.seekg(0, std::ios::beg);
+                input_file.read((char *)&v[0], fsize);
+                input_file.close();
                 return v;
             }
         };

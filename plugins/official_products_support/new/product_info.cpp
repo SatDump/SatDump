@@ -1,6 +1,8 @@
 #include "product_info.h"
 #include "core/exception.h"
 #include "logger.h"
+#include "processors/hsd/himawari/ahi_hsd.h"
+#include "type.h"
 #include "utils/time.h"
 #include <cmath>
 #include <cstring>
@@ -133,6 +135,34 @@ namespace satdump
                      return i;
                  },
                  []() { return std::make_shared<ABINcProcessor>(); }},
+
+                {HSD_HIMAWARI_AHI,
+                 [](std::unique_ptr<satdump::utils::FilesIteratorItem> &f)
+                 {
+                     OfficialProductInfo i;
+
+                     int sat_num, len;
+                     std::tm timeS;
+                     memset(&timeS, 0, sizeof(std::tm));
+                     char mode[5];
+                     if (sscanf(f->name.c_str(), "HS_H%2d_%4d%2d%2d_%2d%2d_B%*d_%4s_R%*d_S%*d.DAT.bz2%n", &sat_num, &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min, mode,
+                                &len) == 7 &&
+                         len == f->name.size())
+                     {
+                         i.type = HSD_HIMAWARI_AHI;
+
+                         timeS.tm_year -= 1900;
+                         timeS.tm_mon -= 1;
+                         i.timestamp = timegm(&timeS);
+
+                         i.name = "Himawari-" + std::to_string(sat_num) + " AHI (" + std::string(mode) + ") " + timestamp_to_string(i.timestamp);
+
+                         i.group_id = std::string(mode) + "_" + std::to_string((time_t)i.timestamp);
+                     }
+
+                     return i;
+                 },
+                 []() { return std::make_shared<AHIHsdProcessor>(); }},
             };
         }
 
