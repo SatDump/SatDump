@@ -7,6 +7,7 @@
 #include "processors/nat/metop/hirs_nat.h"
 #include "processors/nat/metop/iasi_nat.h"
 #include "processors/nat/metop/mhs_nat.h"
+#include "processors/nc/gk2a/ami_nc.h"
 #include "type.h"
 #include "utils/time.h"
 #include <cmath>
@@ -272,6 +273,41 @@ namespace satdump
                      return i;
                  },
                  []() { return std::make_shared<AHIHsdProcessor>(); }},
+
+                {NETCDF_GK2A_AMI,
+                 [](std::unique_ptr<satdump::utils::FilesIteratorItem> &f)
+                 {
+                     OfficialProductInfo i;
+
+                     int len;
+                     std::tm timeS;
+                     memset(&timeS, 0, sizeof(std::tm));
+                     char channel[6];
+                     char mode[3];
+                     char extra[6];
+                     if (sscanf(f->name.c_str(), "gk2a_ami_le1b_%5s_%2s%5s_%4d%2d%2d%2d%2d.nc%n", channel, mode, extra, &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min,
+                                &len) == 8 &&
+                         len == f->name.size())
+                     {
+                         i.type = NETCDF_GK2A_AMI;
+
+                         timeS.tm_year -= 1900;
+                         timeS.tm_mon -= 1;
+                         i.timestamp = timegm(&timeS);
+
+                         if (std::string(mode) == "fd")
+                             i.name = "GK-2A AMI (Full Disk) " + timestamp_to_string(i.timestamp);
+                         else if (std::string(mode) == "la")
+                             i.name = "GK-2A AMI (Local Area) " + timestamp_to_string(i.timestamp);
+                         else
+                             i.name = "GK-2A AMI " + timestamp_to_string(i.timestamp);
+
+                         i.group_id = std::string(mode) + "_" + std::to_string((time_t)i.timestamp);
+                     }
+
+                     return i;
+                 },
+                 []() { return std::make_shared<AMINcProcessor>(); }},
             };
         }
 

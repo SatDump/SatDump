@@ -7,8 +7,6 @@
 #include "../nc2pro/sc3/sc3_olci.h"
 #include "../nc2pro/sc3/sc3_slstr.h"
 
-#include "../nc2pro/ami/gk2a_ami.h"
-
 #include "../nc2pro/jpss/jpss_viirs.h"
 
 namespace off2pro
@@ -44,9 +42,7 @@ namespace off2pro
         {
             std::string prefix = source_off_path.stem().string().substr(0, 14);
             std::string prefix2 = source_off_path.stem().string().substr(0, 5);
-            if (prefix == "gk2a_ami_le1b_")
-                nc2pro::process_gk2a_ami(source_off_file, pro_output_file, &progress);
-            else if (prefix2 == "VNP02")
+            if (prefix2 == "VNP02")
                 nc2pro::process_jpss_viirs(source_off_file, pro_output_file, &progress);
             else
                 logger->error("Unknown .nc file type!");
