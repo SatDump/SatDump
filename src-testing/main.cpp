@@ -13,6 +13,7 @@
 #include "init.h"
 #include "logger.h"
 
+#include "new/procfile.h"
 #include "new/product_info.h"
 #include "new/type.h"
 #include "utils/file/file_iterators.h"
@@ -35,7 +36,7 @@ int main(int argc, char *argv[])
     completeLoggerInit();
     logger->set_level(slog::LOG_TRACE);
 
-#if 1
+#if 0
 
     std::string path = argv[1];
 
@@ -102,8 +103,8 @@ int main(int argc, char *argv[])
     }
 
 #else
-#if 0
-    std::unique_ptr<satdump::utils::FilesIterator> fit = std::make_unique<satdump::utils::FolderFilesIterator>("/tmp/satdump_official/");
+#if 1
+    std::unique_ptr<satdump::utils::FilesIterator> fit = std::make_unique<satdump::utils::FolderFilesIterator>(argv[1]);
 #else
     std::unique_ptr<satdump::utils::FilesIterator> fit = std::make_unique<satdump::utils::ZipFilesIterator>(
         "/tmp/satdump_official/W_XX-EUMETSAT-Darmstadt,IMG+SAT,MTI1+FCI-1C-RRAD-FDHSI-FD--x-x---x_C_EUMT_20250724120349_IDPFI_OPE_20250724120007_20250724120935_N__O_0073_0000.zip");
@@ -116,17 +117,17 @@ int main(int argc, char *argv[])
         if (f)
         {
             std::string identified;
-            for (auto &p : test::registered_products)
+            for (auto &p : satdump::official::getRegisteredProducts())
             {
                 auto finfo = p.testFile(f);
-                if (finfo.type != test::PRODUCT_NONE)
+                if (finfo.type != satdump::official::PRODUCT_NONE)
                     identified = (finfo.group_id.size() ? finfo.group_id + " | " : std::string()) + finfo.name; //+ " " = f->name);
             }
 
             if (identified.size())
                 logger->info(f->name + " =======> " + identified);
             else
-                logger->info(f->name);
+                logger->error(f->name);
 
 #if 0
             uint32_t test1, test2, test3;
