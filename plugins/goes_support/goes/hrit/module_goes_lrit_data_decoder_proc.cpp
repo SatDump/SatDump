@@ -1,13 +1,13 @@
-#include "module_goes_lrit_data_decoder.h"
-#include "lrit_header.h"
-#include "logger.h"
-#include "libs/miniz/miniz.h"
-#include "libs/miniz/miniz_zip.h"
-#include "imgui/imgui_image.h"
-#include <filesystem>
 #include "image/io.h"
 #include "image/processing.h"
+#include "imgui/imgui_image.h"
+#include "libs/miniz/miniz.h"
+#include "libs/miniz/miniz_zip.h"
+#include "logger.h"
+#include "lrit_header.h"
+#include "module_goes_lrit_data_decoder.h"
 #include "utils/string.h"
+#include <filesystem>
 
 namespace goes
 {
@@ -90,7 +90,8 @@ namespace goes
                     if (meta.channel == "RRQPE" && img.get(0) == 255)
                         image::linear_invert(img);
                 }
-                productizer.saveImage(img, 8 /*bit depth on GOES is ALWAYS 8*/, directory + images_subdir, meta.satellite_name, meta.satellite_short_name, meta.channel, meta.scan_time, meta.region, meta.image_navigation_record.get(), meta.image_data_function_record.get());
+                productizer.saveImage(img, 8 /*bit depth on GOES is ALWAYS 8*/, directory + images_subdir, meta.satellite_name, meta.satellite_short_name, meta.channel, meta.scan_time, meta.region,
+                                      meta.image_navigation_record.get(), meta.image_data_function_record.get());
                 if (meta.satellite_name == "Himawari" || meta.is_goesn)
                     productizer.setInstrumentID("abi");
             }
@@ -98,6 +99,7 @@ namespace goes
 
         void GOESLRITDataDecoderModule::processLRITFile(::lrit::LRITFile &file)
         {
+#if 1
             std::string current_filename = file.filename;
 
             ::lrit::PrimaryHeader primary_header = file.getHeader<::lrit::PrimaryHeader>();
@@ -492,8 +494,9 @@ namespace goes
             }
             // Otherwise, write as generic, unknown stuff. This should not happen
             // Do not write if already saving LRIT data
-            else if (write_unknown && !write_lrit)
-                saveLRITFile(file, directory + "/LRIT");
+            else             if (write_unknown && !write_lrit)
+#endif
+            saveLRITFile(file, directory + "/LRIT");
         }
     } // namespace hrit
 } // namespace goes

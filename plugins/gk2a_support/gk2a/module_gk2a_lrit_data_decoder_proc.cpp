@@ -1,13 +1,15 @@
-#include "module_gk2a_lrit_data_decoder.h"
+#include "image/io.h"
+#include "image/jpeg12_utils.h"
+#include "image/jpeg_utils.h"
+#include "imgui/imgui_image.h"
 #include "logger.h"
 #include "lrit_header.h"
-#include <fstream>
-#include "image/jpeg_utils.h"
-#include "image/jpeg12_utils.h"
-#include "image/io.h"
-#include "imgui/imgui_image.h"
-#include <filesystem>
+#include "module_gk2a_lrit_data_decoder.h"
 #include "utils/string.h"
+#include "xrit/gk2a/decomp.h"
+#include "xrit/gk2a/gk2a_headers.h"
+#include <filesystem>
+#include <fstream>
 
 extern "C"
 {
@@ -18,21 +20,13 @@ namespace gk2a
 {
     namespace lrit
     {
-        void GK2ALRITDataDecoderModule::saveImageP(GK2AxRITProductMeta meta, image::Image img)
-        {
-            if (meta.channel == "" || meta.satellite_name == "" || meta.satellite_short_name == "" || meta.scan_time == 0)
-                image::save_img(img, std::string(directory + "/IMAGES/Unknown/" + meta.filename).c_str());
-            else
-                productizer.saveImage(img, img.depth() /*this is what the calibration uses!*/, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, meta.channel, meta.scan_time, "", meta.image_navigation_record.get(), meta.image_data_function_record.get());
-        }
-
         void GK2ALRITDataDecoderModule::processLRITFile(::lrit::LRITFile &file)
         {
             std::string current_filename = file.filename;
 
             ::lrit::PrimaryHeader primary_header = file.getHeader<::lrit::PrimaryHeader>();
 
-            if (file.custom_flags[IS_ENCRYPTED] && decryption_keys.size() > 0) // Decrypt
+            if (file.custom_flags[satdump::xrit::gk2a::IS_ENCRYPTED] && decryption_keys.size() > 0) // Decrypt
             {
                 logger->info("Decrypting....");
                 uint8_t inblock[8], outblock[8];
@@ -49,7 +43,7 @@ namespace gk2a
 
                 int blocks = (payloadSize + pad) / 8;
 
-                uint64_t key = decryption_keys[file.custom_flags[KEY_INDEX]];
+                uint64_t key = decryption_keys[file.custom_flags[satdump::xrit::gk2a::KEY_INDEX]];
 
                 // Init a libtom instance
                 symmetric_key sk;
@@ -73,9 +67,33 @@ namespace gk2a
                 file.lrit_data[file.all_headers[KeyHeader::TYPE]] = 0; // Type
             }
 
-            // Check if this is image data, and if so also write it as an image
-            if (primary_header.file_type_code == 0 && file.hasHeader<::lrit::ImageStructureRecord>())
+            // CHeck if we lack decryption, if so, we're stuck
+            if (file.custom_flags[satdump::xrit::gk2a::IS_ENCRYPTED] && decryption_keys.size() <= 0)
             {
+                if (!std::filesystem::exists(directory + "/LRIT_ENCRYPTED"))
+                    std::filesystem::create_directory(directory + "/LRIT_ENCRYPTED");
+
+                logger->info("Writing file " + directory + "/LRIT_ENCRYPTED/" + file.filename + "...");
+
+                // Write file out
+                std::ofstream fileo(directory + "/LRIT_ENCRYPTED/" + file.filename, std::ios::binary);
+                fileo.write((char *)file.lrit_data.data(), file.lrit_data.size());
+                fileo.close();
+                return;
+            }
+
+            satdump::xrit::XRITFileInfo finfo = satdump::xrit::identifyXRITFIle(file);
+
+            // Check if this is image data, and if so also write it as an image
+            if (finfo.type != satdump::xrit::XRIT_UNKNOWN)
+            {
+#if 1
+                if (primary_header.file_type_code == 0 && file.hasHeader<::lrit::ImageStructureRecord>())
+                    if (finfo.type == satdump::xrit::XRIT_GK2A_AMI)
+                        satdump::xrit::gk2a::decompressGK2AHritFileIfRequired(file);
+
+                processor.push(finfo, file);
+#else
                 if (file.custom_flags[IS_ENCRYPTED] && decryption_keys.size() <= 0) // We lack decryption
                 {
                     if (!std::filesystem::exists(directory + "/LRIT_ENCRYPTED"))
@@ -179,11 +197,8 @@ namespace gk2a
                                 wip_img->imageStatus = RECEIVING;
                             }
 
-                            segmentedDecoder = SegmentedLRITImageDecoder(image_structure_record.bit_per_pixel > 8 ? 16 : 8,
-                                                                         10,
-                                                                         image_structure_record.columns_count,
-                                                                         image_structure_record.lines_count,
-                                                                         image_id);
+                            segmentedDecoder =
+                                SegmentedLRITImageDecoder(image_structure_record.bit_per_pixel > 8 ? 16 : 8, 10, image_structure_record.columns_count, image_structure_record.lines_count, image_id);
                             segmentedDecoder.meta = lmeta;
                         }
 
@@ -194,7 +209,8 @@ namespace gk2a
                             seg_number = std::stoi(header_parts[6].substr(0, header_parts.size() - 4)) - 1;
                         else
                             logger->critical("Could not parse segment number from filename!");
-                        image::Image image(&file.lrit_data[primary_header.total_header_length], image_structure_record.bit_per_pixel > 8 ? 16 : 8, image_structure_record.columns_count, image_structure_record.lines_count, 1);
+                        image::Image image(&file.lrit_data[primary_header.total_header_length], image_structure_record.bit_per_pixel > 8 ? 16 : 8, image_structure_record.columns_count,
+                                           image_structure_record.lines_count, 1);
                         segmentedDecoder.pushSegment(image, seg_number);
 
                         // If the UI is active, update texture
@@ -227,6 +243,7 @@ namespace gk2a
                         saveImageP(lmeta, image);
                     }
                 }
+#endif
             }
             else if (primary_header.file_type_code == 255)
             {
@@ -273,5 +290,5 @@ namespace gk2a
                 fileo.close();
             }
         }
-    } // namespace avhrr
-} // namespace metop
+    } // namespace lrit
+} // namespace gk2a

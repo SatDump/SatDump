@@ -9,7 +9,6 @@
 #include "imgui/imgui_image.h"
 #include "libs/bzlib_utils.h"
 #include "logger.h"
-#include "lrit_header.h"
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -19,36 +18,13 @@ namespace himawari
     namespace himawaricast
     {
         HimawariCastDataDecoderModule::HimawariCastDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters), productizer("ahi", true, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
             fsfsm_enable_output = false;
+            processor.directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/IMAGES";
         }
 
-        HimawariCastDataDecoderModule::~HimawariCastDataDecoderModule()
-        {
-            for (std::pair<const std::string, SegmentedLRITImageDecoder> &dec : segmented_decoders)
-            {
-                std::string channel_name = dec.first;
-                std::string current_filename = segmented_decoders_filenames[channel_name];
-                saveImageP(segmented_decoders[channel_name].meta, segmented_decoders[channel_name].image);
-                // segmented_decoders[channel_name].image.clear();
-                // segmented_decoders.erase(channel_name);
-                // segmented_decoders_filenames.erase(channel_name);
-            }
-        }
-
-        void HimawariCastDataDecoderModule::saveImageP(HIMxRITProductMeta meta, image::Image &img)
-        {
-            if (meta.channel == -1 || meta.satellite_name == "" || meta.satellite_short_name == "" || meta.scan_time == 0)
-            {
-                image::save_img(img, directory + "/IMAGES/Unknown/" + meta.filename);
-            }
-            else
-            {
-                productizer.saveImage(img, img.depth() /*THIS IS VALID FOR CALIBRATION*/, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, std::to_string(meta.channel),
-                                      meta.scan_time, "", meta.image_navigation_record.get(), meta.image_data_function_record.get());
-            }
-        }
+        HimawariCastDataDecoderModule::~HimawariCastDataDecoderModule() { processor.flush(); }
 
         void HimawariCastDataDecoderModule::process()
         {
@@ -163,132 +139,14 @@ namespace himawari
                                             continue;
 
                                         // Check if this has a filename
-                                        if (lfile.hasHeader<::lrit::AnnotationRecord>())
+                                        logger->info("New xRIT file : " + lfile.filename);
+
+                                        satdump::xrit::XRITFileInfo finfo = satdump::xrit::identifyXRITFIle(lfile);
+
+                                        // Check if this is image data, and if so also write it as an image
+                                        if (finfo.type != satdump::xrit::XRIT_UNKNOWN)
                                         {
-                                            ::lrit::AnnotationRecord annotation_record = lfile.getHeader<::lrit::AnnotationRecord>();
-
-                                            std::string current_filename = std::string(annotation_record.annotation_text.data());
-
-                                            std::replace(current_filename.begin(), current_filename.end(), '/', '_');  // Safety
-                                            std::replace(current_filename.begin(), current_filename.end(), '\\', '_'); // Safety
-
-                                            logger->info("New xRIT file : " + current_filename);
-
-                                            // Check if this is image data
-                                            if (lfile.hasHeader<::lrit::ImageStructureRecord>())
-                                            {
-                                                ::lrit::ImageStructureRecord image_structure_record = lfile.getHeader<::lrit::ImageStructureRecord>();
-                                                logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" +
-                                                              std::to_string(image_structure_record.lines_count));
-
-                                                HIMxRITProductMeta lmeta;
-                                                lmeta.filename = file.name;
-
-                                                // Try to parse navigation
-                                                if (lfile.hasHeader<::lrit::ImageNavigationRecord>())
-                                                    lmeta.image_navigation_record = std::make_shared<::lrit::ImageNavigationRecord>(lfile.getHeader<::lrit::ImageNavigationRecord>());
-
-                                                // Try to parse calibration
-                                                if (lfile.hasHeader<::lrit::ImageDataFunctionRecord>())
-                                                    lmeta.image_data_function_record = std::make_shared<::lrit::ImageDataFunctionRecord>(lfile.getHeader<::lrit::ImageDataFunctionRecord>());
-
-                                                // Parse image
-                                                image::Image image;
-                                                if (image_structure_record.bit_per_pixel == 8)
-                                                {
-                                                    image = image::Image(&lfile.lrit_data[primary_header.total_header_length], 8, image_structure_record.columns_count,
-                                                                         image_structure_record.lines_count, 1);
-                                                }
-                                                else if (image_structure_record.bit_per_pixel == 16)
-                                                {
-                                                    image::Image image2(16, image_structure_record.columns_count, image_structure_record.lines_count, 1);
-
-                                                    for (long long int i = 0; i < image_structure_record.columns_count * image_structure_record.lines_count; i++)
-                                                        image2.set(i, ((&lfile.lrit_data[primary_header.total_header_length])[i * 2 + 0] << 8 |
-                                                                       (&lfile.lrit_data[primary_header.total_header_length])[i * 2 + 1]));
-
-                                                    image = image2;
-
-                                                    // Needs to be shifted up by 4
-                                                    for (long long int i = 0; i < image_structure_record.columns_count * image_structure_record.lines_count; i++)
-                                                        image.set(i, image.get(i) << 6);
-                                                }
-
-                                                std::string channel_name = current_filename.substr(4, 7);
-                                                int segment = std::stoi(current_filename.substr(current_filename.size() - 3, current_filename.size())) - 1;
-                                                long id = std::stoll(current_filename.substr(12, 12));
-
-                                                logger->debug("Channel %s segment %d id %d", channel_name.c_str(), segment, id);
-
-                                                // Parse channel number
-                                                if (channel_name == "DK01VIS")
-                                                    lmeta.channel = 3;
-                                                else if (channel_name == "DK01IR4")
-                                                    lmeta.channel = 7;
-                                                else if (channel_name == "DK01IR3")
-                                                    lmeta.channel = 8;
-                                                else if (channel_name == "DK01IR1")
-                                                    lmeta.channel = 13;
-                                                else if (channel_name == "DK01IR2")
-                                                    lmeta.channel = 15;
-                                                else if (channel_name == "DK01B04")
-                                                    lmeta.channel = 4;
-                                                else if (channel_name == "DK01B05")
-                                                    lmeta.channel = 5;
-                                                else if (channel_name == "DK01B06")
-                                                    lmeta.channel = 6;
-                                                else if (channel_name == "DK01B07")
-                                                    lmeta.channel = 7;
-                                                else if (channel_name == "DK01B08")
-                                                    lmeta.channel = 8;
-                                                else if (channel_name == "DK01B09")
-                                                    lmeta.channel = 9;
-                                                else if (channel_name == "DK01B10")
-                                                    lmeta.channel = 10;
-                                                else if (channel_name == "DK01B11")
-                                                    lmeta.channel = 11;
-                                                else if (channel_name == "DK01B12")
-                                                    lmeta.channel = 12;
-                                                else if (channel_name == "DK01B13")
-                                                    lmeta.channel = 13;
-                                                else if (channel_name == "DK01B14")
-                                                    lmeta.channel = 14;
-                                                else if (channel_name == "DK01B15")
-                                                    lmeta.channel = 15;
-                                                else if (channel_name == "DK01B16")
-                                                    lmeta.channel = 16;
-
-                                                // Scan timestamp
-                                                {
-                                                    time_t tttt = time(0);
-                                                    std::tm scanTimestamp = *gmtime(&tttt);
-                                                    std::string scanTime = current_filename.substr(12, 12);
-                                                    strptime(scanTime.c_str(), "%Y%m%d%H%M", &scanTimestamp);
-                                                    scanTimestamp.tm_sec = 0;
-                                                    lmeta.scan_time = timegm(&scanTimestamp);
-                                                }
-
-                                                lmeta.satellite_name = "Himawari";
-                                                lmeta.satellite_short_name = "HIM";
-
-                                                if (segmented_decoders.count(channel_name) != 0 && (segmented_decoders[channel_name].image_id != id || segmented_decoders[channel_name].isComplete()))
-                                                {
-                                                    saveImageP(segmented_decoders[channel_name].meta, segmented_decoders[channel_name].image);
-                                                    segmented_decoders[channel_name].image.clear();
-                                                    segmented_decoders.erase(channel_name);
-                                                    segmented_decoders_filenames.erase(channel_name);
-                                                }
-
-                                                if (segmented_decoders.count(channel_name) == 0)
-                                                {
-                                                    segmented_decoders.insert(
-                                                        {channel_name, SegmentedLRITImageDecoder(image.depth(), 10, image_structure_record.columns_count, image_structure_record.lines_count, id)});
-                                                    segmented_decoders_filenames.insert({channel_name, current_filename});
-                                                    segmented_decoders[channel_name].meta = lmeta;
-                                                }
-
-                                                segmented_decoders[channel_name].pushSegment(image, segment);
-                                            }
+                                            processor.push(finfo, lfile);
                                         }
                                         else
                                         {

@@ -45,7 +45,7 @@ namespace satdump
             FolderFilesIterator(std::string folder) : folder(folder) { filesIterator = std::filesystem::recursive_directory_iterator(folder); }
             ~FolderFilesIterator() {}
 
-            bool getNext(std::unique_ptr<FilesIteratorItem> &v)
+            bool getNext(std::shared_ptr<FilesIteratorItem> &v)
             {
                 bool vv = filesIterator != std::filesystem::recursive_directory_iterator();
                 v.reset();

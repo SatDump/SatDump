@@ -297,6 +297,8 @@ namespace satdump
                     else if (meta.type == XRIT_GOES_ABI || meta.type == XRIT_GOES_HIMAWARI_AHI || meta.type == XRIT_GOESN_IMAGER)
                         proj_cfg["sweep_x"] = true;
                     else if (meta.type == XRIT_GK2A_AMI)
+                        proj_cfg["sweep_x"] = false;
+                    else if (meta.type == XRIT_HIMAWARI_AHI)
                         proj_cfg["sweep_x"] = true;
                     else
                         proj_cfg["sweep_x"] = false;
@@ -363,6 +365,10 @@ namespace satdump
                         logger->error("Image was already contained in product! This should not happen!");
                     pro->contents["xrit_projs"][channel] = proj_cfg; // TODOREWORKXRIT
 
+                    // TODOREWORKXRIT HRV is a pita
+                    if (meta.type == XRIT_MSG_SEVIRI && meta.channel == "12")
+                        proj_cfg.clear();
+
                     // TODOREWORKXRIT recheck this logic!
                     if (proj_cfg.size() > 0)
                     {
@@ -380,7 +386,7 @@ namespace satdump
                             }
 
                             double final_width = pro->get_proj_cfg(-1)["width"].get<int>();
-                            logger->critical(final_width);
+                            // logger->critical(final_width);
 
                             // Update scales. TODOREWORK the weird case of HRV
                             for (auto &h : pro->images)

@@ -4,6 +4,7 @@
 #include "common/lrit/lrit_productizer.h"
 #include "data/lrit_data.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
+#include "xrit/processor/xrit_channel_processor.h"
 
 namespace gk2a
 {
@@ -12,19 +13,13 @@ namespace gk2a
         class GK2ALRITDataDecoderModule : public satdump::pipeline::base::FileStreamToFileStreamModule
         {
         protected:
+            satdump::xrit::XRITChannelProcessor processor;
+
             bool write_images;
             bool write_additional;
             bool write_unknown;
 
             std::string directory;
-
-            enum CustomFileParams
-            {
-                JPG_COMPRESSED,
-                J2K_COMPRESSED,
-                IS_ENCRYPTED,
-                KEY_INDEX,
-            };
 
             struct wip_images
             {
@@ -37,15 +32,11 @@ namespace gk2a
                 uint32_t *textureBuffer;
             };
 
-            std::map<std::string, SegmentedLRITImageDecoder> segmentedDecoders;
             std::map<std::string, std::unique_ptr<wip_images>> all_wip_images;
 
             std::map<int, uint64_t> decryption_keys;
 
             void processLRITFile(::lrit::LRITFile &file);
-
-            ::lrit::LRITProductizer productizer;
-            void saveImageP(GK2AxRITProductMeta meta, image::Image img);
 
         public:
             GK2ALRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

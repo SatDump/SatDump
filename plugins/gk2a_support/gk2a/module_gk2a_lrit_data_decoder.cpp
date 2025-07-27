@@ -11,6 +11,7 @@
 #include "logger.h"
 #include "lrit_header.h"
 #include "utils/http.h"
+#include "xrit/gk2a/gk2a_headers.h"
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -21,10 +22,10 @@ namespace gk2a
     {
         GK2ALRITDataDecoderModule::GK2ALRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
             : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters), write_images(parameters["write_images"].get<bool>()),
-              write_additional(parameters["write_additional"].get<bool>()), write_unknown(parameters["write_unknown"].get<bool>()),
-              productizer("ami", false, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
+              write_additional(parameters["write_additional"].get<bool>()), write_unknown(parameters["write_unknown"].get<bool>())
         {
             fsfsm_enable_output = false;
+            processor.directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/IMAGES";
         }
 
         GK2ALRITDataDecoderModule::~GK2ALRITDataDecoderModule()
@@ -46,6 +47,8 @@ namespace gk2a
 
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
+
+            this->directory = directory;
 
             uint8_t cadu[1024];
 
@@ -134,52 +137,25 @@ namespace gk2a
 
             ::lrit::LRITDemux lrit_demux;
 
-            this->directory = directory;
-
             lrit_demux.onParseHeader = [](::lrit::LRITFile &file) -> void
             {
-                // Check if this is image data
-                if (file.hasHeader<::lrit::ImageStructureRecord>())
-                {
-                    ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>(); //(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
-                    logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
-
-                    if (image_structure_record.compression_flag == 2 /* Progressive JPEG */)
-                    {
-                        logger->debug("JPEG Compression is used, decompressing...");
-                        file.custom_flags.insert_or_assign(JPG_COMPRESSED, true);
-                        file.custom_flags.insert_or_assign(J2K_COMPRESSED, false);
-                    }
-                    else if (image_structure_record.compression_flag == 1 /* Wavelet */)
-                    {
-                        logger->debug("Wavelet Compression is used, decompressing...");
-                        file.custom_flags.insert_or_assign(JPG_COMPRESSED, false);
-                        file.custom_flags.insert_or_assign(J2K_COMPRESSED, true);
-                    }
-                    else
-                    {
-                        file.custom_flags.insert_or_assign(JPG_COMPRESSED, false);
-                        file.custom_flags.insert_or_assign(J2K_COMPRESSED, false);
-                    }
-                }
-
                 if (file.hasHeader<KeyHeader>())
                 {
                     KeyHeader key_header = file.getHeader<KeyHeader>();
                     if (key_header.key != 0)
                     {
                         logger->debug("This is encrypted!");
-                        file.custom_flags.insert_or_assign(IS_ENCRYPTED, true);
-                        file.custom_flags.insert_or_assign(KEY_INDEX, key_header.key);
+                        file.custom_flags.insert_or_assign(satdump::xrit::gk2a::IS_ENCRYPTED, true);
+                        file.custom_flags.insert_or_assign(satdump::xrit::gk2a::KEY_INDEX, key_header.key);
                     }
                     else
                     {
-                        file.custom_flags.insert_or_assign(IS_ENCRYPTED, false);
+                        file.custom_flags.insert_or_assign(satdump::xrit::gk2a::IS_ENCRYPTED, false);
                     }
                 }
                 else
                 {
-                    file.custom_flags.insert_or_assign(IS_ENCRYPTED, false);
+                    file.custom_flags.insert_or_assign(satdump::xrit::gk2a::IS_ENCRYPTED, false);
                 }
             };
 
@@ -199,9 +175,7 @@ namespace gk2a
 
             cleanup();
 
-            for (auto &segmentedDecoder : segmentedDecoders)
-                if (segmentedDecoder.second.image_id != "")
-                    saveImageP(segmentedDecoder.second.meta, segmentedDecoder.second.image);
+            processor.flush();
         }
 
         void GK2ALRITDataDecoderModule::drawUI(bool window)

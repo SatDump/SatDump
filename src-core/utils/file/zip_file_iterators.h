@@ -4,6 +4,7 @@
 #include "file_iterators.h"
 #include "libs/miniz/miniz.h"
 #include <filesystem>
+#include <memory>
 
 namespace satdump
 {
@@ -47,7 +48,7 @@ namespace satdump
 
             ~ZipFilesIterator() { mz_zip_reader_end(&zip); }
 
-            bool getNext(std::unique_ptr<FilesIteratorItem> &v)
+            bool getNext(std::shared_ptr<FilesIteratorItem> &v)
             {
                 bool vv = file_index < numfiles;
 

@@ -2,7 +2,7 @@
 
 #include "common/lrit/lrit_productizer.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
-#include "segmented_decoder.h"
+#include "xrit/processor/xrit_channel_processor.h"
 
 namespace himawari
 {
@@ -13,13 +13,7 @@ namespace himawari
         protected:
             std::string directory;
 
-            // Image re-composers
-            std::map<std::string, SegmentedLRITImageDecoder> segmented_decoders;
-            std::map<std::string, std::string> segmented_decoders_filenames;
-
-            ::lrit::LRITProductizer productizer;
-
-            void saveImageP(HIMxRITProductMeta meta, image::Image &img);
+            satdump::xrit::XRITChannelProcessor processor;
 
         public:
             HimawariCastDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

@@ -41,7 +41,7 @@ namespace satdump
         {
             return {
                 {NATIVE_MSG_SEVIRI,
-                 [](std::unique_ptr<satdump::utils::FilesIteratorItem> &f)
+                 [](std::shared_ptr<satdump::utils::FilesIteratorItem> &f)
                  {
                      OfficialProductInfo i;
 
@@ -66,7 +66,7 @@ namespace satdump
                  []() { return std::make_shared<SEVIRINatProcessor>(); }},
 
                 {NATIVE_METOP_AVHRR,
-                 [](std::unique_ptr<satdump::utils::FilesIteratorItem> &f)
+                 [](std::shared_ptr<satdump::utils::FilesIteratorItem> &f)
                  {
                      OfficialProductInfo i;
 
@@ -94,7 +94,7 @@ namespace satdump
                  []() { return std::make_shared<AVHRRNatProcessor>(); }},
 
                 {NATIVE_METOP_MHS,
-                 [](std::unique_ptr<satdump::utils::FilesIteratorItem> &f)
+                 [](std::shared_ptr<satdump::utils::FilesIteratorItem> &f)
                  {
                      OfficialProductInfo i;
 
@@ -119,7 +119,7 @@ namespace satdump
                  []() { return std::make_shared<MHSNatProcessor>(); }},
 
                 {NATIVE_METOP_AMSUA,
-                 [](std::unique_ptr<satdump::utils::FilesIteratorItem> &f)
+                 [](std::shared_ptr<satdump::utils::FilesIteratorItem> &f)
                  {
                      OfficialProductInfo i;
 
@@ -144,7 +144,7 @@ namespace satdump
                  []() { return std::make_shared<AMSUNatProcessor>(); }},
 
                 {NATIVE_METOP_HIRS,
-                 [](std::unique_ptr<satdump::utils::FilesIteratorItem> &f)
+                 [](std::shared_ptr<satdump::utils::FilesIteratorItem> &f)
                  {
                      OfficialProductInfo i;
 
@@ -169,7 +169,7 @@ namespace satdump
                  []() { return std::make_shared<HIRSNatProcessor>(); }},
 
                 {NATIVE_METOP_IASI,
-                 [](std::unique_ptr<satdump::utils::FilesIteratorItem> &f)
+                 [](std::shared_ptr<satdump::utils::FilesIteratorItem> &f)
                  {
                      OfficialProductInfo i;
 
@@ -194,7 +194,7 @@ namespace satdump
                  []() { return std::make_shared<IASINatProcessor>(); }},
 
                 {NETCDF_MTG_FCI,
-                 [](std::unique_ptr<satdump::utils::FilesIteratorItem> &f)
+                 [](std::shared_ptr<satdump::utils::FilesIteratorItem> &f)
                  {
                      OfficialProductInfo i;
 
@@ -223,7 +223,7 @@ namespace satdump
                  []() { return std::make_shared<FCINcProcessor>(); }},
 
                 {NETCDF_GOES_ABI,
-                 [](std::unique_ptr<satdump::utils::FilesIteratorItem> &f)
+                 [](std::shared_ptr<satdump::utils::FilesIteratorItem> &f)
                  {
                      OfficialProductInfo i;
 
@@ -250,7 +250,7 @@ namespace satdump
                  []() { return std::make_shared<ABINcProcessor>(); }},
 
                 {HSD_HIMAWARI_AHI,
-                 [](std::unique_ptr<satdump::utils::FilesIteratorItem> &f)
+                 [](std::shared_ptr<satdump::utils::FilesIteratorItem> &f)
                  {
                      OfficialProductInfo i;
 
@@ -278,7 +278,7 @@ namespace satdump
                  []() { return std::make_shared<AHIHsdProcessor>(); }},
 
                 {NETCDF_GK2A_AMI,
-                 [](std::unique_ptr<satdump::utils::FilesIteratorItem> &f)
+                 [](std::shared_ptr<satdump::utils::FilesIteratorItem> &f)
                  {
                      OfficialProductInfo i;
 
@@ -313,7 +313,7 @@ namespace satdump
                  []() { return std::make_shared<AMINcProcessor>(); }},
 
                 {HRIT_GENERIC,
-                 [](std::unique_ptr<satdump::utils::FilesIteratorItem> &f)
+                 [](std::shared_ptr<satdump::utils::FilesIteratorItem> &f)
                  {
                      OfficialProductInfo i;
 
@@ -337,7 +337,7 @@ namespace satdump
             };
         }
 
-        OfficialProductInfo parseOfficialInfo(std::unique_ptr<satdump::utils::FilesIteratorItem> &f)
+        OfficialProductInfo parseOfficialInfo(std::shared_ptr<satdump::utils::FilesIteratorItem> &f)
         {
             for (auto &p : getRegisteredProducts())
             {

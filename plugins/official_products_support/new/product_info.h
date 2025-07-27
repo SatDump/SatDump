@@ -23,13 +23,13 @@ namespace satdump
         struct RegisteredOfficialProduct
         {
             official_product_type_t type;
-            std::function<OfficialProductInfo(std::unique_ptr<satdump::utils::FilesIteratorItem> &)> testFile;
+            std::function<OfficialProductInfo(std::shared_ptr<satdump::utils::FilesIteratorItem> &)> testFile;
             std::function<std::shared_ptr<OfficialProductProcessor>()> getProcessor;
         };
 
         std::vector<RegisteredOfficialProduct> getRegisteredProducts();
 
-        OfficialProductInfo parseOfficialInfo(std::unique_ptr<satdump::utils::FilesIteratorItem> &f);
+        OfficialProductInfo parseOfficialInfo(std::shared_ptr<satdump::utils::FilesIteratorItem> &f);
 
         std::shared_ptr<OfficialProductProcessor> getProcessorForProduct(OfficialProductInfo info);
     } // namespace official

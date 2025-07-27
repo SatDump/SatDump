@@ -6,6 +6,7 @@
 #include "utils/file/file_iterators.h"
 #include "utils/file/folder_file_iterators.h"
 #include "utils/file/zip_file_iterators.h"
+#include <memory>
 
 namespace satdump
 {
@@ -25,7 +26,7 @@ namespace satdump
             if (is_zip)
             {
                 satdump::utils::ZipFilesIterator fit(fpath);
-                std::unique_ptr<satdump::utils::FilesIteratorItem> f;
+                std::shared_ptr<satdump::utils::FilesIteratorItem> f;
 
                 while (fit.getNext(f))
                 {
@@ -39,7 +40,7 @@ namespace satdump
             }
             else if (is_file)
             {
-                std::unique_ptr<satdump::utils::FilesIteratorItem> f = std::make_unique<satdump::utils::FolderFileIteratorItem>(fpath);
+                std::shared_ptr<satdump::utils::FilesIteratorItem> f = std::make_shared<satdump::utils::FolderFileIteratorItem>(fpath);
                 toproc_info = parseOfficialInfo(f);
             }
             else
@@ -68,13 +69,13 @@ namespace satdump
             {
                 logger->trace("Group : " + toproc_info.group_id);
 
-                std::unique_ptr<satdump::utils::FilesIterator> fit;
+                std::shared_ptr<satdump::utils::FilesIterator> fit;
                 if (is_zip)
                     fit = std::make_unique<satdump::utils::ZipFilesIterator>(fpath);
                 else
                     fit = std::make_unique<satdump::utils::FolderFilesIterator>(std::filesystem::path(fpath).parent_path());
 
-                std::unique_ptr<satdump::utils::FilesIteratorItem> f;
+                std::shared_ptr<satdump::utils::FilesIteratorItem> f;
                 while (fit->getNext(f))
                 {
                     if (!f)

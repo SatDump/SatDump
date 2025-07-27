@@ -20,7 +20,7 @@ namespace satdump
         class FilesIterator
         {
         public:
-            virtual bool getNext(std::unique_ptr<FilesIteratorItem> &v) = 0;
+            virtual bool getNext(std::shared_ptr<FilesIteratorItem> &v) = 0;
             virtual void reset() = 0;
         };
     } // namespace utils

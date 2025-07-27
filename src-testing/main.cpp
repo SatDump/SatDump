@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
         if (is_zip)
         {
             satdump::utils::ZipFilesIterator fit(path);
-            std::unique_ptr<satdump::utils::FilesIteratorItem> f;
+            std::shared_ptr<satdump::utils::FilesIteratorItem> f;
 
             while (fit.getNext(f))
             {
@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
         }
         else if (is_file)
         {
-            std::unique_ptr<satdump::utils::FilesIteratorItem> f = std::make_unique<satdump::utils::FolderFileIteratorItem>(path);
+            std::shared_ptr<satdump::utils::FilesIteratorItem> f = std::make_shared<satdump::utils::FolderFileIteratorItem>(path);
             info = satdump::official::parseOfficialInfo(f);
         }
         else
@@ -76,13 +76,13 @@ int main(int argc, char *argv[])
         {
             logger->trace("Group : " + info.group_id);
 
-            std::unique_ptr<satdump::utils::FilesIterator> fit;
+            std::shared_ptr<satdump::utils::FilesIterator> fit;
             if (is_zip)
-                fit = std::make_unique<satdump::utils::ZipFilesIterator>(path);
+                fit = std::make_shared<satdump::utils::ZipFilesIterator>(path);
             else
-                fit = std::make_unique<satdump::utils::FolderFilesIterator>(std::filesystem::path(path).parent_path());
+                fit = std::make_shared<satdump::utils::FolderFilesIterator>(std::filesystem::path(path).parent_path());
 
-            std::unique_ptr<satdump::utils::FilesIteratorItem> f;
+            std::shared_ptr<satdump::utils::FilesIteratorItem> f;
             while (fit->getNext(f))
             {
                 if (!f)
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            std::unique_ptr<satdump::utils::FilesIteratorItem> f = std::make_unique<satdump::utils::FolderFileIteratorItem>(path);
+            std::shared_ptr<satdump::utils::FilesIteratorItem> f = std::make_shared<satdump::utils::FolderFileIteratorItem>(path);
             logger->trace(" - " + f->name);
         }
     }
