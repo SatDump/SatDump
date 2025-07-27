@@ -104,6 +104,7 @@ namespace fengyun_svissr
             break;
         default:
             sat_name = "Unknown FY-2";
+            svissr_product.set_product_source("Unknown FengYun-2");
         }
 
 
