@@ -15,8 +15,7 @@ namespace goes
         GOESLRITDataDecoderModule::GOESLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
             : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters), write_images(parameters["write_images"].get<bool>()),
               write_emwin(parameters["write_emwin"].get<bool>()), write_dcs(parameters["write_dcs"].get<bool>()), write_messages(parameters["write_messages"].get<bool>()),
-              write_unknown(parameters["write_unknown"].get<bool>()), max_fill_lines(parameters["max_fill_lines"].get<int>()),
-              productizer("abi", true, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
+              write_unknown(parameters["write_unknown"].get<bool>()), max_fill_lines(parameters["max_fill_lines"].get<int>())
         {
             fill_missing = parameters.contains("fill_missing") ? parameters["fill_missing"].get<bool>() : false;
             parse_dcs = parameters.contains("parse_dcs") ? parameters["parse_dcs"].get<bool>() : false;
@@ -237,9 +236,8 @@ namespace goes
             cleanup();
             satdump::taskScheduler->del_task("goes_dcp_updater");
 
-            for (auto &segmentedDecoder : segmentedDecoders)
-                if (segmentedDecoder.second.image_id != -1)
-                    saveImageP(segmentedDecoder.second.meta, *segmentedDecoder.second.image);
+            for (auto &p : all_processors)
+                p.second->flush();
         }
 
         void GOESLRITDataDecoderModule::drawUI(bool window)

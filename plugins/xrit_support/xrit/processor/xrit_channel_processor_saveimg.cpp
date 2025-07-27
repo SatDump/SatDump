@@ -1,5 +1,6 @@
 #include "common/lrit/lrit_file.h"
 #include "image/io.h"
+#include "image/processing.h"
 #include "logger.h"
 #include "nlohmann/json.hpp"
 #include "products/image_product.h"
@@ -253,6 +254,16 @@ namespace satdump
                     std::filesystem::create_directories(directory + "/IMAGES/Unknown/");
                 image::save_img(img, std::string(directory + "/IMAGES/Unknown/" + meta.filename).c_str());
                 return;
+            }
+
+            // GOES-specific stuff TODOREWORKXRIT
+            if (meta.type == XRIT_GOES_ABI)
+            {
+                // TODO: Once calibration of custom types is possible, stop doing this!
+                // RRPQE inverts its raw counts and lookup tables seemingly randomly.
+                // So far, only RRQPE seems to do this...
+                if (meta.channel == "RRQPE" && img.get(0) == 255)
+                    image::linear_invert(img);
             }
 
             // Utils

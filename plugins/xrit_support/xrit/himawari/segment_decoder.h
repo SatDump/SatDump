@@ -77,6 +77,7 @@ namespace satdump
             {
                 for (int i = 0; i < seg_count; i++)
                     segments_done[i] = false;
+                image.clear();
             }
 
             bool hasData()

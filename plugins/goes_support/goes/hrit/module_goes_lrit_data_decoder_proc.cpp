@@ -8,6 +8,7 @@
 #include "module_goes_lrit_data_decoder.h"
 #include "utils/string.h"
 #include <filesystem>
+#include <memory>
 
 namespace goes
 {
@@ -50,56 +51,8 @@ namespace goes
             fileo.close();
         }
 
-        void GOESLRITDataDecoderModule::saveImageP(GOESxRITProductMeta meta, image::Image &img)
-        {
-            if (meta.is_goesn)
-                img.resize(img.width(), img.height() * 1.75);
-
-            if (meta.channel == "" || meta.satellite_name == "" || meta.satellite_short_name == "" || meta.scan_time == 0)
-            {
-                std::string ext;
-                image::append_ext(&ext, true);
-                if (std::filesystem::exists(directory + "/IMAGES/Unknown/" + meta.filename + ext))
-                {
-                    int current_iteration = 1;
-                    std::string filename_new;
-                    do
-                    {
-                        filename_new = meta.filename + "_" + std::to_string(current_iteration++);
-                    } while (std::filesystem::exists(directory + "/IMAGES/Unknown/" + filename_new + ext));
-                    image::save_img(img, directory + "/IMAGES/Unknown/" + filename_new);
-                    logger->warn("Image already existed. Written as %s", filename_new.c_str());
-                }
-                else
-                    image::save_img(img, directory + "/IMAGES/Unknown/" + meta.filename);
-            }
-            else
-            {
-                std::string images_subdir = "/IMAGES";
-                if (meta.satellite_name == "Himawari")
-                    productizer.setInstrumentID("ahi");
-                else if (meta.is_goesn)
-                    productizer.setInstrumentID("goesn_imager");
-                else if (meta.channel.find_first_of("0123456789") == std::string::npos)
-                {
-                    images_subdir = "/L2"; // GOES-R Level 2 (Non-CMIP)
-
-                    // TODO: Once calibration of custom types is possible, stop doing this!
-                    // RRPQE inverts its raw counts and lookup tables seemingly randomly.
-                    // So far, only RRQPE seems to do this...
-                    if (meta.channel == "RRQPE" && img.get(0) == 255)
-                        image::linear_invert(img);
-                }
-                productizer.saveImage(img, 8 /*bit depth on GOES is ALWAYS 8*/, directory + images_subdir, meta.satellite_name, meta.satellite_short_name, meta.channel, meta.scan_time, meta.region,
-                                      meta.image_navigation_record.get(), meta.image_data_function_record.get());
-                if (meta.satellite_name == "Himawari" || meta.is_goesn)
-                    productizer.setInstrumentID("abi");
-            }
-        }
-
         void GOESLRITDataDecoderModule::processLRITFile(::lrit::LRITFile &file)
         {
-#if 1
             std::string current_filename = file.filename;
 
             ::lrit::PrimaryHeader primary_header = file.getHeader<::lrit::PrimaryHeader>();
@@ -123,6 +76,53 @@ namespace goes
 
                 ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>();
 
+                satdump::xrit::XRITFileInfo finfo = satdump::xrit::identifyXRITFIle(file);
+
+                // Check if this is image data, and if so also write it as an image
+                if (finfo.type != satdump::xrit::XRIT_UNKNOWN)
+                {
+                    std::string processor_name = finfo.satellite_short_name;
+
+                    bool is_l2 = false;
+                    if (finfo.channel.find_first_of("0123456789") == std::string::npos)
+                    {
+                        processor_name = processor_name + "" + finfo.channel;
+                        // finfo.region = finfo.channel; TODOREWORK???
+                        is_l2 = true;
+                    }
+
+                    if (all_processors.count(processor_name) == 0)
+                    {
+                        auto p = std::make_shared<satdump::xrit::XRITChannelProcessor>();
+                        if (is_l2)
+                            p->directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/L2";
+                        else
+                            p->directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/IMAGES";
+                        all_processors.emplace(processor_name, p);
+                    }
+
+                    all_processors[processor_name]->push(finfo, file);
+                }
+                else if (noaa_header.noaa_specific_compression == 5) // Gif?
+                {
+                    logger->info("Writing file " + directory + "/IMAGES/" + current_filename + ".gif" + "...");
+
+                    int offset = primary_header.total_header_length;
+
+                    // Write file out
+                    std::ofstream fileo(directory + "/IMAGES/" + current_filename + ".gif", std::ios::binary);
+                    fileo.write((char *)&file.lrit_data[offset], file.lrit_data.size() - offset);
+                    fileo.close();
+                }
+                else // Write raw image dats
+                {
+                    image::Image image(&file.lrit_data[primary_header.total_header_length], 8, image_structure_record.columns_count, image_structure_record.lines_count, 1);
+                    image::save_img(image, directory + "/IMAGES/" + current_filename);
+                }
+
+#if 0
+                ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>();
+
                 ::lrit::TimeStampRecord timestamp_record = file.getHeader<::lrit::TimeStampRecord>();
                 std::tm *timeReadable = gmtime(&timestamp_record.timestamp);
 
@@ -143,10 +143,7 @@ namespace goes
                 {
                     // GOES-R Data, from GOES-16 to 19.
                     // Once again peeked in goestools for the meso detection, sorry :-)
-                    if (primary_header.file_type_code == 0 && (noaa_header.product_id == 16 ||
-                                                               noaa_header.product_id == 17 ||
-                                                               noaa_header.product_id == 18 ||
-                                                               noaa_header.product_id == 19))
+                    if (primary_header.file_type_code == 0 && (noaa_header.product_id == 16 || noaa_header.product_id == 17 || noaa_header.product_id == 18 || noaa_header.product_id == 19))
                     {
                         lmeta.satellite_name = "GOES-" + std::to_string(noaa_header.product_id);
                         lmeta.satellite_short_name = "G" + std::to_string(noaa_header.product_id);
@@ -156,8 +153,7 @@ namespace goes
                         {
                             int mode = -1;
                             int channel_buf = -1;
-                            if (sscanf(cutFilename[3].c_str(), "M%dC%02d", &mode, &channel_buf) == 2 ||
-                                sscanf(cutFilename[3].c_str(), "M%d_", &mode) == 1)
+                            if (sscanf(cutFilename[3].c_str(), "M%dC%02d", &mode, &channel_buf) == 2 || sscanf(cutFilename[3].c_str(), "M%d_", &mode) == 1)
                             {
                                 if (channel_buf == -1)
                                 {
@@ -174,25 +170,21 @@ namespace goes
 
                                 // On GOES-R HRIT, the projection information in the Image Navigation Header is not accurate enough. Use the data
                                 // in the Ancillary record instead
-                                if (ancillary_record.meta.count("perspective_point_height") > 0 &&
-                                    ancillary_record.meta.count("y_add_offset") > 0 && ancillary_record.meta.count("y_scale_factor") > 0)
+                                if (ancillary_record.meta.count("perspective_point_height") > 0 && ancillary_record.meta.count("y_add_offset") > 0 && ancillary_record.meta.count("y_scale_factor") > 0)
                                 {
                                     used_ancillary_proj = true;
                                     double scale_factor = std::stod(ancillary_record.meta["y_scale_factor"]);
-                                    lmeta.image_navigation_record->line_scalar =
-                                        std::abs(std::stod(ancillary_record.meta["perspective_point_height"]) * scale_factor);
+                                    lmeta.image_navigation_record->line_scalar = std::abs(std::stod(ancillary_record.meta["perspective_point_height"]) * scale_factor);
                                     lmeta.image_navigation_record->line_offset = -std::stod(ancillary_record.meta["y_add_offset"]) / scale_factor;
 
                                     // Avoid upstream rounding errors on smaller images
                                     if (image_structure_record.columns_count < 5424)
                                         lmeta.image_navigation_record->line_offset = std::ceil(lmeta.image_navigation_record->line_offset);
                                 }
-                                if (ancillary_record.meta.count("perspective_point_height") > 0 &&
-                                    ancillary_record.meta.count("x_add_offset") > 0 && ancillary_record.meta.count("x_scale_factor") > 0)
+                                if (ancillary_record.meta.count("perspective_point_height") > 0 && ancillary_record.meta.count("x_add_offset") > 0 && ancillary_record.meta.count("x_scale_factor") > 0)
                                 {
                                     double scale_factor = std::stod(ancillary_record.meta["x_scale_factor"]);
-                                    lmeta.image_navigation_record->column_scalar =
-                                        std::abs(std::stod(ancillary_record.meta["perspective_point_height"]) * scale_factor);
+                                    lmeta.image_navigation_record->column_scalar = std::abs(std::stod(ancillary_record.meta["perspective_point_height"]) * scale_factor);
                                     lmeta.image_navigation_record->column_offset = -std::stod(ancillary_record.meta["x_add_offset"]) / scale_factor;
 
                                     // Avoid upstream rounding errors on smaller images
@@ -232,9 +224,7 @@ namespace goes
                         }
                     }
                     // GOES-N Data, from GOES-13 to 15.
-                    else if (primary_header.file_type_code == 0 && (noaa_header.product_id == 13 ||
-                                                                    noaa_header.product_id == 14 ||
-                                                                    noaa_header.product_id == 15))
+                    else if (primary_header.file_type_code == 0 && (noaa_header.product_id == 13 || noaa_header.product_id == 14 || noaa_header.product_id == 15))
                     {
                         lmeta.satellite_name = "GOES-" + std::to_string(noaa_header.product_id);
                         lmeta.satellite_short_name = "G" + std::to_string(noaa_header.product_id);
@@ -339,8 +329,8 @@ namespace goes
                     SegmentedLRITImageDecoder &segmentedDecoder = segmentedDecoders[vcid];
 
                     if (lmeta.image_navigation_record && noaa_header.product_id != ID_HIMAWARI && !used_ancillary_proj)
-                        lmeta.image_navigation_record->line_offset = lmeta.image_navigation_record->line_offset +
-                                                                     segment_id_header.segment_sequence_number * (segment_id_header.max_row / segment_id_header.max_segment);
+                        lmeta.image_navigation_record->line_offset =
+                            lmeta.image_navigation_record->line_offset + segment_id_header.segment_sequence_number * (segment_id_header.max_row / segment_id_header.max_segment);
 
                     uint16_t image_identifier = segment_id_header.image_identifier;
                     if (noaa_header.product_id == ID_HIMAWARI) // Image IDs are invalid for Himawari; make one up
@@ -355,19 +345,16 @@ namespace goes
                             wip_img->imageStatus = RECEIVING;
                         }
 
-                        segmentedDecoder = SegmentedLRITImageDecoder(segment_id_header.max_segment,
-                                                                     segment_id_header.max_column,
-                                                                     segment_id_header.max_row,
-                                                                     image_identifier);
+                        segmentedDecoder = SegmentedLRITImageDecoder(segment_id_header.max_segment, segment_id_header.max_column, segment_id_header.max_row, image_identifier);
                         segmentedDecoder.meta = lmeta;
                     }
 
                     if (noaa_header.product_id == ID_HIMAWARI)
-                        segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length],
-                                                     file.lrit_data.size() - primary_header.total_header_length, segment_id_header.segment_sequence_number - 1);
+                        segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length], file.lrit_data.size() - primary_header.total_header_length,
+                                                     segment_id_header.segment_sequence_number - 1);
                     else
-                        segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length],
-                                                     file.lrit_data.size() - primary_header.total_header_length, segment_id_header.segment_sequence_number);
+                        segmentedDecoder.pushSegment(&file.lrit_data[primary_header.total_header_length], file.lrit_data.size() - primary_header.total_header_length,
+                                                     segment_id_header.segment_sequence_number);
 
                     // If the UI is active, update texture
                     if (wip_img->textureID > 0)
@@ -409,6 +396,7 @@ namespace goes
                         saveImageP(lmeta, image);
                     }
                 }
+#endif
             }
             // Check if this EMWIN data
             else if (primary_header.file_type_code == 2 && (noaa_header.product_id == 9 || noaa_header.product_id == 6))
@@ -494,9 +482,8 @@ namespace goes
             }
             // Otherwise, write as generic, unknown stuff. This should not happen
             // Do not write if already saving LRIT data
-            else             if (write_unknown && !write_lrit)
-#endif
-            saveLRITFile(file, directory + "/LRIT");
+            else if (write_unknown && !write_lrit)
+                saveLRITFile(file, directory + "/LRIT");
         }
     } // namespace hrit
 } // namespace goes

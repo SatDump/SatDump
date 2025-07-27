@@ -6,6 +6,7 @@
 #include "dcs/dcs_decoder.h"
 #include "goes/crc32.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
+#include "xrit/processor/xrit_channel_processor.h"
 
 #include <deque>
 #include <set>
@@ -33,7 +34,7 @@ namespace goes
             bool fill_missing;
             int max_fill_lines;
 
-            std::map<int, SegmentedLRITImageDecoder> segmentedDecoders;
+            std::map<std::string, std::shared_ptr<satdump::xrit::XRITChannelProcessor>> all_processors;
 
             std::string directory;
 
@@ -77,10 +78,6 @@ namespace goes
 
             bool processDCS(uint8_t *data, size_t size);
             void drawDCSUI();
-
-            ::lrit::LRITProductizer productizer;
-
-            void saveImageP(GOESxRITProductMeta meta, image::Image &img);
 
         public:
             GOESLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

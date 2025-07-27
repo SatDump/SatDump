@@ -22,7 +22,6 @@ namespace satdump
         public:
             void init(int max_seg, int max_width, int max_height)
             {
-                logger->critical("INIT %d %d", max_width, max_height);
                 seg_count = max_seg;
                 segments_done = std::vector<bool>(seg_count, false);
                 image.init(8, max_width, max_height, 1);
@@ -66,9 +65,6 @@ namespace satdump
                     return;
                 }
 
-                logger->critical("%d %d %d", image_structure_record.columns_count * image_structure_record.lines_count, file.lrit_data.size() - primary_header.total_header_length,
-                                 segment_id_header.segment_sequence_number);
-
                 // GOES-N and Himawari have offset segments
                 if (noaa_header.product_id == goes::ID_HIMAWARI || (noaa_header.product_id <= 15 && noaa_header.product_id >= 13))
                     pushSegment(&file.lrit_data[primary_header.total_header_length], file.lrit_data.size() - primary_header.total_header_length, segment_id_header.segment_sequence_number - 1);
@@ -88,6 +84,7 @@ namespace satdump
             {
                 for (int i = 0; i < seg_count; i++)
                     segments_done[i] = false;
+                image.clear();
             }
 
             bool hasData()
