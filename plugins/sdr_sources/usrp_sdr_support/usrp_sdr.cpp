@@ -38,6 +38,9 @@ void USRPSource::open_channel()
 
     std::vector<double> available_samplerates;
 
+    // Preserve current samplerate selection before updating the list
+    double current_samplerate = samplerate_widget.get_value();
+
     if (use_device_rates)
     {
         // Get samplerates
@@ -82,6 +85,9 @@ void USRPSource::open_channel()
     }
 
     samplerate_widget.set_list(available_samplerates, false);
+    
+    // Restore the previously selected samplerate if it's still available
+    samplerate_widget.set_value(current_samplerate, 0);
 
     // Get gain range
     gain_range = usrp_device->get_rx_gain_range(channel);
