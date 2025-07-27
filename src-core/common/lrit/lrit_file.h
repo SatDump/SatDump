@@ -1,11 +1,11 @@
 #pragma once
 
+#include "libs/others/strptime.h"
 #include <cstdint>
-#include <vector>
+#include <ctime>
 #include <map>
 #include <string>
-#include "libs/others/strptime.h"
-#include <ctime>
+#include <vector>
 
 namespace lrit
 {
@@ -25,18 +25,9 @@ namespace lrit
             type = data[0];
             record_length = data[1] << 8 | data[2];
             file_type_code = data[3];
-            total_header_length = (uint32_t)data[4] << 24 |
-                                  (uint32_t)data[5] << 16 |
-                                  (uint32_t)data[6] << 8 |
-                                  (uint32_t)data[7];
-            data_field_length = (uint64_t)data[8] << 56 |
-                                (uint64_t)data[9] << 48 |
-                                (uint64_t)data[10] << 40 |
-                                (uint64_t)data[11] << 32 |
-                                (uint64_t)data[12] << 24 |
-                                (uint64_t)data[13] << 16 |
-                                (uint64_t)data[14] << 8 |
-                                (uint64_t)data[15];
+            total_header_length = (uint32_t)data[4] << 24 | (uint32_t)data[5] << 16 | (uint32_t)data[6] << 8 | (uint32_t)data[7];
+            data_field_length = (uint64_t)data[8] << 56 | (uint64_t)data[9] << 48 | (uint64_t)data[10] << 40 | (uint64_t)data[11] << 32 | (uint64_t)data[12] << 24 | (uint64_t)data[13] << 16 |
+                                (uint64_t)data[14] << 8 | (uint64_t)data[15];
         }
     };
 
@@ -178,4 +169,4 @@ namespace lrit
 
         void parseHeaders();
     };
-};
+}; // namespace lrit

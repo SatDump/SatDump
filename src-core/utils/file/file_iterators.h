@@ -14,7 +14,6 @@ namespace satdump
         public:
             const std::string name;
             FilesIteratorItem(std::string name) : name(name) {}
-            virtual ~FilesIteratorItem() {}
             virtual std::vector<uint8_t> getPayload() = 0;
         };
 

@@ -32,6 +32,9 @@ namespace satdump
 
             // Himawari
             HSD_HIMAWARI_AHI,
+
+            // HRIT
+            HRIT_GENERIC,
         };
     } // namespace official
 } // namespace satdump

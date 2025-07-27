@@ -83,6 +83,12 @@ if(PLUGIN_GK2A OR PLUGINS_ALL)
   add_subdirectory(gk2a_support)
 endif()
 
+option(PLUGIN_XRIT "Enable the Generic XRIT support plugin" OFF)
+
+if(PLUGIN_XRIT OR PLUGINS_ALL)
+  add_subdirectory(xrit_support)
+endif()
+
 option(
   PLUGIN_NOAA_METOP
   "Enable the NOAA/MetOp POES (AHRPT, HRPT, X-Band dumps, GAC, etc) support plugin"
@@ -227,19 +233,22 @@ if(PLUGIN_CUBESAT OR PLUGINS_ALL)
   add_subdirectory(cubesat_support)
 endif()
 
-option(PLUGIN_OTHERS "Enable the support plugin for a few other random satellites" OFF)
+option(PLUGIN_OTHERS
+       "Enable the support plugin for a few other random satellites" OFF)
 
 if(PLUGIN_OTHERS OR PLUGINS_ALL)
   add_subdirectory(others_support)
 endif()
 
-option(PLUGIN_OFFICIAL_PRODUCTS "Enable the support plugin for official satellite products" OFF)
+option(PLUGIN_OFFICIAL_PRODUCTS
+       "Enable the support plugin for official satellite products" OFF)
 
 if(PLUGIN_OFFICIAL_PRODUCTS OR PLUGINS_ALL)
   add_subdirectory(official_products_support)
 endif()
 
-option(PLUGIN_DVB "Enable the support plugin for DVB Standards (DVB-S, DVB-S2)" OFF)
+option(PLUGIN_DVB "Enable the support plugin for DVB Standards (DVB-S, DVB-S2)"
+       OFF)
 
 if(PLUGIN_DVB OR PLUGINS_ALL)
   add_subdirectory(dvb_support)
@@ -464,8 +473,9 @@ if(PLUGIN_WIPTRACKING_APP)
   add_subdirectory(wip_tracking_app)
 endif()
 
-option(PLUGIN_WIPSETTINGS_EDITOR_APP "Enable WIP Settings Editor Application" ON)
+option(PLUGIN_WIPSETTINGS_EDITOR_APP "Enable WIP Settings Editor Application"
+       ON)
 
-if (PLUGIN_WIPSETTINGS_EDITOR_APP)
+if(PLUGIN_WIPSETTINGS_EDITOR_APP)
   add_subdirectory(wip_settings_editor_app)
 endif()

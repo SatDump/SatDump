@@ -1,13 +1,13 @@
 #pragma once
 
 #include "common/ccsds/ccsds.h"
-#include <cmath>
+#include "common/lrit/lrit_file.h"
 #include "image/image.h"
-#include <vector>
-#include <string>
+#include <cmath>
 #include <map>
 #include <memory>
-#include "common/lrit/lrit_file.h"
+#include <string>
+#include <vector>
 
 namespace elektro
 {
@@ -31,23 +31,5 @@ namespace elektro
             SAVING,
             IDLE
         };
-
-        class SegmentedLRITImageDecoder
-        {
-        private:
-            int seg_count = 0;
-            std::shared_ptr<bool> segments_done;
-            int seg_height = 0, seg_width = 0;
-
-        public:
-            SegmentedLRITImageDecoder(int bit_depth, int max_seg, int segment_width, int segment_height, std::string id);
-            SegmentedLRITImageDecoder();
-            ~SegmentedLRITImageDecoder();
-            void pushSegment(image::Image &data, int segc);
-            bool isComplete();
-            image::Image image;
-            std::string image_id = "";
-            GOMSxRITProductMeta meta;
-        };
-    } // namespace atms
-} // namespace jpss
+    } // namespace lrit
+} // namespace elektro

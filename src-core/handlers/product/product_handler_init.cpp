@@ -13,6 +13,9 @@ namespace satdump
     {
         std::shared_ptr<ProductHandler> getProductHandlerForProduct(std::shared_ptr<products::Product> prod, bool dataset_mode)
         {
+            if (!prod)
+                throw satdump_exception("Products are null!");
+
             // Built-in standard handlers
             if (prod->type == "image")
                 return std::make_shared<ImageProductHandler>(prod, dataset_mode);

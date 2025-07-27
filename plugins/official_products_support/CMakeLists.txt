@@ -23,12 +23,12 @@ if(${HDF5_FOUND}) # TODOREWORK Maybe actually yes ANDROID?
   add_library(official_products_support SHARED
               ${official_products_support_CPPS})
   target_link_libraries(official_products_support PUBLIC satdump_core)
-  target_include_directories(official_products_support PUBLIC src)
+  target_include_directories(official_products_support PUBLIC src ${CMAKE_SOURCE_DIR}/plugins/xrit_support)
 
   target_include_directories(official_products_support
                              PUBLIC ${HDF5_INCLUDE_DIRS})
   target_link_directories(official_products_support PUBLIC ${HDF5_LIBRARY_DIRS})
-  target_link_libraries(official_products_support PUBLIC hdf5 hdf5_hl)
+  target_link_libraries(official_products_support PUBLIC hdf5 hdf5_hl xrit_support)
 
   if(MSVC OR BUILD_MSVC)
     install(

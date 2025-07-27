@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
     // logger->warn("\n" + parameters.dump(4));
     // exit(0);
 
-#if defined(__linux__) // Wayland GLFW support is frankly broken on Linux at the moment, so force X11
+#if defined(__linux__) // Wayland GLFW support is frankly broken at the moment, so force X11
     glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
 #endif
 

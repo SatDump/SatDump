@@ -1,9 +1,9 @@
 #pragma once
 
 #include "common/lrit/lrit_file.h"
-#include "common/lrit/lrit_productizer.h"
 #include "data/lrit_data.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
+#include "xrit/processor/xrit_channel_processor.h"
 
 namespace elektro
 {
@@ -12,15 +12,9 @@ namespace elektro
         class ELEKTROLRITDataDecoderModule : public satdump::pipeline::base::FileStreamToFileStreamModule
         {
         protected:
-            std::map<int, SegmentedLRITImageDecoder> segmentedDecoders;
+            satdump::xrit::XRITChannelProcessor processor;
 
             std::string directory;
-
-            enum CustomFileParams
-            {
-                JPEG_COMPRESSED,
-                WT_COMPRESSED,
-            };
 
             struct wip_images
             {
@@ -36,10 +30,6 @@ namespace elektro
             std::map<int, std::unique_ptr<wip_images>> all_wip_images;
 
             void processLRITFile(::lrit::LRITFile &file);
-
-            ::lrit::LRITProductizer productizer;
-
-            void saveImageP(GOMSxRITProductMeta meta, image::Image img);
 
         public:
             ELEKTROLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

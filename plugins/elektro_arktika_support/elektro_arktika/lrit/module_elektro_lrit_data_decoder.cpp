@@ -13,9 +13,10 @@ namespace elektro
     namespace lrit
     {
         ELEKTROLRITDataDecoderModule::ELEKTROLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters), productizer("msu_gs", false, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
+            : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
             fsfsm_enable_output = false;
+            processor.directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/IMAGES";
         }
 
         ELEKTROLRITDataDecoderModule::~ELEKTROLRITDataDecoderModule()
@@ -38,44 +39,13 @@ namespace elektro
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
+            this->directory = directory;
+
             uint8_t cadu[1024];
 
             logger->info("Demultiplexing and deframing...");
 
             ::lrit::LRITDemux lrit_demux;
-
-            this->directory = directory;
-
-            lrit_demux.onParseHeader = [](::lrit::LRITFile &file) -> void
-            {
-                // Check if this is image data
-                if (file.hasHeader<::lrit::ImageStructureRecord>())
-                {
-                    ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>(); //(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
-                    logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
-
-                    if (image_structure_record.compression_flag == 2 /* Progressive JPEG */)
-                    {
-                        logger->debug("JPEG Compression is used, decompressing...");
-                        file.custom_flags.insert_or_assign(JPEG_COMPRESSED, true);
-                        file.custom_flags.insert_or_assign(WT_COMPRESSED, false);
-                    }
-                    else if (image_structure_record.compression_flag == 1 /* Wavelet */)
-                    {
-                        logger->debug("Wavelet Compression is used, decompressing...");
-                        file.custom_flags.insert_or_assign(JPEG_COMPRESSED, false);
-                        file.custom_flags.insert_or_assign(WT_COMPRESSED, true);
-                    }
-                    else
-                    {
-                        file.custom_flags.insert_or_assign(JPEG_COMPRESSED, false);
-                        file.custom_flags.insert_or_assign(WT_COMPRESSED, false);
-                    }
-                }
-            };
-
-            if (!std::filesystem::exists(directory + "/IMAGES/Unknown"))
-                std::filesystem::create_directories(directory + "/IMAGES/Unknown");
 
             while (should_run())
             {
@@ -90,9 +60,7 @@ namespace elektro
 
             cleanup();
 
-            for (auto &segmentedDecoder : segmentedDecoders)
-                if (segmentedDecoder.second.image_id != "")
-                    saveImageP(segmentedDecoder.second.meta, segmentedDecoder.second.image);
+            processor.flush();
         }
 
         void ELEKTROLRITDataDecoderModule::drawUI(bool window)

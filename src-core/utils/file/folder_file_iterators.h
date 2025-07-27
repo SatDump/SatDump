@@ -18,6 +18,7 @@ namespace satdump
         public:
             FolderFileIteratorItem(std::string path) : FilesIteratorItem(std::filesystem::path(path).stem().string() + std::filesystem::path(path).extension().string()), path(path) {}
             FolderFileIteratorItem(std::string path, std::string name) : FilesIteratorItem(name), path(path) {}
+            ~FolderFileIteratorItem() {}
 
             std::vector<uint8_t> getPayload()
             {
@@ -42,6 +43,7 @@ namespace satdump
 
         public:
             FolderFilesIterator(std::string folder) : folder(folder) { filesIterator = std::filesystem::recursive_directory_iterator(folder); }
+            ~FolderFilesIterator() {}
 
             bool getNext(std::unique_ptr<FilesIteratorItem> &v)
             {

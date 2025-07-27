@@ -1,59 +1,38 @@
-#include "module_elektro_lrit_data_decoder.h"
-#include "logger.h"
-#include <filesystem>
-#include "imgui/imgui_image.h"
-#include "lrit_header.h"
-#include "image/jpeg_utils.h"
-#include "DecompWT/CompressWT.h"
 #include "DecompWT/CompressT4.h"
+#include "DecompWT/CompressWT.h"
 #include "image/io.h"
+#include "image/jpeg_utils.h"
+#include "imgui/imgui_image.h"
+#include "logger.h"
+#include "lrit_header.h"
+#include "module_elektro_lrit_data_decoder.h"
 #include "utils/string.h"
+#include "xrit/identify.h"
+#include "xrit/msg/decomp.h"
+#include <filesystem>
 
 namespace elektro
 {
     namespace lrit
     {
-        std::string getHRITImageFilename(std::tm *timeReadable, std::string sat_name, int channel)
-        {
-            std::string utc_filename = sat_name + "_" + std::to_string(channel) + "_" +                                                                             // Satellite name and channel
-                                       std::to_string(timeReadable->tm_year + 1900) +                                                                               // Year yyyy
-                                       (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + // Month MM
-                                       (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "T" +    // Day dd
-                                       (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) +          // Hour HH
-                                       (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) +             // Minutes mm
-                                       (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec)) + "Z";        // Seconds ss
-            return utc_filename;
-        }
-
-        std::string getHRITImageFilename(std::tm *timeReadable, std::string sat_name, std::string channel)
-        {
-            std::string utc_filename = sat_name + "_" + channel + "_" +                                                                                             // Satellite name and channel
-                                       std::to_string(timeReadable->tm_year + 1900) +                                                                               // Year yyyy
-                                       (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + // Month MM
-                                       (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "T" +    // Day dd
-                                       (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) +          // Hour HH
-                                       (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) +             // Minutes mm
-                                       (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec)) + "Z";        // Seconds ss
-            return utc_filename;
-        }
-
-        void ELEKTROLRITDataDecoderModule::saveImageP(GOMSxRITProductMeta meta, image::Image img)
-        {
-            if (meta.channel == -1 || meta.satellite_name == "" || meta.satellite_short_name == "" || meta.scan_time == 0)
-                image::save_img(img, std::string(directory + "/IMAGES/Unknown/" + meta.filename).c_str());
-            else
-                productizer.saveImage(img, meta.bit_depth, directory + "/IMAGES", meta.satellite_name, meta.satellite_short_name, std::to_string(meta.channel), meta.scan_time, "", meta.image_navigation_record.get());
-        }
-
         void ELEKTROLRITDataDecoderModule::processLRITFile(::lrit::LRITFile &file)
         {
             std::string current_filename = file.filename;
 
             ::lrit::PrimaryHeader primary_header = file.getHeader<::lrit::PrimaryHeader>();
 
+            satdump::xrit::XRITFileInfo finfo = satdump::xrit::identifyXRITFIle(file);
+
             // Check if this is image data, and if so also write it as an image
-            if (primary_header.file_type_code == 0 && file.hasHeader<::lrit::ImageStructureRecord>())
+            if (finfo.type != satdump::xrit::XRIT_UNKNOWN)
             {
+#if 1
+                if (primary_header.file_type_code == 0 && file.hasHeader<::lrit::ImageStructureRecord>())
+                    if (finfo.type == satdump::xrit::XRIT_ELEKTRO_MSUGS || finfo.type == satdump::xrit::XRIT_MSG_SEVIRI)
+                        satdump::xrit::msg::decompressMsgHritFileIfRequired(file);
+
+                processor.push(finfo, file);
+#else
                 if (!std::filesystem::exists(directory + "/IMAGES"))
                     std::filesystem::create_directory(directory + "/IMAGES");
 
@@ -96,11 +75,8 @@ namespace elektro
                         std::memcpy(compressedData, &file.lrit_data[primary_header.total_header_length], file.lrit_data.size() - primary_header.total_header_length);
 
                         // Images object
-                        Util::CDataFieldCompressedImage compressedImage(compressedData,
-                                                                        (file.lrit_data.size() - primary_header.total_header_length) * 8,
-                                                                        image_structure_record.bit_per_pixel,
-                                                                        image_structure_record.columns_count,
-                                                                        image_structure_record.lines_count);
+                        Util::CDataFieldCompressedImage compressedImage(compressedData, (file.lrit_data.size() - primary_header.total_header_length) * 8, image_structure_record.bit_per_pixel,
+                                                                        image_structure_record.columns_count, image_structure_record.lines_count);
                         Util::CDataFieldUncompressedImage decompressedImage;
 
                         // Perform WT Decompression
@@ -272,21 +248,15 @@ namespace elektro
                             wip_img->imageStatus = RECEIVING;
                         }
 
-                        segmentedDecoder = SegmentedLRITImageDecoder(image_structure_record.bit_per_pixel > 8 ? 16 : 8,
-                                                                     segment_id_header.planned_end_segment,
-                                                                     image_structure_record.columns_count,
-                                                                     image_structure_record.lines_count,
-                                                                     image_id);
+                        segmentedDecoder = SegmentedLRITImageDecoder(image_structure_record.bit_per_pixel > 8 ? 16 : 8, segment_id_header.planned_end_segment, image_structure_record.columns_count,
+                                                                     image_structure_record.lines_count, image_id);
                         segmentedDecoder.meta = lmeta;
                     }
 
                     int seg_number = segment_id_header.segment_sequence_number - 1;
                     {
-                        image::Image image(&file.lrit_data[primary_header.total_header_length],
-                                           image_structure_record.bit_per_pixel > 8 ? 16 : 8,
-                                           image_structure_record.columns_count,
-                                           image_structure_record.lines_count,
-                                           1);
+                        image::Image image(&file.lrit_data[primary_header.total_header_length], image_structure_record.bit_per_pixel > 8 ? 16 : 8, image_structure_record.columns_count,
+                                           image_structure_record.lines_count, 1);
                         segmentedDecoder.pushSegment(image, seg_number);
                     }
 
@@ -315,13 +285,11 @@ namespace elektro
                 else
                 { // Left just in case, should not happen on ELEKTRO-L
                     // Write raw image dats
-                    image::Image image(&file.lrit_data[primary_header.total_header_length],
-                                       image_structure_record.bit_per_pixel > 8 ? 16 : 8,
-                                       image_structure_record.columns_count,
-                                       image_structure_record.lines_count,
-                                       1);
+                    image::Image image(&file.lrit_data[primary_header.total_header_length], image_structure_record.bit_per_pixel > 8 ? 16 : 8, image_structure_record.columns_count,
+                                       image_structure_record.lines_count, 1);
                     image::save_img(image, std::string(directory + "/IMAGES/Unknown/" + current_filename).c_str());
                 }
+#endif // TODOREWORK GUI IMAGE!!!!!
             }
             else
             {
@@ -336,5 +304,5 @@ namespace elektro
                 fileo.close();
             }
         }
-    } // namespace avhrr
-} // namespace metop
+    } // namespace lrit
+} // namespace elektro

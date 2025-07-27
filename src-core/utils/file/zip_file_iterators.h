@@ -17,6 +17,7 @@ namespace satdump
 
         public:
             ZipFileIteratorItem(mz_zip_archive *zip, int num, std::string name) : FilesIteratorItem(name), zip(zip), num(num) {}
+            ~ZipFileIteratorItem() {}
 
             std::vector<uint8_t> getPayload()
             {

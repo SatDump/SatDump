@@ -36,8 +36,7 @@ int main(int argc, char *argv[])
     completeLoggerInit();
     logger->set_level(slog::LOG_TRACE);
 
-#if 0
-
+#if 1
     std::string path = argv[1];
 
     {
@@ -56,8 +55,8 @@ int main(int argc, char *argv[])
                 if (f)
                 {
                     info = satdump::official::parseOfficialInfo(f);
-                    if(info.type != satdump::official::PRODUCT_NONE)
-                    break;
+                    if (info.type != satdump::official::PRODUCT_NONE)
+                        break;
                 }
             }
         }

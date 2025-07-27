@@ -1,6 +1,7 @@
 #include "product_info.h"
 #include "core/exception.h"
 #include "logger.h"
+#include "processors/hrit/hrit_generic.h"
 #include "processors/hsd/himawari/ahi_hsd.h"
 #include "processors/nat/metop/amsu_nat.h"
 #include "processors/nat/metop/avhrr_nat.h"
@@ -9,6 +10,7 @@
 #include "processors/nat/metop/mhs_nat.h"
 #include "processors/nc/gk2a/ami_nc.h"
 #include "type.h"
+#include "utils/string.h"
 #include "utils/time.h"
 #include <cmath>
 #include <cstring>
@@ -17,6 +19,7 @@
 #include "processors/nat/msg/seviri_nat.h"
 #include "processors/nc/goes/abi_nc.h"
 #include "processors/nc/mtg/fci_nc.h"
+#include "xrit/identify.h"
 
 namespace satdump
 {
@@ -212,7 +215,7 @@ namespace satdump
 
                          i.name = "MTG-I" + std::to_string(sat_num) + " FCI " + timestamp_to_string(i.timestamp);
 
-                         i.group_id = std::to_string((uint64_t)floor(i.timestamp / (24 * 3600))) + "_" + std::to_string(day_repeat_cycle);
+                         i.group_id = std::to_string(sat_num) + "_" + std::to_string((uint64_t)floor(i.timestamp / (24 * 3600))) + "_" + std::to_string(day_repeat_cycle);
                      }
 
                      return i;
@@ -239,7 +242,7 @@ namespace satdump
 
                          i.name = "GOES-" + std::to_string(sat_num) + " ABI " + timestamp_to_string(i.timestamp);
 
-                         i.group_id = std::to_string((time_t)i.timestamp);
+                         i.group_id = std::to_string(sat_num) + "_" + std::to_string((time_t)i.timestamp);
                      }
 
                      return i;
@@ -267,7 +270,7 @@ namespace satdump
 
                          i.name = "Himawari-" + std::to_string(sat_num) + " AHI (" + std::string(mode) + ") " + timestamp_to_string(i.timestamp);
 
-                         i.group_id = std::string(mode) + "_" + std::to_string((time_t)i.timestamp);
+                         i.group_id = std::to_string(sat_num) + "_" + std::string(mode) + "_" + std::to_string((time_t)i.timestamp);
                      }
 
                      return i;
@@ -308,6 +311,29 @@ namespace satdump
                      return i;
                  },
                  []() { return std::make_shared<AMINcProcessor>(); }},
+
+                {HRIT_GENERIC,
+                 [](std::unique_ptr<satdump::utils::FilesIteratorItem> &f)
+                 {
+                     OfficialProductInfo i;
+
+                     ::lrit::LRITFile file;
+                     file.lrit_data = f->getPayload();
+                     file.parseHeaders();
+
+                     xrit::XRITFileInfo ii = xrit::identifyXRITFIle(file);
+
+                     if (ii.type != xrit::XRIT_UNKNOWN)
+                     {
+                         i.type = HRIT_GENERIC;
+                         i.timestamp = ii.timestamp;
+                         i.name = ii.satellite_name + " " + ii.instrument_name + " " + timestamp_to_string(i.timestamp);
+                         i.group_id = ii.groupid;
+                     }
+
+                     return i;
+                 },
+                 []() { return std::make_shared<HRITGenericProcessor>(); }},
             };
         }
 

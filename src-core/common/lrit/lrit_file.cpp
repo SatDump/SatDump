@@ -1,4 +1,5 @@
 #include "lrit_file.h"
+#include "logger.h"
 #include <algorithm>
 
 namespace lrit
@@ -16,6 +17,9 @@ namespace lrit
 
             if (record_length == 0)
                 break;
+
+            // if (i + record_length >= lrit_data.size())
+            //     break; TODOREWORK???
 
             all_headers.emplace(std::pair<int, int>(type, i));
 
@@ -41,4 +45,4 @@ namespace lrit
 
         total_header_length = primary_header.total_header_length;
     }
-}
+} // namespace lrit
