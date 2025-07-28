@@ -125,6 +125,8 @@ namespace fengyun_svissr
         svissr_product.set_channel_wavenumber(3, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 10.8e-6));
         svissr_product.set_channel_wavenumber(4, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 12e-6));
 
+        // TODOREWORK: Add back composite autogeneration
+
         svissr_product.save(disk_folder);
 
         buffer.image1.clear();
