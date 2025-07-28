@@ -15,14 +15,14 @@ namespace satdump
                 image::Image imgs[16];
                 int start_row[16];
                 double longitude;
-                double calibration_scale[16];
-                double calibration_offset[16];
+                double calibration_scale[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                double calibration_offset[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
                 std::string time_coverage_start;
                 std::string platform_name;
             };
 
-            double calibration_scale[16] = {0};
-            double calibration_offset[16] = {0};
+            double calibration_scale[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+            double calibration_offset[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
             float center_longitude = 0;
             std::vector<ParsedMTGFCI> all_images;

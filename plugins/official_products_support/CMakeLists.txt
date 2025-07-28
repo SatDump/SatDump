@@ -28,7 +28,7 @@ if(${HDF5_FOUND}) # TODOREWORK Maybe actually yes ANDROID?
   target_include_directories(official_products_support
                              PUBLIC ${HDF5_INCLUDE_DIRS})
   target_link_directories(official_products_support PUBLIC ${HDF5_LIBRARY_DIRS})
-  target_link_libraries(official_products_support PUBLIC hdf5 hdf5_hl xrit_support)
+  target_link_libraries(official_products_support PUBLIC hdf5 hdf5_hl hdf5_cpp xrit_support)
 
   if(MSVC OR BUILD_MSVC)
     install(

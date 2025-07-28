@@ -33,6 +33,12 @@ namespace satdump
             // Himawari
             HSD_HIMAWARI_AHI,
 
+            // FengYun-2
+            HDF_FY2_IMAGER,
+
+            // FengYun-3
+            HDF_FY3_MERSI,
+
             // HRIT
             HRIT_GENERIC,
         };
