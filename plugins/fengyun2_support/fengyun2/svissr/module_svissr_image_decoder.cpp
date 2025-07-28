@@ -64,8 +64,6 @@ namespace fengyun_svissr
         // Save products
         satdump::products::ImageProduct svissr_product;
 
-        sat_name = "";
-
         // Get the sat name
         switch (buffer.scid)
         {
