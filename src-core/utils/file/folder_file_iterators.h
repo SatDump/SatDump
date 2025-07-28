@@ -52,7 +52,7 @@ namespace satdump
 
                 if (vv)
                 {
-                    std::string path = filesIterator->path();
+                    std::string path = filesIterator->path().string();
 
                     if (std::filesystem::is_regular_file(path))
                         v = std::make_unique<FolderFileIteratorItem>(path, std::filesystem::path(path).stem().string() + std::filesystem::path(path).extension().string());

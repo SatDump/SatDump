@@ -4,6 +4,7 @@
 #include "utils/string.h"
 #include <H5Cpp.h>
 #include <H5LTpublic.h>
+#include <ctime>
 
 namespace satdump
 {
@@ -34,12 +35,12 @@ namespace satdump
 
             struct NomFileInfo
             {
-                ushort StartYear;
-                ushort StartMonth;
-                ushort StartDay;
-                ushort StartHour;
-                ushort StartMinute;
-                ushort StartSecond;
+                unsigned short StartYear;
+                unsigned short StartMonth;
+                unsigned short StartDay;
+                unsigned short StartHour;
+                unsigned short StartMinute;
+                unsigned short StartSecond;
                 char Satellite[13];
             };
 
