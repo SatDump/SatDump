@@ -73,7 +73,7 @@ namespace satdump
                 if (is_zip)
                     fit = std::make_unique<satdump::utils::ZipFilesIterator>(fpath);
                 else
-                    fit = std::make_unique<satdump::utils::FolderFilesIterator>(std::filesystem::path(fpath).parent_path());
+                    fit = std::make_unique<satdump::utils::FolderFilesIterator>(std::filesystem::path(fpath).parent_path().string());
 
                 std::shared_ptr<satdump::utils::FilesIteratorItem> f;
                 while (fit->getNext(f))

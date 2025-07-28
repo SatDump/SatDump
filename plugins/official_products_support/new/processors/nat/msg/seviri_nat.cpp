@@ -4,6 +4,7 @@
 #include "logger.h"
 #include "nlohmann/json_utils.h"
 #include "projection/standard/proj_json.h"
+#include "common/utils.h"
 
 namespace satdump
 {

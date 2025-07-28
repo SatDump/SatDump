@@ -4,7 +4,7 @@
 #include "utils/string.h"
 #include <H5Cpp.h>
 #include <H5LTpublic.h>
-#include <ctime>
+#include "common/utils.h"
 
 namespace satdump
 {
