@@ -1,10 +1,10 @@
 #include "module_goes_lrit_data_decoder.h"
-#include "common/lrit/lrit_demux.h"
 #include "core/plugin.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
 #include "logger.h"
 #include "lrit_header.h"
+#include "xrit/transport/xrit_demux.h"
 #include <filesystem>
 #include <fstream>
 
@@ -81,16 +81,16 @@ namespace goes
 
             logger->info("Demultiplexing and deframing...");
 
-            ::lrit::LRITDemux lrit_demux;
+            satdump::xrit::XRITDemux lrit_demux;
 
-            lrit_demux.onParseHeader = [this](::lrit::LRITFile &file) -> void
+            lrit_demux.onParseHeader = [this](satdump::xrit::XRITFile &file) -> void
             {
                 file.custom_flags.insert({RICE_COMPRESSED, false});
 
                 // Check if this is image data
-                if (file.hasHeader<::lrit::ImageStructureRecord>())
+                if (file.hasHeader<satdump::xrit::ImageStructureRecord>())
                 {
-                    ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>(); //(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
+                    satdump::xrit::ImageStructureRecord image_structure_record = file.getHeader<satdump::xrit::ImageStructureRecord>(); //(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
                     logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
 
                     NOAALRITHeader noaa_header = file.getHeader<NOAALRITHeader>();
@@ -129,7 +129,7 @@ namespace goes
                 }
             };
 
-            lrit_demux.onProcessData = [this](::lrit::LRITFile &file, ccsds::CCSDSPacket &pkt, bool bad_crc) -> bool
+            lrit_demux.onProcessData = [this](satdump::xrit::XRITFile &file, ccsds::CCSDSPacket &pkt, bool bad_crc) -> bool
             {
                 if (file.custom_flags[RICE_COMPRESSED])
                 {
@@ -157,7 +157,7 @@ namespace goes
                         // There are missing lines
                         if (diff > 1)
                         {
-                            ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>();
+                            satdump::xrit::ImageStructureRecord image_structure_record = file.getHeader<satdump::xrit::ImageStructureRecord>();
                             size_t to_fill = rice_parameters.pixels_per_scanline * (diff - 1);
                             size_t max_fill = image_structure_record.columns_count * image_structure_record.lines_count + file.total_header_length - (file.lrit_data.size() + output_size);
 
@@ -188,13 +188,13 @@ namespace goes
                 }
             };
 
-            lrit_demux.onFinalizeData = [this](::lrit::LRITFile &file) -> void
+            lrit_demux.onFinalizeData = [this](satdump::xrit::XRITFile &file) -> void
             {
                 // On image data, make sure buffer contains the right amount of data
-                if (file.hasHeader<::lrit::ImageStructureRecord>() && file.hasHeader<::lrit::PrimaryHeader>() && file.hasHeader<NOAALRITHeader>())
+                if (file.hasHeader<satdump::xrit::ImageStructureRecord>() && file.hasHeader<satdump::xrit::PrimaryHeader>() && file.hasHeader<NOAALRITHeader>())
                 {
-                    ::lrit::PrimaryHeader primary_header = file.getHeader<::lrit::PrimaryHeader>();
-                    ::lrit::ImageStructureRecord image_header = file.getHeader<::lrit::ImageStructureRecord>();
+                    satdump::xrit::PrimaryHeader primary_header = file.getHeader<satdump::xrit::PrimaryHeader>();
+                    satdump::xrit::ImageStructureRecord image_header = file.getHeader<satdump::xrit::ImageStructureRecord>();
                     NOAALRITHeader noaa_header = file.getHeader<NOAALRITHeader>();
 
                     if (primary_header.file_type_code == 0 && (image_header.compression_flag == 0 || (image_header.compression_flag == 1 && noaa_header.noaa_specific_compression == 1)))
@@ -223,7 +223,7 @@ namespace goes
                 // Read buffer
                 read_data((uint8_t *)&cadu, 1024);
 
-                std::vector<::lrit::LRITFile> files = lrit_demux.work(cadu);
+                std::vector<satdump::xrit::XRITFile> files = lrit_demux.work(cadu);
 
                 for (auto &file : files)
                 {

@@ -1,8 +1,8 @@
 #include "image_calibrator.h"
-#include "image/meta.h"
 #include "core/plugin.h"
+#include "image/meta.h"
 
-#include "common/lrit/generic_xrit_calibrator.h"
+#include "logger.h"
 #include "nlohmann/json.hpp"
 #include "products/image/calibration_converter.h"
 #include <memory>
@@ -39,9 +39,7 @@ namespace satdump
             std::vector<std::shared_ptr<ImageCalibrator>> calibrators;
             satdump::eventBus->fire_event<RequestImageCalibratorEvent>({id, calibrators, p, cfg});
 
-            if (id == "generic_xrit")
-                return std::make_shared<lrit::GenericxRITCalibrator>(p, cfg);
-            else if (calibrators.size() > 0)
+            if (calibrators.size() > 0)
                 return calibrators[0];
             else
                 throw satdump_exception("No calibrator found for " + id + "!");

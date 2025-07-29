@@ -1,9 +1,9 @@
 #include "module_elektro_lrit_data_decoder.h"
-#include "common/lrit/lrit_demux.h"
 #include "common/utils.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
 #include "logger.h"
+#include "xrit/transport/xrit_demux.h"
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -45,14 +45,14 @@ namespace elektro
 
             logger->info("Demultiplexing and deframing...");
 
-            ::lrit::LRITDemux lrit_demux;
+            satdump::xrit::XRITDemux lrit_demux;
 
             while (should_run())
             {
                 // Read buffer
                 read_data((uint8_t *)&cadu, 1024);
 
-                std::vector<::lrit::LRITFile> files = lrit_demux.work(cadu);
+                std::vector<satdump::xrit::XRITFile> files = lrit_demux.work(cadu);
 
                 for (auto &file : files)
                     processLRITFile(file);

@@ -10,19 +10,19 @@ namespace satdump
     {
         namespace msg
         {
-            void decompressMsgHritFileIfRequired(::lrit::LRITFile &file)
+            void decompressMsgHritFileIfRequired(XRITFile &file)
             {
-                ::lrit::PrimaryHeader primary_header = file.getHeader<::lrit::PrimaryHeader>();
+                PrimaryHeader primary_header = file.getHeader<PrimaryHeader>();
 
                 // Only image data can be compressed
-                if (primary_header.file_type_code != 0 || !file.hasHeader<::lrit::ImageStructureRecord>())
+                if (primary_header.file_type_code != 0 || !file.hasHeader<ImageStructureRecord>())
                 {
                     logger->error("File " + file.filename + " is not an image!");
                     return;
                 }
 
                 // Get image structure record
-                ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>();
+                ImageStructureRecord image_structure_record = file.getHeader<ImageStructureRecord>();
 
                 // Parse compression headers
                 if (image_structure_record.compression_flag == 2 /* Progressive JPEG */)

@@ -1,5 +1,10 @@
 #pragma once
 
+/**
+ * @file msg_headers.h
+ * @brief MSG/ELEKTRO-L HRIT/LRIT Specific Headers
+ */
+
 #include "common/utils.h"
 #include <cstdint>
 #include <cstring>

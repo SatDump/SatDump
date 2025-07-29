@@ -1,6 +1,5 @@
 #pragma once
 
-#include "common/lrit/lrit_productizer.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
 #include "xrit/processor/xrit_channel_processor.h"
 

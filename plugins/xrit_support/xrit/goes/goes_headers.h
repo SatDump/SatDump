@@ -1,6 +1,10 @@
 #pragma once
 
-#include "common/utils.h"
+/**
+ * @file goes_headers.h
+ * @brief GOES HRIT/LRIT Specific Headers
+ */
+
 #include "utils/string.h"
 #include <cstdint>
 #include <cstring>

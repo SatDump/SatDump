@@ -1,5 +1,10 @@
 #pragma once
 
+/**
+ * @file gk2a_headers.h
+ * @brief GK-2A HRIT/LRIT Specific Headers
+ */
+
 #include "common/utils.h"
 #include <cstdint>
 #include <cstring>

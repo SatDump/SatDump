@@ -1,8 +1,8 @@
 #pragma once
 
-#include "common/lrit/lrit_file.h"
 #include "data/lrit_data.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
+#include "xrit/xrit_file.h"
 
 namespace fy4
 {
@@ -37,7 +37,7 @@ namespace fy4
             std::map<int, uint64_t> decryption_keys;
 #endif
 
-            void processLRITFile(::lrit::LRITFile &file);
+            void processLRITFile(satdump::xrit::XRITFile &file);
 
         public:
             FY4LRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

@@ -20,11 +20,11 @@ namespace gk2a
 {
     namespace lrit
     {
-        void GK2ALRITDataDecoderModule::processLRITFile(::lrit::LRITFile &file)
+        void GK2ALRITDataDecoderModule::processLRITFile(satdump::xrit::XRITFile &file)
         {
             std::string current_filename = file.filename;
 
-            ::lrit::PrimaryHeader primary_header = file.getHeader<::lrit::PrimaryHeader>();
+            satdump::xrit::PrimaryHeader primary_header = file.getHeader<satdump::xrit::PrimaryHeader>();
 
             if (file.custom_flags[satdump::xrit::gk2a::IS_ENCRYPTED] && decryption_keys.size() > 0) // Decrypt
             {
@@ -88,7 +88,7 @@ namespace gk2a
             if (finfo.type != satdump::xrit::XRIT_UNKNOWN)
             {
 #if 1
-                if (primary_header.file_type_code == 0 && file.hasHeader<::lrit::ImageStructureRecord>())
+                if (primary_header.file_type_code == 0 && file.hasHeader<satdump::xrit::ImageStructureRecord>())
                     if (finfo.type == satdump::xrit::XRIT_GK2A_AMI)
                         satdump::xrit::gk2a::decompressGK2AHritFileIfRequired(file);
 

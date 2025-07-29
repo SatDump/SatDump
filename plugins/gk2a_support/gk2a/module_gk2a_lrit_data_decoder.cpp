@@ -1,5 +1,4 @@
 #include "module_gk2a_lrit_data_decoder.h"
-#include "common/lrit/lrit_demux.h"
 #include "common/utils.h"
 #include "core/resources.h"
 #include "imgui/imgui.h"
@@ -12,6 +11,7 @@
 #include "lrit_header.h"
 #include "utils/http.h"
 #include "xrit/gk2a/gk2a_headers.h"
+#include "xrit/transport/xrit_demux.h"
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -135,9 +135,9 @@ namespace gk2a
 
             logger->info("Demultiplexing and deframing...");
 
-            ::lrit::LRITDemux lrit_demux;
+            satdump::xrit::XRITDemux lrit_demux;
 
-            lrit_demux.onParseHeader = [](::lrit::LRITFile &file) -> void
+            lrit_demux.onParseHeader = [](satdump::xrit::XRITFile &file) -> void
             {
                 if (file.hasHeader<KeyHeader>())
                 {
@@ -167,7 +167,7 @@ namespace gk2a
                 // Read buffer
                 read_data((uint8_t *)&cadu, 1024);
 
-                std::vector<::lrit::LRITFile> files = lrit_demux.work(cadu);
+                std::vector<satdump::xrit::XRITFile> files = lrit_demux.work(cadu);
 
                 for (auto &file : files)
                     processLRITFile(file);

@@ -9,18 +9,18 @@ namespace satdump
     {
         namespace gk2a
         {
-            void decompressGK2AHritFileIfRequired(::lrit::LRITFile &file)
+            void decompressGK2AHritFileIfRequired(XRITFile &file)
             {
-                ::lrit::PrimaryHeader primary_header = file.getHeader<::lrit::PrimaryHeader>();
+                PrimaryHeader primary_header = file.getHeader<PrimaryHeader>();
 
                 // Only image data can be compressed
-                if (primary_header.file_type_code != 0 || !file.hasHeader<::lrit::ImageStructureRecord>())
+                if (primary_header.file_type_code != 0 || !file.hasHeader<ImageStructureRecord>())
                 {
                     logger->error("File " + file.filename + " is not an image!");
                     return;
                 }
 
-                ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>(); //(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
+                ImageStructureRecord image_structure_record = file.getHeader<ImageStructureRecord>(); //(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
                 logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
                 if (image_structure_record.compression_flag == 2 /* Progressive JPEG */)
                 {

@@ -15,11 +15,11 @@ namespace elektro
 {
     namespace lrit
     {
-        void ELEKTROLRITDataDecoderModule::processLRITFile(::lrit::LRITFile &file)
+        void ELEKTROLRITDataDecoderModule::processLRITFile(satdump::xrit::XRITFile &file)
         {
             std::string current_filename = file.filename;
 
-            ::lrit::PrimaryHeader primary_header = file.getHeader<::lrit::PrimaryHeader>();
+            satdump::xrit::PrimaryHeader primary_header = file.getHeader<satdump::xrit::PrimaryHeader>();
 
             satdump::xrit::XRITFileInfo finfo = satdump::xrit::identifyXRITFIle(file);
 
@@ -27,7 +27,7 @@ namespace elektro
             if (finfo.type != satdump::xrit::XRIT_UNKNOWN)
             {
 #if 1
-                if (primary_header.file_type_code == 0 && file.hasHeader<::lrit::ImageStructureRecord>())
+                if (primary_header.file_type_code == 0 && file.hasHeader<satdump::xrit::ImageStructureRecord>())
                     if (finfo.type == satdump::xrit::XRIT_ELEKTRO_MSUGS || finfo.type == satdump::xrit::XRIT_MSG_SEVIRI)
                         satdump::xrit::msg::decompressMsgHritFileIfRequired(file);
 

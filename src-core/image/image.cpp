@@ -4,6 +4,7 @@
 #include <cstdlib>
 
 #include <cmath>
+#include <string>
 
 namespace satdump
 {
@@ -200,7 +201,7 @@ namespace satdump
                 return image8;
             }
 
-            throw satdump_exception("Error in to8bits()"); // This should never happen
+            throw satdump_exception("Error in to8bits() : Depth is " + std::to_string(d_depth)); // This should never happen
         }
 
         Image Image::to16bits()

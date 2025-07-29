@@ -12,16 +12,16 @@ namespace satdump
 {
     namespace xrit
     {
-        void XRITChannelProcessor::push(xrit::XRITFileInfo &finfo, ::lrit::LRITFile &file)
+        void XRITChannelProcessor::push(xrit::XRITFileInfo &finfo, XRITFile &file)
         {
-            if (!file.hasHeader<::lrit::ImageStructureRecord>())
+            if (!file.hasHeader<ImageStructureRecord>())
             {
                 if (!saveMeta(finfo, file))
                     logger->error("Not image data, and didn't process as metadata!");
                 return;
             }
 
-            ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>();
+            ImageStructureRecord image_structure_record = file.getHeader<ImageStructureRecord>();
             logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
 
             // TODOREWORK MSG EPI/PRO
@@ -79,5 +79,74 @@ namespace satdump
                 }
             }
         }
+
+        /*inline void attemptToGenerateComposites(satdump::products::ImageProduct *pro, std::string pro_path)
+   {
+       try
+       {
+           // Get instrument settings
+           nlohmann::ordered_json instrument_explorer_settings;
+           if (satdump::config::main_cfg["explorer"]["instruments"].contains(pro->instrument_name))
+               instrument_explorer_settings = satdump::config::main_cfg["explorer"]["instruments"][pro->instrument_name];
+           else
+               logger->error("Unknown instrument : %s!", pro->instrument_name.c_str());
+
+           // Generate composites
+           if (instrument_explorer_settings.contains("rgb_composites"))
+           {
+               bool can_make_composites = false;
+               for (nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> compo : instrument_explorer_settings["rgb_composites"].items())
+               {
+                   if (compo.value().contains("autogen"))
+                       if (compo.value()["autogen"].get<bool>() == false)
+                           continue;
+                   if (pro->contents.contains("autocomposite_cache_done"))
+                       if (pro->contents["autocomposite_cache_done"].contains(compo.key()))
+                           continue;
+
+                   // Check each can be made
+                   satdump::ImageCompositeCfg cfg = compo.value();
+                   if (satdump::check_composite_from_product_can_be_made(*pro, cfg))
+                   {
+                       // Load ONLY the images needed for these composites
+                       can_make_composites = true;
+                       std::string str_to_find_channels = cfg.equation;
+                       if (cfg.lut.size() != 0 || cfg.lua.size() != 0 || cfg.cpp.size() != 0)
+                           str_to_find_channels = cfg.channels;
+
+                       for (int i = 0; i < (int)pro->images.size(); i++)
+                       {
+                           auto &img = pro->images[i];
+                           std::string equ_str = "ch" + img.channel_name;
+                           int loc;
+
+                           if (satdump::image_equation_contains(str_to_find_channels, equ_str, &loc) && img.image.size() == 0)
+                           {
+                               logger->trace("Loading image channel " + img.channel_name);
+                               image::load_img(img.image, pro_path + "/" + img.filename);
+                           }
+                       }
+                   }
+               }
+
+               // Generate all composites currently possible
+               if (can_make_composites)
+               {
+                   pro->contents["autocomposite_cache_enabled"] = true;
+                   satdump::process_image_products((satdump::Products *)pro, pro_path);
+               }
+           }
+       }
+       catch (std::exception &e)
+       {
+           logger->error("Error trying to autogen xRIT composite! : %s", e.what());
+       }
+
+       // Unload everything
+       for (int i = 0; i < (int)pro->images.size(); i++)
+           pro->images[i].image.clear();
+   }*/
+        // TODOREWORKXRIT THIS MAKE WORK AGAIN!
+
     } // namespace xrit
 } // namespace satdump

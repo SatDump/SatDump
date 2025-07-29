@@ -1,12 +1,11 @@
 #pragma once
 
-#include "common/lrit/lrit_file.h"
-#include "common/lrit/lrit_productizer.h"
 #include "data/lrit_data.h"
 #include "dcs/dcs_decoder.h"
 #include "goes/crc32.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
 #include "xrit/processor/xrit_channel_processor.h"
+#include "xrit/xrit_file.h"
 
 #include <deque>
 #include <set>
@@ -71,8 +70,8 @@ namespace goes
             std::map<int, std::unique_ptr<wip_images>> all_wip_images;
 
             void initDCS();
-            void processLRITFile(::lrit::LRITFile &file);
-            void saveLRITFile(::lrit::LRITFile &file, std::string path);
+            void processLRITFile(satdump::xrit::XRITFile &file);
+            void saveLRITFile(satdump::xrit::XRITFile &file, std::string path);
 
             static void loadDCPs();
 

@@ -1,25 +1,39 @@
 #pragma once
 
-#include "common/lrit/lrit_file.h"
+/**
+ * @file get_img.h
+ * @brief xRIT files => Images
+ */
+
 #include "image/image.h"
 #include "logger.h"
 #include "xrit/identify.h"
+#include "xrit/xrit_file.h"
 
 namespace satdump
 {
     namespace xrit
     {
-        inline image::Image getImageFromXRITFile(xrit_file_type_t type, lrit::LRITFile &file)
+        /**
+         * @brief This converts a xRIT file (given its type) into an
+         * image object handling missing-specific details and some safety
+         * checks
+         *
+         * @param type type of the xRIT file (from identification step)
+         * @param file xRIT file
+         * @return the image
+         */
+        inline image::Image getImageFromXRITFile(xrit_file_type_t type, XRITFile &file)
         {
-            ::lrit::PrimaryHeader primary_header = file.getHeader<::lrit::PrimaryHeader>();
+            PrimaryHeader primary_header = file.getHeader<PrimaryHeader>();
 
-            if (!file.hasHeader<lrit::ImageStructureRecord>())
+            if (!file.hasHeader<ImageStructureRecord>())
             {
                 logger->error("Tried to parse XRIT image but no image header!");
                 return image::Image();
             }
 
-            ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>(); //(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
+            ImageStructureRecord image_structure_record = file.getHeader<ImageStructureRecord>(); //(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
 
             size_t required_buffer_size = (image_structure_record.bit_per_pixel > 8 ? 2 : 1) * image_structure_record.columns_count * image_structure_record.lines_count;
             if (required_buffer_size <= file.lrit_data.size() - primary_header.total_header_length)

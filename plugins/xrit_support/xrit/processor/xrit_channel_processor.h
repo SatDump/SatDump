@@ -1,15 +1,39 @@
 #pragma once
 
-#include "common/lrit/lrit_file.h"
-#include "common/lrit/lrit_productizer.h"
+/**
+ * @file xrit_channel_processor.h
+ * @brief xRIT file group decoding (into images)
+ */
+
 #include "image/image.h"
 #include "products/image_product.h"
 #include "xrit/segment_decoder.h"
+#include "xrit/xrit_file.h"
 
 namespace satdump
 {
     namespace xrit
     {
+        /**
+         * @brief All-in-on class to convert a set of xRIT files
+         * provided in an arbitrary order into products.
+         *
+         * This will handle allocating segmented decoders for each
+         * channel, calibration, metadata...
+         *
+         * Files provided should be provided sequentially for each 'groupid'
+         * you wish to decode, as upon a change, the segmented decoders resets
+         * themselves. This is well suited to live downlinks which are always
+         * sequential, and offline decoding where files are already filtered by
+         * group.
+         *
+         * @param directory directory to save output files into. MUST be set by the
+         * user (unless in_memory_mode is true)
+         * @param in_memory_mode If true, generated products are kept in memory. NOT
+         * recommended for live processing, as RAM usage will only increase.
+         * @param in_memory_products if in_memory_mode is enabled, contains the output
+         * products
+         */
         class XRITChannelProcessor
         {
         private:
@@ -24,8 +48,25 @@ namespace satdump
             };
 
         private:
+            /**
+             * @brief Util function to setup or load products
+             * to write a new channel/data into them.
+             * @param meta xRIT file info
+             */
             XRITProd setupProduct(xrit::XRITFileInfo &meta);
-            bool saveMeta(xrit::XRITFileInfo &meta, ::lrit::LRITFile &file);
+
+            /**
+             * @brief Save a metadata xRIT file (process into products!)
+             * @param meta xRIT file info
+             * @param file actual xRIT file
+             */
+            bool saveMeta(xrit::XRITFileInfo &meta, XRITFile &file);
+
+            /**
+             * @brief Save an image xRIT file (process into products!)
+             * @param meta xRIT file info
+             * @param file actual xRIT file
+             */
             void saveImg(xrit::XRITFileInfo &meta, image::Image &img);
 
         public:
@@ -34,7 +75,20 @@ namespace satdump
             std::map<std::string, std::shared_ptr<products::ImageProduct>> in_memory_products;
 
         public:
-            void push(xrit::XRITFileInfo &finfo, ::lrit::LRITFile &file);
+            /**
+             * @brief Push a file to process. See class documenation for
+             * more information on using this class.
+             *
+             * @param finfo xRIT file info
+             * @param file actual xRIT file
+             */
+            void push(xrit::XRITFileInfo &finfo, XRITFile &file);
+
+            /**
+             * @brief Forces all segmented decoders that do hold data
+             * to save their images now. Should be called when the decoder
+             * is about to exit, to save lingering data.
+             */
             void flush();
         };
     } // namespace xrit

@@ -1,16 +1,24 @@
 #pragma once
 
+/**
+ * @file segment_decoder.h
+ * @brief MSG/ELEKTRO Segmented decoder
+ */
+
 #include "../segment_decoder.h"
-#include "common/lrit/lrit_file.h"
 #include "image/image.h"
 #include "msg_headers.h"
 #include "xrit/identify.h"
 #include "xrit/processor/get_img.h"
+#include "xrit/xrit_file.h"
 
 namespace satdump
 {
     namespace xrit
     {
+        /**
+         * @brief MSG/ELEKTRO-specific Segmented Decoder
+         */
         class MSGSegmentedImageDecoder : public SegmentedImageDecoder
         {
         private:
@@ -31,9 +39,9 @@ namespace satdump
                 image.fill(0);
             }
 
-            MSGSegmentedImageDecoder(lrit::LRITFile &file)
+            MSGSegmentedImageDecoder(XRITFile &file)
             {
-                lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>();
+                ImageStructureRecord image_structure_record = file.getHeader<ImageStructureRecord>();
                 msg::SegmentIdentificationHeader segment_id_header = file.getHeader<msg::SegmentIdentificationHeader>();
 
                 init(image_structure_record.bit_per_pixel > 8 ? 16 : 8,                                   //
@@ -55,7 +63,7 @@ namespace satdump
                 segments_done[segc] = true;
             }
 
-            void pushSegment(lrit::LRITFile &file)
+            void pushSegment(XRITFile &file)
             {
                 msg::SegmentIdentificationHeader segment_id_header = file.getHeader<msg::SegmentIdentificationHeader>();
                 auto img = getImageFromXRITFile(XRIT_MSG_SEVIRI, file);

@@ -1,10 +1,6 @@
 #pragma once
 
 #include "../processor.h"
-#include "common/lrit/lrit_productizer.h"
-#include "products/image_product.h"
-#include "xrit/goes/segment_decoder.h"
-#include "xrit/msg/segment_decoder.h"
 #include "xrit/processor/xrit_channel_processor.h"
 
 namespace satdump

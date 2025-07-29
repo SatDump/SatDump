@@ -1,5 +1,5 @@
 #include "hrit_generic.h"
-#include "common/lrit/lrit_file.h"
+#include "xrit/xrit_file.h"
 
 #include "logger.h"
 #include "xrit/gk2a/decomp.h"
@@ -18,14 +18,14 @@ namespace satdump
     {
         void HRITGenericProcessor::ingestFile(std::vector<uint8_t> vec)
         {
-            ::lrit::LRITFile file;
+            xrit::XRITFile file;
             file.lrit_data = vec;
             file.parseHeaders();
 
             xrit::XRITFileInfo finfo = xrit::identifyXRITFIle(file);
 
             // Check if this is image data
-            if (file.hasHeader<::lrit::ImageStructureRecord>())
+            if (file.hasHeader<xrit::ImageStructureRecord>())
             {
                 if (finfo.type == xrit::XRIT_ELEKTRO_MSUGS || finfo.type == xrit::XRIT_MSG_SEVIRI)
                     xrit::msg::decompressMsgHritFileIfRequired(file);

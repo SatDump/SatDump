@@ -1,4 +1,3 @@
-#include "common/lrit/lrit_file.h"
 #include "core/resources.h"
 #include "image/image.h"
 #include "image/io.h"
@@ -12,6 +11,7 @@
 #include "xrit/identify.h"
 #include "xrit/msg/specific_proc.h"
 #include "xrit/processor/calib.h"
+#include "xrit/xrit_file.h"
 #include "xrit_channel_processor.h"
 #include <cstdint>
 #include <filesystem>
@@ -112,7 +112,7 @@ namespace satdump
             return proj_cfg;
         }
 
-        XRITChannelProcessor::XRITProd XRITChannelProcessor::setupProduct(xrit::XRITFileInfo &meta)
+        XRITChannelProcessor::XRITProd XRITChannelProcessor::setupProduct(XRITFileInfo &meta)
         {
             XRITProd p;
             p.directory_path = meta.region == "" ? (directory + "/" + meta.satellite_name + "/" + timestamp_to_string2(meta.timestamp) + "/")
@@ -161,7 +161,7 @@ namespace satdump
             return p;
         }
 
-        bool XRITChannelProcessor::saveMeta(xrit::XRITFileInfo &meta, ::lrit::LRITFile &file)
+        bool XRITChannelProcessor::saveMeta(xrit::XRITFileInfo &meta, XRITFile &file)
         {
             // If we lack some essential metadata, we have to exit
             if (meta.satellite_name == "" || meta.satellite_short_name == "" || meta.timestamp == -1)

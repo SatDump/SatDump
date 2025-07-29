@@ -1,7 +1,12 @@
 #pragma once
 
+/**
+ * @file segment_decoder.h
+ * @brief Himawari Segmented decoder
+ */
+
 #include "../segment_decoder.h"
-#include "common/lrit/lrit_file.h"
+#include "xrit/xrit_file.h"
 #include "image/image.h"
 #include "utils/string.h"
 #include "xrit/identify.h"
@@ -11,6 +16,9 @@ namespace satdump
 {
     namespace xrit
     {
+        /**
+         * @brief Himawari(cast)-specific Segmented Decoder
+         */
         class HimawariSegmentedImageDecoder : public SegmentedImageDecoder
         {
         private:
@@ -31,9 +39,9 @@ namespace satdump
                 image.fill(0);
             }
 
-            HimawariSegmentedImageDecoder(lrit::LRITFile &file)
+            HimawariSegmentedImageDecoder(XRITFile &file)
             {
-                lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>();
+                ImageStructureRecord image_structure_record = file.getHeader<ImageStructureRecord>();
 
                 init(image_structure_record.bit_per_pixel > 8 ? 16 : 8, //
                      10,                                                //
@@ -54,7 +62,7 @@ namespace satdump
                 segments_done[segc] = true;
             }
 
-            void pushSegment(lrit::LRITFile &file)
+            void pushSegment(XRITFile &file)
             {
                 auto img = getImageFromXRITFile(XRIT_HIMAWARI_AHI, file);
 

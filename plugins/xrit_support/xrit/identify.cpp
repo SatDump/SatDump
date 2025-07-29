@@ -1,5 +1,4 @@
 #include "identify.h"
-#include "common/lrit/lrit_file.h"
 #include "logger.h"
 #include "msg/msg_headers.h"
 #include "utils/string.h"
@@ -18,7 +17,7 @@ namespace satdump
         //  Identifcation done from file data
         ////////////////////////////////////////
 
-        bool identifyElektroFile(XRITFileInfo &i, lrit::LRITFile &file)
+        bool identifyElektroFile(XRITFileInfo &i, XRITFile &file)
         {
             i.filename = file.filename;
 
@@ -60,17 +59,17 @@ namespace satdump
                 i.seg_groupid = i.groupid + "_" + i.channel;
             }
 
-            if (file.all_headers.count(lrit::ImageStructureRecord::TYPE))
-                i.bit_depth = file.getHeader<lrit::ImageStructureRecord>().bit_per_pixel;
+            if (file.all_headers.count(ImageStructureRecord::TYPE))
+                i.bit_depth = file.getHeader<ImageStructureRecord>().bit_per_pixel;
 
-            if (file.all_headers.count(lrit::ImageNavigationRecord::TYPE))
-                i.image_navigation_record = std::make_shared<::lrit::ImageNavigationRecord>(file.getHeader<::lrit::ImageNavigationRecord>());
+            if (file.all_headers.count(ImageNavigationRecord::TYPE))
+                i.image_navigation_record = std::make_shared<ImageNavigationRecord>(file.getHeader<ImageNavigationRecord>());
 
             // Adapt navigation if needed (to shift between segments!)
-            if (file.all_headers.count(msg::SegmentIdentificationHeader::TYPE) && file.all_headers.count(lrit::ImageStructureRecord::TYPE) && i.image_navigation_record)
+            if (file.all_headers.count(msg::SegmentIdentificationHeader::TYPE) && file.all_headers.count(ImageStructureRecord::TYPE) && i.image_navigation_record)
             {
                 auto segment_id_header = file.getHeader<msg::SegmentIdentificationHeader>();
-                auto image_structure_record = file.getHeader<lrit::ImageStructureRecord>();
+                auto image_structure_record = file.getHeader<ImageStructureRecord>();
                 i.image_navigation_record->line_offset =
                     i.image_navigation_record->line_offset + (segment_id_header.segment_sequence_number - segment_id_header.planned_start_segment) * image_structure_record.lines_count;
             }
@@ -78,7 +77,7 @@ namespace satdump
             return true;
         }
 
-        bool identifyMSGFile(XRITFileInfo &i, lrit::LRITFile &file)
+        bool identifyMSGFile(XRITFileInfo &i, XRITFile &file)
         {
             i.filename = file.filename;
 
@@ -118,17 +117,17 @@ namespace satdump
                 i.seg_groupid = i.groupid + "_" + i.channel;
             }
 
-            if (file.all_headers.count(lrit::ImageStructureRecord::TYPE))
-                i.bit_depth = file.getHeader<lrit::ImageStructureRecord>().bit_per_pixel;
+            if (file.all_headers.count(ImageStructureRecord::TYPE))
+                i.bit_depth = file.getHeader<ImageStructureRecord>().bit_per_pixel;
 
-            if (file.all_headers.count(lrit::ImageNavigationRecord::TYPE))
-                i.image_navigation_record = std::make_shared<lrit::ImageNavigationRecord>(file.getHeader<lrit::ImageNavigationRecord>());
+            if (file.all_headers.count(ImageNavigationRecord::TYPE))
+                i.image_navigation_record = std::make_shared<ImageNavigationRecord>(file.getHeader<ImageNavigationRecord>());
 
             // Adapt navigation if needed (to shift between segments!)
-            if (file.all_headers.count(msg::SegmentIdentificationHeader::TYPE) && file.all_headers.count(lrit::ImageStructureRecord::TYPE) && i.image_navigation_record)
+            if (file.all_headers.count(msg::SegmentIdentificationHeader::TYPE) && file.all_headers.count(ImageStructureRecord::TYPE) && i.image_navigation_record)
             {
                 auto segment_id_header = file.getHeader<msg::SegmentIdentificationHeader>();
-                auto image_structure_record = file.getHeader<lrit::ImageStructureRecord>();
+                auto image_structure_record = file.getHeader<ImageStructureRecord>();
                 i.image_navigation_record->line_offset =
                     i.image_navigation_record->line_offset + (segment_id_header.segment_sequence_number - segment_id_header.planned_start_segment) * image_structure_record.lines_count;
             }
@@ -136,22 +135,22 @@ namespace satdump
             return true;
         }
 
-        bool identifyGOESFile(XRITFileInfo &i, lrit::LRITFile &file)
+        bool identifyGOESFile(XRITFileInfo &i, XRITFile &file)
         {
-            ::lrit::PrimaryHeader primary_header = file.getHeader<::lrit::PrimaryHeader>();
+            PrimaryHeader primary_header = file.getHeader<PrimaryHeader>();
 
             if (!file.hasHeader<goes::NOAALRITHeader>())
                 return false;
             goes::NOAALRITHeader noaa_header = file.getHeader<goes::NOAALRITHeader>();
 
-            if (primary_header.file_type_code == 0 && file.hasHeader<::lrit::ImageStructureRecord>())
+            if (primary_header.file_type_code == 0 && file.hasHeader<ImageStructureRecord>())
             {
-                ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>();
+                ImageStructureRecord image_structure_record = file.getHeader<ImageStructureRecord>();
                 i.bit_depth = image_structure_record.bit_per_pixel;
 
-                if (!file.hasHeader<lrit::TimeStampRecord>())
+                if (!file.hasHeader<TimeStampRecord>())
                     return false;
-                ::lrit::TimeStampRecord timestamp_record = file.getHeader<lrit::TimeStampRecord>();
+                TimeStampRecord timestamp_record = file.getHeader<TimeStampRecord>();
                 std::tm *timeReadable = gmtime(&timestamp_record.timestamp);
 
                 // GOES-R Data, from GOES-16 to 19.
@@ -303,7 +302,7 @@ namespace satdump
                         i.channel = "3";
 
                     // Apparently the timestamp is in there for Himawari-8 data
-                    lrit::AnnotationRecord annotation_record = file.getHeader<lrit::AnnotationRecord>();
+                    AnnotationRecord annotation_record = file.getHeader<AnnotationRecord>();
 
                     std::vector<std::string> strParts = satdump::splitString(annotation_record.annotation_text, '_');
                     if (strParts.size() > 3)
@@ -323,9 +322,9 @@ namespace satdump
 
                 //////////////////
 
-                if (file.all_headers.count(lrit::ImageNavigationRecord::TYPE))
+                if (file.all_headers.count(ImageNavigationRecord::TYPE))
                 {
-                    i.image_navigation_record = std::make_shared<lrit::ImageNavigationRecord>(file.getHeader<lrit::ImageNavigationRecord>());
+                    i.image_navigation_record = std::make_shared<ImageNavigationRecord>(file.getHeader<ImageNavigationRecord>());
 
                     bool used_ancillary_proj = false;
 
@@ -367,14 +366,14 @@ namespace satdump
                     }
                 }
 
-                if (file.hasHeader<lrit::ImageDataFunctionRecord>())
-                    i.image_data_function_record = std::make_shared<lrit::ImageDataFunctionRecord>(file.getHeader<lrit::ImageDataFunctionRecord>());
+                if (file.hasHeader<ImageDataFunctionRecord>())
+                    i.image_data_function_record = std::make_shared<ImageDataFunctionRecord>(file.getHeader<ImageDataFunctionRecord>());
             }
 
             return true;
         }
 
-        bool identifyGK2AFile(XRITFileInfo &i, lrit::LRITFile &file)
+        bool identifyGK2AFile(XRITFileInfo &i, XRITFile &file)
         {
             i.filename = file.filename;
 
@@ -408,24 +407,24 @@ namespace satdump
             i.channel = parts[3];
             i.seg_groupid = i.channel + "_" + i.groupid;
 
-            if (file.all_headers.count(lrit::ImageStructureRecord::TYPE))
-                i.bit_depth = file.getHeader<lrit::ImageStructureRecord>().bit_per_pixel;
+            if (file.all_headers.count(ImageStructureRecord::TYPE))
+                i.bit_depth = file.getHeader<ImageStructureRecord>().bit_per_pixel;
 
             // Try to parse navigation
-            if (file.all_headers.count(lrit::ImageNavigationRecord::TYPE))
+            if (file.all_headers.count(ImageNavigationRecord::TYPE))
             {
-                i.image_navigation_record = std::make_shared<::lrit::ImageNavigationRecord>(file.getHeader<::lrit::ImageNavigationRecord>());
+                i.image_navigation_record = std::make_shared<ImageNavigationRecord>(file.getHeader<ImageNavigationRecord>());
                 i.image_navigation_record->line_scaling_factor = -i.image_navigation_record->line_scaling_factor; // Little GK-2A Quirk...
             }
 
             // Try parse calibration
-            if (file.hasHeader<lrit::ImageDataFunctionRecord>())
-                i.image_data_function_record = std::make_shared<lrit::ImageDataFunctionRecord>(file.getHeader<lrit::ImageDataFunctionRecord>());
+            if (file.hasHeader<ImageDataFunctionRecord>())
+                i.image_data_function_record = std::make_shared<ImageDataFunctionRecord>(file.getHeader<ImageDataFunctionRecord>());
 
             return true;
         }
 
-        bool identifyHimawariFile(XRITFileInfo &i, lrit::LRITFile &file)
+        bool identifyHimawariFile(XRITFileInfo &i, XRITFile &file)
         {
             i.filename = file.filename;
 
@@ -497,16 +496,16 @@ namespace satdump
 
             i.seg_groupid = i.channel + "_" + i.groupid;
 
-            if (file.all_headers.count(lrit::ImageStructureRecord::TYPE))
-                i.bit_depth = file.getHeader<lrit::ImageStructureRecord>().bit_per_pixel;
+            if (file.all_headers.count(ImageStructureRecord::TYPE))
+                i.bit_depth = file.getHeader<ImageStructureRecord>().bit_per_pixel;
 
             // Try to parse navigation
-            if (file.all_headers.count(lrit::ImageNavigationRecord::TYPE))
-                i.image_navigation_record = std::make_shared<::lrit::ImageNavigationRecord>(file.getHeader<::lrit::ImageNavigationRecord>());
+            if (file.all_headers.count(ImageNavigationRecord::TYPE))
+                i.image_navigation_record = std::make_shared<ImageNavigationRecord>(file.getHeader<ImageNavigationRecord>());
 
             // Try parse calibration
-            if (file.hasHeader<lrit::ImageDataFunctionRecord>())
-                i.image_data_function_record = std::make_shared<lrit::ImageDataFunctionRecord>(file.getHeader<lrit::ImageDataFunctionRecord>());
+            if (file.hasHeader<ImageDataFunctionRecord>())
+                i.image_data_function_record = std::make_shared<ImageDataFunctionRecord>(file.getHeader<ImageDataFunctionRecord>());
 
             return true;
         }
@@ -515,7 +514,7 @@ namespace satdump
         //  Generic functions
         ////////////////////////////////////////
 
-        XRITFileInfo identifyXRITFIle(lrit::LRITFile &file)
+        XRITFileInfo identifyXRITFIle(XRITFile &file)
         {
             XRITFileInfo i;
 

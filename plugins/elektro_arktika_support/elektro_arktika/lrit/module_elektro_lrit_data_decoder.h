@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/lrit/lrit_file.h"
+#include "xrit/xrit_file.h"
 #include "data/lrit_data.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
 #include "xrit/processor/xrit_channel_processor.h"
@@ -29,7 +29,7 @@ namespace elektro
 
             std::map<int, std::unique_ptr<wip_images>> all_wip_images;
 
-            void processLRITFile(::lrit::LRITFile &file);
+            void processLRITFile(satdump::xrit::XRITFile &file);
 
         public:
             ELEKTROLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

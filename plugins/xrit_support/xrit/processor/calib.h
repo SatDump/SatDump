@@ -1,20 +1,35 @@
 #pragma once
 
-#include "common/lrit/lrit_file.h"
+/**
+ * @file calib.h
+ * @brief Generic xRIT calibration parsing
+ */
+
 #include "logger.h"
 #include "products/image_product.h"
 #include "utils/string.h"
+#include "xrit/xrit_file.h"
+
 namespace satdump
 {
     namespace xrit
-    { // This will most probably get moved over to each
-        inline void addCalibrationInfoFunc(satdump::products::ImageProduct &pro, lrit::ImageDataFunctionRecord *image_data_function_record, std::string channel, std::string instrument_id)
+    {
+        /**
+         * @brief Most xRIT missions use the standard calibration header. This
+         * function parses it to insert calibration information on the channel.
+         *
+         * TODOREWORK This will most probably get moved over to each, and maybe load up wavelengths from files??
+         * Also quite... crappy?
+         *
+         * @param pro product to work on
+         * @param image_data_function_record xRIT calibration header
+         * @param channel instrument channel ID
+         * @param instrument_id the actual instrument channel ID
+         */
+        inline void addCalibrationInfoFunc(satdump::products::ImageProduct &pro, ImageDataFunctionRecord *image_data_function_record, std::string channel, std::string instrument_id)
         {
             if (image_data_function_record)
             {
-                // Default, to not crash the explorer on no calib TODOREWORK not needed?
-                // pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_RADIANCE);
-
                 if (instrument_id == "goesn_imager" && std::stoi(channel) > 0 && std::stoi(channel) <= 5)
                 {
                     const float goesn_imager_wavelength_table[5] = {

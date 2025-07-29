@@ -1,13 +1,13 @@
-#include "module_fy4_lrit_data_decoder.h"
-#include "logger.h"
-#include "lrit_header.h"
-#include <fstream>
+#include "image/io.h"
+#include "image/j2k_utils.h"
 #include "image/jpeg_utils.h"
 #include "imgui/imgui_image.h"
-#include "image/j2k_utils.h"
-#include <filesystem>
-#include "image/io.h"
+#include "logger.h"
+#include "lrit_header.h"
+#include "module_fy4_lrit_data_decoder.h"
 #include "utils/string.h"
+#include <filesystem>
+#include <fstream>
 
 namespace fy4
 {
@@ -25,11 +25,11 @@ namespace fy4
             return utc_filename;
         }
 
-        void FY4LRITDataDecoderModule::processLRITFile(::lrit::LRITFile &file)
+        void FY4LRITDataDecoderModule::processLRITFile(satdump::xrit::XRITFile &file)
         {
             std::string current_filename = file.filename;
 
-            ::lrit::PrimaryHeader primary_header = file.getHeader<::lrit::PrimaryHeader>();
+            satdump::xrit::PrimaryHeader primary_header = file.getHeader<satdump::xrit::PrimaryHeader>();
 
             if (file.custom_flags[IS_ENCRYPTED]) // We lack decryption
             {
@@ -45,6 +45,7 @@ namespace fy4
             }
             else
             {
+#if 1
                 if (primary_header.file_type_code == 0 && file.hasHeader<ImageInformationRecord>())
                 {
                     std::vector<std::string> header_parts = satdump::splitString(current_filename, '_');
@@ -76,8 +77,10 @@ namespace fy4
                             }
                         }
 
-                        image::Image img2 = image::decompress_j2k_openjp2(&file.lrit_data[primary_header.total_header_length + offset],
-                                                                          file.lrit_data.size() - primary_header.total_header_length - offset);
+                        image::Image img2 =
+                            image::decompress_j2k_openjp2(&file.lrit_data[primary_header.total_header_length + offset], file.lrit_data.size() - primary_header.total_header_length - offset);
+
+                        image::save_png(img2, "/tmp/fy4test/" + file.filename + ".png");
 
                         // Rely on the background for bit depth,
                         // as apparently nothing else works expected.
@@ -86,8 +89,8 @@ namespace fy4
                             if (img2.get(i) > max_val)
                                 max_val = img2.get(i);
 
-                        if (img2.depth() != 8)
-                            img2 = img2.to8bits();
+                        // if (img2.size() && img2.depth() != 8)
+                        //     img2 = img2.to8bits();
                         image::Image img = img2;
                         if (max_val == 255) // LRIT, 4-bits
                         {
@@ -164,10 +167,8 @@ namespace fy4
                                 wip_img->imageStatus = RECEIVING;
                             }
 
-                            segmentedDecoder = SegmentedLRITImageDecoder(image_structure_record.total_segment_count,
-                                                                         image_structure_record.columns_count,
-                                                                         image_structure_record.lines_count,
-                                                                         image_id);
+                            segmentedDecoder =
+                                SegmentedLRITImageDecoder(image_structure_record.total_segment_count, image_structure_record.columns_count, image_structure_record.lines_count, image_id);
                         }
 
                         image::Image image(&file.lrit_data[primary_header.total_header_length], 8, image_structure_record.columns_count, image_structure_record.lines_count, 1);
@@ -207,6 +208,7 @@ namespace fy4
                     }
                 }
                 else
+#endif
                 {
                     if (!std::filesystem::exists(directory + "/LRIT"))
                         std::filesystem::create_directory(directory + "/LRIT");
@@ -220,5 +222,5 @@ namespace fy4
                 }
             }
         }
-    } // namespace avhrr
-} // namespace metop
+    } // namespace lrit
+} // namespace fy4

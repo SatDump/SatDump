@@ -398,7 +398,7 @@ namespace satdump
                  {
                      OfficialProductInfo i;
 
-                     ::lrit::LRITFile file;
+                     xrit::XRITFile file;
                      file.lrit_data = f->getPayload();
                      file.parseHeaders();
 

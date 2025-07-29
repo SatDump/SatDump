@@ -1,16 +1,24 @@
 #pragma once
 
+/**
+ * @file segment_decoder.h
+ * @brief GK-2A Segmented decoder
+ */
+
 #include "../segment_decoder.h"
-#include "common/lrit/lrit_file.h"
 #include "image/image.h"
 #include "utils/string.h"
 #include "xrit/identify.h"
 #include "xrit/processor/get_img.h"
+#include "xrit/xrit_file.h"
 
 namespace satdump
 {
     namespace xrit
     {
+        /**
+         * @brief GK-2A-specific Segmented Decoder
+         */
         class GK2ASegmentedImageDecoder : public SegmentedImageDecoder
         {
         private:
@@ -31,9 +39,9 @@ namespace satdump
                 image.fill(0);
             }
 
-            GK2ASegmentedImageDecoder(lrit::LRITFile &file)
+            GK2ASegmentedImageDecoder(XRITFile &file)
             {
-                lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>();
+                ImageStructureRecord image_structure_record = file.getHeader<ImageStructureRecord>();
 
                 init(image_structure_record.bit_per_pixel > 8 ? 16 : 8, //
                      10,                                                //
@@ -54,7 +62,7 @@ namespace satdump
                 segments_done[segc] = true;
             }
 
-            void pushSegment(lrit::LRITFile &file)
+            void pushSegment(XRITFile &file)
             {
                 auto img = getImageFromXRITFile(XRIT_GK2A_AMI, file);
 

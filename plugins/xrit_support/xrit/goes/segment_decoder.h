@@ -1,17 +1,25 @@
 #pragma once
 
-#include "common/lrit/lrit_file.h"
+/**
+ * @file segment_decoder.h
+ * @brief GOES Segmented decoder
+ */
+
 #include "image/image.h"
 #include "logger.h"
 #include "xrit/goes/goes_headers.h"
 #include "xrit/identify.h"
 #include "xrit/segment_decoder.h"
+#include "xrit/xrit_file.h"
 #include <cstring>
 
 namespace satdump
 {
     namespace xrit
     {
+        /**
+         * @brief GOES-specific Segmented Decoder
+         */
         class GOESSegmentedImageDecoder : public SegmentedImageDecoder
         {
         private:
@@ -28,7 +36,7 @@ namespace satdump
                 seg_size = int(max_height / max_seg) * max_width;
             }
 
-            GOESSegmentedImageDecoder(lrit::LRITFile &file)
+            GOESSegmentedImageDecoder(XRITFile &file)
             {
                 goes::SegmentIdentificationHeader segment_id_header = file.getHeader<goes::SegmentIdentificationHeader>();
 
@@ -36,7 +44,7 @@ namespace satdump
                     init(segment_id_header.max_segment, segment_id_header.max_column, segment_id_header.max_row);
                 else
                 {
-                    ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>();
+                    ImageStructureRecord image_structure_record = file.getHeader<ImageStructureRecord>();
                     init(segment_id_header.max_segment, segment_id_header.max_column, segment_id_header.max_segment * image_structure_record.lines_count);
                 }
             }
@@ -52,12 +60,12 @@ namespace satdump
                 segments_done[segc] = true;
             }
 
-            void pushSegment(lrit::LRITFile &file)
+            void pushSegment(XRITFile &file)
             {
-                lrit::PrimaryHeader primary_header = file.getHeader<lrit::PrimaryHeader>();
+                PrimaryHeader primary_header = file.getHeader<PrimaryHeader>();
                 goes::SegmentIdentificationHeader segment_id_header = file.getHeader<goes::SegmentIdentificationHeader>();
                 goes::NOAALRITHeader noaa_header = file.getHeader<goes::NOAALRITHeader>();
-                ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>();
+                ImageStructureRecord image_structure_record = file.getHeader<ImageStructureRecord>();
 
                 if (file.lrit_data.size() - primary_header.total_header_length < image_structure_record.columns_count * image_structure_record.lines_count)
                 {

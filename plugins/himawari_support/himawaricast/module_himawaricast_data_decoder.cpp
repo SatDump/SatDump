@@ -129,11 +129,11 @@ namespace himawari
 
                                     if (file.name.find("IMG_") != std::string::npos)
                                     {
-                                        ::lrit::LRITFile lfile;
+                                        satdump::xrit::XRITFile lfile;
                                         lfile.lrit_data = file.data;
                                         lfile.parseHeaders();
 
-                                        ::lrit::PrimaryHeader primary_header = lfile.getHeader<::lrit::PrimaryHeader>();
+                                        satdump::xrit::PrimaryHeader primary_header = lfile.getHeader<satdump::xrit::PrimaryHeader>();
 
                                         if (lfile.lrit_data.size() != (primary_header.data_field_length / 8) + primary_header.total_header_length)
                                             continue;

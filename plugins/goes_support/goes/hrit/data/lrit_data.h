@@ -1,8 +1,8 @@
 #pragma once
 
 #include "common/ccsds/ccsds.h"
-#include "common/lrit/lrit_file.h"
 #include "image/image.h"
+#include "xrit/xrit_file.h"
 #include <cmath>
 #include <map>
 #include <memory>

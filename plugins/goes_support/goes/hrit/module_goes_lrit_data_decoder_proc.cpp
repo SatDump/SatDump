@@ -28,7 +28,7 @@ namespace goes
 
         const int ID_HIMAWARI = 43;
 
-        void GOESLRITDataDecoderModule::saveLRITFile(::lrit::LRITFile &file, std::string path)
+        void GOESLRITDataDecoderModule::saveLRITFile(satdump::xrit::XRITFile &file, std::string path)
         {
             if (!std::filesystem::exists(path))
                 std::filesystem::create_directory(path);
@@ -51,11 +51,11 @@ namespace goes
             fileo.close();
         }
 
-        void GOESLRITDataDecoderModule::processLRITFile(::lrit::LRITFile &file)
+        void GOESLRITDataDecoderModule::processLRITFile(satdump::xrit::XRITFile &file)
         {
             std::string current_filename = file.filename;
 
-            ::lrit::PrimaryHeader primary_header = file.getHeader<::lrit::PrimaryHeader>();
+            satdump::xrit::PrimaryHeader primary_header = file.getHeader<satdump::xrit::PrimaryHeader>();
             NOAALRITHeader noaa_header = file.getHeader<NOAALRITHeader>();
 
             // Handle LRIT files with no data
@@ -66,7 +66,7 @@ namespace goes
             }
 
             // Check if this is image data, and if so also write it as an image
-            else if (primary_header.file_type_code == 0 && file.hasHeader<::lrit::ImageStructureRecord>())
+            else if (primary_header.file_type_code == 0 && file.hasHeader<satdump::xrit::ImageStructureRecord>())
             {
                 if (!write_images)
                     return;
@@ -74,7 +74,7 @@ namespace goes
                 if (!std::filesystem::exists(directory + "/IMAGES"))
                     std::filesystem::create_directory(directory + "/IMAGES");
 
-                ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>();
+                satdump::xrit::ImageStructureRecord image_structure_record = file.getHeader<satdump::xrit::ImageStructureRecord>();
 
                 satdump::xrit::XRITFileInfo finfo = satdump::xrit::identifyXRITFIle(file);
 

@@ -1,7 +1,6 @@
 #pragma once
 
-#include "common/lrit/lrit_file.h"
-#include "common/lrit/lrit_productizer.h"
+#include "xrit/xrit_file.h"
 #include "data/lrit_data.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
 #include "xrit/processor/xrit_channel_processor.h"
@@ -36,7 +35,7 @@ namespace gk2a
 
             std::map<int, uint64_t> decryption_keys;
 
-            void processLRITFile(::lrit::LRITFile &file);
+            void processLRITFile(satdump::xrit::XRITFile &file);
 
         public:
             GK2ALRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
