@@ -97,7 +97,7 @@ namespace satdump
 
             // Finally, return product
             auto product = processor->getProduct();
-            // p->save("/tmp/satdump_official/test");
+            // product->save("/tmp/satdump_official/test");
             return product;
         }
     } // namespace official
