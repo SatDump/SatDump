@@ -31,9 +31,9 @@ namespace satdump
                     xrit::msg::decompressMsgHritFileIfRequired(file);
                 if (finfo.type == xrit::XRIT_GK2A_AMI)
                     xrit::gk2a::decompressGK2AHritFileIfRequired(file);
-
-                processor_test.push(finfo, file);
             }
+
+            processor_test.push(finfo, file);
         }
 
         std::shared_ptr<satdump::products::Product> HRITGenericProcessor::getProduct()

@@ -27,7 +27,7 @@ namespace satdump
             if (parts.size() != 8)
                 return false;
 
-            if (parts[0] != "H" || parts[1] != "000")
+            if ((parts[0] != "H" && parts[0] != "L") || parts[1] != "000")
                 return false;
 
             int sat_num;
@@ -87,7 +87,7 @@ namespace satdump
             if (parts.size() != 8)
                 return false;
 
-            if (parts[0] != "H" || parts[1] != "000")
+            if ((parts[0] != "H" && parts[0] != "L") || parts[1] != "000")
                 return false;
 
             int sat_num;

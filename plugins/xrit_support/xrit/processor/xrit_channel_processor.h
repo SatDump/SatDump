@@ -16,7 +16,17 @@ namespace satdump
             std::map<std::string, std::shared_ptr<SegmentedImageDecoder>> segmented_decoders;
 
         private:
-            void saveImg(xrit::XRITFileInfo &finfo, image::Image &img);
+            struct XRITProd
+            {
+                std::string directory_path;
+                std::string pro_f_path;
+                std::shared_ptr<products::ImageProduct> pro;
+            };
+
+        private:
+            XRITProd setupProduct(xrit::XRITFileInfo &meta);
+            bool saveMeta(xrit::XRITFileInfo &meta, ::lrit::LRITFile &file);
+            void saveImg(xrit::XRITFileInfo &meta, image::Image &img);
 
         public:
             std::string directory = "";

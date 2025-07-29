@@ -16,7 +16,8 @@ namespace satdump
         {
             if (!file.hasHeader<::lrit::ImageStructureRecord>())
             {
-                logger->error("Not image data!");
+                if (!saveMeta(finfo, file))
+                    logger->error("Not image data, and didn't process as metadata!");
                 return;
             }
 

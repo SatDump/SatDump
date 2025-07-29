@@ -193,7 +193,7 @@ namespace satdump
             }
 
             if (images.size() == 0)
-                throw satdump_exception("ImageProduct with no images. Shouldn't happen!");
+                logger->trace("ImageProduct with no images. Shouldn't happen!");
         }
 
         ImageProduct::~ImageProduct() {}

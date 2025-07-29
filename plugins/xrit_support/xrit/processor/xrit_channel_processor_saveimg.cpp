@@ -1,14 +1,21 @@
 #include "common/lrit/lrit_file.h"
+#include "core/resources.h"
 #include "image/io.h"
 #include "image/processing.h"
 #include "logger.h"
 #include "nlohmann/json.hpp"
+#include "nlohmann/json_utils.h"
 #include "products/image_product.h"
 #include "utils/string.h"
 #include "xrit/identify.h"
+#include "xrit/processor/calib.h"
 #include "xrit_channel_processor.h"
+#include <cstdint>
 #include <filesystem>
+#include <memory>
 #include <string>
+
+#include "../../../official_products_support/new/processors/nat/msg/nat_utils.h"
 
 namespace satdump
 {
@@ -40,254 +47,8 @@ namespace satdump
                    (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
         }
 
-        // This will most probably get moved over to each
-        inline void addCalibrationInfoFunc(satdump::products::ImageProduct &pro, lrit::ImageDataFunctionRecord *image_data_function_record, std::string channel, std::string instrument_id)
+        nlohmann::json getProjCfg(xrit::XRITFileInfo &meta, image::Image &img)
         {
-            if (image_data_function_record)
-            {
-                // Default, to not crash the explorer on no calib TODOREWORK not needed?
-                // pro.set_calibration_type(pro.images.size() - 1, pro.CALIB_RADIANCE);
-
-                if (instrument_id == "goesn_imager" && std::stoi(channel) > 0 && std::stoi(channel) <= 5)
-                {
-                    const float goesn_imager_wavelength_table[5] = {
-                        630, 3900, 6480, 10700, 13300,
-                    };
-
-                    pro.set_channel_wavenumber(pro.images.size() - 1, 1e7 / goesn_imager_wavelength_table[std::stoi(channel) - 1]);
-                }
-                else if (instrument_id == "abi" && channel.find_first_not_of("0123456789") == std::string::npos && std::stoi(channel) > 0 && std::stoi(channel) <= 16)
-                {
-                    const float goes_abi_wavelength_table[16] = {
-                        470, 640, 860, 1380, 1610, 2260, 3900, 6190, 6950, 7340, 8500, 9610, 10350, 11200, 12300, 13300,
-                    };
-
-                    pro.set_channel_wavenumber(pro.images.size() - 1, 1e7 / goes_abi_wavelength_table[std::stoi(channel) - 1]);
-                }
-                else if (instrument_id == "ahi" && std::stoi(channel) > 0 && std::stoi(channel) <= 16)
-                {
-                    const float hima_ahi_wavelength_table[16] = {
-                        470, 510, 640, 860, 1600, 2300, 3900, 6200, 6900, 7300, 8600, 9600, 10400, 11200, 12400, 13300,
-                    };
-
-                    pro.set_channel_wavenumber(pro.images.size() - 1, 1e7 / hima_ahi_wavelength_table[std::stoi(channel) - 1]);
-                }
-                else if (instrument_id == "ami")
-                {
-                    double wavelength_nm = std::stod(channel.substr(2, channel.size() - 1)) * 100;
-                    pro.set_channel_wavenumber(pro.images.size() - 1, 1e7 / wavelength_nm);
-                }
-                else
-                    pro.set_channel_wavenumber(pro.images.size() - 1, -1);
-
-                // if (instrument_id == "ahi")
-                // printf("Channel %s\n%s\n", channel.c_str(), image_data_function_record->datas.c_str());
-
-                auto lines = splitString(image_data_function_record->datas, '\n');
-                if (lines.size() < 4)
-                {
-                    lines = splitString(image_data_function_record->datas, '\r');
-                    if (lines.size() < 4)
-                    {
-                        logger->error("Error parsing calibration info into lines!");
-                        return;
-                    }
-                }
-
-                // for (int i = 0; i < lines.size(); i++)
-                //     logger->critical("%d => %s", i, lines[i].c_str());
-
-                if (lines[0].find("HALFTONE:=") != std::string::npos)
-                {
-                    // GOES xRIT modes
-                    if (instrument_id == "goesn_imager" || instrument_id == "abi")
-                    {
-                        if (lines[1] == "_NAME:=toa_lambertian_equivalent_albedo_multiplied_by_cosine_solar_zenith_angle")
-                        {
-                            std::vector<std::pair<int, float>> lut;
-                            for (size_t i = 3; i < lines.size(); i++)
-                            {
-                                int val;
-                                float valo;
-                                if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
-                                    lut.push_back({val, valo});
-                            }
-
-                            nlohmann::json calib_cfg = pro.get_calibration_raw();
-
-                            calib_cfg[channel] = lut;
-                            pro.set_calibration("generic_xrit", calib_cfg);
-                            pro.set_channel_unit(pro.images.size() - 1, CALIBRATION_ID_ALBEDO);
-                        }
-                        else if (lines[1] == "_NAME:=toa_brightness_temperature")
-                        {
-                            std::vector<std::pair<int, float>> lut;
-                            for (size_t i = 3; i < lines.size(); i++)
-                            {
-                                int val;
-                                float valo;
-                                if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
-                                    lut.push_back({val, valo});
-                            }
-
-                            nlohmann::json calib_cfg = pro.get_calibration_raw();
-
-                            calib_cfg[channel] = lut;
-                            pro.set_calibration("generic_xrit", calib_cfg);
-                            pro.set_channel_unit(pro.images.size() - 1, CALIBRATION_ID_EMISSIVE_RADIANCE);
-                        }
-                    }
-
-                    // GK-2A xRIT modes
-                    if (instrument_id == "ami")
-                    {
-                        int bits_for_calib = 8;
-                        if (lines[0].find("HALFTONE:=10") != std::string::npos)
-                            bits_for_calib = 10;
-
-                        if (lines[2] == "_UNIT:=ALBEDO(%)")
-                        {
-                            std::vector<std::pair<int, float>> lut;
-                            for (size_t i = 3; i < lines.size(); i++)
-                            {
-                                int val;
-                                float valo;
-                                if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
-                                    lut.push_back({val, valo / 100.0});
-                            }
-
-                            nlohmann::json calib_cfg = pro.get_calibration_raw();
-
-                            calib_cfg["bits_for_calib"] = bits_for_calib;
-
-                            calib_cfg[channel] = lut;
-                            pro.set_calibration("generic_xrit", calib_cfg);
-                            pro.set_channel_unit(pro.images.size() - 1, CALIBRATION_ID_ALBEDO);
-                        }
-                        else if (lines[2] == "_UNIT:=KELVIN")
-                        {
-                            std::vector<std::pair<int, float>> lut;
-                            for (size_t i = 3; i < lines.size(); i++)
-                            {
-                                int val;
-                                float valo;
-                                if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
-                                    lut.push_back({val, valo});
-                            }
-
-                            nlohmann::json calib_cfg = pro.get_calibration_raw();
-
-                            calib_cfg["bits_for_calib"] = bits_for_calib;
-
-                            calib_cfg[channel] = lut;
-                            pro.set_calibration("generic_xrit", calib_cfg);
-                            pro.set_channel_unit(pro.images.size() - 1, CALIBRATION_ID_EMISSIVE_RADIANCE);
-                        }
-                    }
-
-                    // Himawari xRIT modes
-                    if (instrument_id == "ahi")
-                    {
-                        int bits_for_calib = 8;
-                        if (lines[0].find("HALFTONE:=10") != std::string::npos)
-                            bits_for_calib = 10;
-                        if (lines[0].find("HALFTONE:=16") != std::string::npos)
-                            bits_for_calib = 10; // Yes, they send 10 over 16
-                        if (lines[2].find("_UNIT:=PERCENT") != std::string::npos || lines[2].find("_UNIT:=ALBEDO(%)") != std::string::npos)
-                        {
-                            std::vector<std::pair<int, float>> lut;
-                            for (size_t i = 3; i < lines.size(); i++)
-                            {
-                                int val;
-                                float valo;
-                                if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
-                                    lut.push_back({val, valo / 100.0});
-                            }
-
-                            nlohmann::json calib_cfg = pro.get_calibration_raw();
-
-                            calib_cfg["bits_for_calib"] = bits_for_calib;
-                            calib_cfg["to_complete"] = true;
-
-                            calib_cfg[channel] = lut;
-                            pro.set_calibration("generic_xrit", calib_cfg);
-                            pro.set_channel_unit(pro.images.size() - 1, CALIBRATION_ID_ALBEDO);
-                        }
-                        else if (lines[2].find("_UNIT:=KELVIN") != std::string::npos)
-                        {
-                            std::vector<std::pair<int, float>> lut;
-                            for (size_t i = 3; i < lines.size(); i++)
-                            {
-                                int val;
-                                float valo;
-                                if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
-                                    lut.push_back({val, valo});
-                            }
-
-                            nlohmann::json calib_cfg = pro.get_calibration_raw();
-
-                            calib_cfg["bits_for_calib"] = bits_for_calib;
-                            calib_cfg["to_complete"] = true;
-
-                            calib_cfg[channel] = lut;
-                            pro.set_calibration("generic_xrit", calib_cfg);
-                            pro.set_channel_unit(pro.images.size() - 1, CALIBRATION_ID_EMISSIVE_RADIANCE);
-                        }
-                    }
-                }
-            }
-        }
-
-        void XRITChannelProcessor::saveImg(xrit::XRITFileInfo &meta, image::Image &img)
-        {
-            // If we lack some essential metadata, we have to exit
-            if (meta.channel == "" || meta.satellite_name == "" || meta.satellite_short_name == "" || meta.timestamp == -1)
-            {
-                if (in_memory_mode)
-                {
-                    logger->error("TODOREWORK Support in-memory raw images!");
-                    return;
-                }
-
-                // Make sure directories exist
-                if (!std::filesystem::exists(directory + "/IMAGES/Unknown/"))
-                    std::filesystem::create_directories(directory + "/IMAGES/Unknown/");
-                image::save_img(img, std::string(directory + "/IMAGES/Unknown/" + meta.filename).c_str());
-                return;
-            }
-
-            // GOES-specific stuff TODOREWORKXRIT
-            if (meta.type == XRIT_GOES_ABI)
-            {
-                // TODO: Once calibration of custom types is possible, stop doing this!
-                // RRPQE inverts its raw counts and lookup tables seemingly randomly.
-                // So far, only RRQPE seems to do this...
-                if (meta.channel == "RRQPE" && img.get(0) == 255)
-                    image::linear_invert(img);
-            }
-
-            // Utils
-            const auto &region = meta.region;
-            const auto &satellite = meta.satellite_name;
-            const auto &timestamp = meta.timestamp;
-            const auto &satshort = meta.satellite_short_name;
-            const auto &channel = meta.channel;
-            const auto &bit_depth = meta.bit_depth;
-            const auto &instrument_id = meta.instrument_id;
-
-            // Prepare some paths
-            std::string ext;
-            image::append_ext(&ext, true);
-            std::string directory_path =
-                region == "" ? (directory + "/" + satellite + "/" + timestamp_to_string2(timestamp) + "/") : (directory + "/" + satellite + "/" + region + "/" + timestamp_to_string2(timestamp) + "/");
-            std::string filename = satshort + "_" + channel + "_" + getXRITTimestamp(timestamp) + ext;
-            std::string pro_f_path = directory_path + "product.cbor";
-
-            // Make sure directories exist
-            if (!in_memory_mode && !std::filesystem::exists(directory_path))
-                std::filesystem::create_directories(directory_path);
-
-            // Parse navigation info
             nlohmann::json proj_cfg;
             if (meta.image_navigation_record)
             {
@@ -322,6 +83,237 @@ namespace satdump
                     proj_cfg["altitude"] = 35786023.00;
                 }
             }
+            return proj_cfg;
+        }
+
+        XRITChannelProcessor::XRITProd XRITChannelProcessor::setupProduct(xrit::XRITFileInfo &meta)
+        {
+            XRITProd p;
+            p.directory_path = meta.region == "" ? (directory + "/" + meta.satellite_name + "/" + timestamp_to_string2(meta.timestamp) + "/")
+                                                 : (directory + "/" + meta.satellite_name + "/" + meta.region + "/" + timestamp_to_string2(meta.timestamp) + "/");
+            p.pro_f_path = p.directory_path + "product.cbor";
+
+            // Make sure directories exist
+            if (!in_memory_mode && !std::filesystem::exists(p.directory_path))
+                std::filesystem::create_directories(p.directory_path);
+
+            // If the product file already exists, we want to append the new
+            // channel to it, without overwriting anything.
+            // Products are loaded without loading images.
+            if (in_memory_mode ? in_memory_products.count(p.pro_f_path) : std::filesystem::exists(p.pro_f_path))
+            {
+                if (in_memory_mode)
+                {
+                    p.pro = in_memory_products[p.pro_f_path];
+                }
+                else
+                {
+                    p.pro = std::make_shared<products::ImageProduct>();
+                    p.pro->d_no_not_save_images = true;
+                    p.pro->d_no_not_load_images = true;
+                    p.pro->load(p.pro_f_path);
+                }
+            }
+            // Otherwise, create a new product
+            else
+            {
+                if (in_memory_mode)
+                {
+                    p.pro = std::make_shared<satdump::products::ImageProduct>();
+                    in_memory_products.emplace(p.pro_f_path, p.pro);
+                }
+                else
+                {
+                    p.pro = std::make_shared<satdump::products::ImageProduct>();
+                    p.pro->d_no_not_save_images = true;
+                }
+                p.pro->instrument_name = meta.instrument_id;
+                p.pro->set_product_source(meta.satellite_name);
+                p.pro->set_product_timestamp(meta.timestamp);
+            }
+
+            return p;
+        }
+
+        void tryApplyMSGCalib(std::shared_ptr<products::ImageProduct> &pro)
+        {
+            if (!pro->has_calibration())
+                return;
+
+            auto calib_cfg = pro->get_calibration_raw();
+            if (calib_cfg["vars"]["buffer"].is_null())
+                return;
+
+            nlohmann::json &sev_config = calib_cfg["vars"]["buffer"];
+
+            for (auto &h : pro->images)
+            {
+                int i = h.abs_index;
+                if (i < 3 || i == 11)
+                    pro->set_channel_unit(i, CALIBRATION_ID_REFLECTIVE_RADIANCE);
+                else
+                    pro->set_channel_unit(i, CALIBRATION_ID_EMISSIVE_RADIANCE);
+                pro->set_channel_wavenumber(i, freq_to_wavenumber(299792458.0 / (sev_config["wavelengths"][i].get<double>())));
+            }
+        }
+
+        void tryApplyELEKTROCalib(std::shared_ptr<products::ImageProduct> &pro)
+        {
+            if (!pro->has_calibration())
+                return;
+
+            auto calib_cfg = pro->get_calibration_raw();
+            if (calib_cfg["vars"]["buffer"].is_null())
+                return;
+
+            nlohmann::json &msugs_config = calib_cfg["vars"]["buffer"];
+
+            for (auto &h : pro->images)
+            {
+                int i = h.abs_index;
+                if (i < 3)
+                    pro->set_channel_unit(i, CALIBRATION_ID_REFLECTIVE_RADIANCE);
+                else
+                    pro->set_channel_unit(i, CALIBRATION_ID_EMISSIVE_RADIANCE);
+                pro->set_channel_wavenumber(i, freq_to_wavenumber(299792458.0 / (msugs_config["wavelengths"][i].get<double>())));
+            }
+        }
+
+        bool XRITChannelProcessor::saveMeta(xrit::XRITFileInfo &meta, ::lrit::LRITFile &file)
+        {
+            // If we lack some essential metadata, we have to exit
+            if (meta.satellite_name == "" || meta.satellite_short_name == "" || meta.timestamp == -1)
+            {
+                logger->error("Got invalid meta file!");
+                return false;
+            }
+
+            // Get product
+            auto p = setupProduct(meta);
+
+            if (meta.type == XRIT_MSG_SEVIRI)
+            {
+                if (meta.filename.find("PRO") != std::string::npos)
+                {
+                    if ((file.lrit_data.size() - file.total_header_length) < 425461)
+                        return false;
+                    logger->info("Parsing SEVIRI Calibration!");
+
+                    uint8_t *header_ptr = &file.lrit_data[file.total_header_length];
+                    int hoffset = 60134 + 700 + 326058 + 101 + 72;
+
+                    nlohmann::json sev_config = loadJsonFile(resources::getResourcePath("calibration/SEVIRI_table.json"));
+                    nlohmann::json calib_cfg;
+                    for (int i = 0; i < 12; i++)
+                    {
+                        double slope = official::get_r8(&header_ptr[hoffset + (i * 2 + 0) * 8]);
+                        double offset = official::get_r8(&header_ptr[hoffset + (i * 2 + 1) * 8]);
+                        logger->trace("Channel %d Calibration Slope %f Offset %f", i + 1, slope, offset);
+                        calib_cfg["vars"]["slope"][i] = slope;
+                        calib_cfg["vars"]["offset"][i] = offset;
+                    }
+                    calib_cfg["vars"]["buffer"] = sev_config;
+
+                    p.pro->set_calibration("msg_nat_seviri", calib_cfg);
+                    tryApplyMSGCalib(p.pro);
+                }
+
+                if (meta.filename.find("EPI") != std::string::npos)
+                {
+                    uint8_t *trailer_ptr = &file.lrit_data[file.total_header_length];
+
+                    int offset = 1 + 2 + 14 + 12 + 192 + 6 * 12 + 16;
+
+                    int LowerSouthLineActual = official::get_i4(&trailer_ptr[offset + 0]);
+                    int LowerNorthLineActual = official::get_i4(&trailer_ptr[offset + 4]);
+                    int LowerEastColumnActual = official::get_i4(&trailer_ptr[offset + 8]);
+                    int LowerWestColumnActual = official::get_i4(&trailer_ptr[offset + 12]);
+
+                    int UpperSouthLineActual = official::get_i4(&trailer_ptr[offset + 16]);
+                    // int UpperNorthLineActual = get_i4(&trailer_ptr[offset + 20]);
+                    int UpperEastColumnActual = official::get_i4(&trailer_ptr[offset + 24]);
+                    // int UpperWestColumnActual = get_i4(&trailer_ptr[offset + 28]);
+
+                    logger->critical("LowerSouthLineActual : %d, LowerNorthLineActual : %d, LowerEastColumnActual : %d, LowerWestColumnActual : %d", LowerSouthLineActual, LowerNorthLineActual,
+                                     LowerEastColumnActual, LowerWestColumnActual);
+                }
+            }
+            else if (meta.type == XRIT_ELEKTRO_MSUGS)
+            {
+                if (meta.filename.find("PRO") != std::string::npos)
+                {
+                    if ((file.lrit_data.size() - file.total_header_length) == 612)
+                    {
+                        logger->info("No MSU-GS calibration in this header!");
+                        return true;
+                    }
+                    if ((file.lrit_data.size() - file.total_header_length) < 41472)
+                        return false;
+                    logger->info("Parsing MSU-GS Calibration!");
+
+                    uint8_t *header_ptr = &file.lrit_data[file.total_header_length];
+                    int hoffset = 612;
+
+                    nlohmann::json msu_config = loadJsonFile(resources::getResourcePath("calibration/MSUGS_table.json"));
+                    nlohmann::json calib_cfg;
+                    for (int i = 0; i < 10; i++)
+                    {
+                        for (int y = 0; y < 1024; y++)
+                        {
+                            int pos = ((i * 1024) + y) * 4;
+                            double v = (uint32_t)header_ptr[hoffset + pos + 3] << 24 | //
+                                       (uint32_t)header_ptr[hoffset + pos + 2] << 16 | //
+                                       (uint32_t)header_ptr[hoffset + pos + 1] << 8 |  //
+                                       (uint32_t)header_ptr[hoffset + pos + 0];
+                            v /= 1e3;
+                            // logger->trace("[%d %d] %f", i, y, v);
+                            calib_cfg["vars"]["lut"][i][y] = v;
+                        }
+                    }
+                    calib_cfg["vars"]["buffer"] = msu_config;
+
+                    p.pro->set_calibration("msugs_xrit", calib_cfg);
+                    tryApplyELEKTROCalib(p.pro);
+                }
+            }
+            else
+            {
+                return false;
+            }
+
+            if (p.pro && !in_memory_mode)
+                p.pro->save(p.directory_path);
+
+            return true;
+        }
+
+        void XRITChannelProcessor::saveImg(xrit::XRITFileInfo &meta, image::Image &img)
+        {
+            // If we lack some essential metadata, we have to exit
+            if (meta.channel == "" || meta.satellite_name == "" || meta.satellite_short_name == "" || meta.timestamp == -1)
+            {
+                if (in_memory_mode)
+                {
+                    logger->error("TODOREWORK Support in-memory raw images!");
+                    return;
+                }
+
+                // Make sure directories exist
+                if (!std::filesystem::exists(directory + "/IMAGES/Unknown/"))
+                    std::filesystem::create_directories(directory + "/IMAGES/Unknown/");
+                image::save_img(img, std::string(directory + "/IMAGES/Unknown/" + meta.filename).c_str());
+                return;
+            }
+
+            // Get product
+            auto p = setupProduct(meta);
+
+            // Prepare some paths
+            std::string ext;
+            image::append_ext(&ext, true);
+            std::string directory_path = p.directory_path;
+            std::string filename = meta.satellite_short_name + "_" + meta.channel + "_" + getXRITTimestamp(meta.timestamp) + ext;
+            std::string pro_f_path = directory_path + "product.cbor";
 
             // Check if the image already exists, this can happen when GOES goes (laugh please, pretty please) wrong.
             // If it does, we append a number and do NOT overwrite.
@@ -337,120 +329,109 @@ namespace satdump
                 std::string filename_new;
                 do
                 {
-                    filename_new = satshort + "_" + channel + "_" + getXRITTimestamp(timestamp) + "_" + std::to_string(current_iteration++) + ext;
+                    filename_new = meta.satellite_short_name + "_" + meta.channel + "_" + getXRITTimestamp(meta.timestamp) + "_" + std::to_string(current_iteration++) + ext;
                 } while (std::filesystem::exists(directory_path + filename_new));
                 image::save_img(img, directory_path + filename_new);
                 logger->warn("Image already existed. Written as %s", filename_new.c_str());
+                return;
             }
-            // Otherwise, we can go on as usual and write a proper product.
-            else
+
+            // To forward to composites if we actually produced products
+            std::shared_ptr<products::ImageProduct> pro = p.pro;
+
+            // Parse navigation info
+            nlohmann::json proj_cfg = getProjCfg(meta, img);
+
+            // GOES-specific stuff TODOREWORKXRIT
+            if (meta.type == XRIT_GOES_ABI)
             {
-                // To forward to composites if we actually produced products
-                std::shared_ptr<products::ImageProduct> pro = nullptr;
+                // TODO: Once calibration of custom types is possible, stop doing this!
+                // RRPQE inverts its raw counts and lookup tables seemingly randomly.
+                // So far, only RRQPE seems to do this...
+                if (meta.channel == "RRQPE" && img.get(0) == 255)
+                    image::linear_invert(img);
+            }
 
-                // If the product file already exists, we want to append the new
-                // channel to it, without overwriting anything.
-                // Products are loaded without loading images.
-                if (in_memory_mode ? in_memory_products.count(pro_f_path) : std::filesystem::exists(pro_f_path))
+            // Write data in product
+            {
+                bool contains = false;
+                for (auto &img : pro->images)
+                    if (img.channel_name == meta.channel)
+                        contains = true;
+
+                // By default, but it can be specific as you see below
+                int image_channel_index = pro->images.size();
+
+                try
                 {
-                    if (in_memory_mode)
-                    {
-                        pro = in_memory_products[pro_f_path];
-                    }
-                    else
-                    {
-                        pro = std::make_shared<products::ImageProduct>();
-                        pro->d_no_not_save_images = true;
-                        pro->d_no_not_load_images = true;
-                        pro->load(pro_f_path);
-                    }
-
-                    bool contains = false;
-                    for (auto &img : pro->images)
-                        if (img.channel_name == channel)
-                            contains = true;
-
-                    if (!contains)
-                        pro->images.push_back({(int)pro->images.size(), filename, channel, in_memory_mode ? img : image::Image(), bit_depth});
-                    else
-                        logger->error("Image was already contained in product! This should not happen!");
-                    pro->contents["xrit_projs"][channel] = proj_cfg; // TODOREWORKXRIT
-
-                    // TODOREWORKXRIT HRV is a pita
-                    if (meta.type == XRIT_MSG_SEVIRI && meta.channel == "12")
-                        proj_cfg.clear();
-
-                    // TODOREWORKXRIT recheck this logic!
-                    if (proj_cfg.size() > 0)
-                    {
-                        if (!pro->has_proj_cfg())
-                        {
-                            pro->set_proj_cfg(proj_cfg);
-                            // logger->critical("\n%s\n", proj_cfg.dump(4).c_str());
-                        }
-                        else
-                        {
-                            if (pro->get_proj_cfg(-1).contains("width") && proj_cfg.contains("width"))
-                            {
-                                if (proj_cfg["width"].get<int>() > pro->get_proj_cfg(-1)["width"].get<int>())
-                                    pro->set_proj_cfg(proj_cfg);
-                            }
-
-                            double final_width = pro->get_proj_cfg(-1)["width"].get<int>();
-                            // logger->critical(final_width);
-
-                            // Update scales. TODOREWORK the weird case of HRV
-                            for (auto &h : pro->images)
-                            {
-                                auto &p = pro->contents["xrit_projs"][h.channel_name];
-                                if (!p.is_null())
-                                {
-                                    double scale = final_width / p["width"].get<double>();
-                                    h.ch_transform = ChannelTransform().init_affine(scale, scale, 0, 0);
-                                }
-                            }
-                        }
-                    }
+                    // Calib info is split and always for all channels
+                    if (meta.type == XRIT_MSG_SEVIRI || meta.type == XRIT_ELEKTRO_MSUGS)
+                        image_channel_index = std::stod(meta.channel) - 1;
                 }
-                // Otherwise, create a new product with the current single channel we have.
-                else
+                catch (std::exception &e)
                 {
-                    if (in_memory_mode)
-                    {
-                        pro = std::make_shared<satdump::products::ImageProduct>();
-                        in_memory_products.emplace(pro_f_path, pro);
-                    }
-                    else
-                    {
-                        pro = std::make_shared<satdump::products::ImageProduct>();
-                        pro->d_no_not_save_images = true;
-                    }
-                    pro->instrument_name = instrument_id;
-                    pro->set_product_source(satellite);
-                    pro->set_product_timestamp(timestamp);
-                    if (proj_cfg.size() > 0)
+                    logger->error("Error setting proper channel ID! %s", e.what());
+                }
+
+                if (!contains)
+                    pro->images.push_back({image_channel_index, filename, meta.channel, in_memory_mode ? img : image::Image(), meta.bit_depth});
+                else
+                    logger->error("Image was already contained in product! This should not happen!");
+                pro->contents["xrit_projs"][meta.channel] = proj_cfg; // TODOREWORKXRIT
+
+                // TODOREWORKXRIT HRV is a pita
+                if (meta.type == XRIT_MSG_SEVIRI && meta.channel == "12")
+                    proj_cfg.clear();
+
+                // TODOREWORKXRIT recheck this logic!
+                if (proj_cfg.size() > 0)
+                {
+                    if (!pro->has_proj_cfg())
                     {
                         pro->set_proj_cfg(proj_cfg);
                         // logger->critical("\n%s\n", proj_cfg.dump(4).c_str());
                     }
-                    pro->images.push_back({(int)pro->images.size(), filename, channel, in_memory_mode ? img : image::Image(), bit_depth});
-                    pro->contents["xrit_projs"][channel] = proj_cfg; // TODOREWORKXRIT
-                }
+                    else
+                    {
+                        if (pro->get_proj_cfg(-1).contains("width") && proj_cfg.contains("width"))
+                        {
+                            if (proj_cfg["width"].get<int>() > pro->get_proj_cfg(-1)["width"].get<int>())
+                                pro->set_proj_cfg(proj_cfg);
+                        }
 
-                if (pro)
-                {
-                    addCalibrationInfoFunc(*pro, meta.image_data_function_record.get(), channel, instrument_id);
-                    if (!in_memory_mode)
-                        pro->save(directory_path);
-                }
+                        double final_width = pro->get_proj_cfg(-1)["width"].get<int>();
+                        // logger->critical(final_width);
 
-                // Save the actual img
-                if (in_memory_mode) {}
-                else
-                {
-                    image::save_img(img, directory_path + filename);
+                        // Update scales. TODOREWORK the weird case of HRV
+                        for (auto &h : pro->images)
+                        {
+                            auto &p = pro->contents["xrit_projs"][h.channel_name];
+                            if (!p.is_null())
+                            {
+                                double scale = final_width / p["width"].get<double>();
+                                h.ch_transform = ChannelTransform().init_affine(scale, scale, 0, 0);
+                            }
+                        }
+                    }
                 }
             }
+
+            if (pro)
+            {
+                // Those two have the calib info non-standard
+                if (meta.type != XRIT_MSG_SEVIRI && meta.type != XRIT_ELEKTRO_MSUGS)
+                    addCalibrationInfoFunc(*pro, meta.image_data_function_record.get(), meta.channel, meta.instrument_id);
+                else if (meta.type == XRIT_MSG_SEVIRI)
+                    tryApplyMSGCalib(p.pro);
+                else if (meta.type == XRIT_ELEKTRO_MSUGS)
+                    tryApplyELEKTROCalib(p.pro);
+                if (!in_memory_mode)
+                    pro->save(directory_path);
+            }
+
+            // Save the actual img
+            if (!in_memory_mode)
+                image::save_img(img, directory_path + filename);
         }
     } // namespace xrit
 } // namespace satdump
