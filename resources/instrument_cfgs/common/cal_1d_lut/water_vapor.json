@@ -23,7 +23,7 @@
         },
         {
             "name": "7.35µm Calibrated Water Vapor (RAMSDIS)",
-            "expression": "cch6=(7.35um}, brightness_temperature, 165.15, 328.15);lut=lut(lut/cal/RAMSDIS_WV+55-108.png);lut(cch6, 0, 0), lut(cch6, 0, 1), lut(cch6, 0, 2)",
+            "expression": "cch6=({7.35um}, brightness_temperature, 165.15, 328.15);lut=lut(lut/cal/RAMSDIS_WV+55-108.png);lut(cch6, 0, 0), lut(cch6, 0, 1), lut(cch6, 0, 2)",
             "image": {
                 "remove_background": true
             }
