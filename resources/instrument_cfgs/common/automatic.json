@@ -22,7 +22,7 @@
             }
         },
         {
-            "name": "Automatic< WEFAX-like False Color",
+            "name": "Automatic WEFAX-like False Color",
             "expression": "VIS=({0.86um}, reflective_radiance, 0.000000, 56.760000);lm=equp(maps/landmask.png);land=lut(lut/2dfc/2dfc_vis_wefax_land.png);sea=lut(lut/2dfc/2dfc_vis_wefax_sea.png);lm(0) == 1 ? land(VIS, 0, 0) : sea(VIS, 0, 0),lm(0) == 1 ? land(VIS, 0, 1) : sea(VIS, 0, 1),lm(0) == 1 ? land(VIS, 0, 2) : sea(VIS, 0, 2)",
             "image": {
                 "geo_correct": true
@@ -60,6 +60,7 @@
         "seviri",
         "slstr_nadir",
         "slstr_offset",
-        "goesn_imager"
+        "goesn_imager",
+        "msu_gs"
     ]
 }
