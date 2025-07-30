@@ -345,6 +345,14 @@ namespace satdump
                     image::linear_invert(img);
             }
 
+            // FY4x-specific stuff TODOREWORKXRIT
+            if (meta.type == XRIT_FY4_AGRI)
+            {
+                // FY-4x AGRI images are not scaled properly, so normalize for now
+                // until we figure this stuff out better
+                image::normalize(img);
+            }
+
             // MSG Specific stuff. It's always inverted, undo that
             if (meta.type == XRIT_MSG_SEVIRI)
             {

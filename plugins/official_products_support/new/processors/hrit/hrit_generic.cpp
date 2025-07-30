@@ -2,6 +2,7 @@
 #include "xrit/xrit_file.h"
 
 #include "logger.h"
+#include "xrit/fy4/decomp.h"
 #include "xrit/gk2a/decomp.h"
 #include "xrit/goes/goes_headers.h"
 #include "xrit/identify.h"
@@ -29,8 +30,10 @@ namespace satdump
             {
                 if (finfo.type == xrit::XRIT_ELEKTRO_MSUGS || finfo.type == xrit::XRIT_MSG_SEVIRI)
                     xrit::msg::decompressMsgHritFileIfRequired(file);
-                if (finfo.type == xrit::XRIT_GK2A_AMI)
+                else if (finfo.type == xrit::XRIT_GK2A_AMI)
                     xrit::gk2a::decompressGK2AHritFileIfRequired(file);
+                else if (finfo.type == xrit::XRIT_FY4_AGRI)
+                    xrit::fy4::decompressFY4HritFileIfRequired(file);
             }
 
             processor_test.push(finfo, file);

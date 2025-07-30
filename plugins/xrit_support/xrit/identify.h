@@ -27,6 +27,7 @@ namespace satdump
             XRIT_GOESN_IMAGER,
             XRIT_GK2A_AMI,
             XRIT_HIMAWARI_AHI,
+            XRIT_FY4_AGRI,
         };
 
         /**
@@ -77,6 +78,7 @@ namespace satdump
         bool identifyGOESFile(XRITFileInfo &i, XRITFile &file);
         bool identifyGK2AFile(XRITFileInfo &i, XRITFile &file);
         bool identifyHimawariFile(XRITFileInfo &i, XRITFile &file);
+        bool identifyFY4File(XRITFileInfo &i, XRITFile &file);
 
         /**
          * @brief Identify a xRIT file, in order to know

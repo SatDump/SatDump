@@ -2,6 +2,8 @@
 #include "core/exception.h"
 #include "get_img.h"
 #include "logger.h"
+#include "xrit/fy4/fy4_headers.h"
+#include "xrit/fy4/segment_decoder.h"
 #include "xrit/gk2a/segment_decoder.h"
 #include "xrit/goes/segment_decoder.h"
 #include "xrit/himawari/segment_decoder.h"
@@ -21,8 +23,17 @@ namespace satdump
                 return;
             }
 
-            ImageStructureRecord image_structure_record = file.getHeader<ImageStructureRecord>();
-            logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
+            // China being non-standard.....
+            if (finfo.type == XRIT_FY4_AGRI)
+            {
+                fy4::ImageInformationRecord image_structure_record = file.getHeader<fy4::ImageInformationRecord>();
+                logger->debug("This is image data (FY-4x!). Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
+            }
+            else
+            {
+                ImageStructureRecord image_structure_record = file.getHeader<ImageStructureRecord>();
+                logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
+            }
 
             // TODOREWORK MSG EPI/PRO
 
@@ -51,6 +62,8 @@ namespace satdump
                         segDecoder = std::make_shared<GK2ASegmentedImageDecoder>(file);
                     else if (finfo.type == xrit::XRIT_HIMAWARI_AHI)
                         segDecoder = std::make_shared<HimawariSegmentedImageDecoder>(file);
+                    else if (finfo.type == xrit::XRIT_FY4_AGRI)
+                        segDecoder = std::make_shared<FY4xSegmentedImageDecoder>(file);
                     else
                         throw satdump_exception("Unsupported segmented file type!");
 
