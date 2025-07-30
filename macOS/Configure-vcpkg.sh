@@ -12,7 +12,7 @@ then
 fi
 git clone https://github.com/microsoft/vcpkg
 cd vcpkg
-git checkout ad3bae5
+git checkout d9d99e8949
 if [[ "$(uname -m)" == "arm64" ]]
 then
     cp ../macOS/arm64-osx-satdump.cmake triplets/osx-satdump.cmake
@@ -52,7 +52,7 @@ python3 -m venv venv
 source venv/bin/activate
 pip3 install mako
 
-build_args="-DCMAKE_TOOLCHAIN_FILE=$(cd ../scripts/buildsystems && pwd)/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=osx-satdump -DCMAKE_INSTALL_PREFIX=$(cd ../installed/osx-satdump && pwd) -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=$osx_target -DCMAKE_MACOSX_RPATH=ON"
+build_args="-DCMAKE_TOOLCHAIN_FILE=$(cd ../scripts/buildsystems && pwd)/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=osx-satdump -DCMAKE_INSTALL_PREFIX=$(cd ../installed/osx-satdump && pwd) -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=$osx_target -DCMAKE_MACOSX_RPATH=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5 "
 standard_include="$(cd ../installed/osx-satdump/include && pwd)"
 standard_lib="$(cd ../installed/osx-satdump/lib && pwd)"
 libusb_include="$(cd $standard_include/libusb-1.0 && pwd)"
@@ -208,7 +208,7 @@ cd ../../..
 rm -rf bladeRF
 
 echo "Building UHD..."
-git clone https://github.com/EttusResearch/uhd --depth 1 -b v4.7.0.0
+git clone https://github.com/EttusResearch/uhd 
 cd uhd/host
 sed -i '' 's/ appropriately or"/");/g' lib/utils/paths.cpp                          #Disable non-applicable help
 sed -i '' '/follow the below instructions to download/{N;d;}' lib/utils/paths.cpp
