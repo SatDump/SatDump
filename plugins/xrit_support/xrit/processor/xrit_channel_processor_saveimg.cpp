@@ -109,6 +109,35 @@ namespace satdump
                     }
                 }
             }
+            else if (meta.image_navigation_record_fy4)
+            {
+                logger->critical("TODOREWORK FY-4x projection!");
+#if 0
+                auto &image_navigation_record = meta.image_navigation_record_fy4;
+
+                float sat_pos = 0;
+
+                constexpr double k = 624597.0334223134;
+                double scalar_x = image_navigation_record->column_scaling_factor; // image_navigation_record->column_scalar == 0.0 ? (pow(2.0, 16.0) /
+                                                                                  // double(image_navigation_record->column_scaling_factor)) * k : image_navigation_record->column_scalar;
+                double scalar_y = image_navigation_record->line_scaling_factor; // image_navigation_record->line_scalar == 0.0 ? (pow(2.0, 16.0) / double(image_navigation_record->line_scaling_factor))
+                                                                                // * k : image_navigation_record->line_scalar;
+
+                logger->critical("%f %f %f %f", image_navigation_record->column_scaling_factor, image_navigation_record->line_scaling_factor, image_navigation_record->line_offset,
+                                 image_navigation_record->column_offset);
+
+                proj_cfg["type"] = "geos";
+                proj_cfg["lon0"] = sat_pos;
+                proj_cfg["sweep_x"] = false;
+                proj_cfg["scalar_x"] = scalar_x;
+                proj_cfg["scalar_y"] = -scalar_y;
+                proj_cfg["offset_x"] = double(image_navigation_record->column_offset) * -scalar_x;
+                proj_cfg["offset_y"] = double(image_navigation_record->line_offset) * scalar_y;
+                proj_cfg["width"] = img.width();
+                proj_cfg["height"] = img.height();
+                proj_cfg["altitude"] = 35786023.00;
+#endif
+            }
             return proj_cfg;
         }
 

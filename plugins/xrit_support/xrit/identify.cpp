@@ -558,8 +558,8 @@ namespace satdump
                 i.bit_depth = file.getHeader<fy4::ImageInformationRecord>().bit_per_pixel;
 
             // Try to parse navigation
-            if (file.all_headers.count(ImageNavigationRecord::TYPE))
-                i.image_navigation_record = std::make_shared<ImageNavigationRecord>(file.getHeader<ImageNavigationRecord>());
+            if (file.all_headers.count(fy4::ImageNavigationRecord::TYPE))
+                i.image_navigation_record_fy4 = std::make_shared<fy4::ImageNavigationRecord>(file.getHeader<fy4::ImageNavigationRecord>());
 
             // Try parse calibration
             // if (file.hasHeader<ImageDataFunctionRecord>())

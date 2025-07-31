@@ -5,6 +5,7 @@
  * @brief Contains functions to identify and process xRIT files
  */
 
+#include "xrit/fy4/fy4_headers.h"
 #include "xrit_file.h"
 #include <memory>
 #include <string>
@@ -49,6 +50,7 @@ namespace satdump
          * @param bit_depth if applicable, bit depth of the channel
          * @param image_navigation_record parsed navigation header (if present)
          * @param image_data_function_record parsed calibration header (if present)
+         * @param image_navigation_record_fy4 fy-4 specific navigation
          */
         struct XRITFileInfo
         {
@@ -69,6 +71,7 @@ namespace satdump
 
             std::shared_ptr<ImageNavigationRecord> image_navigation_record;
             std::shared_ptr<ImageDataFunctionRecord> image_data_function_record;
+            std::shared_ptr<fy4::ImageNavigationRecord> image_navigation_record_fy4;
 
             XRITFileInfo() : type(XRIT_UNKNOWN) {}
         };

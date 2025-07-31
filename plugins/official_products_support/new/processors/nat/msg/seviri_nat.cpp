@@ -171,9 +171,11 @@ namespace satdump
             int UpperEastColumnActual = get_i4(&trailer_ptr[offset + 24]);
             // int UpperWestColumnActual = get_i4(&trailer_ptr[offset + 28]);
 
-            logger->critical("LowerSouthLineActual : %d, LowerNorthLineActual : %d, LowerEastColumnActual : %d, LowerWestColumnActual : %d", LowerSouthLineActual, LowerNorthLineActual,
-                             LowerEastColumnActual, LowerWestColumnActual);
+            // logger->critical("LowerSouthLineActual : %d, LowerNorthLineActual : %d, LowerEastColumnActual : %d, LowerWestColumnActual : %d", LowerSouthLineActual, LowerNorthLineActual,
+            //                  LowerEastColumnActual, LowerWestColumnActual);
             //}
+
+            logger->critical("int LowerEastColumnActual = %d; int UpperSouthLineActual = %d; int UpperEastColumnActual = %d;", LowerEastColumnActual, UpperSouthLineActual, UpperEastColumnActual);
 
             uint16_t repacked_line[81920];
 
@@ -272,7 +274,7 @@ namespace satdump
                     {
                         for (int c = 0; c < hrv_y_size; c++)
                         {
-                            int offset = i - 2690;
+                            int offset = i - LowerEastColumnActual;
                             if (offset >= 0 && offset < hrv_x_size)
                                 vis_ir_imgs[channel].set(0, offset, c, img.get(0, i, c));
                         }

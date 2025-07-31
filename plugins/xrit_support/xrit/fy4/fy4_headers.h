@@ -79,6 +79,64 @@ namespace satdump
                     compressed_info_level = data[31] & 0b111111;
                 }
             };
+
+            struct ImageNavigationRecord
+            {
+                static constexpr int TYPE = 2;
+
+                uint8_t type;
+                uint16_t record_length;
+                std::string projection_name;
+                float column_scaling_factor;
+                float line_scaling_factor;
+                float column_offset;
+                float line_offset;
+
+                // double nominal_point_longitude;
+                // double sub_satellite_longitude;
+                // uint8_t projection_type;
+                // std::string epoch_time_mjd;
+                // double semi_major_axis;
+                // double eccentricity;
+                // double inclination;
+                // double ascending_node_longitude;
+                // double perigee_angle1;
+                // double perigee_angle2;
+                // TODOREWORK ALL THE REST
+
+                // Pre-computed projection information
+                double column_scalar;
+                double line_scalar;
+
+                ImageNavigationRecord(uint8_t *data)
+                {
+                    type = data[0];
+                    record_length = data[1] << 8 | data[2];
+                    projection_name = std::string((char *)&data[3], (char *)&data[3 + 32]);
+
+                    ((float *)&column_scaling_factor)[3] = data[35];
+                    ((float *)&column_scaling_factor)[2] = data[36];
+                    ((float *)&column_scaling_factor)[1] = data[37];
+                    ((float *)&column_scaling_factor)[0] = data[38];
+
+                    ((float *)&line_scaling_factor)[3] = data[39];
+                    ((float *)&line_scaling_factor)[2] = data[40];
+                    ((float *)&line_scaling_factor)[1] = data[41];
+                    ((float *)&line_scaling_factor)[0] = data[42];
+
+                    ((float *)&column_offset)[3] = data[43];
+                    ((float *)&column_offset)[2] = data[44];
+                    ((float *)&column_offset)[1] = data[45];
+                    ((float *)&column_offset)[0] = data[46];
+
+                    ((float *)&line_offset)[3] = data[47];
+                    ((float *)&line_offset)[2] = data[48];
+                    ((float *)&line_offset)[1] = data[49];
+                    ((float *)&line_offset)[0] = data[50];
+
+                    column_scalar = line_scalar = 0.0;
+                }
+            };
         } // namespace fy4
     } // namespace xrit
 } // namespace satdump
