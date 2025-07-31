@@ -382,6 +382,12 @@ if(PLUGIN_AARONIA_SDR_SUPPORT)
   add_subdirectory(sdr_sources/aaronia_sdr_support)
 endif()
 
+option(PLUGIN_HAROGIC_SDR_SUPPORT "Enable Aaronia Spectran Support plugin" OFF)
+
+if(PLUGIN_HAROGIC_SDR_SUPPORT)
+  add_subdirectory(sdr_sources/harogic_sdr_support)
+endif()
+
 option(PLUGIN_RFNM_SDR_SUPPORT "Enable RFNM Support plugin" ON)
 
 if(PLUGIN_RFNM_SDR_SUPPORT)
