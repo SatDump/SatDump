@@ -14,7 +14,6 @@
 #include "xrit/xrit_file.h"
 #include "xrit_channel_processor.h"
 #include <cstdint>
-#include <filesystem>
 #include <memory>
 #include <string>
 

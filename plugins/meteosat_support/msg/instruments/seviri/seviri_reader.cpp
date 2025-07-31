@@ -1,6 +1,5 @@
 #include "seviri_reader.h"
 #include "../../msg.h"
-#include "common/ccsds/ccsds_time.h"
 #include "common/repack.h"
 #include "logger.h"
 #include "products/image_product.h"
@@ -15,8 +14,22 @@
 
 namespace lrit
 {
-    std::string timestamp_to_string2(double timestamp);
-}
+    std::string timestamp_to_string2(double timestamp)
+    {
+        {
+            if (timestamp < 0)
+                timestamp = 0;
+            time_t tttime = timestamp;
+            std::tm *timeReadable = gmtime(&tttime);
+            return std::to_string(timeReadable->tm_year + 1900) + "-" + (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) +
+                   "-" + (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
+                   (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
+
+                   (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "-" +
+                   (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
+        }
+    }
+} // namespace lrit
 
 namespace meteosat
 {
@@ -83,7 +96,6 @@ namespace meteosat
         void SEVIRIReader::saveImages()
         {
             is_saving = true;
-
             std::string directory = d_directory + "/" + lrit::timestamp_to_string2(last_timestamp) + "/";
 
             if (!std::filesystem::exists(directory))
