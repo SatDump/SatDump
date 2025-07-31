@@ -6,7 +6,6 @@
  */
 
 #include "../segment_decoder.h"
-#include "xrit/xrit_file.h"
 #include "image/image.h"
 #include "utils/string.h"
 #include "xrit/identify.h"
@@ -55,7 +54,7 @@ namespace satdump
                     return;
                 if (data.size() != seg_height * seg_width)
                 {
-                    logger->error("Image of the wrong size!");
+                    logger->error("Image of the wrong size! (%s) %dx%d Got %dx%d", info.channel.c_str(), seg_width, seg_height, data.width(), data.height());
                     return;
                 }
                 image::imemcpy(image, (seg_height * seg_width) * segc, data, 0, seg_height * seg_width);

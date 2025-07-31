@@ -76,9 +76,24 @@ namespace satdump
 
                             image = image2;
 
-                            // Needs to be shifted up by 4
-                            for (long long int i = 0; i < image_structure_record.columns_count * image_structure_record.lines_count; i++)
-                                image.set(i, image.get(i) << 6);
+                            if (image2.get(0) >= 16383)
+                            {
+                                // Needs to be shifted up by 2
+                                for (long long int i = 0; i < image_structure_record.columns_count * image_structure_record.lines_count; i++)
+                                    image.set(i, image.get(i) << 2);
+                            }
+                            else if (image2.get(0) >= 4095)
+                            {
+                                // Needs to be shifted up by 4
+                                for (long long int i = 0; i < image_structure_record.columns_count * image_structure_record.lines_count; i++)
+                                    image.set(i, image.get(i) << 4);
+                            }
+                            else
+                            {
+                                // Needs to be shifted up by 6
+                                for (long long int i = 0; i < image_structure_record.columns_count * image_structure_record.lines_count; i++)
+                                    image.set(i, image.get(i) << 6);
+                            }
                         }
                     }
 

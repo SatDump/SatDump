@@ -475,9 +475,9 @@ namespace satdump
             else if (channel_name == "DK01B06")
                 i.channel = "6";
             else if (channel_name == "DK01B07")
-                i.channel = "7";
+                i.channel = "7_hr";
             else if (channel_name == "DK01B08")
-                i.channel = "8";
+                i.channel = "8_hr";
             else if (channel_name == "DK01B09")
                 i.channel = "9";
             else if (channel_name == "DK01B10")
@@ -487,13 +487,15 @@ namespace satdump
             else if (channel_name == "DK01B12")
                 i.channel = "12";
             else if (channel_name == "DK01B13")
-                i.channel = "13";
+                i.channel = "13_hr";
             else if (channel_name == "DK01B14")
                 i.channel = "14";
             else if (channel_name == "DK01B15")
                 i.channel = "15";
             else if (channel_name == "DK01B16")
                 i.channel = "16";
+            else
+                logger->info("Unknown AHI channel!");
 
             i.seg_groupid = i.channel + "_" + i.groupid;
 
