@@ -173,7 +173,7 @@ endif()
 if(GIT_HAS_BRANCH STREQUAL "master")
     set(SATDUMP_VERSION_TAG "")
 else()
-    set(SATDUMP_VERSION_TAG "${GIT_HAS_BRANCH}")
+    set(SATDUMP_VERSION_TAG "${GIT_HAS_BRANCH}/${CMAKE_BUILD_TYPE}")
 endif()
 
 # Used for error messages
