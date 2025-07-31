@@ -54,12 +54,14 @@ namespace fy4
                     {
                         std::string processor_name = finfo.satellite_short_name;
 
+                        all_processors_mtx.lock();
                         if (all_processors.count(processor_name) == 0)
                         {
                             auto p = std::make_shared<satdump::xrit::XRITChannelProcessor>();
                             p->directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/IMAGES";
                             all_processors.emplace(processor_name, p);
                         }
+                        all_processors_mtx.unlock();
 
                         all_processors[processor_name]->push(finfo, file);
                     }

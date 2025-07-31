@@ -9,6 +9,7 @@
 #include "products/image_product.h"
 #include "xrit/segment_decoder.h"
 #include "xrit/xrit_file.h"
+#include <mutex>
 
 namespace satdump
 {
@@ -70,11 +71,35 @@ namespace satdump
             void saveImg(xrit::XRITFileInfo &meta, image::Image &img);
 
         public:
+            enum xrit_image_status
+            {
+                RECEIVING,
+                SAVING,
+                IDLE
+            };
+
+            struct wip_images
+            {
+                xrit_image_status imageStatus = RECEIVING;
+                const int img_width = 256, img_height = 256;
+
+                // UI Stuff
+                bool hasToUpdate = false;
+                unsigned int textureID = 0;
+                uint32_t *textureBuffer;
+            };
+
+            std::map<std::string, std::unique_ptr<wip_images>> all_wip_images;
+            std::mutex ui_img_mtx;
+
+        public:
             std::string directory = "";
             bool in_memory_mode = false;
             std::map<std::string, std::shared_ptr<products::ImageProduct>> in_memory_products;
 
         public:
+            ~XRITChannelProcessor();
+
             /**
              * @brief Push a file to process. See class documenation for
              * more information on using this class.

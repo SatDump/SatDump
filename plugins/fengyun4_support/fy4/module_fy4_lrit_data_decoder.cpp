@@ -6,6 +6,7 @@
 #include "imgui/imgui_image.h"
 #include "logger.h"
 #include "xrit/fy4/fy4_headers.h"
+#include "xrit/processor/xrit_channel_processor_render.h"
 #include "xrit/transport/xrit_demux.h"
 #include <cstdint>
 #include <filesystem>
@@ -158,65 +159,9 @@ namespace fy4
         {
             ImGui::Begin("FY-4x LRIT Data Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
-            if (ImGui::BeginTabBar("Images TabBar", ImGuiTabBarFlags_None))
-            {
-                bool hasImage = false;
-
-                for (auto &decMap : all_wip_images)
-                {
-                    auto &dec = decMap.second;
-
-                    if (dec->textureID == 0)
-                    {
-                        dec->textureID = makeImageTexture();
-                        dec->textureBuffer = new uint32_t[1000 * 1000];
-                        memset(dec->textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
-                        dec->hasToUpdate = true;
-                    }
-
-                    if (dec->imageStatus != IDLE)
-                    {
-                        if (dec->hasToUpdate)
-                        {
-                            dec->hasToUpdate = false;
-                            updateImageTexture(dec->textureID, dec->textureBuffer, 1000, 1000);
-                        }
-
-                        hasImage = true;
-
-                        if (ImGui::BeginTabItem(std::string("Ch " + std::to_string(decMap.first)).c_str()))
-                        {
-                            ImGui::Image((void *)(intptr_t)dec->textureID, {200 * ui_scale, 200 * ui_scale});
-                            ImGui::SameLine();
-                            ImGui::BeginGroup();
-                            ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
-                            if (dec->imageStatus == SAVING)
-                                ImGui::TextColored(style::theme.green, "Writing image...");
-                            else if (dec->imageStatus == RECEIVING)
-                                ImGui::TextColored(style::theme.orange, "Receiving...");
-                            else
-                                ImGui::TextColored(style::theme.red, "Idle (Image)...");
-                            ImGui::EndGroup();
-                            ImGui::EndTabItem();
-                        }
-                    }
-                }
-
-                if (!hasImage) // Add empty tab if there is no image yet
-                {
-                    if (ImGui::BeginTabItem("No image yet"))
-                    {
-                        ImGui::Dummy({200 * ui_scale, 200 * ui_scale});
-                        ImGui::SameLine();
-                        ImGui::BeginGroup();
-                        ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
-                        ImGui::TextColored(style::theme.red, "Idle (Image)...");
-                        ImGui::EndGroup();
-                        ImGui::EndTabItem();
-                    }
-                }
-            }
-            ImGui::EndTabBar();
+            all_processors_mtx.lock();
+            satdump::xrit::renderAllTabsFromProcessors(all_processors);
+            all_processors_mtx.unlock();
 
             drawProgressBar();
 

@@ -1,9 +1,8 @@
 #pragma once
 
-#include "xrit/xrit_file.h"
-#include "data/lrit_data.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
 #include "xrit/processor/xrit_channel_processor.h"
+#include "xrit/xrit_file.h"
 
 namespace elektro
 {
@@ -15,19 +14,6 @@ namespace elektro
             satdump::xrit::XRITChannelProcessor processor;
 
             std::string directory;
-
-            struct wip_images
-            {
-                lrit_image_status imageStatus = RECEIVING;
-                int img_width, img_height;
-
-                // UI Stuff
-                bool hasToUpdate = false;
-                unsigned int textureID = 0;
-                uint32_t *textureBuffer;
-            };
-
-            std::map<int, std::unique_ptr<wip_images>> all_wip_images;
 
             void processLRITFile(satdump::xrit::XRITFile &file);
 

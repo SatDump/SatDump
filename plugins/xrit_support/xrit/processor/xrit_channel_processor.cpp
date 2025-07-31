@@ -35,8 +35,6 @@ namespace satdump
                 logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
             }
 
-            // TODOREWORK MSG EPI/PRO
-
             if (finfo.seg_groupid.size() == 0)
             {
                 auto img = getImageFromXRITFile(finfo.type, file);
@@ -44,15 +42,26 @@ namespace satdump
             }
             else
             {
+                // Get segmented decoder
                 std::string seg_dec_id = finfo.channel;
                 if (segmented_decoders.count(seg_dec_id) == 0)
                     segmented_decoders.emplace(seg_dec_id, nullptr);
                 auto &segDecoder = segmented_decoders[seg_dec_id];
 
-                if (!segDecoder || segDecoder->info.seg_groupid != finfo.seg_groupid)
+                // Get image status
+                ui_img_mtx.lock();
+                if (all_wip_images.count(seg_dec_id) == 0)
+                    all_wip_images.insert({seg_dec_id, std::make_unique<wip_images>()});
+                std::unique_ptr<wip_images> &wip_img = all_wip_images[seg_dec_id];
+                ui_img_mtx.unlock();
+
+                if (!segDecoder || segDecoder->info.seg_groupid != finfo.seg_groupid || segDecoder->image.size() == 0)
                 {
                     if (segDecoder && segDecoder->hasData())
+                    {
+                        wip_img->imageStatus = SAVING;
                         saveImg(segDecoder->info, segDecoder->image);
+                    }
 
                     if (finfo.type == xrit::XRIT_ELEKTRO_MSUGS || finfo.type == xrit::XRIT_MSG_SEVIRI)
                         segDecoder = std::make_shared<MSGSegmentedImageDecoder>(file);
@@ -68,20 +77,36 @@ namespace satdump
                         throw satdump_exception("Unsupported segmented file type!");
 
                     segDecoder->info = finfo;
+                    wip_img->imageStatus = RECEIVING;
                 }
 
                 segDecoder->pushSegment(file);
 
+                // If the UI is active, update texture
+                ui_img_mtx.lock();
+                if (wip_img->textureID > 0)
+                {
+                    // Downscale image
+                    image::Image imageScaled = segDecoder->image.resize_to(wip_img->img_width, wip_img->img_height);
+                    image::image_to_rgba(imageScaled, wip_img->textureBuffer);
+                    wip_img->hasToUpdate = true;
+                }
+                ui_img_mtx.unlock();
+
                 if (segDecoder->isComplete())
                 {
+                    wip_img->imageStatus = SAVING;
                     saveImg(segDecoder->info, segDecoder->image);
                     segDecoder->reset();
+                    wip_img->imageStatus = IDLE;
                 }
             }
         }
 
         void XRITChannelProcessor::flush()
         {
+            // Free up texture memory!
+            ui_img_mtx.lock();
             for (auto &seg : segmented_decoders)
             {
                 auto &segDecoder = seg.second;
@@ -91,6 +116,14 @@ namespace satdump
                     segDecoder->reset();
                 }
             }
+            ui_img_mtx.unlock();
+        }
+
+        XRITChannelProcessor::~XRITChannelProcessor()
+        {
+            for (auto &decMap : all_wip_images)
+                if (decMap.second->textureID > 0)
+                    delete[] decMap.second->textureBuffer;
         }
 
         /*inline void attemptToGenerateComposites(satdump::products::ImageProduct *pro, std::string pro_path)

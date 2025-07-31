@@ -11,6 +11,7 @@
 #include "lrit_header.h"
 #include "utils/http.h"
 #include "xrit/gk2a/gk2a_headers.h"
+#include "xrit/processor/xrit_channel_processor_render.h"
 #include "xrit/transport/xrit_demux.h"
 #include <cstdint>
 #include <filesystem>
@@ -28,18 +29,7 @@ namespace gk2a
             processor.directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/IMAGES";
         }
 
-        GK2ALRITDataDecoderModule::~GK2ALRITDataDecoderModule()
-        {
-            for (auto &decMap : all_wip_images)
-            {
-                auto &dec = decMap.second;
-
-                if (dec->textureID > 0)
-                {
-                    delete[] dec->textureBuffer;
-                }
-            }
-        }
+        GK2ALRITDataDecoderModule::~GK2ALRITDataDecoderModule() {}
 
         void GK2ALRITDataDecoderModule::process()
         {
@@ -182,65 +172,7 @@ namespace gk2a
         {
             ImGui::Begin("GK-2A LRIT Data Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
-            if (ImGui::BeginTabBar("Images TabBar", ImGuiTabBarFlags_None))
-            {
-                bool hasImage = false;
-
-                for (auto &decMap : all_wip_images)
-                {
-                    auto &dec = decMap.second;
-
-                    if (dec->textureID == 0)
-                    {
-                        dec->textureID = makeImageTexture();
-                        dec->textureBuffer = new uint32_t[1000 * 1000];
-                        memset(dec->textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
-                        dec->hasToUpdate = true;
-                    }
-
-                    if (dec->imageStatus != IDLE)
-                    {
-                        if (dec->hasToUpdate)
-                        {
-                            dec->hasToUpdate = false;
-                            updateImageTexture(dec->textureID, dec->textureBuffer, 1000, 1000);
-                        }
-
-                        hasImage = true;
-
-                        if (ImGui::BeginTabItem(std::string("Ch " + decMap.first).c_str()))
-                        {
-                            ImGui::Image((void *)(intptr_t)dec->textureID, {200 * ui_scale, 200 * ui_scale});
-                            ImGui::SameLine();
-                            ImGui::BeginGroup();
-                            ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
-                            if (dec->imageStatus == SAVING)
-                                ImGui::TextColored(style::theme.green, "Writing image...");
-                            else if (dec->imageStatus == RECEIVING)
-                                ImGui::TextColored(style::theme.orange, "Receiving...");
-                            else
-                                ImGui::TextColored(style::theme.red, "Idle (Image)...");
-                            ImGui::EndGroup();
-                            ImGui::EndTabItem();
-                        }
-                    }
-                }
-
-                if (!hasImage) // Add empty tab if there is no image yet
-                {
-                    if (ImGui::BeginTabItem("No image yet"))
-                    {
-                        ImGui::Dummy({200 * ui_scale, 200 * ui_scale});
-                        ImGui::SameLine();
-                        ImGui::BeginGroup();
-                        ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
-                        ImGui::TextColored(style::theme.red, "Idle (Image)...");
-                        ImGui::EndGroup();
-                        ImGui::EndTabItem();
-                    }
-                }
-            }
-            ImGui::EndTabBar();
+            satdump::xrit::renderAllTabsFromProcessors({&processor});
 
             drawProgressBar();
 
