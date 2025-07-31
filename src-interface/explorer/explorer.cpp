@@ -20,6 +20,7 @@
 #include "handlers/vector/shapefile_handler.h"
 // TODOREWORK
 #include "core/resources.h"
+#include "image/image.h"
 #include "imgui/imgui.h"
 
 // TODOREWORK
@@ -29,7 +30,9 @@
 #include "image/io.h"
 
 #include "imgui/imgui_filedrop.h"
+#include "imgui/imgui_image.h"
 #include "main_ui.h"
+#include <cstdint>
 
 namespace satdump
 {
@@ -256,7 +259,49 @@ namespace satdump
             }
         }
 
-        void ExplorerApplication::drawContents() { ImGui::Text("No handler selected!"); }
+        void ExplorerApplication::drawContents()
+        {
+            if (ImGui::BeginChild("WelcomeChild"))
+            {
+                std::pair<float, float> dims = {ImGui::GetWindowWidth(), ImGui::GetWindowHeight()};
+                float scale = backend::device_scale;
+
+                std::string title = "Welcome to SatDump!";
+                std::string slogan1 = "You can start by adding a recorder, starting";
+                std::string slogan2 = "processing or just dragging a file.";
+
+                if (satdump_logo_texture == 0)
+                {
+                    image::Image img;
+                    image::load_png(img, resources::getResourcePath("icon.png"));
+                    satdump_logo_texture = makeImageTexture();
+                    uint32_t *px = new uint32_t[img.width() * img.height()];
+                    image::image_to_rgba(img, px);
+                    updateImageTexture(satdump_logo_texture, (uint32_t *)px, img.width(), img.height());
+                    delete[] px;
+                }
+
+                {
+                    ImGui::PushFont(style::bigFont);
+                    ImVec2 title_size = ImGui::CalcTextSize(title.c_str());
+                    ImGui::SetCursorPos({((float)dims.first / 2) - (75 * scale), ((float)dims.second / 2) - title_size.y - (90 * scale)});
+                    ImGui::Image((void *)satdump_logo_texture, ImVec2(150 * scale, 150 * scale));
+                    ImGui::SetCursorPos({((float)dims.first / 2) - (title_size.x / 2), ((float)dims.second / 2) - title_size.y + (75 * scale)});
+                    ImGui::TextUnformatted(title.c_str());
+                    ImGui::PopFont();
+
+                    ImVec2 slogan_size1 = ImGui::CalcTextSize(slogan1.c_str());
+                    ImGui::SetCursorPos({((float)dims.first / 2) - (slogan_size1.x / 2), ((float)dims.second / 2) + (80 * scale)});
+                    ImGui::TextUnformatted(slogan1.c_str());
+
+                    ImVec2 slogan_size2 = ImGui::CalcTextSize(slogan2.c_str());
+                    ImGui::SetCursorPos({((float)dims.first / 2) - (slogan_size2.x / 2), ((float)dims.second / 2) + (100 * scale)});
+                    ImGui::TextUnformatted(slogan2.c_str());
+                }
+
+                ImGui::EndChild();
+            }
+        }
 
         void ExplorerApplication::draw()
         {
