@@ -218,6 +218,7 @@ namespace satdump
                 calib_cfg["vars"]["offset"][channel_id] = all_images[i].calibration_offset;
                 calib_cfg["vars"]["kappa"][channel_id] = all_images[i].kappa;
             }
+            calib_cfg["vars"]["spectral"] = true;
             ahi_products->set_calibration("goes_nc_abi", calib_cfg);
 
             for (int i = 0; i < 16; i++)

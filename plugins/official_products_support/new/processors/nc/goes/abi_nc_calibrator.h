@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/calibration.h"
 #include "nlohmann/json.hpp"
 #include "products/image/image_calibrator.h"
 #include <cstdio>
@@ -13,6 +14,8 @@ namespace nc2pro
         std::map<int, double> calibration_scale;
         std::map<int, double> calibration_offset;
         std::map<int, double> calibration_kappa;
+        bool is_spectral = false;
+        std::map<int, double> wavenm;
 
     public:
         ABINcCalibrator(satdump::products::ImageProduct *p, nlohmann::json c) : satdump::products::ImageCalibrator(p, c)
@@ -23,7 +26,10 @@ namespace nc2pro
                 calibration_scale[p->images[i].abs_index] = c["vars"]["scale"][p->images[i].abs_index];
                 calibration_offset[p->images[i].abs_index] = c["vars"]["offset"][p->images[i].abs_index];
                 calibration_kappa[p->images[i].abs_index] = c["vars"]["kappa"][p->images[i].abs_index];
+                wavenm[p->images[i].abs_index] = p->get_channel_wavenumber(p->images[i].abs_index);
             }
+            if (c["vars"].contains("spectral"))
+                is_spectral = c["vars"]["spectral"];
         }
 
         void init() {}
@@ -41,7 +47,7 @@ namespace nc2pro
             if (calibration_kappa[channel] > 0)
                 return rad * calibration_kappa[channel];
             else
-                return rad;
+                return spectral_radiance_to_radiance(rad, wavenm[channel]);
         }
     };
 } // namespace nc2pro
