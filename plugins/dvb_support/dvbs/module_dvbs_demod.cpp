@@ -6,6 +6,8 @@
 #include "dvbs/dvbs_reedsolomon.h"
 #include "dvbs/dvbs_scrambling.h"
 #include "logger.h"
+#include <chrono>
+#include <thread>
 
 namespace satdump
 {
@@ -132,96 +134,108 @@ namespace satdump
 
                 int failed_rs_nums = 0;
 
-                int dat_size = 0;
-                while (demod_should_run())
-                {
-                    // Handle outputs
-                    // Get rate
-                    rate = "";
-                    if (viterbi.rate() == viterbi::RATE_1_2)
-                        rate = "1/2";
-                    else if (viterbi.rate() == viterbi::RATE_2_3)
-                        rate = "2/3";
-                    else if (viterbi.rate() == viterbi::RATE_3_4)
-                        rate = "3/4";
-                    else if (viterbi.rate() == viterbi::RATE_5_6)
-                        rate = "5/6";
-                    else if (viterbi.rate() == viterbi::RATE_7_8)
-                        rate = "7/8";
-
-                    if (input_data_type == DATA_FILE)
-                        progress = file_source->getPosition();
-                    if (time(NULL) % 10 == 0 && lastTime != time(NULL))
+                std::thread th2(
+                    [&]()
                     {
-                        lastTime = time(NULL);
+                        int dat_size = 0;
+                        while (demod_should_run())
+                        {
+                            // Handle outputs
+                            // Get rate
+                            rate = "";
+                            if (viterbi.rate() == viterbi::RATE_1_2)
+                                rate = "1/2";
+                            else if (viterbi.rate() == viterbi::RATE_2_3)
+                                rate = "2/3";
+                            else if (viterbi.rate() == viterbi::RATE_3_4)
+                                rate = "3/4";
+                            else if (viterbi.rate() == viterbi::RATE_5_6)
+                                rate = "5/6";
+                            else if (viterbi.rate() == viterbi::RATE_7_8)
+                                rate = "7/8";
 
-                        std::string viterbi_l = std::string(viterbi.getState() == 0 ? "NOSYNC" : "SYNC") + " " + rate;
-                        logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, SNR : " + std::to_string(snr) + "dB, Viterbi : " + viterbi_l +
-                                     ", Deframer Sync : " + std::to_string(def->isSynced()) + ", Peak SNR: " + std::to_string(peak_snr) + "dB");
-                    }
+                            if (time(NULL) % 10 == 0 && lastTime != time(NULL))
+                            {
+                                lastTime = time(NULL);
 
-                    // Read data
-                    dat_size = def->output_stream->read();
+                                std::string viterbi_l = std::string(viterbi.getState() == 0 ? "NOSYNC" : "SYNC") + " " + rate;
+                                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, SNR : " + std::to_string(snr) +
+                                             "dB, Viterbi : " + viterbi_l + ", Deframer Sync : " + std::to_string(def->isSynced()) + ", Peak SNR: " + std::to_string(peak_snr) + "dB");
+                            }
 
-                    if (dat_size <= 0)
-                    {
-                        def->output_stream->flush();
-                        continue;
-                    }
+                            // Read data
+                            dat_size = def->output_stream->read();
+
+                            if (dat_size <= 0)
+                            {
+                                def->output_stream->flush();
+                                continue;
+                            }
 
 #if 1
-                    int frm_cnt = dat_size / (204 * 8);
+                            int frm_cnt = dat_size / (204 * 8);
 
-                    for (int i = 0; i < frm_cnt; i++)
-                    {
-                        uint8_t *current_frame = &def->output_stream->readBuf[i * 204 * 8];
-
-                        dvb_interleaving.deinterleave(current_frame, deinterleaved_frame);
-
-                        for (int ii = 0; ii < 8; ii++)
-                            errors[ii] = reed_solomon.decode(&deinterleaved_frame[204 * ii]);
-
-                        scrambler.descramble(deinterleaved_frame);
-
-                        bool rs_entirely_failed = true;
-                        for (int ii = 0; ii < 8; ii++)
-                        {
-                            if (errors[ii] == -1)
-                                deinterleaved_frame[204 * ii + 1] |= 0b10000000;
-                            else
-                                rs_entirely_failed = false;
-
-                            if (output_data_type == DATA_FILE)
-                                data_out.write((char *)&deinterleaved_frame[204 * ii], 188);
-                            else
-                                output_fifo->write((uint8_t *)&deinterleaved_frame[204 * ii], 188);
-                        }
-
-                        if (rs_entirely_failed)
-                        {
-                            failed_rs_nums++;
-                            if (failed_rs_nums == 20)
+                            for (int i = 0; i < frm_cnt; i++)
                             {
-                                viterbi.reset();
-                                def->reset();
-                                failed_rs_nums = 0;
+                                uint8_t *current_frame = &def->output_stream->readBuf[i * 204 * 8];
+
+                                dvb_interleaving.deinterleave(current_frame, deinterleaved_frame);
+
+                                for (int ii = 0; ii < 8; ii++)
+                                    errors[ii] = reed_solomon.decode(&deinterleaved_frame[204 * ii]);
+
+                                scrambler.descramble(deinterleaved_frame);
+
+                                bool rs_entirely_failed = true;
+                                for (int ii = 0; ii < 8; ii++)
+                                {
+                                    if (errors[ii] == -1)
+                                        deinterleaved_frame[204 * ii + 1] |= 0b10000000;
+                                    else
+                                        rs_entirely_failed = false;
+
+                                    if (output_data_type == DATA_FILE)
+                                        data_out.write((char *)&deinterleaved_frame[204 * ii], 188);
+                                    else
+                                        output_fifo->write((uint8_t *)&deinterleaved_frame[204 * ii], 188);
+                                }
+
+                                if (rs_entirely_failed)
+                                {
+                                    failed_rs_nums++;
+                                    if (failed_rs_nums == 20)
+                                    {
+                                        viterbi.reset();
+                                        def->reset();
+                                        failed_rs_nums = 0;
+                                    }
+                                }
                             }
-                        }
-                    }
 
 #else
-                    if (output_data_type == DATA_FILE)
-                        data_out.write((char *)def->output_stream->readBuf, dat_size);
-                    else
-                        output_fifo->write((uint8_t *)def->output_stream->readBuf, dat_size);
+                            if (output_data_type == DATA_FILE)
+                                data_out.write((char *)def->output_stream->readBuf, dat_size);
+                            else
+                                output_fifo->write((uint8_t *)def->output_stream->readBuf, dat_size);
 #endif
-                    def->output_stream->flush();
+                            def->output_stream->flush();
+                        }
+                    });
+
+                while (demod_should_run())
+                {
+                    if (input_data_type == DATA_FILE)
+                        progress = file_source->getPosition();
+                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
                 }
 
                 logger->info("Demodulation finished");
 
                 if (input_data_type == DATA_FILE)
                     stop();
+
+                if (th2.joinable())
+                    th2.join();
             }
 
             nlohmann::json DVBSDemodModule::getModuleStats()

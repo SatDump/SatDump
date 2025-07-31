@@ -2,6 +2,36 @@
     "dvbs_test": {
         "name": "DVB-S Test",
         "live": [
+            1
+        ],
+        "parameters": {
+            "symbolrate": {
+                "type": "int",
+                "value": 1e6,
+                "name": "Symbolrate",
+                "description": "DVB-S Symbolrate"
+            },
+            "fast_tssync": {
+                "type": "bool",
+                "value": true,
+                "name": "Fast TS Sync",
+                "description": "Faster algorithm for TS synchronization.\nNot fully tested, but appears to work well."
+            }
+        },
+        "work": {
+            "baseband": {},
+            "ts": {
+                "module": "dvbs_demod",
+                "parameters": {
+                    "symbolrate": 1e6,
+                    "pll_bw": 0.003
+                }
+            }
+        }
+    },
+    "dvbs_test_udp": {
+        "name": "DVB-S Test to UDP",
+        "live": [
             1,
             2
         ],
@@ -9,6 +39,46 @@
             "symbolrate": {
                 "type": "int",
                 "value": 1e6,
+                "name": "Symbolrate",
+                "description": "DVB-S Symbolrate"
+            },
+            "fast_tssync": {
+                "type": "bool",
+                "value": true,
+                "name": "Fast TS Sync",
+                "description": "Faster algorithm for TS synchronization.\nNot fully tested, but appears to work well."
+            }
+        },
+        "work": {
+            "baseband": {},
+            "ts": {
+                "module": "dvbs_demod",
+                "parameters": {
+                    "symbolrate": 1e6,
+                    "pll_bw": 0.003
+                }
+            },
+            "net": {
+                "module": "network_server",
+                "parameters": {
+                    "server_mode": "udp_send",
+                    "server_address": "127.0.0.1",
+                    "server_port": 8888,
+                    "pkt_size": 1316
+                }
+            }
+        }
+    },
+    "iss_hamtv": {
+        "name": "ISS HamTV to UDP",
+        "live": [
+            1,
+            2
+        ],
+        "parameters": {
+            "symbolrate": {
+                "type": "int",
+                "value": 2e6,
                 "name": "Symbolrate",
                 "description": "DVB-S Symbolrate"
             },
