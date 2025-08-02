@@ -126,7 +126,7 @@ namespace satdump
                         }
                     }
 
-                    handler->drawTreeMenu(h);
+                    handler_contained |= handler->drawTreeMenu(h);
                     ImGui::TreePop();
                 }
             }
