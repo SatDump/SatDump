@@ -50,30 +50,30 @@ namespace noaa
             void work(uint8_t *buffer);
             nlohmann::json dump_telemetry();
 
-        char* avhrr_telemetry_names[22] = {
-                "Patch Temperature",
-                "Patch Temperature Extended",
-                "Patch Power",
-                "Radiator Temperature",
-                "Blackbody Temperature 1",
-                "Blackbody Temperature 2",
-                "Blackbody Temperature 3",
-                "Blackbody Temperature 4",
-                "Electronics Current",
-                "Motor Current",
-                "Earth Shield Position",
-                "Electronics Temperature",
-                "Cooler Housing Temperature",
-                "Baseplate Temperature",
-                "Motor Housing Temperature",
-                "A/D Converter Temperature",
-                "Detector #4 Bias Voltage",
-                "Detector #5 Bias Voltage",
-                "Blackbody Temperature Channel 3B",
-                "Blackbody Temperature Channel 4",
-                "Blackbody Temperature Channel 5",
-                "Reference Voltage",
-        };
+            const char* avhrr_telemetry_names[22] = {
+                    "Patch Temperature",
+                    "Patch Temperature Extended",
+                    "Patch Power",
+                    "Radiator Temperature",
+                    "Blackbody Temperature 1",
+                    "Blackbody Temperature 2",
+                    "Blackbody Temperature 3",
+                    "Blackbody Temperature 4",
+                    "Electronics Current",
+                    "Motor Current",
+                    "Earth Shield Position",
+                    "Electronics Temperature",
+                    "Cooler Housing Temperature",
+                    "Baseplate Temperature",
+                    "Motor Housing Temperature",
+                    "A/D Converter Temperature",
+                    "Detector #4 Bias Voltage",
+                    "Detector #5 Bias Voltage",
+                    "Blackbody Temperature Channel 3B",
+                    "Blackbody Temperature Channel 4",
+                    "Blackbody Temperature Channel 5",
+                    "Reference Voltage",
+            };
 
             std::array<std::vector<double>,22> avhrr_timestamps;
             std::array<std::vector<double>,22> avhrr;
