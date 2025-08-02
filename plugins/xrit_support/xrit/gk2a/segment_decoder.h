@@ -33,8 +33,9 @@ namespace satdump
                 seg_count = max_seg;
                 segments_done.resize(seg_count, false);
 
-                image = image::Image(bit_depth, segment_width, segment_height * max_seg, 1);
-                seg_height = segment_width; // segment_height; TODOREWORKXRIT check we ONLY get FD?
+                //  TODOREWORKXRIT check we ONLY get FD?
+                image = image::Image(bit_depth, segment_width, segment_width, 1);
+                seg_height = segment_height;
                 seg_width = segment_width;
 
                 image.fill(0);
