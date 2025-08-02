@@ -54,7 +54,7 @@ namespace satdump
 
                 if (tree_extended)
                 {
-                    if (ImGui::IsItemClicked())
+                    if (handler_can_be_selected && ImGui::IsItemClicked())
                     {
                         h = handler;
                         handler_contained = true;
