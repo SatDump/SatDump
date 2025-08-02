@@ -23,7 +23,7 @@ namespace noaa
               avhrr_reader(is_gac, parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1),
               hirs_reader(parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1),
               sem_reader(parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1),
-              telemetry_reader(parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1)
+              telemetry_reader(parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1, parameters.count("telemetry_parity_check") > 0 ? parameters["telemetry_parity_check"].get<bool>() : true)
         {
             fsfsm_enable_output = false;
         }
@@ -306,7 +306,43 @@ namespace noaa
                     if (!std::filesystem::exists(directory))
                         std::filesystem::create_directory(directory);
 
+                    logger->info("----------- Telemetry");
+                    logger->info("Total frames : " + std::to_string(telemetry_reader.frames));
+                    logger->info("Valid frames : " + std::to_string(telemetry_reader.good_frames));
+
+                    nlohmann::json telemetry_coefficients = loadJsonFile(resources::getResourcePath("calibration/POES_telemetry.json"));
+                    if (telemetry_coefficients.contains(sat_name))
+                    {
+                        telemetry_reader.calibration(telemetry_coefficients[sat_name]);
+                    }
+                    else
+                        logger->warn("(telemetry) No telemetry coefficients for " + sat_name);
+
+                    satdump::products::PunctiformProduct telemetry_products;
+                    telemetry_products.instrument_name = "telemetry";
+                    telemetry_products.set_tle(satellite_tle);
+
+                    // AVHRR
+                    for(int channel=0; channel < 22; channel++)
+                    {
+                        if (telemetry_reader.avhrr[channel].size() == 0)
+                        {
+                                continue;
+                        }
+                        satdump::products::PunctiformProduct::DataHolder h;
+                        h.channel_name = "AVHRR " + std::string(telemetry_reader.avhrr_telemetry_names[channel]);
+                        h.timestamps = telemetry_reader.avhrr_timestamps[channel];
+                        auto v = telemetry_reader.avhrr[channel];
+                        for (int x = 0; x < v.size(); x++)
+                            h.data.push_back(v[x]);
+                        telemetry_products.data.push_back(h);
+                    }
+
                     saveJsonFile(directory + "/telem.json", telemetry_reader.dump_telemetry());
+
+                    telemetry_products.save(directory);
+                    dataset.products_list.push_back("telemetry");
+
                     telemetry_status = DONE;
                 }
 
@@ -555,7 +591,43 @@ namespace noaa
                     if (!std::filesystem::exists(directory))
                         std::filesystem::create_directory(directory);
 
+                    logger->info("----------- Telemetry");
+                    logger->info("Total frames : " + std::to_string(telemetry_reader.frames));
+                    logger->info("Valid frames : " + std::to_string(telemetry_reader.good_frames));
+
+                    nlohmann::json telemetry_coefficients = loadJsonFile(resources::getResourcePath("calibration/POES_telemetry.json"));
+                    if (telemetry_coefficients.contains(sat_name))
+                    {
+                        telemetry_reader.calibration(telemetry_coefficients[sat_name]);
+                    }
+                    else
+                        logger->warn("(telemetry) No telemetry coefficients for " + sat_name);
+
+                    satdump::products::PunctiformProduct telemetry_products;
+                    telemetry_products.instrument_name = "telemetry";
+                    telemetry_products.set_tle(satellite_tle);
+
+                    // AVHRR
+                    for(int channel=0; channel < 22; channel++)
+                    {
+                        if (telemetry_reader.avhrr[channel].size() == 0)
+                        {
+                                continue;
+                        }
+                        satdump::products::PunctiformProduct::DataHolder h;
+                        h.channel_name = "AVHRR " + std::string(telemetry_reader.avhrr_telemetry_names[channel]);
+                        h.timestamps = telemetry_reader.avhrr_timestamps[channel];
+                        auto v = telemetry_reader.avhrr[channel];
+                        for (int x = 0; x < v.size(); x++)
+                            h.data.push_back(v[x]);
+                        telemetry_products.data.push_back(h);
+                    }
+
                     saveJsonFile(directory + "/telem.json", telemetry_reader.dump_telemetry());
+
+                    telemetry_products.save(directory);
+                    dataset.products_list.push_back("telemetry");
+
                     telemetry_status = DONE;
                 }
                 dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
@@ -615,6 +687,14 @@ namespace noaa
                 ImGui::TextColored(style::theme.green, "%d", amsu_reader.linesA2);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(amsu_status);
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Telemetry");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextColored(style::theme.green, "%d", telemetry_reader.good_frames);
+                ImGui::TableSetColumnIndex(2);
+                drawStatus(telemetry_status);
 
                 ImGui::EndTable();
             }
