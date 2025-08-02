@@ -285,6 +285,11 @@ namespace noaa
             {   
                 for(int i=0; i < 19; i++)
                 {
+                    // Not nice, but Channel BB temps are not the same for all satellites, so don't save
+                    if ( i == 15 || i == 16 || i == 17 )
+                    {
+                        continue;
+                    }
                     avhrr[value_locations_32[i][0]].push_back(telemetry_calibrate(coefficients["avhrr"][avhrr_telemetry_names[value_locations_32[i][0]]].get<std::array<double, 6>>(), analog1[frame][value_locations_32[i][1]]));
                     avhrr_timestamps[value_locations_32[i][0]].push_back(timestamp_320[frame]);
                 }
