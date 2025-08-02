@@ -50,13 +50,6 @@ namespace noaa
             void work(uint8_t *buffer);
             nlohmann::json dump_telemetry();
 
-            // std::vector<std::array<int,16>> satcu;
-
-            // std::vector<double> timestamp_avhrr;
-            // std::vector<double> avhrr;
-            // std::vector<double> timestamp_avhrr_temp;
-            // std::vector<double> avhrr_temp;
-
         char* avhrr_telemetry_names[22] = {
                 "Patch Temperature",
                 "Patch Temperature Extended",

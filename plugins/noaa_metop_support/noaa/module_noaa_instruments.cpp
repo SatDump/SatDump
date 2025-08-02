@@ -335,33 +335,10 @@ namespace noaa
                         auto v = telemetry_reader.avhrr[channel];
                         for (int x = 0; x < v.size(); x++)
                             h.data.push_back(v[x]);
-                            // if(v[x] < 0)
-                            // {
-                            //     h.data.push_back(std::nan("1"));
-                            // }
-                            // else
-                            // {
-                            //     h.data.push_back(v[x]);
-                            // }
                         telemetry_products.data.push_back(h);
                     }
 
-                    // if(scid == 7)
-                    // {
-                    //     logger->info("Satellite is NOAA 15, saving AVHRR current telem");
-                    // }
                     saveJsonFile(directory + "/telem.json", telemetry_reader.dump_telemetry());
-
-                    // for (int i = 0; i < 16; i++)
-                    // {
-                    //     satdump::products::PunctiformProduct::DataHolder h;
-                    //     h.channel_name = "Solar " + std::to_string(i);
-                    //     h.timestamps = telemetry_reader.timestamp_satcu;
-                    //     auto v = telemetry_reader.satcu[i];
-                    //     for (int x = 0; x < v.size(); x++)
-                    //         h.data.push_back(v[x]);
-                    //     telemetry_products.data.push_back(h);
-                    // }
 
                     telemetry_products.save(directory);
                     dataset.products_list.push_back("telemetry");
@@ -643,33 +620,10 @@ namespace noaa
                         auto v = telemetry_reader.avhrr[channel];
                         for (int x = 0; x < v.size(); x++)
                             h.data.push_back(v[x]);
-                            // if(v[x] < 0)
-                            // {
-                            //     h.data.push_back(std::nan("1"));
-                            // }
-                            // else
-                            // {
-                            //     h.data.push_back(v[x]);
-                            // }
                         telemetry_products.data.push_back(h);
                     }
 
-                    // if(scid == 7)
-                    // {
-                    //     logger->info("Satellite is NOAA 15, saving AVHRR current telem");
-                    // }
                     saveJsonFile(directory + "/telem.json", telemetry_reader.dump_telemetry());
-
-                    // for (int i = 0; i < 16; i++)
-                    // {
-                    //     satdump::products::PunctiformProduct::DataHolder h;
-                    //     h.channel_name = "Solar " + std::to_string(i);
-                    //     h.timestamps = telemetry_reader.timestamp_satcu;
-                    //     auto v = telemetry_reader.satcu[i];
-                    //     for (int x = 0; x < v.size(); x++)
-                    //         h.data.push_back(v[x]);
-                    //     telemetry_products.data.push_back(h);
-                    // }
 
                     telemetry_products.save(directory);
                     dataset.products_list.push_back("telemetry");
