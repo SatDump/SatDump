@@ -1,6 +1,7 @@
 #include "core/plugin.h"
 #include "logger.h"
 
+#include "new/processors/hdf/gpm/gpm_calibrator.h"
 #include "off2pro/module_off2pro.h"
 
 #include "new/processors/nc/goes/abi_nc_calibrator.h"
@@ -44,6 +45,8 @@ public:
             evt.calibrators.push_back(std::make_shared<nat2pro::AMSUNatCalibrator>(evt.products, evt.calib));
         else if (evt.id == "jpss_nc_viirs")
             evt.calibrators.push_back(std::make_shared<nc2pro::VIIRSNcCalibrator>(evt.products, evt.calib));
+        else if (evt.id == "gpm_hdf")
+            evt.calibrators.push_back(std::make_shared<satdump::official::GPMHdfCalibrator>(evt.products, evt.calib));
     }
 };
 

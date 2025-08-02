@@ -1,7 +1,7 @@
 #include "timestamp_line_gcps.h"
-#include "nlohmann/json_utils.h"
 #include "common/geodetic/vincentys_calculations.h"
 #include "core/exception.h"
+#include "nlohmann/json_utils.h"
 
 namespace satdump
 {
@@ -39,10 +39,10 @@ namespace satdump
             *lat = atan2(z2, hyp) * RAD_TO_DEG;
         }
 
-        TimestampLineGCPsRaytracer::TimestampLineGCPsRaytracer(nlohmann::json cfg)
-            : SatelliteRaytracer(cfg)
+        TimestampLineGCPsRaytracer::TimestampLineGCPsRaytracer(nlohmann::json cfg) : SatelliteRaytracer(cfg)
         {
-            timestamps = cfg["timestamps"].get<std::vector<double>>();
+            if (cfg.contains("timestamps"))
+                timestamps = cfg["timestamps"].get<std::vector<double>>();
 
             int gcps_cnt = cfg["gcp_cnt"];
             for (int i = 0; i < gcps_cnt; i++)
@@ -61,9 +61,7 @@ namespace satdump
             for (auto &s : gcps)
             {
                 // Sort them by X
-                std::sort(s.g.begin(), s.g.end(),
-                          [](auto &el1, auto &el2)
-                          { return el1.x < el2.x; });
+                std::sort(s.g.begin(), s.g.end(), [](auto &el1, auto &el2) { return el1.x < el2.x; });
 
                 // Calculate their center Lat
                 {
@@ -168,5 +166,5 @@ namespace satdump
 
             return 0;
         }
-    }
-}
+    } // namespace projection
+} // namespace satdump
