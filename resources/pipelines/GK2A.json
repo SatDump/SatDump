@@ -165,6 +165,38 @@
             }
         }
     },
+    "gk2a_uhrit": {
+        "name": "GK-2A UHRIT",
+        //   "live": {},
+        //   "frequencies": [],
+        "work": {
+            "baseband": {},
+            "bbframe": {
+                "module": "dvbs2_demod",
+                "parameters": {
+                    "symbolrate": 15622440,
+                    "rrc_alpha": 0.25,
+                    "pll_bw": 0.0005,
+                    "clock_alpha": 1e-4,
+                    "modcod": 13,
+                    "pilots": true,
+                    "mt_bch": false
+                }
+            },
+            "cadu": {
+                "module": "gk2a_uhrit_cadu_extractor"
+            },
+            "products": {
+                "module": "gk2a_lrit_data_decoder",
+                "parameters": {
+                    "write_images": true,
+                    "write_additional": true,
+                    "write_unknown": true,
+                    "uhrit_mode": true
+                }
+            }
+        }
+    },
     "gk2a_cdas": {
         "name": "GK-2A CDAS",
         "live": [

@@ -16,6 +16,7 @@ namespace gk2a
             bool write_images;
             bool write_additional;
             bool write_unknown;
+            bool uhrit_mode;
 
             std::string directory;
 
