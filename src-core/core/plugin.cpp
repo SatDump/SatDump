@@ -5,10 +5,11 @@
 #else
 #include <dlfcn.h>
 #endif
-#include "logger.h"
-#include <filesystem>
-#include "satdump_vars.h"
 #include "core/exception.h"
+#include "logger.h"
+#include "satdump_vars.h"
+#include <cstdlib>
+#include <filesystem>
 
 std::shared_ptr<satdump::Plugin> loadPlugin(std::string plugin)
 {
@@ -35,7 +36,7 @@ namespace satdump
     SATDUMP_DLL std::map<std::string, std::shared_ptr<satdump::Plugin>> loaded_plugins;
     SATDUMP_DLL std::shared_ptr<EventBus> eventBus = std::make_shared<EventBus>();
     SATDUMP_DLL std::shared_ptr<TaskScheduler> taskScheduler = std::make_shared<TaskScheduler>();
-};
+}; // namespace satdump
 
 #ifdef __ANDROID__
 std::string android_plugins_dir = "";
@@ -67,6 +68,10 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
     {
         logger->info("Loading plugins from " + plugins_path);
 
+#ifndef _WIN32
+        setenv("LD_LIBRARY_PATH", plugins_path.c_str(), 1);
+#endif
+
         std::filesystem::recursive_directory_iterator pluginIterator(plugins_path);
         std::error_code iteratorError;
         while (pluginIterator != std::filesystem::recursive_directory_iterator())
@@ -76,9 +81,7 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
                 goto skip_this;
 
 #ifdef __ANDROID__
-            if (path.find("libandroid_imgui.so") != std::string::npos ||
-                path.find("libsatdump_core.so") != std::string::npos ||
-                path.find("libsatdump_interface.so") != std::string::npos)
+            if (path.find("libandroid_imgui.so") != std::string::npos || path.find("libsatdump_core.so") != std::string::npos || path.find("libsatdump_interface.so") != std::string::npos)
                 goto skip_this;
 #endif
             try
