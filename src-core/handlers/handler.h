@@ -81,8 +81,9 @@ namespace satdump
              * @brief Render explorer menu bar (in the left sidebar)
              * @param h currently selected handler, to be replaced if
              * another is selected
+             * @return true if the handler provided is present in the tree
              */
-            virtual void drawTreeMenu(std::shared_ptr<Handler> &h);
+            virtual bool drawTreeMenu(std::shared_ptr<Handler> &h);
 
             /**
              * @brief Get this handler's readable name

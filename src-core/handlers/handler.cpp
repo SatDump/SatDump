@@ -31,8 +31,10 @@ namespace satdump
             return false;
         }
 
-        void Handler::drawTreeMenu(std::shared_ptr<Handler> &h)
+        bool Handler::drawTreeMenu(std::shared_ptr<Handler> &h)
         {
+            bool handler_contained = false;
+
             struct DragDropWip
             {
                 std::shared_ptr<Handler> drag;
@@ -47,12 +49,16 @@ namespace satdump
                 ImGui::TableSetColumnIndex(0);
 
                 bool tree_extended = ImGui::TreeNodeEx(handler->getTreeID().c_str(), nodeFlags(handler, h == handler));
+                handler_contained |= h == handler;
                 tree_local.node(handler->handler_tree_icon);
 
                 if (tree_extended)
                 {
                     if (ImGui::IsItemClicked())
+                    {
                         h = handler;
+                        handler_contained = true;
+                    }
 
                     if (ImGui::IsItemHovered())
                         ImGui::SetTooltip("%s", handler->getName().c_str());
@@ -128,6 +134,8 @@ namespace satdump
 
             // Try handle deletion
             delSubHandlersNow();
+
+            return handler_contained;
         }
 
         bool Handler::hasSubhandlers()

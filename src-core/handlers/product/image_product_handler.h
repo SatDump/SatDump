@@ -82,10 +82,10 @@ namespace satdump
                 img_handler->delSubHandler(handler, true);
             }
 
-            void drawTreeMenu(std::shared_ptr<Handler> &h)
+            bool drawTreeMenu(std::shared_ptr<Handler> &h)
             {
                 // Handler::drawTreeMenu(h);
-                img_handler->drawTreeMenu(h);
+                return img_handler->drawTreeMenu(h);
             }
 
             std::string getID() { return "image_product_handler"; }

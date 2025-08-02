@@ -111,6 +111,8 @@ namespace satdump
         {
             ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2);
 
+            bool handler_present = false;
+
             if (ImGui::CollapsingHeader("General", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 auto prev_curr = curr_handler;
@@ -128,7 +130,7 @@ namespace satdump
                         ImGui::TableSetColumnIndex(0);
                         ImGui::SeparatorText("Processing");
 
-                        processing_handler->drawTreeMenu(curr_handler);
+                        handler_present |= processing_handler->drawTreeMenu(curr_handler);
                         for (auto &h : processing_handler->getAllSubHandlers())
                             if (h->getName() == "PROCESSING_DONE") // TODOREWORK MASSIVE HACK
                                 processing_handler->delSubHandler(h);
@@ -144,7 +146,7 @@ namespace satdump
                             ImGui::TableSetColumnIndex(0);
                             ImGui::SeparatorText(v.first.c_str());
 
-                            v.second->drawTreeMenu(curr_handler);
+                            handler_present |= v.second->drawTreeMenu(curr_handler);
                             rendering_separators = true;
                         }
                     }
@@ -156,8 +158,8 @@ namespace satdump
                         ImGui::SeparatorText("Others");
                     }
 
-                    master_handler->drawTreeMenu(curr_handler);
-                    trash_handler->drawTreeMenu(curr_handler);
+                    handler_present |= master_handler->drawTreeMenu(curr_handler);
+                    handler_present |= trash_handler->drawTreeMenu(curr_handler);
 
                     ImGui::EndTable();
                 }
@@ -165,6 +167,9 @@ namespace satdump
                 if (prev_curr != curr_handler)
                     last_selected_handler.insert_or_assign(curr_handler->getID(), curr_handler);
             }
+
+            if (!handler_present)
+                curr_handler.reset();
 
             if (curr_handler)
                 curr_handler->drawMenu();
