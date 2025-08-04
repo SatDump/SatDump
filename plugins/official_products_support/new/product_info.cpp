@@ -1,8 +1,10 @@
 #include "product_info.h"
 #include "core/exception.h"
 #include "logger.h"
+#include "processors/hdf/dmsp/ssmis_hdf.h"
 #include "processors/hdf/fy2/svissr_hdf.h"
 #include "processors/hdf/fy3/mersi_hdf.h"
+#include "processors/hdf/gpm/gmi_hdf.h"
 #include "processors/hrit/hrit_generic.h"
 #include "processors/hsd/himawari/ahi_hsd.h"
 #include "processors/nat/metop/amsu_nat.h"
@@ -392,6 +394,60 @@ namespace satdump
                      return i;
                  },
                  []() { return std::make_shared<MERSIHdfProcessor>(); }},
+
+                {HDF_GPM_GMI,
+                 [](std::shared_ptr<satdump::utils::FilesIteratorItem> &f)
+                 {
+                     OfficialProductInfo i;
+
+                     int unknown1, len;
+                     std::tm timeS;
+                     memset(&timeS, 0, sizeof(std::tm));
+                     if (sscanf(f->name.c_str(), "1B.GPM.GMI.TB2021.%4d%2d%2d-S%2d%2d%2d-E%6d.V07B.RT-H5%n", &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min,
+                                &timeS.tm_sec, &unknown1, &len) == 7 &&
+                         len == f->name.size())
+                     {
+                         i.type = HDF_GPM_GMI;
+
+                         timeS.tm_year -= 1900;
+                         timeS.tm_mon -= 1;
+                         i.timestamp = timegm(&timeS);
+
+                         i.name = "GMP GMI " + timestamp_to_string(i.timestamp);
+
+                         i.group_id = std::to_string((time_t)i.timestamp);
+                     }
+
+                     return i;
+                 },
+                 []() { return std::make_shared<GMIHdfProcessor>(); }},
+
+                {HDF_DMSP_SSMIS,
+                 [](std::shared_ptr<satdump::utils::FilesIteratorItem> &f)
+                 {
+                     OfficialProductInfo i;
+
+                     int sat, unknown1, len;
+                     std::tm timeS;
+                     memset(&timeS, 0, sizeof(std::tm));
+                     if (sscanf(f->name.c_str(), "1C.F%2d.SSMIS.XCAL2021-V.%4d%2d%2d-S%2d%2d%2d-E%6d.V07B.RT-H5%n", &sat, &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min,
+                                &timeS.tm_sec, &unknown1, &len) == 8 &&
+                         len == f->name.size())
+                     {
+                         i.type = HDF_DMSP_SSMIS;
+
+                         timeS.tm_year -= 1900;
+                         timeS.tm_mon -= 1;
+                         i.timestamp = timegm(&timeS);
+
+                         i.name = "DMSP-F" + std::to_string(sat) + " SSMIS " + timestamp_to_string(i.timestamp);
+
+                         i.group_id = std::to_string(sat) + "_" + std::to_string((time_t)i.timestamp);
+                     }
+
+                     return i;
+                 },
+                 []() { return std::make_shared<SSMISHdfProcessor>(); }},
 
                 {HRIT_GENERIC,
                  [](std::shared_ptr<satdump::utils::FilesIteratorItem> &f)

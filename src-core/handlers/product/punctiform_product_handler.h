@@ -47,7 +47,7 @@ namespace satdump
 
             void delSubHandler(std::shared_ptr<Handler> handler, bool now = false) { img_handler.delSubHandler(handler, true); }
 
-            void drawTreeMenu(std::shared_ptr<Handler> &h) { img_handler.drawTreeMenu(h); }
+            bool drawTreeMenu(std::shared_ptr<Handler> &h) { return img_handler.drawTreeMenu(h); }
 
             void setConfig(nlohmann::json p);
             nlohmann::json getConfig();

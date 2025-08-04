@@ -2,6 +2,7 @@
 #include "logger.h"
 #include "msg/msg_headers.h"
 #include "utils/string.h"
+#include "xrit/fy4/fy4_headers.h"
 #include "xrit/goes/goes_headers.h"
 #include <cmath>
 #include <cstring>
@@ -474,9 +475,9 @@ namespace satdump
             else if (channel_name == "DK01B06")
                 i.channel = "6";
             else if (channel_name == "DK01B07")
-                i.channel = "7";
+                i.channel = "7_hr";
             else if (channel_name == "DK01B08")
-                i.channel = "8";
+                i.channel = "8_hr";
             else if (channel_name == "DK01B09")
                 i.channel = "9";
             else if (channel_name == "DK01B10")
@@ -486,13 +487,15 @@ namespace satdump
             else if (channel_name == "DK01B12")
                 i.channel = "12";
             else if (channel_name == "DK01B13")
-                i.channel = "13";
+                i.channel = "13_hr";
             else if (channel_name == "DK01B14")
                 i.channel = "14";
             else if (channel_name == "DK01B15")
                 i.channel = "15";
             else if (channel_name == "DK01B16")
                 i.channel = "16";
+            else
+                logger->info("Unknown AHI channel!");
 
             i.seg_groupid = i.channel + "_" + i.groupid;
 
@@ -506,6 +509,63 @@ namespace satdump
             // Try parse calibration
             if (file.hasHeader<ImageDataFunctionRecord>())
                 i.image_data_function_record = std::make_shared<ImageDataFunctionRecord>(file.getHeader<ImageDataFunctionRecord>());
+
+            return true;
+        }
+
+        bool identifyFY4File(XRITFileInfo &i, XRITFile &file)
+        {
+            i.filename = file.filename;
+
+            auto parts = splitString(i.filename, '_');
+
+            if (parts.size() != 13)
+                return false;
+
+            if (parts[0].find("FY4") == std::string::npos || parts[1] != "AGRI--")
+                return false;
+
+            std::tm timeS;
+            memset(&timeS, 0, sizeof(std::tm));
+            if (sscanf(parts[9].c_str(), "%4d%2d%2d%2d%2d%2d", &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec) != 6)
+                return false;
+
+            if (parts[0].size() != 5)
+                return false;
+
+            std::string sat_num = parts[0].substr(3, 1);
+
+            i.type = XRIT_FY4_AGRI;
+
+            timeS.tm_year -= 1900;
+            timeS.tm_mon -= 1;
+
+            i.timestamp = timegm(&timeS);
+            i.instrument_id = "agri";
+            i.instrument_name = "AGRI";
+            i.satellite_name = "FY-4" + sat_num;
+            i.satellite_short_name = "FY4" + sat_num;
+            i.region = parts[3];
+
+            i.groupid = sat_num + "_" + i.region + "_" + std::to_string((time_t)i.timestamp);
+
+            if (file.all_headers.count(fy4::ImageInformationRecord::TYPE))
+                i.channel = std::to_string(file.getHeader<fy4::ImageInformationRecord>().channel_number);
+            else
+                i.channel = std::to_string(std::stod(parts[7].substr(1, 4)));
+
+            i.seg_groupid = sat_num + "_" + i.region + "_" + i.channel + "_" + i.groupid;
+
+            if (file.all_headers.count(fy4::ImageInformationRecord::TYPE))
+                i.bit_depth = file.getHeader<fy4::ImageInformationRecord>().bit_per_pixel;
+
+            // Try to parse navigation
+            if (file.all_headers.count(fy4::ImageNavigationRecord::TYPE))
+                i.image_navigation_record_fy4 = std::make_shared<fy4::ImageNavigationRecord>(file.getHeader<fy4::ImageNavigationRecord>());
+
+            // Try parse calibration
+            // if (file.hasHeader<ImageDataFunctionRecord>())
+            //    i.image_data_function_record = std::make_shared<ImageDataFunctionRecord>(file.getHeader<ImageDataFunctionRecord>());
 
             return true;
         }
@@ -530,6 +590,8 @@ namespace satdump
             else if (identifyGK2AFile(i, file))
                 return i;
             else if (identifyHimawariFile(i, file))
+                return i;
+            else if (identifyFY4File(i, file))
                 return i;
             return XRITFileInfo();
         }

@@ -146,6 +146,7 @@
         "slstr_nadir",
         "slstr_offset",
         "goesn_imager",
-        "iasi_img"
+        "iasi_img",
+        "msu_gs"
     ]
 }

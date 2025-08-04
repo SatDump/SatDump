@@ -1,6 +1,5 @@
 #pragma once
 
-#include "data/lrit_data.h"
 #include "dcs/dcs_decoder.h"
 #include "goes/crc32.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
@@ -34,6 +33,7 @@ namespace goes
             int max_fill_lines;
 
             std::map<std::string, std::shared_ptr<satdump::xrit::XRITChannelProcessor>> all_processors;
+            std::mutex all_processors_mtx;
 
             std::string directory;
 
@@ -55,19 +55,6 @@ namespace goes
             };
 
             std::map<std::string, SZ_com_t> rice_parameters_all;
-
-            struct wip_images
-            {
-                lrit_image_status imageStatus = RECEIVING;
-                int img_width, img_height;
-
-                // UI Stuff
-                bool hasToUpdate = false;
-                unsigned int textureID = 0;
-                uint32_t *textureBuffer;
-            };
-
-            std::map<int, std::unique_ptr<wip_images>> all_wip_images;
 
             void initDCS();
             void processLRITFile(satdump::xrit::XRITFile &file);

@@ -39,6 +39,10 @@ namespace satdump
             // FengYun-3
             HDF_FY3_MERSI,
 
+            // GPM
+            HDF_GPM_GMI,
+            HDF_DMSP_SSMIS,
+
             // HRIT
             HRIT_GENERIC,
         };

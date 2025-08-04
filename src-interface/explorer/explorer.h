@@ -5,6 +5,7 @@
 #include "handlers/handler.h"
 
 #include "imgui/dialogs/widget.h"
+#include <cstdint>
 #include <memory>
 
 namespace satdump
@@ -74,6 +75,9 @@ namespace satdump
             TaskQueue file_open_queue;
 
             std::string quickOpenString;
+
+        protected:
+            intptr_t satdump_logo_texture = 0;
 
         public:
             // TODOREWORK last opened by time

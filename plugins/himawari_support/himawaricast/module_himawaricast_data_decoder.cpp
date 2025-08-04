@@ -9,6 +9,7 @@
 #include "imgui/imgui_image.h"
 #include "libs/bzlib_utils.h"
 #include "logger.h"
+#include "xrit/processor/xrit_channel_processor_render.h"
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -188,6 +189,8 @@ namespace himawari
         void HimawariCastDataDecoderModule::drawUI(bool window)
         {
             ImGui::Begin("HimawariCast Data Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
+
+            satdump::xrit::renderAllTabsFromProcessors({&processor});
 
             drawProgressBar();
 

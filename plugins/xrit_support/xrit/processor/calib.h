@@ -140,7 +140,7 @@ namespace satdump
 
                             nlohmann::json calib_cfg = pro.get_calibration_raw();
 
-                            calib_cfg["bits_for_calib"] = bits_for_calib;
+                            calib_cfg["bits_for_calib"][channel] = bits_for_calib;
 
                             calib_cfg[channel] = lut;
                             pro.set_calibration("generic_xrit", calib_cfg);
@@ -159,7 +159,7 @@ namespace satdump
 
                             nlohmann::json calib_cfg = pro.get_calibration_raw();
 
-                            calib_cfg["bits_for_calib"] = bits_for_calib;
+                            calib_cfg["bits_for_calib"][channel] = bits_for_calib;
 
                             calib_cfg[channel] = lut;
                             pro.set_calibration("generic_xrit", calib_cfg);
@@ -171,10 +171,7 @@ namespace satdump
                     if (instrument_id == "ahi")
                     {
                         int bits_for_calib = 8;
-                        if (lines[0].find("HALFTONE:=10") != std::string::npos)
-                            bits_for_calib = 10;
-                        if (lines[0].find("HALFTONE:=16") != std::string::npos)
-                            bits_for_calib = 10; // Yes, they send 10 over 16
+                        bool lut_has_1023 = false, lut_has_4095 = false, lut_has_16383 = false;
                         if (lines[2].find("_UNIT:=PERCENT") != std::string::npos || lines[2].find("_UNIT:=ALBEDO(%)") != std::string::npos)
                         {
                             std::vector<std::pair<int, float>> lut;
@@ -183,12 +180,24 @@ namespace satdump
                                 int val;
                                 float valo;
                                 if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
+                                {
                                     lut.push_back({val, valo / 100.0});
+                                    lut_has_1023 |= (val == 1023);
+                                    lut_has_4095 |= (val == 4095);
+                                    lut_has_16383 |= (val == 16383);
+                                }
                             }
+
+                            if (lut_has_1023)
+                                bits_for_calib = 10;
+                            if (lut_has_4095)
+                                bits_for_calib = 12;
+                            if (lut_has_16383)
+                                bits_for_calib = 14;
 
                             nlohmann::json calib_cfg = pro.get_calibration_raw();
 
-                            calib_cfg["bits_for_calib"] = bits_for_calib;
+                            calib_cfg["bits_for_calib"][channel] = bits_for_calib;
                             calib_cfg["to_complete"] = true;
 
                             calib_cfg[channel] = lut;
@@ -203,12 +212,24 @@ namespace satdump
                                 int val;
                                 float valo;
                                 if (sscanf(lines[i].c_str(), "%d:=%f", &val, &valo) == 2)
+                                {
                                     lut.push_back({val, valo});
+                                    lut_has_1023 |= (val == 1023);
+                                    lut_has_4095 |= (val == 4095);
+                                    lut_has_16383 |= (val == 16383);
+                                }
                             }
+
+                            if (lut_has_1023)
+                                bits_for_calib = 10;
+                            if (lut_has_4095)
+                                bits_for_calib = 12;
+                            if (lut_has_16383)
+                                bits_for_calib = 14;
 
                             nlohmann::json calib_cfg = pro.get_calibration_raw();
 
-                            calib_cfg["bits_for_calib"] = bits_for_calib;
+                            calib_cfg["bits_for_calib"][channel] = bits_for_calib;
                             calib_cfg["to_complete"] = true;
 
                             calib_cfg[channel] = lut;

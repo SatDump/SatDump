@@ -34,8 +34,8 @@ namespace satdump
                     calib_type_map.push_back(d_pro->images[i].calibration_type == CALIBRATION_ID_EMISSIVE_RADIANCE);
 
                     product_bit_depth = pow(2, d_pro->images[i].bit_depth) - 1;
-                    if (!calib_cfg["bits_for_calib"].is_null())
-                        new_max_val.push_back(pow(2, calib_cfg["bits_for_calib"].get<int>()) - 1);
+                    if (!calib_cfg["bits_for_calib"][d_pro->images[i].channel_name].is_null())
+                        new_max_val.push_back(pow(2, calib_cfg["bits_for_calib"][d_pro->images[i].channel_name].get<int>()) - 1);
                     else
                         new_max_val.push_back(product_bit_depth);
                 }

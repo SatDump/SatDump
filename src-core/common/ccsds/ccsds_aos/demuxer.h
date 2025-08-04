@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include "../ccsds.h"
+#include <vector>
 
 namespace ccsds
 {
@@ -17,6 +17,7 @@ namespace ccsds
             const int MPDU_DATA_SIZE;
             const bool HAS_INSERT_ZONE;
             const int INSERT_ZONE_SIZE;
+            const bool SECONDARY_HEADER_EXTENDS_PKT;
 
         private:
             CCSDSPacket currentCCSDSPacket;                                                             // Current CCSDS
@@ -31,8 +32,8 @@ namespace ccsds
             int inHeaderBuffer;                                                                         // Used to fill it up properly
 
         public:
-            Demuxer(int mpdu_data_size = 884, bool hasInsertZone = false, int insertZoneSize = 2);
+            Demuxer(int mpdu_data_size = 884, bool hasInsertZone = false, int insertZoneSize = 2, bool secondaryHeaderExtendsPkt = false);
             std::vector<CCSDSPacket> work(uint8_t *cadu); // Main function
         };
-    } // namespace libccsds
-}
+    } // namespace ccsds_aos
+} // namespace ccsds

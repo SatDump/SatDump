@@ -35,6 +35,7 @@
         "seviri",
         "slstr_nadir",
         "slstr_offset",
-        "goesn_imager"
+        "goesn_imager",
+        "msu_gs"
     ]
 }

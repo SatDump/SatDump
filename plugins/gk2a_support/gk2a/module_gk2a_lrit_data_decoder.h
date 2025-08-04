@@ -1,9 +1,8 @@
 #pragma once
 
-#include "xrit/xrit_file.h"
-#include "data/lrit_data.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
 #include "xrit/processor/xrit_channel_processor.h"
+#include "xrit/xrit_file.h"
 
 namespace gk2a
 {
@@ -17,21 +16,9 @@ namespace gk2a
             bool write_images;
             bool write_additional;
             bool write_unknown;
+            bool uhrit_mode;
 
             std::string directory;
-
-            struct wip_images
-            {
-                lrit_image_status imageStatus = RECEIVING;
-                int img_width, img_height;
-
-                // UI Stuff
-                bool hasToUpdate = false;
-                unsigned int textureID = 0;
-                uint32_t *textureBuffer;
-            };
-
-            std::map<std::string, std::unique_ptr<wip_images>> all_wip_images;
 
             std::map<int, uint64_t> decryption_keys;
 

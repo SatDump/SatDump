@@ -41,6 +41,7 @@ namespace satdump
             TreeDrawer tree_local;
             std::vector<std::shared_ptr<Handler>> subhandlers_marked_for_del;
 
+            bool handler_can_be_selected = true;
             bool handler_can_be_dragged = true;
             bool handler_can_be_dragged_to = true;
             bool handler_can_subhandlers_be_dragged = true;
@@ -81,8 +82,9 @@ namespace satdump
              * @brief Render explorer menu bar (in the left sidebar)
              * @param h currently selected handler, to be replaced if
              * another is selected
+             * @return true if the handler provided is present in the tree
              */
-            virtual void drawTreeMenu(std::shared_ptr<Handler> &h);
+            virtual bool drawTreeMenu(std::shared_ptr<Handler> &h);
 
             /**
              * @brief Get this handler's readable name
@@ -120,6 +122,12 @@ namespace satdump
              * @return List of all subhandlers
              */
             virtual std::vector<std::shared_ptr<Handler>> getAllSubHandlers();
+
+            /**
+             * @brief Set if a handler can be select in the tree
+             * @param v true to have it be selectable
+             */
+            void setCanBeSelected(bool v) { handler_can_be_selected = v; }
 
             /**
              * @brief Set if a handler can be dragged around in the tree

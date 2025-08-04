@@ -20,6 +20,7 @@
         "ahi",
         "seviri",
         "slstr_nadir",
-        "slstr_offset"
+        "slstr_offset",
+        "msu_gs"
     ]
 }

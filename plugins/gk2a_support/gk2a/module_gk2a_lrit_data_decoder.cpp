@@ -1,6 +1,8 @@
 #include "module_gk2a_lrit_data_decoder.h"
+#include "common/codings/crc/crc_generic.h"
 #include "common/utils.h"
 #include "core/resources.h"
+#include "gk2a/uhrit_demux.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
 #include "init.h"
@@ -9,8 +11,10 @@
 #include "libs/miniz/miniz_zip.h"
 #include "logger.h"
 #include "lrit_header.h"
+#include "nlohmann/json_utils.h"
 #include "utils/http.h"
 #include "xrit/gk2a/gk2a_headers.h"
+#include "xrit/processor/xrit_channel_processor_render.h"
 #include "xrit/transport/xrit_demux.h"
 #include <cstdint>
 #include <filesystem>
@@ -26,20 +30,10 @@ namespace gk2a
         {
             fsfsm_enable_output = false;
             processor.directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/IMAGES";
+            uhrit_mode = getValueOrDefault(parameters["uhrit_mode"], false);
         }
 
-        GK2ALRITDataDecoderModule::~GK2ALRITDataDecoderModule()
-        {
-            for (auto &decMap : all_wip_images)
-            {
-                auto &dec = decMap.second;
-
-                if (dec->textureID > 0)
-                {
-                    delete[] dec->textureBuffer;
-                }
-            }
-        }
+        GK2ALRITDataDecoderModule::~GK2ALRITDataDecoderModule() {}
 
         void GK2ALRITDataDecoderModule::process()
         {
@@ -49,8 +43,6 @@ namespace gk2a
                 std::filesystem::create_directory(directory);
 
             this->directory = directory;
-
-            uint8_t cadu[1024];
 
             logger->warn("All credits for decoding GK-2A encrypted xRIT files goes to @sam210723, and xrit-rx over on Github.");
             logger->warn("See https://vksdr.com/xrit-rx for a lot more information!");
@@ -136,8 +128,9 @@ namespace gk2a
             logger->info("Demultiplexing and deframing...");
 
             satdump::xrit::XRITDemux lrit_demux;
+            satdump::xrit::UHRITDemux uhrit_demux;
 
-            lrit_demux.onParseHeader = [](satdump::xrit::XRITFile &file) -> void
+            uhrit_demux.onParseHeader = lrit_demux.onParseHeader = [](satdump::xrit::XRITFile &file) -> void
             {
                 if (file.hasHeader<KeyHeader>())
                 {
@@ -162,15 +155,43 @@ namespace gk2a
             if (!std::filesystem::exists(directory + "/IMAGES/Unknown"))
                 std::filesystem::create_directories(directory + "/IMAGES/Unknown");
 
-            while (should_run())
+            if (uhrit_mode)
             {
-                // Read buffer
-                read_data((uint8_t *)&cadu, 1024);
+                uint8_t cadu[2048];
+                codings::crc::GenericCRC crc_check(16, 0x1021, 0xFFFF, 0x0, false, false);
 
-                std::vector<satdump::xrit::XRITFile> files = lrit_demux.work(cadu);
+                while (should_run())
+                {
+                    // Read buffer
+                    read_data((uint8_t *)cadu, 2048);
 
-                for (auto &file : files)
-                    processLRITFile(file);
+                    uint16_t crc1 = cadu[2046] << 8 | cadu[2047];
+                    uint16_t crc2 = crc_check.compute(&cadu[4], 2042);
+                    if (crc1 != crc2)
+                    {
+                        //      logger->critical("CRC -------------------------");
+                        continue;
+                    }
+
+                    std::vector<satdump::xrit::XRITFile> files = uhrit_demux.work(cadu);
+                    for (auto &file : files)
+                        processLRITFile(file);
+                }
+            }
+            else
+            {
+                uint8_t cadu[1024];
+
+                while (should_run())
+                {
+                    // Read buffer
+                    read_data((uint8_t *)&cadu, 1024);
+
+                    std::vector<satdump::xrit::XRITFile> files = lrit_demux.work(cadu);
+
+                    for (auto &file : files)
+                        processLRITFile(file);
+                }
             }
 
             cleanup();
@@ -182,65 +203,7 @@ namespace gk2a
         {
             ImGui::Begin("GK-2A LRIT Data Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
-            if (ImGui::BeginTabBar("Images TabBar", ImGuiTabBarFlags_None))
-            {
-                bool hasImage = false;
-
-                for (auto &decMap : all_wip_images)
-                {
-                    auto &dec = decMap.second;
-
-                    if (dec->textureID == 0)
-                    {
-                        dec->textureID = makeImageTexture();
-                        dec->textureBuffer = new uint32_t[1000 * 1000];
-                        memset(dec->textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
-                        dec->hasToUpdate = true;
-                    }
-
-                    if (dec->imageStatus != IDLE)
-                    {
-                        if (dec->hasToUpdate)
-                        {
-                            dec->hasToUpdate = false;
-                            updateImageTexture(dec->textureID, dec->textureBuffer, 1000, 1000);
-                        }
-
-                        hasImage = true;
-
-                        if (ImGui::BeginTabItem(std::string("Ch " + decMap.first).c_str()))
-                        {
-                            ImGui::Image((void *)(intptr_t)dec->textureID, {200 * ui_scale, 200 * ui_scale});
-                            ImGui::SameLine();
-                            ImGui::BeginGroup();
-                            ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
-                            if (dec->imageStatus == SAVING)
-                                ImGui::TextColored(style::theme.green, "Writing image...");
-                            else if (dec->imageStatus == RECEIVING)
-                                ImGui::TextColored(style::theme.orange, "Receiving...");
-                            else
-                                ImGui::TextColored(style::theme.red, "Idle (Image)...");
-                            ImGui::EndGroup();
-                            ImGui::EndTabItem();
-                        }
-                    }
-                }
-
-                if (!hasImage) // Add empty tab if there is no image yet
-                {
-                    if (ImGui::BeginTabItem("No image yet"))
-                    {
-                        ImGui::Dummy({200 * ui_scale, 200 * ui_scale});
-                        ImGui::SameLine();
-                        ImGui::BeginGroup();
-                        ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
-                        ImGui::TextColored(style::theme.red, "Idle (Image)...");
-                        ImGui::EndGroup();
-                        ImGui::EndTabItem();
-                    }
-                }
-            }
-            ImGui::EndTabBar();
+            satdump::xrit::renderAllTabsFromProcessors({&processor});
 
             drawProgressBar();
 
