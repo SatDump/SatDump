@@ -349,6 +349,18 @@ namespace satdump
                         i++;
                     }
 
+                    {
+                        ImVec2 line_size = ImGui::CalcTextSize("Start Processing");
+                        ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), ((float)dims.second / 2) + ((80 + 3 * 20) * scale)});
+                        ImGui::Button("Start Processing");
+                    }
+
+                    {
+                        ImVec2 line_size = ImGui::CalcTextSize("Add Recorder");
+                        ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), ((float)dims.second / 2) + ((80 + 4 * 22) * scale)});
+                        ImGui::Button("Add Recorder");
+                    }
+
                     // ImVec2 slogan_size1 = ImGui::CalcTextSize(slogan1.c_str());
                     // ImGui::SetCursorPos({((float)dims.first / 2) - (slogan_size1.x / 2), ((float)dims.second / 2) + (80 * scale)});
                     // ImGui::TextUnformatted(slogan1.c_str());
