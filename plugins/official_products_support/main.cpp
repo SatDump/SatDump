@@ -1,20 +1,20 @@
 #include "core/plugin.h"
 #include "logger.h"
 
-#include "new/processors/hdf/gpm/gpm_calibrator.h"
-#include "off2pro/module_off2pro.h"
+#include "old/off2pro/module_off2pro.h"
+#include "processors/hdf/gpm/gpm_calibrator.h"
 
-#include "new/processors/nc/goes/abi_nc_calibrator.h"
-#include "new/processors/nc/mtg/fci_nc_calibrator.h"
+#include "processors/nc/goes/abi_nc_calibrator.h"
+#include "processors/nc/mtg/fci_nc_calibrator.h"
 
-#include "nc2pro/jpss/viirs_nc_calibrator.h"
+#include "old/nc2pro/jpss/viirs_nc_calibrator.h"
 
 //////////
 
-#include "new/processors/nat/metop/amsu_nat_calibrator.h"
-#include "new/processors/nat/metop/avhrr_nat_calibrator.h"
-#include "new/processors/nat/metop/mhs_nat_calibrator.h"
-#include "new/processors/nat/msg/msg_nat_calibrator.h"
+#include "processors/nat/metop/amsu_nat_calibrator.h"
+#include "processors/nat/metop/avhrr_nat_calibrator.h"
+#include "processors/nat/metop/mhs_nat_calibrator.h"
+#include "processors/nat/msg/msg_nat_calibrator.h"
 
 class OfficalProductsSupport : public satdump::Plugin
 {

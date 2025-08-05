@@ -18,7 +18,7 @@
 #include <memory>
 #include <string>
 
-#include "../../../official_products_support/new/processors/nat/msg/nat_utils.h"
+#include "../../../official_products_support/processors/nat/msg/nat_utils.h"
 
 namespace satdump
 {

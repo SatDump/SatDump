@@ -13,9 +13,9 @@
 #include "init.h"
 #include "logger.h"
 
-#include "new/procfile.h"
-#include "new/product_info.h"
-#include "new/type.h"
+#include "procfile.h"
+#include "product_info.h"
+#include "type.h"
 #include "utils/file/file_iterators.h"
 #include "utils/file/folder_file_iterators.h"
 #include "utils/file/zip_file_iterators.h"
