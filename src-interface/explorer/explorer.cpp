@@ -335,6 +335,8 @@ namespace satdump
                         ImGui::TableNextRow(0, table_height / 2);
                         ImGui::TableSetColumnIndex(0);
                         ImGui::Text("Shortcuts");
+                        ImGui::Button("Add Recorder");
+                        ImGui::Button("Open File");
 
                         ImGui::TableSetColumnIndex(1);
                         ImGui::Text("Tip of the day");
