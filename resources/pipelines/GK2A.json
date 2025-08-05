@@ -168,7 +168,12 @@
     "gk2a_uhrit": {
         "name": "GK-2A UHRIT",
         //   "live": {},
-        //   "frequencies": [],
+        "frequencies": [
+            [
+                "UHRIT",
+                8070e6
+            ]
+        ],
         "work": {
             "baseband": {},
             "bbframe": {
