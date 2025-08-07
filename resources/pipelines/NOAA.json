@@ -24,6 +24,12 @@
             ]
         ],
         "parameters": {
+            "telemetry_parity_check": {
+                "type": "bool",
+                "value": true,
+                "name": "Telemetry Check Parity",
+                "description": "Check the TIP parity bits for decoding telemetry\nRecommended to keep enabled,\nor the telemetry will be noisy"
+            },
             "samplerate": {
                 "value": 3e6
             },
@@ -87,6 +93,12 @@
                 "name": "Backward GAC",
                 "description": "Over the US, NOAA satellites often transmit\nGAC in reverse order. This mode allows\ndecoding those backward replays properly."
             },
+            "telemetry_parity_check": {
+                "type": "bool",
+                "value": true,
+                "name": "Telemetry Check Parity",
+                "description": "Check the TIP parity bits for decoding telemetry\nRecommended to keep enabled,\nor the telemetry will be noisy"
+            },
             "samplerate": {
                 "value": 6e6
             },
@@ -140,6 +152,12 @@
             ]
         ],
         "parameters": {
+            "telemetry_parity_check": {
+                "type": "bool",
+                "value": true,
+                "name": "Telemetry Check Parity",
+                "description": "Check the TIP parity bits for decoding telemetry\nRecommended to keep enabled,\nor the telemetry will be noisy"
+            },
             "samplerate": {
                 "value": 6e6
             },
