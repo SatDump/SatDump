@@ -332,6 +332,7 @@ namespace satdump
                     ImGui::TextUnformatted(title.c_str());
                     ImGui::PopFont();
 
+                    float last_pos = 0;
                     for (int p = 0, i = 0; p < tip_of_the_day.length();)
                     {
                         int cutLength = 0;
@@ -343,7 +344,8 @@ namespace satdump
                         }
                         std::string line = tip_of_the_day.substr(p, cutLength - p);
                         ImVec2 line_size = ImGui::CalcTextSize(line.c_str());
-                        ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), ((float)dims.second / 2) + ((80 + i * 20) * scale)});
+                        last_pos = ((float)dims.second / 2) + ((80 + i * 20) * scale);
+                        ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), last_pos});
                         ImGui::TextDisabled("%s", line.c_str());
                         p += line.size();
                         i++;
@@ -351,13 +353,13 @@ namespace satdump
 
                     {
                         ImVec2 line_size = ImGui::CalcTextSize("Start Processing");
-                        ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), ((float)dims.second / 2) + ((80 + 3 * 20) * scale)});
+                        ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), last_pos + (26 * 1) * scale});
                         ImGui::Button("Start Processing");
                     }
 
                     {
                         ImVec2 line_size = ImGui::CalcTextSize("Add Recorder");
-                        ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), ((float)dims.second / 2) + ((80 + 4 * 22) * scale)});
+                        ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), last_pos + (26 * 2) * scale});
                         ImGui::Button("Add Recorder");
                     }
 
