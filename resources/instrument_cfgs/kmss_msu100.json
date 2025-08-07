@@ -2,6 +2,43 @@
     "name": "MSU-100",
     "presets": [
         {
+            "name": "Natural color",
+            "expression": "ch3^0.7, ch2 > 0.055 ? ch2^0.7 : ch2*3,  ch1^0.7",
+            "image": {
+                "hue_saturation": true,
+                "hue_saturation_cfg": {
+                    "overlap": 1.0,
+                    "hue": [
+                        0.0,
+                        0.3333333333333334,
+                        0.0,
+                        0.1666666666666667,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "lightness": [
+                        0.0,
+                        0.02777777777777778,
+                        0.0,
+                        0.01111111111111111,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "saturation": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            }
+        },
+        {
             "name": "CIR (Color Infrared)",
             "expression": "ch3, ch2, ch1",
             "image": { 
