@@ -124,8 +124,18 @@ namespace satdump
                     if (instrument_id == "ami")
                     {
                         int bits_for_calib = 8;
-                        if (lines[0].find("HALFTONE:=10") != std::string::npos)
+                        if (lines[0].find("HALFTONE:=9") != std::string::npos)
+                            bits_for_calib = 9;
+                        else if (lines[0].find("HALFTONE:=10") != std::string::npos)
                             bits_for_calib = 10;
+                        else if (lines[0].find("HALFTONE:=11") != std::string::npos)
+                            bits_for_calib = 11;
+                        else if (lines[0].find("HALFTONE:=12") != std::string::npos)
+                            bits_for_calib = 12;
+                        else if (lines[0].find("HALFTONE:=13") != std::string::npos)
+                            bits_for_calib = 13;
+                        else if (lines[0].find("HALFTONE:=14") != std::string::npos)
+                            bits_for_calib = 14;
 
                         if (lines[2] == "_UNIT:=ALBEDO(%)")
                         {
@@ -141,6 +151,7 @@ namespace satdump
                             nlohmann::json calib_cfg = pro.get_calibration_raw();
 
                             calib_cfg["bits_for_calib"][channel] = bits_for_calib;
+                            calib_cfg["to_complete"] = true;
 
                             calib_cfg[channel] = lut;
                             pro.set_calibration("generic_xrit", calib_cfg);
@@ -160,6 +171,7 @@ namespace satdump
                             nlohmann::json calib_cfg = pro.get_calibration_raw();
 
                             calib_cfg["bits_for_calib"][channel] = bits_for_calib;
+                            calib_cfg["to_complete"] = true;
 
                             calib_cfg[channel] = lut;
                             pro.set_calibration("generic_xrit", calib_cfg);
