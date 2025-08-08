@@ -9,7 +9,8 @@ INPUT                  = src-core/common/ccsds \
                          src-core/dsp \
                          src-core/image \
                          src-core/utils \
-                         docs/pages
+                         docs/pages \
+                         plugins/xrit_support/xrit
 EXCLUDE                = src-core/image/font_lib src-core/image/font 
 RECURSIVE              = YES
 

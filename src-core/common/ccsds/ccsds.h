@@ -63,6 +63,14 @@ namespace ccsds
     bool crcCheckCCITT(CCSDSPacket &pkt);
 
     /**
+     * @brief Check a CCSDS Packet's HDLC CRC-32 (if present)
+     *
+     * @param pkt Space Packet
+     * @return true if valid
+     */
+    bool crcCheckHLDC32(CCSDSPacket &pkt);
+
+    /**
      * @brief Check a CCSDS Packet's Verical Parity (if present)
      *
      * @param pkt Space Packet

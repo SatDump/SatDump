@@ -1,19 +1,20 @@
 #include "core/plugin.h"
 #include "logger.h"
 
-#include "off2pro/module_off2pro.h"
+#include "old/off2pro/module_off2pro.h"
+#include "processors/hdf/gpm/gpm_calibrator.h"
 
-#include "nc2pro/abi/abi_nc_calibrator.h"
-#include "nc2pro/fci/fci_nc_calibrator.h"
+#include "processors/nc/goes/abi_nc_calibrator.h"
+#include "processors/nc/mtg/fci_nc_calibrator.h"
 
-#include "nc2pro/jpss/viirs_nc_calibrator.h"
+#include "old/nc2pro/jpss/viirs_nc_calibrator.h"
 
 //////////
 
-#include "nat2pro/amsu_nat_calibrator.h"
-#include "nat2pro/avhrr_nat_calibrator.h"
-#include "nat2pro/mhs_nat_calibrator.h"
-#include "nat2pro/msg_nat_calibrator.h"
+#include "processors/nat/metop/amsu_nat_calibrator.h"
+#include "processors/nat/metop/avhrr_nat_calibrator.h"
+#include "processors/nat/metop/mhs_nat_calibrator.h"
+#include "processors/nat/msg/msg_nat_calibrator.h"
 
 class OfficalProductsSupport : public satdump::Plugin
 {
@@ -44,6 +45,8 @@ public:
             evt.calibrators.push_back(std::make_shared<nat2pro::AMSUNatCalibrator>(evt.products, evt.calib));
         else if (evt.id == "jpss_nc_viirs")
             evt.calibrators.push_back(std::make_shared<nc2pro::VIIRSNcCalibrator>(evt.products, evt.calib));
+        else if (evt.id == "gpm_hdf")
+            evt.calibrators.push_back(std::make_shared<satdump::official::GPMHdfCalibrator>(evt.products, evt.calib));
     }
 };
 

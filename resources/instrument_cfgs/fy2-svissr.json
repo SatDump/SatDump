@@ -3,7 +3,7 @@
     "presets": [
         {
             "name": "False Color",
-            "expression":  "lut=lut(lut/fy2/svissr/lut.png);ref_channel=ch1;lut(ch2, 1-ch1, 0),lut(ch2, 1-ch1, 1),lut(ch2, 1-ch1, 2)",
+            "expression":  "lut=lut(lut/fy2/svissr/lut.png);ref_channel=1;lut(ch2, 1-ch1, 0),lut(ch2, 1-ch1, 1),lut(ch2, 1-ch1, 2)",
             "autogen": true
         },
         {

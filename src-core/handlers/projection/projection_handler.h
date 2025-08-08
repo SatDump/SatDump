@@ -19,7 +19,7 @@ namespace satdump
             proj::ProjectionConfigUI projui;
 
             // Auto-update in UI
-            bool needs_to_update = true;
+            bool needs_to_update = false;
 
             // Proc function
             void do_process();

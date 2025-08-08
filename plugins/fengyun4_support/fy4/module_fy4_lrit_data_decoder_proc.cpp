@@ -1,13 +1,13 @@
-#include "module_fy4_lrit_data_decoder.h"
-#include "logger.h"
-#include "lrit_header.h"
-#include <fstream>
+#include "image/io.h"
+#include "image/j2k_utils.h"
 #include "image/jpeg_utils.h"
 #include "imgui/imgui_image.h"
-#include "image/j2k_utils.h"
-#include <filesystem>
-#include "image/io.h"
+#include "logger.h"
+#include "module_fy4_lrit_data_decoder.h"
 #include "utils/string.h"
+#include "xrit/fy4/fy4_headers.h"
+#include <filesystem>
+#include <fstream>
 
 namespace fy4
 {
@@ -25,11 +25,11 @@ namespace fy4
             return utc_filename;
         }
 
-        void FY4LRITDataDecoderModule::processLRITFile(::lrit::LRITFile &file)
+        void FY4LRITDataDecoderModule::processLRITFile(satdump::xrit::XRITFile &file)
         {
             std::string current_filename = file.filename;
 
-            ::lrit::PrimaryHeader primary_header = file.getHeader<::lrit::PrimaryHeader>();
+            satdump::xrit::PrimaryHeader primary_header = file.getHeader<satdump::xrit::PrimaryHeader>();
 
             if (file.custom_flags[IS_ENCRYPTED]) // We lack decryption
             {
@@ -45,165 +45,37 @@ namespace fy4
             }
             else
             {
-                if (primary_header.file_type_code == 0 && file.hasHeader<ImageInformationRecord>())
+                if (primary_header.file_type_code == 0 && file.hasHeader<satdump::xrit::fy4::ImageInformationRecord>())
                 {
-                    std::vector<std::string> header_parts = satdump::splitString(current_filename, '_');
+                    satdump::xrit::XRITFileInfo finfo = satdump::xrit::identifyXRITFIle(file);
 
-                    // for (std::string part : header_parts)
-                    //     logger->trace(part);
-
-                    ImageInformationRecord image_structure_record = file.getHeader<ImageInformationRecord>();
-
-                    if (true) // file.custom_flags[JPG_COMPRESSED] || file.custom_flags[J2K_COMPRESSED]) // Is this Jpeg-Compressed? Decompress
+                    // Check if this is image data, and if so also write it as an image
+                    if (finfo.type != satdump::xrit::XRIT_UNKNOWN)
                     {
-                        logger->info("Decompressing J2K...");
+                        std::string processor_name = finfo.satellite_short_name;
 
-                        int offset = 0;
+                        all_processors_mtx.lock();
+                        if (all_processors.count(processor_name) == 0)
                         {
-                            uint8_t shifter[4] = {0, 0, 0, 0};
-                            for (int i = primary_header.total_header_length; i < (int)file.lrit_data.size(); i++)
-                            {
-                                shifter[0] = shifter[1];
-                                shifter[1] = shifter[2];
-                                shifter[2] = shifter[3];
-                                shifter[3] = file.lrit_data[i];
-
-                                if (shifter[0] == 0xFF && shifter[1] == 0x4F && shifter[2] == 0xFF && shifter[3] == 0x51)
-                                {
-                                    offset = i - primary_header.total_header_length - 3;
-                                    break;
-                                }
-                            }
+                            auto p = std::make_shared<satdump::xrit::XRITChannelProcessor>();
+                            p->directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/IMAGES";
+                            all_processors.emplace(processor_name, p);
                         }
+                        all_processors_mtx.unlock();
 
-                        image::Image img2 = image::decompress_j2k_openjp2(&file.lrit_data[primary_header.total_header_length + offset],
-                                                                          file.lrit_data.size() - primary_header.total_header_length - offset);
-
-                        // Rely on the background for bit depth,
-                        // as apparently nothing else works expected.
-                        int max_val = 0;
-                        for (int i = 0; i < (int)img2.size(); i++)
-                            if (img2.get(i) > max_val)
-                                max_val = img2.get(i);
-
-                        if (img2.depth() != 8)
-                            img2 = img2.to8bits();
-                        image::Image img = img2;
-                        if (max_val == 255) // LRIT, 4-bits
-                        {
-                            for (int i = 0; i < (int)img.size(); i++)
-                            {
-                                int v = img2.get(i) << 4;
-                                if (v > 255)
-                                    v = 255;
-                                img.set(i, v);
-                            }
-                        }
-                        else // HRIT full 10-bits
-                        {
-                            for (int i = 0; i < (int)img.size(); i++)
-                            {
-                                int v = img2.get(i) >> 4;
-                                if (v > 255)
-                                    v = 255;
-                                img.set(i, v);
-                            }
-                        }
-
-                        if (img.width() < image_structure_record.columns_count || img.height() < image_structure_record.lines_count)
-                            img.init(8, image_structure_record.columns_count, image_structure_record.lines_count, 1); // Just in case it's corrupted!
-
-                        if (img.depth() != 8)
-                            logger->error("ELEKTRO xRIT JPEG Depth should be 8!");
-
-                        file.lrit_data.erase(file.lrit_data.begin() + primary_header.total_header_length, file.lrit_data.end());
-                        file.lrit_data.insert(file.lrit_data.end(), (uint8_t *)img.raw_data(), (uint8_t *)img.raw_data() + img.height() * img.width());
-                    }
-
-                    if (!std::filesystem::exists(directory + "/IMAGES"))
-                        std::filesystem::create_directory(directory + "/IMAGES");
-
-                    int channel = image_structure_record.channel_number;
-
-                    // Timestamp
-                    std::string timestamp = header_parts[10];
-                    std::tm scanTimestamp;
-                    strptime(timestamp.c_str(), "%Y%m%d%H%M", &scanTimestamp);
-                    scanTimestamp.tm_sec = 0; // No seconds
-
-                    std::string orig_filename = current_filename;
-                    std::string image_id = getHRITImageFilename(&scanTimestamp, image_structure_record.satellite_name.substr(0, 4), channel);
-
-                    if (header_parts[3] == "DISK") // Segmented
-                    {
-                        if (all_wip_images.count(channel) == 0)
-                            all_wip_images.insert({channel, std::make_unique<wip_images>()});
-
-                        std::unique_ptr<wip_images> &wip_img = all_wip_images[channel];
-
-                        if (segmentedDecoders.count(channel) <= 0)
-                        {
-                            segmentedDecoders.insert(std::pair<int, SegmentedLRITImageDecoder>(channel, SegmentedLRITImageDecoder()));
-                            wip_img->imageStatus = IDLE;
-                            wip_img->img_height = 0;
-                            wip_img->img_width = 0;
-                        }
-
-                        wip_img->imageStatus = RECEIVING;
-
-                        SegmentedLRITImageDecoder &segmentedDecoder = segmentedDecoders[channel];
-
-                        if (segmentedDecoder.image_id != image_id)
-                        {
-                            if (segmentedDecoder.image_id != "")
-                            {
-                                current_filename = image_id;
-
-                                wip_img->imageStatus = SAVING;
-                                image::save_img(segmentedDecoder.image, directory + "/IMAGES/" + current_filename);
-                                wip_img->imageStatus = RECEIVING;
-                            }
-
-                            segmentedDecoder = SegmentedLRITImageDecoder(image_structure_record.total_segment_count,
-                                                                         image_structure_record.columns_count,
-                                                                         image_structure_record.lines_count,
-                                                                         image_id);
-                        }
-
-                        image::Image image(&file.lrit_data[primary_header.total_header_length], 8, image_structure_record.columns_count, image_structure_record.lines_count, 1);
-                        segmentedDecoder.pushSegment(image, image_structure_record.current_segment_number - 1, image_structure_record.lines_count);
-
-                        // If the UI is active, update texture
-                        if (wip_img->textureID > 0)
-                        {
-                            // Downscale image
-                            wip_img->img_height = 1000;
-                            wip_img->img_width = 1000;
-                            image::Image imageScaled = segmentedDecoder.image;
-                            imageScaled.resize(wip_img->img_width, wip_img->img_height);
-                            image::image_to_rgba(imageScaled, wip_img->textureBuffer);
-                            wip_img->hasToUpdate = true;
-                        }
-
-                        if (segmentedDecoder.isComplete())
-                        {
-                            current_filename = image_id;
-
-                            wip_img->imageStatus = SAVING;
-                            image::save_img(segmentedDecoder.image, directory + "/IMAGES/" + current_filename);
-                            segmentedDecoder = SegmentedLRITImageDecoder();
-                            wip_img->imageStatus = IDLE;
-                        }
+                        all_processors[processor_name]->push(finfo, file);
                     }
                     else
                     {
-                        std::string img_type = header_parts[3] + "_" + std::to_string(image_structure_record.current_segment_pos);
+                        if (!std::filesystem::exists(directory + "/LRIT"))
+                            std::filesystem::create_directory(directory + "/LRIT");
 
-                        if (!std::filesystem::exists(directory + "/IMAGES/" + img_type))
-                            std::filesystem::create_directory(directory + "/IMAGES/" + img_type);
+                        logger->info("Writing file " + directory + "/LRIT/" + file.filename + "...");
 
-                        image::Image image(&file.lrit_data[primary_header.total_header_length], 8, image_structure_record.columns_count, image_structure_record.lines_count, 1);
-                        image::save_img(image, directory + "/IMAGES/" + img_type + "/" + image_id);
+                        // Write file out
+                        std::ofstream fileo(directory + "/LRIT/" + file.filename, std::ios::binary);
+                        fileo.write((char *)file.lrit_data.data(), file.lrit_data.size());
+                        fileo.close();
                     }
                 }
                 else
@@ -220,5 +92,5 @@ namespace fy4
                 }
             }
         }
-    } // namespace avhrr
-} // namespace metop
+    } // namespace lrit
+} // namespace fy4

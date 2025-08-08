@@ -1,11 +1,10 @@
 #pragma once
 
-#include "common/lrit/lrit_file.h"
-#include "common/lrit/lrit_productizer.h"
-#include "data/lrit_data.h"
 #include "dcs/dcs_decoder.h"
 #include "goes/crc32.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
+#include "xrit/processor/xrit_channel_processor.h"
+#include "xrit/xrit_file.h"
 
 #include <deque>
 #include <set>
@@ -33,7 +32,8 @@ namespace goes
             bool fill_missing;
             int max_fill_lines;
 
-            std::map<int, SegmentedLRITImageDecoder> segmentedDecoders;
+            std::map<std::string, std::shared_ptr<satdump::xrit::XRITChannelProcessor>> all_processors;
+            std::mutex all_processors_mtx;
 
             std::string directory;
 
@@ -56,31 +56,14 @@ namespace goes
 
             std::map<std::string, SZ_com_t> rice_parameters_all;
 
-            struct wip_images
-            {
-                lrit_image_status imageStatus = RECEIVING;
-                int img_width, img_height;
-
-                // UI Stuff
-                bool hasToUpdate = false;
-                unsigned int textureID = 0;
-                uint32_t *textureBuffer;
-            };
-
-            std::map<int, std::unique_ptr<wip_images>> all_wip_images;
-
             void initDCS();
-            void processLRITFile(::lrit::LRITFile &file);
-            void saveLRITFile(::lrit::LRITFile &file, std::string path);
+            void processLRITFile(satdump::xrit::XRITFile &file);
+            void saveLRITFile(satdump::xrit::XRITFile &file, std::string path);
 
             static void loadDCPs();
 
             bool processDCS(uint8_t *data, size_t size);
             void drawDCSUI();
-
-            ::lrit::LRITProductizer productizer;
-
-            void saveImageP(GOESxRITProductMeta meta, image::Image &img);
 
         public:
             GOESLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

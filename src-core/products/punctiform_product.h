@@ -73,6 +73,7 @@ namespace satdump
             virtual void save(std::string directory);
             virtual void load(std::string file);
 
+            PunctiformProduct() { type = "punctiform"; }
             virtual ~PunctiformProduct();
         };
     } // namespace products

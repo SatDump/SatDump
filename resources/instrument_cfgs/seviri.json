@@ -31,9 +31,8 @@
         },
         {
             "name": "AVHRR 124 False Color (Cloud RGB)",
-            "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0, 46.203); cch2=(2, sun_angle_compensated_reflective_radiance, 0, 97.0507); cch4=(9, brightness_temperature, 203, 323); cch1, cch2, 1-cch4",
+            "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0,  17.108);cch2=(2, sun_angle_compensated_reflective_radiance, 0, 27.55577);cch4=(9, brightness_temperature, 203, 323);cch1, cch2, 1-cch4",
             "image": {
-                "white_balance": true,
                 "remove_background": true
             },
             "description": "descriptions/124.md"
@@ -78,6 +77,20 @@
         {
             "name": "MeCIDA T6a Cirrus Detection (transparent)",
             "expression": "cch11=(11, brightness_temperature, 000.000000, 1000.000000);cch8=(8, brightness_temperature, 000.000000, 1000.000000);0, (cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : 0 : 0, (cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : 0 : 0,(cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : 0 : 0",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "HRV Fog RGB",
+            "expression": "cch12=(12, reflective_radiance, 0.000000, 13.5462);cch3=(3, reflective_radiance, 0.000000, 13.91);ref_channel=12;cch3,cch12,cch12",
+            "image": {
+                "remove_background": true
+            }
+        },
+        {
+            "name": "HRV Clouds RGB",
+            "expression": "cch9=(9, brightness_temperature, 323.000000, 203.000000);cch12=(12, reflective_radiance, 0.000000, 14.5462);ref_channel=12;cch12,cch12,cch9",
             "image": {
                 "remove_background": true
             }

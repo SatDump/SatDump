@@ -101,16 +101,19 @@ namespace satdump
 
             /**
              * @brief Get geo projection config in the product, if present
-             * @param channel channel absolute index TODOREWORK
+             * @param channel channel absolute index. If -1 returns global config (for experts!)
              * @return projection config as JSON object
              */
             nlohmann::json get_proj_cfg(int channel)
             {
                 // TODO CHANNEL SPECIFICS
                 auto cfg = contents["projection_cfg"];
-                cfg["transform"] = get_channel_image(channel).ch_transform;
-                cfg["width"] = get_channel_image(channel).image.width();
-                cfg["height"] = get_channel_image(channel).image.height();
+                if (channel != -1)
+                {
+                    cfg["transform"] = get_channel_image(channel).ch_transform;
+                    cfg["width"] = get_channel_image(channel).image.width();
+                    cfg["height"] = get_channel_image(channel).image.height();
+                }
                 if (has_product_timestamp())
                     cfg["proj_timestamp"] = get_product_timestamp();
                 return cfg;
@@ -304,6 +307,7 @@ namespace satdump
             virtual void save(std::string directory);
             virtual void load(std::string file);
 
+            ImageProduct() { type = "image"; }
             virtual ~ImageProduct();
         };
     } // namespace products

@@ -1,10 +1,11 @@
 #include "module_goes_lrit_data_decoder.h"
-#include "common/lrit/lrit_demux.h"
 #include "core/plugin.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
 #include "logger.h"
 #include "lrit_header.h"
+#include "xrit/processor/xrit_channel_processor_render.h"
+#include "xrit/transport/xrit_demux.h"
 #include <filesystem>
 #include <fstream>
 
@@ -15,8 +16,7 @@ namespace goes
         GOESLRITDataDecoderModule::GOESLRITDataDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
             : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters), write_images(parameters["write_images"].get<bool>()),
               write_emwin(parameters["write_emwin"].get<bool>()), write_dcs(parameters["write_dcs"].get<bool>()), write_messages(parameters["write_messages"].get<bool>()),
-              write_unknown(parameters["write_unknown"].get<bool>()), max_fill_lines(parameters["max_fill_lines"].get<int>()),
-              productizer("abi", true, d_output_file_hint.substr(0, d_output_file_hint.rfind('/')))
+              write_unknown(parameters["write_unknown"].get<bool>()), max_fill_lines(parameters["max_fill_lines"].get<int>())
         {
             fill_missing = parameters.contains("fill_missing") ? parameters["fill_missing"].get<bool>() : false;
             parse_dcs = parameters.contains("parse_dcs") ? parameters["parse_dcs"].get<bool>() : false;
@@ -50,18 +50,7 @@ namespace goes
             fsfsm_enable_output = false;
         }
 
-        GOESLRITDataDecoderModule::~GOESLRITDataDecoderModule()
-        {
-            for (auto &decMap : all_wip_images)
-            {
-                auto &dec = decMap.second;
-
-                if (dec->textureID > 0)
-                {
-                    delete[] dec->textureBuffer;
-                }
-            }
-        }
+        GOESLRITDataDecoderModule::~GOESLRITDataDecoderModule() {}
 
         void GOESLRITDataDecoderModule::process()
         {
@@ -82,16 +71,16 @@ namespace goes
 
             logger->info("Demultiplexing and deframing...");
 
-            ::lrit::LRITDemux lrit_demux;
+            satdump::xrit::XRITDemux lrit_demux;
 
-            lrit_demux.onParseHeader = [this](::lrit::LRITFile &file) -> void
+            lrit_demux.onParseHeader = [this](satdump::xrit::XRITFile &file) -> void
             {
                 file.custom_flags.insert({RICE_COMPRESSED, false});
 
                 // Check if this is image data
-                if (file.hasHeader<::lrit::ImageStructureRecord>())
+                if (file.hasHeader<satdump::xrit::ImageStructureRecord>())
                 {
-                    ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>(); //(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
+                    satdump::xrit::ImageStructureRecord image_structure_record = file.getHeader<satdump::xrit::ImageStructureRecord>(); //(&lrit_data[all_headers[ImageStructureRecord::TYPE]]);
                     logger->debug("This is image data. Size " + std::to_string(image_structure_record.columns_count) + "x" + std::to_string(image_structure_record.lines_count));
 
                     NOAALRITHeader noaa_header = file.getHeader<NOAALRITHeader>();
@@ -130,7 +119,7 @@ namespace goes
                 }
             };
 
-            lrit_demux.onProcessData = [this](::lrit::LRITFile &file, ccsds::CCSDSPacket &pkt, bool bad_crc) -> bool
+            lrit_demux.onProcessData = [this](satdump::xrit::XRITFile &file, ccsds::CCSDSPacket &pkt, bool bad_crc) -> bool
             {
                 if (file.custom_flags[RICE_COMPRESSED])
                 {
@@ -158,7 +147,7 @@ namespace goes
                         // There are missing lines
                         if (diff > 1)
                         {
-                            ::lrit::ImageStructureRecord image_structure_record = file.getHeader<::lrit::ImageStructureRecord>();
+                            satdump::xrit::ImageStructureRecord image_structure_record = file.getHeader<satdump::xrit::ImageStructureRecord>();
                             size_t to_fill = rice_parameters.pixels_per_scanline * (diff - 1);
                             size_t max_fill = image_structure_record.columns_count * image_structure_record.lines_count + file.total_header_length - (file.lrit_data.size() + output_size);
 
@@ -189,13 +178,13 @@ namespace goes
                 }
             };
 
-            lrit_demux.onFinalizeData = [this](::lrit::LRITFile &file) -> void
+            lrit_demux.onFinalizeData = [this](satdump::xrit::XRITFile &file) -> void
             {
                 // On image data, make sure buffer contains the right amount of data
-                if (file.hasHeader<::lrit::ImageStructureRecord>() && file.hasHeader<::lrit::PrimaryHeader>() && file.hasHeader<NOAALRITHeader>())
+                if (file.hasHeader<satdump::xrit::ImageStructureRecord>() && file.hasHeader<satdump::xrit::PrimaryHeader>() && file.hasHeader<NOAALRITHeader>())
                 {
-                    ::lrit::PrimaryHeader primary_header = file.getHeader<::lrit::PrimaryHeader>();
-                    ::lrit::ImageStructureRecord image_header = file.getHeader<::lrit::ImageStructureRecord>();
+                    satdump::xrit::PrimaryHeader primary_header = file.getHeader<satdump::xrit::PrimaryHeader>();
+                    satdump::xrit::ImageStructureRecord image_header = file.getHeader<satdump::xrit::ImageStructureRecord>();
                     NOAALRITHeader noaa_header = file.getHeader<NOAALRITHeader>();
 
                     if (primary_header.file_type_code == 0 && (image_header.compression_flag == 0 || (image_header.compression_flag == 1 && noaa_header.noaa_specific_compression == 1)))
@@ -224,7 +213,7 @@ namespace goes
                 // Read buffer
                 read_data((uint8_t *)&cadu, 1024);
 
-                std::vector<::lrit::LRITFile> files = lrit_demux.work(cadu);
+                std::vector<satdump::xrit::XRITFile> files = lrit_demux.work(cadu);
 
                 for (auto &file : files)
                 {
@@ -237,75 +226,17 @@ namespace goes
             cleanup();
             satdump::taskScheduler->del_task("goes_dcp_updater");
 
-            for (auto &segmentedDecoder : segmentedDecoders)
-                if (segmentedDecoder.second.image_id != -1)
-                    saveImageP(segmentedDecoder.second.meta, *segmentedDecoder.second.image);
+            for (auto &p : all_processors)
+                p.second->flush();
         }
 
         void GOESLRITDataDecoderModule::drawUI(bool window)
         {
             ImGui::Begin("GOES HRIT Data Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
-            if (ImGui::BeginTabBar("Images TabBar", ImGuiTabBarFlags_None))
-            {
-                bool hasImage = false;
-
-                for (auto &decMap : all_wip_images)
-                {
-                    auto &dec = decMap.second;
-
-                    if (dec->textureID == 0)
-                    {
-                        dec->textureID = makeImageTexture();
-                        dec->textureBuffer = new uint32_t[1000 * 1000];
-                        memset(dec->textureBuffer, 0, sizeof(uint32_t) * 1000 * 1000);
-                        dec->hasToUpdate = true;
-                    }
-
-                    if (dec->imageStatus != IDLE)
-                    {
-                        if (dec->hasToUpdate)
-                        {
-                            dec->hasToUpdate = false;
-                            updateImageTexture(dec->textureID, dec->textureBuffer, 1000, 1000);
-                        }
-
-                        hasImage = true;
-                        int vcid = decMap.first > 63 ? 60 : decMap.first; // Himawari images use VCID > 63 internally
-
-                        if (ImGui::BeginTabItem(std::string("VCID " + std::to_string(vcid)).c_str()))
-                        {
-                            ImGui::Image((void *)(intptr_t)dec->textureID, {200 * ui_scale, 200 * ui_scale});
-                            ImGui::SameLine();
-                            ImGui::BeginGroup();
-                            ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
-                            if (dec->imageStatus == SAVING)
-                                ImGui::TextColored(style::theme.green, "Writing image...");
-                            else if (dec->imageStatus == RECEIVING)
-                                ImGui::TextColored(style::theme.orange, "Receiving...");
-                            else
-                                ImGui::TextColored(style::theme.red, "Idle (Image)...");
-                            ImGui::EndGroup();
-                            ImGui::EndTabItem();
-                        }
-                    }
-                }
-
-                if (!hasImage) // Add empty tab if there is no image yet
-                {
-                    if (ImGui::BeginTabItem("No image yet"))
-                    {
-                        ImGui::Dummy({200 * ui_scale, 200 * ui_scale});
-                        ImGui::SameLine();
-                        ImGui::BeginGroup();
-                        ImGui::Button("Status", {200 * ui_scale, 20 * ui_scale});
-                        ImGui::TextColored(style::theme.red, "Idle (Image)...");
-                        ImGui::EndGroup();
-                        ImGui::EndTabItem();
-                    }
-                }
-            }
-            ImGui::EndTabBar();
+            all_processors_mtx.lock();
+            satdump::xrit::renderAllTabsFromProcessors(all_processors);
+            all_processors_mtx.unlock();
 
             drawProgressBar();
 

@@ -1,7 +1,7 @@
 #include "punctiform_product.h"
-#include "logger.h"
 #include "common/tracking/tracking.h"
 #include "core/exception.h"
+#include "logger.h"
 
 namespace satdump
 {
@@ -9,8 +9,6 @@ namespace satdump
     {
         void PunctiformProduct::save(std::string directory)
         {
-            type = "punctiform"; // TODOREWORK rename all this...
-
             contents["data"] = data;
 
             Product::save(directory);
@@ -54,5 +52,5 @@ namespace satdump
             if (satellite_tracker != nullptr)
                 delete (satdump::SatelliteTracker *)satellite_tracker;
         }
-    }
-}
+    } // namespace products
+} // namespace satdump

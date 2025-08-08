@@ -17,8 +17,6 @@ namespace satdump
     {
         void ImageProduct::save(std::string directory)
         {
-            type = "image";
-
             if (save_as_matrix)
                 contents["save_as_matrix"] = save_as_matrix;
 
@@ -82,6 +80,8 @@ namespace satdump
         {
             Product::load(file);
             std::string directory = std::filesystem::path(file).parent_path().string();
+            if (directory.size() == 0)
+                directory = ".";
 
             if (contents.contains("save_as_matrix"))
                 save_as_matrix = contents["save_as_matrix"].get<bool>();
@@ -195,7 +195,7 @@ namespace satdump
             }
 
             if (images.size() == 0)
-                throw satdump_exception("ImageProduct with no images. Shouldn't happen!");
+                logger->trace("ImageProduct with no images. Shouldn't happen!");
         }
 
         ImageProduct::~ImageProduct() {}

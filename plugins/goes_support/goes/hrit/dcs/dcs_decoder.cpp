@@ -5,7 +5,7 @@
 #include "common/utils.h"
 #include "core/plugin.h"
 #include "utils/http.h"
-#include "common/lrit/crc_table.h"
+#include "xrit/transport/crc_table.h"
 #include "nlohmann/json_utils.h"
 #include "logger.h"
 #include "core/resources.h"
@@ -411,7 +411,7 @@ namespace goes
 
                 // Calculate Block CRC
                 for (uint16_t i = 0; i < block_length - 2; i++)
-                    block_crc = (block_crc << 8) ^ lrit::crc_table[(block_crc >> 8) ^ (uint16_t)block_ptr[i]];
+                    block_crc = (block_crc << 8) ^ satdump::xrit::crc_table[(block_crc >> 8) ^ (uint16_t)block_ptr[i]];
                 bool message_crc_pass = (uint16_t)(block_ptr[block_length - 1] << 8 | block_ptr[block_length - 2]) == block_crc;
 
                 // DCP Message Processing

@@ -5,7 +5,7 @@
 // Slightly modified version of the original,
 // to return how many bytes were consumed as well,
 // so we can iterate over a few concatenated files
-int BZ2_bzBuffToBuffDecompress_M(char* dest,
+inline int BZ2_bzBuffToBuffDecompress_M(char* dest,
     unsigned int* destLen,
     char* source,
     unsigned int sourceLen,

@@ -216,6 +216,12 @@ namespace satdump
                 {
                     if (ImGui::BeginTabBar("###imageproducttuning", ImGuiTabBarFlags_FittingPolicyScroll))
                     {
+                        if (product->has_calibration() && ImGui::BeginTabItem("Calib"))
+                        {
+                            widgets::JSONTreeEditor(product->contents["calibration"], "##calibcfgeditor");
+                            ImGui::EndTabItem();
+                        }
+
                         if (product->has_proj_cfg() && ImGui::BeginTabItem("Proj"))
                         {
                             widgets::JSONTreeEditor(product->contents["projection_cfg"], "##projcfgeditor");

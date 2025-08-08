@@ -4,7 +4,11 @@ namespace satdump
 {
     namespace handlers
     {
-        TrashHandler::TrashHandler() { handler_tree_icon = u8"\uf014"; }
+        TrashHandler::TrashHandler()
+        {
+            handler_tree_icon = u8"\uf014";
+            setCanBeSelected(false);
+        }
 
         TrashHandler::~TrashHandler() {}
 

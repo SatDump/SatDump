@@ -115,11 +115,13 @@ namespace satdump
 
             if (offline_en)
             {
-                ImGui::SetNextWindowSize({600 * ui_scale, 0});
-                if (ImGui::Begin("Processing", &offline_en, ImGuiWindowFlags_AlwaysAutoResize))
+                // ImGui::SetNextWindowSize({600 * ui_scale, 0});
+                ImGui::SetNextWindowPos({0, 0});
+                ImGui::SetNextWindowSize({(float)dims.first, (float)dims.second});
+                if (ImGui::Begin("Start Processing", &offline_en, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse))
                 {
                     offline::render();
-                    ImGui::EndPopup();
+                    ImGui::End();
                 }
             }
 

@@ -5,6 +5,7 @@
 #include "handlers/handler.h"
 
 #include "imgui/dialogs/widget.h"
+#include <cstdint>
 #include <memory>
 
 namespace satdump
@@ -36,7 +37,7 @@ namespace satdump
 
         struct ExplorerRequestFileLoad
         {
-            std::string file_name;
+            std::string path;
             std::vector<std::pair<std::string, std::function<void(std::string, ExplorerApplication *)>>> &loaders;
         };
 
@@ -74,6 +75,10 @@ namespace satdump
             TaskQueue file_open_queue;
 
             std::string quickOpenString;
+
+        protected:
+            intptr_t satdump_logo_texture = 0;
+            std::string tip_of_the_day = "The tip of the day is that this tip failed to load... Sorry about that.";
 
         public:
             // TODOREWORK last opened by time
