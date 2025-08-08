@@ -27,6 +27,7 @@
         "seviri",
         "slstr_nadir",
         "slstr_offset",
-        "olci"
+        "olci",
+        "ami"
     ]
 }

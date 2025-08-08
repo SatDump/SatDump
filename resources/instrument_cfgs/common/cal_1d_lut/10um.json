@@ -147,6 +147,7 @@
         "slstr_offset",
         "goesn_imager",
         "iasi_img",
-        "msu_gs"
+        "msu_gs",
+        "ami"
     ]
 }

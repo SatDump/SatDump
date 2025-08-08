@@ -21,6 +21,7 @@
         "seviri",
         "slstr_nadir",
         "slstr_offset",
-        "msu_gs"
+        "msu_gs",
+        "ami"
     ]
 }
