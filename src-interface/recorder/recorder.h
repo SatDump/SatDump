@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/config.h"
 #include "handlers/handler.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
@@ -220,7 +221,11 @@ namespace satdump
         RecorderApplication();
         ~RecorderApplication();
 
-        void save_settings() { satdump_cfg.main_cfg["user"]["recorder_state"] = serialize_config(); }
+        void save_settings()
+        {
+            satdump_cfg.main_cfg["user"]["recorder_state"] = serialize_config();
+            satdump_cfg.saveUser();
+        }
 
     public:
         std::string getID() { return "recorder"; }
