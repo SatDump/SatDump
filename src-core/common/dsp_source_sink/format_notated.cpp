@@ -1,13 +1,20 @@
 #include "format_notated.h"
 #include <cstdint>
-#include <sstream>
 #include <iomanip>
-#include <vector>
+#include <sstream>
 #include <type_traits>
+#include <vector>
 
 template <typename T>
-std::string format_notated(T val, std::string units, int num_decimals)
+std::string format_notated(T val, std::string units, int num_decimals, bool can_go_below_one)
 {
+    if constexpr (std::is_same<T, int>::value)
+        can_go_below_one = false;
+    if constexpr (std::is_same<T, uint64_t>::value)
+        can_go_below_one = false;
+    if constexpr (std::is_same<T, int64_t>::value)
+        can_go_below_one = false;
+
     std::ostringstream render_stream;
     double display_double;
     std::string display_suffix;
@@ -20,17 +27,17 @@ std::string format_notated(T val, std::string units, int num_decimals)
     else
         abs_val = std::abs(val);
 
-    if (abs_val < 1e-6)
+    if (abs_val < 1e-6 && can_go_below_one)
     {
         display_double = val / 1e-9;
         display_suffix = format_spacing + "n" + units;
     }
-    else if (abs_val < 1e-3)
+    else if (abs_val < 1e-3 && can_go_below_one)
     {
         display_double = val / 1e-6;
         display_suffix = format_spacing + "µ" + units;
     }
-    else if (abs_val < 1e0)
+    else if (abs_val < 1e0 && can_go_below_one)
     {
         display_double = val / 1e-3;
         display_suffix = format_spacing + "m" + units;
@@ -73,8 +80,8 @@ std::string format_notated(T val, std::string units, int num_decimals)
     return render_stream.str();
 }
 
-template std::string format_notated(uint64_t, std::string, int);
-template std::string format_notated(int64_t, std::string, int);
-template std::string format_notated(int, std::string, int);
-template std::string format_notated(float, std::string, int);
-template std::string format_notated(double, std::string, int);
+template std::string format_notated(uint64_t, std::string, int, bool);
+template std::string format_notated(int64_t, std::string, int, bool);
+template std::string format_notated(int, std::string, int, bool);
+template std::string format_notated(float, std::string, int, bool);
+template std::string format_notated(double, std::string, int, bool);
