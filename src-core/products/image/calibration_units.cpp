@@ -11,8 +11,8 @@ namespace satdump
     {
         std::map<std::string, UnitInfo> unit_registry = {
             {CALIBRATION_ID_SUN_ANGLE, {"Deg", "Sun Angle"}},
-            {CALIBRATION_ID_ALBEDO, {"NoUnit", "Albedo"}},
-            {CALIBRATION_ID_SUN_ANGLE_COMPENSATED_ALBEDO, {"NoUnit", "Sun Angle Compensated Albedo"}},
+            {CALIBRATION_ID_ALBEDO, {"^-1", "Albedo"}},
+            {CALIBRATION_ID_SUN_ANGLE_COMPENSATED_ALBEDO, {"^-1", "Sun Angle Compensated Albedo"}},
             {CALIBRATION_ID_EMISSIVE_RADIANCE, {CALIBRATION_RADIANCE_UNIT, "Emissive Radiance"}},
             {CALIBRATION_ID_REFLECTIVE_RADIANCE, {CALIBRATION_RADIANCE_UNIT, "Reflective Radiance"}},
             {CALIBRATION_ID_SUN_ANGLE_COMPENSATED_REFLECTIVE_RADIANCE, {CALIBRATION_RADIANCE_UNIT, "Sun Angle Compensated Reflective Radiance"}},
