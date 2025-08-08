@@ -80,6 +80,13 @@
             "image": {
                 "remove_background": true
             }
+        },
+        {
+            "name": "HRV Cloud RGB",
+            "expression": "cch12=(12, reflective_radiance, 0.000000, 13.5462);cch3=(3, reflective_radiance, 0.000000, 13.91);ref_channel=12;cch3,cch12,cch12",
+            "image": {
+                "remove_background": true
+            }
         }
     ],
     "default": {
