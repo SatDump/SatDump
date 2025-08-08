@@ -222,6 +222,8 @@ namespace satdump
 
     RecorderApplication::~RecorderApplication()
     {
+        save_settings();
+
     retry_vfo:
         for (auto &vfo : vfo_list)
         {
