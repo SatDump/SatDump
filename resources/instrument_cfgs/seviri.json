@@ -87,6 +87,13 @@
             "image": {
                 "remove_background": true
             }
+        },
+        {
+            "name": "HRV Clouds RGB",
+            "expression": "cch9=(9, brightness_temperature, 323.000000, 203.000000);cch12=(12, reflective_radiance, 0.000000, 14.5462);ref_channel=12;cch12,cch12,cch9",
+            "image": {
+                "remove_background": true
+            }
         }
     ],
     "default": {

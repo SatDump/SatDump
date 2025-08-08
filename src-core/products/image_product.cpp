@@ -80,6 +80,8 @@ namespace satdump
         {
             Product::load(file);
             std::string directory = std::filesystem::path(file).parent_path().string();
+            if (directory.size() == 0)
+                directory = ".";
 
             if (contents.contains("save_as_matrix"))
                 save_as_matrix = contents["save_as_matrix"].get<bool>();
