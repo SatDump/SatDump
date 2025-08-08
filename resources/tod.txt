@@ -1,0 +1,8 @@
+Did you know that you can load official products directly from the archives of EUMETSAT with the Official Loader?
+Did you know that you can drag and drop a GeoTIFF file on SatDump, to have it available when projecting?
+Did you know that you can drag and drop a shapefile on SatDump, to have it available when projecting?
+Did you know that shapefiles always project on top of imagery layers and don't need to be moved to the top manually?
+Did you know that SatDump supports executing an AngelScript script when a pipeline is done processing? This could be useful to archive a satellite pass!
+Did you know that you can drag and drop HDF files from FengYun-2, -3 and -4 official data?
+Did you know that SatDump has a full-blown LUT generator to help you develop your own LUTs?
+Did you know you can change the theme for SatDump in the settings?

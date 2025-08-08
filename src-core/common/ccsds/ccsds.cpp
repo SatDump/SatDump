@@ -1,15 +1,13 @@
 #include "ccsds.h"
-#include <cstdint>
 #include <cmath>
+#include <cstdint>
 #include <cstring>
 
 #include <cstdio>
 
 namespace ccsds
 {
-    CCSDSHeader::CCSDSHeader()
-    {
-    }
+    CCSDSHeader::CCSDSHeader() {}
 
     CCSDSHeader::CCSDSHeader(uint8_t *rawi)
     {
@@ -40,10 +38,7 @@ namespace ccsds
     }
 
     // Parse CCSDS header
-    CCSDSHeader parseCCSDSHeader(uint8_t *header)
-    {
-        return CCSDSHeader(header);
-    }
+    CCSDSHeader parseCCSDSHeader(uint8_t *header) { return CCSDSHeader(header); }
 
     CCSDSHeader::CCSDSHeader(const CCSDSHeader &v) noexcept
     {
@@ -113,6 +108,30 @@ namespace ccsds
         return crc == crc2;
     }
 
+    bool crcCheckHLDC32(CCSDSPacket &pkt)
+    {
+        uint32_t crc2 = pkt.payload[pkt.payload.size() - 4] << 24 | pkt.payload[pkt.payload.size() - 3] << 16 | pkt.payload[pkt.payload.size() - 2] << 8 | pkt.payload[pkt.payload.size() - 1];
+        uint32_t crc = 0xFFFFFFFF;
+
+        const int HDLC_CRC_GEN = 0xEDB88320;
+        for (int j = 0; j < (int)pkt.payload.size() + 6 - 4; j++)
+        {
+            uint8_t val = j < 6 ? pkt.header.raw[j] : pkt.payload[j - 6];
+
+            unsigned short dataByte = static_cast<unsigned short>(val) << 8;
+            for (int i = 8; i > 0; i--)
+            {
+                if ((dataByte ^ crc) & 0x80000000)
+                    crc = (crc << 1) ^ HDLC_CRC_GEN;
+                else
+                    crc <<= 1;
+                dataByte <<= 1;
+            }
+        }
+
+        return crc ^ 0xFFFFFFFF == crc2;
+    }
+
     bool crcCheckVerticalParity(CCSDSPacket &pkt)
     {
         uint16_t crc2 = pkt.payload[pkt.payload.size() - 2] << 8 | pkt.payload[pkt.payload.size() - 1];
@@ -129,4 +148,4 @@ namespace ccsds
 
         return crc2 == checksum;
     }
-} // namespace proba
+} // namespace ccsds

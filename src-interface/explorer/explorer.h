@@ -78,6 +78,7 @@ namespace satdump
 
         protected:
             intptr_t satdump_logo_texture = 0;
+            std::string tip_of_the_day = "The tip of the day is that this tip failed to load... Sorry about that.";
 
         public:
             // TODOREWORK last opened by time

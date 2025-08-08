@@ -14,10 +14,10 @@ if(${HDF5_FOUND}) # TODOREWORK Maybe actually yes ANDROID?
     file_utils/*.cpp
     fcidecomp/*.c
     fcidecomp/*.cpp
-    hsd2pro/*.cpp
-    off2pro/*.cpp
-    nc2pro/*.cpp
-    nat2pro/*.cpp
+    processors/*.cpp
+    old/*.cpp
+    procfile.cpp
+    product_info.cpp
     new/*.cpp)
 
   add_library(official_products_support SHARED

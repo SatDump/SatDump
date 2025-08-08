@@ -25,16 +25,23 @@ namespace satdump
 
             if (is_zip)
             {
-                satdump::utils::ZipFilesIterator fit(fpath);
-                std::shared_ptr<satdump::utils::FilesIteratorItem> f;
+                // Test if the ZIP itself is a product
+                std::shared_ptr<satdump::utils::FilesIteratorItem> _f = std::make_shared<satdump::utils::FolderFileIteratorItem>(fpath);
+                toproc_info = parseOfficialInfo(_f);
 
-                while (fit.getNext(f))
+                if (toproc_info.type != PRODUCT_NONE)
                 {
-                    if (f)
+                    satdump::utils::ZipFilesIterator fit(fpath);
+                    std::shared_ptr<satdump::utils::FilesIteratorItem> f;
+
+                    while (fit.getNext(f))
                     {
-                        toproc_info = parseOfficialInfo(f);
-                        if (toproc_info.type != satdump::official::PRODUCT_NONE)
-                            break;
+                        if (f)
+                        {
+                            toproc_info = parseOfficialInfo(f);
+                            if (toproc_info.type != satdump::official::PRODUCT_NONE)
+                                break;
+                        }
                     }
                 }
             }

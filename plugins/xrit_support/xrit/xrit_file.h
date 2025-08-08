@@ -169,7 +169,7 @@ namespace satdump
                 return all_headers.count(T::TYPE);
             }
 
-            void parseHeaders();
+            void parseHeaders(bool safe = false);
         };
     } // namespace xrit
 } // namespace satdump

@@ -8,6 +8,7 @@
 #include "../segment_decoder.h"
 #include "image/image.h"
 #include "utils/string.h"
+#include "xrit/gk2a/gk2a_headers.h"
 #include "xrit/identify.h"
 #include "xrit/processor/get_img.h"
 #include "xrit/xrit_file.h"
@@ -32,7 +33,8 @@ namespace satdump
                 seg_count = max_seg;
                 segments_done.resize(seg_count, false);
 
-                image = image::Image(bit_depth, segment_width, segment_height * max_seg, 1);
+                //  TODOREWORKXRIT check we ONLY get FD?
+                image = image::Image(bit_depth, segment_width, segment_width, 1);
                 seg_height = segment_height;
                 seg_width = segment_width;
 
@@ -43,22 +45,22 @@ namespace satdump
             {
                 ImageStructureRecord image_structure_record = file.getHeader<ImageStructureRecord>();
 
-                init(image_structure_record.bit_per_pixel > 8 ? 16 : 8, //
-                     10,                                                //
-                     image_structure_record.columns_count,              //
+                init(image_structure_record.bit_per_pixel > 8 ? 16 : 8,                                                                                        //
+                     file.hasHeader<gk2a::ImageSegmentationIdentification>() ? file.getHeader<gk2a::ImageSegmentationIdentification>().total_segments_nb : 10, //
+                     image_structure_record.columns_count,                                                                                                     //
                      image_structure_record.lines_count);
             }
 
-            void pushSegment(image::Image &data, int segc)
+            void pushSegment(image::Image &data, int segc, int pos)
             {
-                if (segc >= seg_count || segc < 0)
+                if (segc >= seg_count || segc < 0 || pos < 0)
                     return;
-                if (data.size() != seg_height * seg_width)
+                if (data.height() + pos > image.height() || data.width() != seg_width)
                 {
-                    logger->error("Image of the wrong size!");
+                    logger->error("Image of the wrong size! %dx%d | %dx%d | %d/%d", seg_width, seg_height, data.width(), data.height(), data.height() + pos, image.height());
                     return;
                 }
-                image::imemcpy(image, (seg_height * seg_width) * segc, data, 0, seg_height * seg_width);
+                image::imemcpy(image, seg_width * pos, data, 0, data.size());
                 segments_done[segc] = true;
             }
 
@@ -70,14 +72,19 @@ namespace satdump
 
                 int seg_number = 0;
                 if (header_parts.size() >= 7)
+                {
                     seg_number = std::stoi(header_parts[6].substr(0, header_parts.size() - 4)) - 1;
+                }
                 else
                 {
                     logger->critical("Could not parse segment number from filename!");
                     return;
                 }
 
-                pushSegment(img, seg_number);
+                if (file.hasHeader<gk2a::ImageSegmentationIdentification>())
+                    pushSegment(img, seg_number, file.getHeader<gk2a::ImageSegmentationIdentification>().line_nb - 1);
+                else
+                    logger->error("Segment header missing!");
             }
 
             bool isComplete()

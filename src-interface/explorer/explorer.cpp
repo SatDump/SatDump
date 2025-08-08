@@ -34,6 +34,8 @@
 #include "main_ui.h"
 #include <cstddef>
 #include <cstdint>
+#include <fstream>
+#include <string>
 
 namespace satdump
 {
@@ -74,6 +76,18 @@ namespace satdump
                     else
                         v.h = nullptr;
                 });
+
+            // Load if the day if we can, "randomly"
+            if (resources::resourceExists("tod.txt"))
+            {
+                std::ifstream message_of_the_day_f(resources::getResourcePath("tod.txt"));
+                std::vector<std::string> lines;
+                std::string l;
+                while (std::getline(message_of_the_day_f, l))
+                    lines.push_back(l);
+                int this_line = time(0) % lines.size();
+                tip_of_the_day = lines[this_line];
+            }
         }
 
         ExplorerApplication::~ExplorerApplication() {}
@@ -308,17 +322,46 @@ namespace satdump
                 float scale = backend::device_scale;
 
                 std::string title = "Welcome to SatDump!";
-                std::string slogan1 = "You can start by adding a recorder, starting";
-                std::string slogan2 = "processing or just dragging a file.";
 
                 {
                     ImGui::PushFont(style::bigFont);
                     ImVec2 title_size = ImGui::CalcTextSize(title.c_str());
-                    ImGui::SetCursorPos({((float)dims.first / 2) - (75 * scale), ((float)dims.second / 3.5f) - title_size.y - (90 * scale)});
+                    ImGui::SetCursorPos({((float)dims.first / 2) - (75 * scale), ((float)dims.second / 2.f) - title_size.y - (90 * scale)});
                     ImGui::Image((void *)satdump_logo_texture, ImVec2(150 * scale, 150 * scale));
-                    ImGui::SetCursorPos({((float)dims.first / 2) - (title_size.x / 2), ((float)dims.second / 3.5f) - title_size.y + (75 * scale)});
+                    ImGui::SetCursorPos({((float)dims.first / 2) - (title_size.x / 2), ((float)dims.second / 2.0f) - title_size.y + (75 * scale)});
                     ImGui::TextUnformatted(title.c_str());
                     ImGui::PopFont();
+
+                    float last_pos = 0;
+                    for (int p = 0, i = 0; p < tip_of_the_day.length();)
+                    {
+                        int cutLength = 0;
+                        for (int pp = p + 50; pp < tip_of_the_day.length(); pp++)
+                        {
+                            cutLength = pp;
+                            if (tip_of_the_day[pp] == ' ')
+                                break;
+                        }
+                        std::string line = tip_of_the_day.substr(p, cutLength - p);
+                        ImVec2 line_size = ImGui::CalcTextSize(line.c_str());
+                        last_pos = ((float)dims.second / 2) + ((80 + i * 20) * scale);
+                        ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), last_pos});
+                        ImGui::TextDisabled("%s", line.c_str());
+                        p += line.size();
+                        i++;
+                    }
+
+                    {
+                        ImVec2 line_size = ImGui::CalcTextSize("Start Processing");
+                        ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), last_pos + (26 * 1) * scale});
+                        ImGui::Button("Start Processing");
+                    }
+
+                    {
+                        ImVec2 line_size = ImGui::CalcTextSize("Add Recorder");
+                        ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), last_pos + (26 * 2) * scale});
+                        ImGui::Button("Add Recorder");
+                    }
 
                     // ImVec2 slogan_size1 = ImGui::CalcTextSize(slogan1.c_str());
                     // ImGui::SetCursorPos({((float)dims.first / 2) - (slogan_size1.x / 2), ((float)dims.second / 2) + (80 * scale)});
@@ -328,28 +371,30 @@ namespace satdump
                     // ImGui::SetCursorPos({((float)dims.first / 2) - (slogan_size2.x / 2), ((float)dims.second / 2) + (100 * scale)});
                     // ImGui::TextUnformatted(slogan2.c_str());
 
-                    ImGui::SetCursorPos({20 * ui_scale, ((float)dims.second / 2.2f)});
-                    float table_height = dims.second - 250 * ui_scale;
-                    if (ImGui::BeginTable("##dscovrinstrumentstable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg, {ImGui::GetWindowWidth() - 40 * ui_scale, table_height}))
-                    {
-                        ImGui::TableNextRow(0, table_height / 2);
-                        ImGui::TableSetColumnIndex(0);
-                        ImGui::Text("Shortcuts");
+                    // ImGui::SetCursorPos({20 * ui_scale, ((float)dims.second / 2.2f)});
+                    // float table_height = dims.second - 250 * ui_scale;
+                    // if (ImGui::BeginTable("##dscovrinstrumentstable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg, {ImGui::GetWindowWidth() - 40 * ui_scale, table_height}))
+                    // {
+                    //     ImGui::TableNextRow(0, table_height / 2);
+                    //     ImGui::TableSetColumnIndex(0);
+                    //     ImGui::Text("Shortcuts");
+                    //     ImGui::Button("Add Recorder");
+                    //     ImGui::Button("Open File");
 
-                        ImGui::TableSetColumnIndex(1);
-                        ImGui::Text("Tip of the day");
-                        ImGui::Text("Did you know you could know that you could");
-                        ImGui::Text("know that you could know how to know to be");
-                        ImGui::Text("able to know?");
+                    //     ImGui::TableSetColumnIndex(1);
+                    //     ImGui::Text("Tip of the day");
+                    //     ImGui::Text("Did you know you could know that you could");
+                    //     ImGui::Text("know that you could know how to know to be");
+                    //     ImGui::Text("able to know?");
 
-                        ImGui::TableNextRow(0, table_height / 2);
-                        ImGui::TableSetColumnIndex(0);
-                        ImGui::Text("Something else!?");
-                        ImGui::TableSetColumnIndex(1);
-                        ImGui::Text("Yes, why not?");
+                    //     ImGui::TableNextRow(0, table_height / 2);
+                    //     ImGui::TableSetColumnIndex(0);
+                    //     ImGui::Text("Something else!?");
+                    //     ImGui::TableSetColumnIndex(1);
+                    //     ImGui::Text("Yes, why not?");
 
-                        ImGui::EndTable();
-                    }
+                    //     ImGui::EndTable();
+                    // }
                 }
 #endif
 

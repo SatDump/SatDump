@@ -6,7 +6,7 @@ namespace satdump
 {
     namespace xrit
     {
-        void XRITFile::parseHeaders()
+        void XRITFile::parseHeaders(bool safe)
         {
             PrimaryHeader primary_header = getHeader<PrimaryHeader>();
 
@@ -20,8 +20,9 @@ namespace satdump
                 if (record_length == 0)
                     break;
 
-                // if (i + record_length >= lrit_data.size())
-                //     break; TODOREWORK???
+                if (safe)
+                    if (i + record_length >= lrit_data.size())
+                        break; //  TODOREWORK ? ? ?
 
                 all_headers.emplace(std::pair<int, int>(type, i));
 
@@ -32,16 +33,22 @@ namespace satdump
             if (all_headers.count(AnnotationRecord::TYPE) > 0)
             {
                 AnnotationRecord annotation_record = getHeader<AnnotationRecord>();
-
-                filename = std::string(annotation_record.annotation_text.data());
-
-                std::replace(filename.begin(), filename.end(), '/', '_');  // Safety
-                std::replace(filename.begin(), filename.end(), '\\', '_'); // Safety
-
-                for (char &c : filename) // Strip invalid chars
+                try
                 {
-                    if (c < 33)
-                        c = '_';
+                    filename = std::string(annotation_record.annotation_text.data());
+
+                    std::replace(filename.begin(), filename.end(), '/', '_');  // Safety
+                    std::replace(filename.begin(), filename.end(), '\\', '_'); // Safety
+
+                    for (char &c : filename) // Strip invalid chars
+                    {
+                        if (c < 33)
+                            c = '_';
+                    }
+                }
+                catch (std::exception &e)
+                {
+                    filename.clear();
                 }
             }
 
