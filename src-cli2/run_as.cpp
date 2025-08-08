@@ -62,6 +62,25 @@ namespace satdump
         }
     }
 
+    void TranslateException(asIScriptContext *ctx, void * /*userParam*/)
+    {
+        try
+        {
+            // Retrow the original exception so we can catch it again
+            throw;
+        }
+        catch (std::exception &e)
+        {
+            // Tell the VM the type of exception that occurred
+            ctx->SetException(e.what());
+        }
+        catch (...)
+        {
+            // The callback must not allow any exception to be thrown, but it is not necessary
+            // to explicitly set an exception string if the default exception string is sufficient
+        }
+    }
+
     void ScriptCmdHandler::reg(CLI::App *app)
     {
         CLI::App *sub_run = app->add_subcommand("run", "Run a script");
@@ -91,6 +110,7 @@ namespace satdump
         diags.lint = lint;
         diags.all_diags["file"] = file;
         engine->SetMessageCallback(asFUNCTION(MessageCallback), &diags, asCALL_CDECL);
+        engine->SetTranslateAppExceptionCallback(asFUNCTION(TranslateException), 0, asCALL_CDECL);
 
         // AngelScript doesn't have a built-in string type, as there is no definite standard
         // string type for C++ applications. Every developer is free to register its own string type.
