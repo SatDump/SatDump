@@ -68,10 +68,6 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
     {
         logger->info("Loading plugins from " + plugins_path);
 
-#ifndef _WIN32
-        setenv("LD_LIBRARY_PATH", plugins_path.c_str(), 1);
-#endif
-
         std::vector<std::string> failed_plugins;
 
         std::filesystem::recursive_directory_iterator pluginIterator(plugins_path);
