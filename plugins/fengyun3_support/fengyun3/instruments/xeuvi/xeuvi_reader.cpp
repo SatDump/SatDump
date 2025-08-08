@@ -1,23 +1,18 @@
 #include "xeuvi_reader.h"
-#include "logger.h"
 #include "image/io.h"
+#include "logger.h"
 
 namespace fengyun3
 {
     namespace xeuvi
     {
-        XEUVIReader::XEUVIReader(std::string directory) : directory(directory)
-        {
-            image.init(16, 1073, 1035, 1);
-        }
+        XEUVIReader::XEUVIReader(std::string directory) : directory(directory) { image.init(16, 1073, 1035, 1); }
 
-        XEUVIReader::~XEUVIReader()
-        {
-        }
+        XEUVIReader::~XEUVIReader() {}
 
         void XEUVIReader::writeCurrent()
         {
-            image::save_img(image, std::string(directory + "/XEUVI_" + std::to_string(images_count + 1)).c_str());
+            image::save_img(image, directory + "/XEUVI_" + std::to_string(images_count + 1) + ".png");
             image.fill(0);
             images_count++;
         }
@@ -51,5 +46,5 @@ namespace fengyun3
                         image.set(cnt * 1073 + i, packet[34 + i * 2 + 0] << 8 | packet[34 + i * 2 + 1]);
             }
         }
-    } // namespace virr
-} // namespace fengyun
+    } // namespace xeuvi
+} // namespace fengyun3
