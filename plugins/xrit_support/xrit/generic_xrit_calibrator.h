@@ -17,12 +17,12 @@ namespace satdump
         {
         private:
             nlohmann::json calib_cfg;
-            std::vector<double> wavenumbers;
-            std::vector<bool> calib_type_map;
-            std::vector<int> new_max_val;
-            int product_bit_depth;
+            std::unordered_map<int, double> wavenumbers;
+            std::unordered_map<int, bool> calib_type_map;
+            std::unordered_map<int, int> new_max_val;
+            std::unordered_map<int, int> product_bit_depth;
 
-            std::vector<std::pair<std::shared_ptr<satdump::projection::VizGeorefSpline2D>, std::unordered_map<int, float>>> lut_for_channels;
+            std::unordered_map<int, std::pair<std::shared_ptr<satdump::projection::VizGeorefSpline2D>, std::unordered_map<int, float>>> lut_for_channels;
 
         public:
             GenericxRITCalibrator(satdump::products::ImageProduct *p, nlohmann::json c) : satdump::products::ImageCalibrator(p, c)
@@ -30,14 +30,14 @@ namespace satdump
                 calib_cfg = d_cfg;
                 for (size_t i = 0; i < d_pro->images.size(); i++)
                 {
-                    wavenumbers.push_back(d_pro->images[i].wavenumber);
-                    calib_type_map.push_back(d_pro->images[i].calibration_type == CALIBRATION_ID_EMISSIVE_RADIANCE);
+                    wavenumbers.emplace(d_pro->images[i].abs_index, d_pro->images[i].wavenumber);
+                    calib_type_map.emplace(d_pro->images[i].abs_index, d_pro->images[i].calibration_type == CALIBRATION_ID_EMISSIVE_RADIANCE);
 
-                    product_bit_depth = pow(2, d_pro->images[i].bit_depth) - 1;
+                    product_bit_depth.emplace(d_pro->images[i].abs_index, pow(2, d_pro->images[i].bit_depth) - 1);
                     if (!calib_cfg["bits_for_calib"][d_pro->images[i].channel_name].is_null())
-                        new_max_val.push_back(pow(2, calib_cfg["bits_for_calib"][d_pro->images[i].channel_name].get<int>()) - 1);
+                        new_max_val.emplace(d_pro->images[i].abs_index, pow(2, calib_cfg["bits_for_calib"][d_pro->images[i].channel_name].get<int>()) - 1);
                     else
-                        new_max_val.push_back(product_bit_depth);
+                        new_max_val.emplace(d_pro->images[i].abs_index, product_bit_depth[d_pro->images[i].abs_index]);
                 }
 
                 for (size_t i = 0; i < d_pro->images.size(); i++)
@@ -56,15 +56,17 @@ namespace satdump
                                     double rp_v[1] = {v.second};
                                     spline->add_point(v.first, v.first, rp_v);
                                     is_first = false;
-                                    logger->info("Point %d %f", v.first, v.second);
+                                    // logger->info("Point %d %f", v.first, v.second);
                                 }
                             }
 
                             int s = spline->solve();
                             if (s != 3)
-                                lut_for_channels.push_back({nullptr, std::unordered_map<int, float>()});
+                                lut_for_channels.emplace(d_pro->images[i].abs_index,
+                                                         std::pair<std::shared_ptr<satdump::projection::VizGeorefSpline2D>, std::unordered_map<int, float>>{nullptr, std::unordered_map<int, float>()});
                             else
-                                lut_for_channels.push_back({spline, std::unordered_map<int, float>()});
+                                lut_for_channels.emplace(d_pro->images[i].abs_index,
+                                                         std::pair<std::shared_ptr<satdump::projection::VizGeorefSpline2D>, std::unordered_map<int, float>>{spline, std::unordered_map<int, float>()});
                         }
                         else
                         {
@@ -72,26 +74,27 @@ namespace satdump
                             std::unordered_map<int, float> flut;
                             for (auto &v : llut)
                                 flut.emplace(v.first, v.second);
-                            lut_for_channels.push_back({nullptr, flut});
+                            lut_for_channels.emplace(d_pro->images[i].abs_index, std::pair<std::shared_ptr<satdump::projection::VizGeorefSpline2D>, std::unordered_map<int, float>>{nullptr, flut});
                         }
                     }
                     catch (std::exception &)
                     {
-                        lut_for_channels.push_back({nullptr, std::unordered_map<int, float>()});
+                        lut_for_channels.emplace(d_pro->images[i].abs_index,
+                                                 std::pair<std::shared_ptr<satdump::projection::VizGeorefSpline2D>, std::unordered_map<int, float>>{nullptr, std::unordered_map<int, float>()});
                     }
                 }
             }
 
             double compute(int channel, int /*pos_x*/, int /*pos_y*/, uint32_t px_val)
             {
-                if (new_max_val[channel] != product_bit_depth)
-                    px_val = double(px_val / (double)product_bit_depth) * new_max_val[channel];
+                if (new_max_val[channel] != product_bit_depth[channel])
+                    px_val = double(px_val / (double)product_bit_depth[channel]) * new_max_val[channel];
 
                 try
                 {
                     if (calib_type_map[channel] == 0)
                     {
-                        if (px_val == product_bit_depth)
+                        if (px_val == product_bit_depth[channel])
                             return CALIBRATION_INVALID_VALUE;
                         else if (lut_for_channels[channel].second.count(px_val))
                             return lut_for_channels[channel].second[px_val];

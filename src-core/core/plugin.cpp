@@ -49,10 +49,14 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
 #ifdef __ANDROID__
     plugins_paths.push_back(android_plugins_dir + "/");
 #else
-    if (std::filesystem::exists("plugins"))
-        plugins_paths.push_back("./plugins");              // Try local plugins directory first
-    plugins_paths.push_back(satdump::LIBPATH + "plugins"); // Followed by system
+    if (std::filesystem::exists("plugins")) // Try local plugins directory first
+        plugins_paths.push_back("./plugins");
+    if (std::filesystem::exists(satdump::LIBPATH + "plugins")) // Followed by system
+        plugins_paths.push_back(satdump::LIBPATH + "plugins");
 #endif
+
+    if (plugins_paths.size() == 0)
+        logger->critical("No valid plugin directory found!");
 
     // Get platform file extensions
 #if defined(_WIN32)
