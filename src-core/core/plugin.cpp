@@ -72,6 +72,8 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
         setenv("LD_LIBRARY_PATH", plugins_path.c_str(), 1);
 #endif
 
+        std::vector<std::string> failed_plugins;
+
         std::filesystem::recursive_directory_iterator pluginIterator(plugins_path);
         std::error_code iteratorError;
         while (pluginIterator != std::filesystem::recursive_directory_iterator())
@@ -84,6 +86,7 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
             if (path.find("libandroid_imgui.so") != std::string::npos || path.find("libsatdump_core.so") != std::string::npos || path.find("libsatdump_interface.so") != std::string::npos)
                 goto skip_this;
 #endif
+
             try
             {
                 std::shared_ptr<satdump::Plugin> pl = loadPlugin(path);
@@ -91,7 +94,7 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
             }
             catch (std::runtime_error &e)
             {
-                logger->error(e.what());
+                failed_plugins.push_back(path);
             }
 
         skip_this:
@@ -100,14 +103,45 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
                 logger->critical(iteratorError.message());
         }
 
+        // Try to reload failed ones, just in case. This allows handling dependencies to
+        // some extent.
+        int dependencies_layers = 0;
+        const int max_dependencies_layers = 10;
+        while (failed_plugins.size() && dependencies_layers < max_dependencies_layers)
+        {
+            std::vector<std::string> really_failed;
+            for (auto &s : failed_plugins)
+            {
+                try
+                {
+                    std::shared_ptr<satdump::Plugin> pl = loadPlugin(s);
+                    loaded_plugins.insert({pl->getID(), pl});
+                }
+                catch (std::runtime_error &e)
+                {
+                    if (dependencies_layers == (max_dependencies_layers - 1))
+                        logger->error(e.what());
+                    really_failed.push_back(s);
+                }
+            }
+            failed_plugins = really_failed;
+            dependencies_layers++;
+        }
+
         if (loaded_plugins.size() > 0)
         {
             logger->debug("Loaded plugins (" + std::to_string(loaded_plugins.size()) + ") : ");
             for (std::pair<const std::string, std::shared_ptr<satdump::Plugin>> &it : loaded_plugins)
                 logger->debug(" - " + it.first);
-            break;
         }
         else
             logger->warn("No Plugins in " + plugins_path + "!");
+
+        if (failed_plugins.size())
+        {
+            logger->warn("The following plugins failed to load :");
+            for (auto &s : failed_plugins)
+                logger->warn(" - " + std::filesystem::path(s).stem().string());
+        }
     }
 }
