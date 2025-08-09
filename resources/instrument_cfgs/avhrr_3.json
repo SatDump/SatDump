@@ -76,7 +76,7 @@
         },
         {
             "name": "AVHRR 124 False Color (Cloud RGB)",
-            "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0, 46.203); cch2=(2, sun_angle_compensated_reflective_radiance, 0, 97.0507); cch4=(4, brightness_temperature, 203, 323); cch1, cch2, 1-cch4",
+            "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0, 33.3);cch2=(2, sun_angle_compensated_reflective_radiance, 0, 67.84);cch4=(4, brightness_temperature, 203, 323); cch1, cch2, 1-cch4",
             "image": {
                 "geo_correct": true
             },
