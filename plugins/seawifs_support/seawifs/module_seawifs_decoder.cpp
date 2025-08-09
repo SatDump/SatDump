@@ -15,8 +15,8 @@
 
 // File structure:
 //  - 512 byte prelude (file metadata)
-//  - 32 unaccounted for bytes, change of format? added to prelude to skip em
 //  - 790 bytes of header (SC/ID, telemetry, bit errors...)
+//  - 32 unaccounted for bytes, change of format? added to prelude to skip em
 //  - 10356 big-endian 10-bit words with imagery of either
 //     - LAC format
 //        - 44 words telemetry
@@ -30,13 +30,13 @@
 //
 // Total frame size: 21504 bytes
 
-#define PRELUDE_SIZE 544
+#define PRELUDE_SIZE 512
 #define FRAME_SIZE 21504
-#define DATA_OFFSET 790  // Offset of LAC/GAC data from beginning of data
-#define LAC_VIDEO_OFFSET 52  // 52 words (2-byte, 10-bit) before video data starts
-#define LAC_WORD_COUNT 10356 // Total amount of 2-byte, 10-bit words in LAC
+#define DATA_OFFSET 822       // Offset of LAC/GAC data from beginning of data (+32 rogue bytes)
+#define LAC_VIDEO_OFFSET 52   // 52 words (2-byte, 10-bit) before video data starts
+#define LAC_WORD_COUNT 10356  // Total amount of 2-byte, 10-bit words in LAC
 #define LAC_PIXEL_COUNT 1285  // SeaWiFS samples per line. GAC only has 285
-#define VIDEO_SIZE 10280  // Combined size of samples for all channels within line (1285*8)
+#define VIDEO_SIZE 10280      // Combined size of samples for all channels within line (1285*8)
 
 namespace seawifs {
 
@@ -99,14 +99,14 @@ namespace seawifs {
 
         // Every channel is now neatly loaded into its own vector
 
-        image::Image channel1 = image::Image(channel1_data.data(), 10, LAC_PIXEL_COUNT, line_count, 1);
-        image::Image channel2 = image::Image(channel2_data.data(), 10, LAC_PIXEL_COUNT, line_count, 1);
-        image::Image channel3 = image::Image(channel3_data.data(), 10, LAC_PIXEL_COUNT, line_count, 1);
-        image::Image channel4 = image::Image(channel4_data.data(), 10, LAC_PIXEL_COUNT, line_count, 1);
-        image::Image channel5 = image::Image(channel5_data.data(), 10, LAC_PIXEL_COUNT, line_count, 1);
-        image::Image channel6 = image::Image(channel6_data.data(), 10, LAC_PIXEL_COUNT, line_count, 1);
-        image::Image channel7 = image::Image(channel7_data.data(), 10, LAC_PIXEL_COUNT, line_count, 1);
-        image::Image channel8 = image::Image(channel8_data.data(), 10, LAC_PIXEL_COUNT, line_count, 1);
+        image::Image channel1 = image::Image(channel1_data.data(), 16, LAC_PIXEL_COUNT, line_count, 1);
+        image::Image channel2 = image::Image(channel2_data.data(), 16, LAC_PIXEL_COUNT, line_count, 1);
+        image::Image channel3 = image::Image(channel3_data.data(), 16, LAC_PIXEL_COUNT, line_count, 1);
+        image::Image channel4 = image::Image(channel4_data.data(), 16, LAC_PIXEL_COUNT, line_count, 1);
+        image::Image channel5 = image::Image(channel5_data.data(), 16, LAC_PIXEL_COUNT, line_count, 1);
+        image::Image channel6 = image::Image(channel6_data.data(), 16, LAC_PIXEL_COUNT, line_count, 1);
+        image::Image channel7 = image::Image(channel7_data.data(), 16, LAC_PIXEL_COUNT, line_count, 1);
+        image::Image channel8 = image::Image(channel8_data.data(), 16, LAC_PIXEL_COUNT, line_count, 1);
 
         // We can now deal with making it a product
         satdump::products::ImageProduct seawifs_product;
@@ -155,18 +155,14 @@ namespace seawifs {
         frame = new uint8_t[FRAME_SIZE];
 
         std::vector<uint16_t> imageBuffer;
+
+        fsfsm_enable_output = false;
     }
 
     SeaWIFsProcessingModule::~SeaWIFsProcessingModule() {
         delete[] prelude;
         delete[] frame;
         imageBuffer.clear();
-    }
-
-    nlohmann::json SeaWIFsProcessingModule::getModuleStats() {
-        auto v = satdump::pipeline::base::FileStreamToFileStreamModule::getModuleStats();
-        v["full_disk_progress"] = 1;
-        return v;
     }
 
     void SeaWIFsProcessingModule::process() {
@@ -202,6 +198,7 @@ namespace seawifs {
         }
 
         // We are done processing, write the imagery
+        logger->warn(*(uint32_t *)(&prelude[333]));
         write_images(*(uint32_t *)(&prelude[333]));
         return;
     }

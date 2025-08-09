@@ -23,7 +23,7 @@ namespace seawifs {
         ~SeaWIFsProcessingModule();
         void process();
         void drawUI(bool window);
-        nlohmann::json getModuleStats();
+        nlohmann::json getModuleStats() { return satdump::pipeline::base::FileStreamToFileStreamModule::getModuleStats(); };
 
     public:
         static std::string getID() { return "module_seawifs_decoder"; }
