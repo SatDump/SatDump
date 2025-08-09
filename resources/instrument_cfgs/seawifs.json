@@ -1,0 +1,19 @@
+{
+    "name": "SeaWiFS",
+    "presets": [
+        {
+            "name": "AVHRR 221 False Color",
+            "expression": "ch8, ch8, ch5",
+            "image": {
+            "individual_equalize": true},
+            "description": "descriptions/221.md"
+        },
+        {
+            "name": "True Color",
+            "expression": "ch6, ch5, ch2",
+            "image": {
+            "individual_equalize": true},
+            "description": "descriptions/TrueColor.md"
+        }
+    ]
+}
