@@ -140,7 +140,7 @@ void BladeRFSource::open()
 
         available_samplerates.push_back(bladerf_range_samplerate->max);
 
-        if (bladerf_enable_feature(bladerf_dev_obj, BLADERF_FEATURE_OVERSAMPLE, false) != 0)
+        if (bladerf_enable_feature(bladerf_dev_obj, BLADERF_FEATURE_DEFAULT, true) != 0)
             logger->warn("Couldn't unset oversample mode!");
     }
 #endif
