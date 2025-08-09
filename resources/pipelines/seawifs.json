@@ -1,0 +1,18 @@
+{
+    "seawifs_processing": {
+        "name": "SeaWIFs archival format",
+        "work": {
+            "frm": {
+                "module": "module_seawifs_decoder",
+                "parameters": {
+                    "instrument_type": "mtvza"
+                }
+            },
+            "products": {
+                "module": "module_seawifs_decoder",
+                "parameters": {
+                }
+            }
+        }
+    }
+}
