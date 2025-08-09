@@ -1,6 +1,5 @@
 #include "seviri_reader.h"
 #include "../../msg.h"
-#include "common/ccsds/ccsds_time.h"
 #include "common/repack.h"
 #include "logger.h"
 #include "products/image_product.h"
@@ -17,6 +16,22 @@ namespace meteosat
 {
     namespace msg
     {
+        std::string timestamp_to_string2(double timestamp)
+        {
+            {
+                if (timestamp < 0)
+                    timestamp = 0;
+                time_t tttime = timestamp;
+                std::tm *timeReadable = gmtime(&tttime);
+                return std::to_string(timeReadable->tm_year + 1900) + "-" + (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) +
+                       "-" + (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
+                       (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
+
+                       (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) + "-" +
+                       (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec));
+            }
+        }
+
         double parseCCSDSTimeMeteosat(ccsds::CCSDSPacket &pkt, int offset, int ms_scale, double us_of_ms_scale)
         {
             uint16_t days = pkt.payload[0] << 8 | pkt.payload[1];
