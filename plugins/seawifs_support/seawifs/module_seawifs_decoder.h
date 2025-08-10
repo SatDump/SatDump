@@ -5,8 +5,10 @@
 #include "pipeline/module.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
 
-namespace seawifs {
-    class SeaWIFsProcessingModule : public satdump::pipeline::base::FileStreamToFileStreamModule {
+namespace seawifs
+{
+    class SeaWIFsProcessingModule : public satdump::pipeline::base::FileStreamToFileStreamModule
+    {
     protected:
         uint8_t *prelude;
         uint8_t *frame;
@@ -28,7 +30,7 @@ namespace seawifs {
     public:
         static std::string getID() { return "module_seawifs_decoder"; }
         virtual std::string getIDM() { return "SeaWIFs processing"; }
-        static nlohmann::json getParams() { return {}; }  // TODOREWORK
+        static nlohmann::json getParams() { return {}; } // TODOREWORK
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
-};  // namespace seawifs
+}; // namespace seawifs

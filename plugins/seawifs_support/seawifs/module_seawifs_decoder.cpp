@@ -16,12 +16,13 @@
 // File structure:
 //  - 512 byte prelude (file metadata)
 //  - 790 bytes of header (SC/ID, telemetry, bit errors...)
-//  - 32 unaccounted for bytes, change of format? added to prelude to skip em
 //  - 10356 big-endian 10-bit words with imagery of either
 //     - LAC format
 //        - 44 words telemetry
 //        - 8 words gain
 //        - 10304 words image data (1 scan line -> 1285 px per scan line)
+//           - There is some padding in here! 1288 px total, 32 bytes have to be skipped to get
+//             rid of it. Maybe it is something else? god knows but the 32 bytes makes it work
 //     - GAC format
 //        - 10080 words image data (5 scan lines -> 248 px per scan line)
 //        - 220 words telemetry (5x for each scan line, 44 words each)
@@ -32,13 +33,14 @@
 
 #define PRELUDE_SIZE 512
 #define FRAME_SIZE 21504
-#define DATA_OFFSET 822       // Offset of LAC/GAC data from beginning of data (+32 rogue bytes)
-#define LAC_VIDEO_OFFSET 52   // 52 words (2-byte, 10-bit) before video data starts
-#define LAC_WORD_COUNT 10356  // Total amount of 2-byte, 10-bit words in LAC
-#define LAC_PIXEL_COUNT 1285  // SeaWiFS samples per line. GAC only has 285
-#define VIDEO_SIZE 10280      // Combined size of samples for all channels within line (1285*8)
+#define DATA_OFFSET 790      // Offset of LAC/GAC data from beginning of data (+32 rogue bytes)
+#define LAC_VIDEO_OFFSET 52  // 52 words (2-byte, 10-bit) before video data starts
+#define LAC_WORD_COUNT 10356 // Total amount of 2-byte, 10-bit words in LAC
+#define LAC_PIXEL_COUNT 1285 // SeaWiFS samples per line. GAC only has 285
+#define VIDEO_SIZE 10280     // Combined size of samples for all channels within line (1285*8)
 
-namespace seawifs {
+namespace seawifs
+{
 
     /**
      * Unpacks 10-bit packed right-justified words starting from *input* for *length* bytes
@@ -47,9 +49,11 @@ namespace seawifs {
      * int8_t word_count: How many 10-bit word (16-bit containers) to process
      * uint16_t output_buffer: Where to write image data to
      */
-    void SeaWIFsProcessingModule::repack_words_to_16(uint8_t *input, int word_count, uint16_t *output_buffer) {
+    void SeaWIFsProcessingModule::repack_words_to_16(uint8_t *input, int word_count, uint16_t *output_buffer)
+    {
         int cur_word = 0;
-        while (cur_word < word_count) {
+        while (cur_word < word_count)
+        {
             // Big endian order!
             uint16_t value = (((uint16_t)input[cur_word * 2] << 8) | (uint16_t)input[cur_word * 2 + 1]);
 
@@ -61,15 +65,18 @@ namespace seawifs {
     /**
      * Writesthe received imagery from imageBuffer
      */
-    void SeaWIFsProcessingModule::write_images(uint32_t reception_timestamp) {
-        if (imageBuffer.empty()) {
+    void SeaWIFsProcessingModule::write_images(uint32_t reception_timestamp)
+    {
+        if (imageBuffer.empty())
+        {
             logger->error("No imagery has been decoded!");
             return;
         }
 
         int line_count = imageBuffer.size() / VIDEO_SIZE;
 
-        if (line_count != floor(line_count)) {
+        if (line_count != floor(line_count))
+        {
             logger->error("Data type seems invalid, can't reliably determine amount of frames");
             return;
         }
@@ -84,8 +91,10 @@ namespace seawifs {
         std::vector<uint16_t> channel7_data;
         std::vector<uint16_t> channel8_data;
 
-        for (int cur_line = 0; cur_line < line_count; cur_line++) {
-            for (int cur_px = 0; cur_px < LAC_PIXEL_COUNT; cur_px++) {
+        for (int cur_line = 0; cur_line < line_count; cur_line++)
+        {
+            for (int cur_px = 0; cur_px < LAC_PIXEL_COUNT; cur_px++)
+            {
                 channel1_data.push_back(imageBuffer[VIDEO_SIZE * cur_line + cur_px * 8]);
                 channel2_data.push_back(imageBuffer[VIDEO_SIZE * cur_line + cur_px * 8 + 1]);
                 channel3_data.push_back(imageBuffer[VIDEO_SIZE * cur_line + cur_px * 8 + 2]);
@@ -116,6 +125,10 @@ namespace seawifs {
 
         // Set for geo correction
         seawifs_product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/seastar_seawifs.json")));
+
+        // TODOREWORK: Projections are possible! Seadas OCSSW can process l0 to l1a, the satellite
+        // gives everything needed for every line - gps coords, tilt info...
+        // src: https://github.com/fengqiaogh/ocssw_src/blob/main/ocssw_src/src/l1aextract_seawifs/extract_sub.c
 
         seawifs_product.images.push_back({0, "SeaWiFS-ch1", "1", channel1, 10, satdump::ChannelTransform().init_none()});
         seawifs_product.images.push_back({1, "SeaWiFS-ch2", "2", channel2, 10, satdump::ChannelTransform().init_none()});
@@ -150,7 +163,8 @@ namespace seawifs {
     };
 
     SeaWIFsProcessingModule::SeaWIFsProcessingModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-        : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters) {
+        : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
+    {
         prelude = new uint8_t[PRELUDE_SIZE];
         frame = new uint8_t[FRAME_SIZE];
 
@@ -159,16 +173,19 @@ namespace seawifs {
         fsfsm_enable_output = false;
     }
 
-    SeaWIFsProcessingModule::~SeaWIFsProcessingModule() {
+    SeaWIFsProcessingModule::~SeaWIFsProcessingModule()
+    {
         delete[] prelude;
         delete[] frame;
         imageBuffer.clear();
     }
 
-    void SeaWIFsProcessingModule::process() {
+    void SeaWIFsProcessingModule::process()
+    {
         directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "SeaWIFs";
 
-        if (!std::filesystem::exists(directory)) std::filesystem::create_directory(directory);
+        if (!std::filesystem::exists(directory))
+            std::filesystem::create_directory(directory);
 
         int file_size;
         file_size = d_input_file.size();
@@ -180,30 +197,42 @@ namespace seawifs {
 
         int frame_count = floor(file_size / FRAME_SIZE);
 
-        if (frame_count != file_size / FRAME_SIZE) {
+        if (frame_count != file_size / FRAME_SIZE)
+        {
             logger->error("Inconsistent frame length with file, aborting!");
             return;
         }
 
-        while (should_run()) {
+        while (should_run())
+        {
             // Read a frame
             read_data((uint8_t *)frame, FRAME_SIZE);
 
             // 10-bit big endian data, has to be repacked
             uint16_t lac_data[LAC_WORD_COUNT];
-            repack_words_to_16(&frame[DATA_OFFSET], LAC_WORD_COUNT, lac_data);
+
+            // 32 bytesare  added since there is some weird padding and this is the only way it works
+            // WARNING: INSTRUMENT AND ANCILLARY TELEMETRY IS NOT SAVED! It starts at
+            // 790 bytes into the file, but we start 32 bytes AHEAD of that to get rid of
+            // the padding. Figure the padding (striped on left/right side of image) out to remove
+            // the arbitrary offset
+            repack_words_to_16(&frame[DATA_OFFSET + 32], LAC_WORD_COUNT, lac_data);
 
             const uint16_t *start = &lac_data[LAC_VIDEO_OFFSET];
             imageBuffer.insert(imageBuffer.end(), start, start + VIDEO_SIZE);
         }
 
+        uint32_t timestamp = *(uint32_t *)(&prelude[333]);
+        if (timestamp == 0)
+            logger->warn("File doesn't have a timestamp! Does it use the old format? Not setting!");
+
         // We are done processing, write the imagery
-        logger->warn(*(uint32_t *)(&prelude[333]));
-        write_images(*(uint32_t *)(&prelude[333]));
+        write_images(timestamp);
         return;
     }
 
-    void SeaWIFsProcessingModule::drawUI(bool window) {
+    void SeaWIFsProcessingModule::drawUI(bool window)
+    {
         ImGui::Begin("SeaWiFS Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
         drawProgressBar();
@@ -211,8 +240,9 @@ namespace seawifs {
         ImGui::End();
     }
 
-    std::shared_ptr<satdump::pipeline::ProcessingModule> SeaWIFsProcessingModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters) {
+    std::shared_ptr<satdump::pipeline::ProcessingModule> SeaWIFsProcessingModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    {
         return std::make_shared<SeaWIFsProcessingModule>(input_file, output_file_hint, parameters);
     }
 
-}  // namespace seawifs
+} // namespace seawifs
