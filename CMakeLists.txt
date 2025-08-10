@@ -135,6 +135,7 @@ if(MSVC OR BUILD_MSVC)
 endif()
 
 project(SatDump VERSION "2.0.0")
+set(SATDUMP_VERSION_TYPE "alpha")
 
 # Check if the current commit has a tag
 execute_process(
@@ -163,10 +164,18 @@ execute_process(
 # Set version
 if(GIT_HAS_TAG STREQUAL "undefined" OR GIT_HAS_TAG STREQUAL "nightly")
     message("-- Commit has no tag/nightly tag (${GIT_HAS_TAG}). Assume dev build")
-    set(SATDUMP_VERSION "${PROJECT_VERSION}-${GIT_HASH}")
+    if(NOT SATDUMP_VERSION_TYPE STREQUAL "")
+        set(SATDUMP_VERSION "${PROJECT_VERSION}-${SATDUMP_VERSION_TYPE}-${GIT_HASH}")
+    else()
+        set(SATDUMP_VERSION "${PROJECT_VERSION}-${GIT_HASH}")
+    endif()
 else()
     message("-- Commit has tag (${GIT_HAS_TAG}). Assume release build")
-    set(SATDUMP_VERSION "${PROJECT_VERSION}")
+    if(NOT SATDUMP_VERSION_TYPE STREQUAL "")
+        set(SATDUMP_VERSION "${PROJECT_VERSION}")
+    else()
+        set(SATDUMP_VERSION "${PROJECT_VERSION}-${SATDUMP_VERSION_TYPE}")
+    endif()
 endif()
 
 # Set branch
