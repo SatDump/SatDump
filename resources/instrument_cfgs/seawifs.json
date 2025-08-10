@@ -1,0 +1,23 @@
+{
+    "name": "SeaWiFS",
+    "presets": [
+        {
+            "name": "True Color",
+            "expression": "ch6,ch5,ch2",
+            "equalize": true,
+            "autogen": true
+        },
+        {
+            "name": "Bathymetric",
+            "expression": "ch6,ch4,ch2",
+            "equalize": true,
+            "autogen": true
+        },
+        {
+            "name": "AVHRR 221 False Color",
+            "expression": "ch8,ch8,ch6",
+            "equalize": true,
+            "autogen": true
+        }
+    ]
+}
