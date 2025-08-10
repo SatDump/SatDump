@@ -12,7 +12,9 @@
         {
             "name": "Bathymetric",
             "expression": "ch6,ch4,ch2",
-            "equalize": true,
+            "image": {
+                "individual_equalize": true
+            },
             "autogen": true
         },
         {

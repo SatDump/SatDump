@@ -20,7 +20,7 @@ namespace seawifs
 
     private:
         void repack_words_to_16(uint8_t *input, int word_count, uint16_t *output_buffer);
-        void write_images(uint32_t reception_timestamp);
+        void write_images();
 
     public:
         SeaWiFSProcessingModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

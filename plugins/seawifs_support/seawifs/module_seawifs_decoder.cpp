@@ -117,23 +117,22 @@ namespace seawifs
     }
 
     /**
-     * Writes the received imagery from imageBuffer
+     * Processes and writes the received imagery from imageBuffer
      */
-    void SeaWiFSProcessingModule::write_images(uint32_t reception_timestamp)
+    void SeaWiFSProcessingModule::write_images()
     {
-
-        if (imageBuffer.empty())
+        uint32_t timestamp = timestamps[0];
+        // Sanity check -> satellite wasn't active before 09/01/1997 or after 01/01/2011
+        if (timestamp < 873072000 || timestamp > 1293836400)
         {
-            logger->error("No imagery has been decoded!");
-            return;
-        }
+            // Try the next one
+            timestamp = timestamps[1];
 
-        int line_count = imageBuffer.size() / IMAGE_DATA_SIZE;
-
-        if (line_count != floor(line_count))
-        {
-            logger->error("Data type seems invalid, can't reliably determine amount of frames");
-            return;
+            if (timestamp < 873072000 || timestamp > 1293836400)
+            {
+                logger->error("Timestamp sanity check failed, aborting!");
+                return;
+            }
         }
 
         // At this point we know that we know that we have a valid amount of frames, decode em
@@ -145,6 +144,8 @@ namespace seawifs
         std::vector<uint16_t> channel6_data;
         std::vector<uint16_t> channel7_data;
         std::vector<uint16_t> channel8_data;
+
+        int line_count = imageBuffer.size() / IMAGE_DATA_SIZE;
 
         for (int cur_line = 0; cur_line < line_count; cur_line++)
         {
@@ -175,18 +176,17 @@ namespace seawifs
         // Products dataset
         satdump::products::DataSet dataset;
         dataset.satellite_name = "OrbView-2 (SeaStar)";
-        dataset.timestamp = reception_timestamp;
+        dataset.timestamp = timestamp;
 
         // We can now deal with making it a product
         satdump::products::ImageProduct seawifs_product;
         seawifs_product.set_product_source("OrbView-2 (SeaStar)");
-        seawifs_product.set_product_timestamp(reception_timestamp);
+        seawifs_product.set_product_timestamp(timestamp);
         seawifs_product.instrument_name = "seawifs";
 
         // Projection configuration
         std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(24883, dataset.timestamp);
         seawifs_product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/seastar_seawifs.json")), satellite_tle, timestamps);
-
 
         seawifs_product.images.push_back({0, "SeaWiFS-1", "1", channel1, 16, satdump::ChannelTransform().init_none()});
         seawifs_product.images.push_back({1, "SeaWiFS-2", "2", channel2, 16, satdump::ChannelTransform().init_none()});
@@ -247,7 +247,14 @@ namespace seawifs
             std::filesystem::create_directory(directory);
 
         int file_size;
-        file_size = d_input_file.size();
+        file_size = std::filesystem::file_size(d_input_file);
+
+        if (file_size < 1000)
+        {
+            // Too short to be a data file, issued before we try parsing the header
+            logger->error("This is too short to be a SeaWiFS l0 data file!");
+            return;
+        }
 
         /* Get the data from the file */
 
@@ -255,11 +262,19 @@ namespace seawifs
         FilePrelude prelude;
         read_data(reinterpret_cast<uint8_t *>(&prelude), sizeof(FilePrelude));
 
+        // Checks magic number to see if the file we are looking at is indeed a SeaWiFS l0 format
+        if (strcmp((const char *)prelude.id, "CWIF") != 0)
+        {
+            logger->error("This is not a SeaWiFS l0 data file!");
+            return;
+        }
+
         int frame_count = floor(file_size / FRAME_SIZE);
 
         if (frame_count != file_size / FRAME_SIZE)
         {
-            logger->error("Inconsistent frame length with file, aborting!");
+            // Trimmed file? Whatever the case, it would cause undefined behavior
+            logger->error("Line count is not a whole number, aborting!");
             return;
         }
 
@@ -274,7 +289,7 @@ namespace seawifs
             // 10-bit big endian data, has to be repacked
             uint16_t lac_data[LAC_WORD_COUNT];
 
-            // 32 bytesare  added since there is some weird padding and this is the only way it works
+            // 32 bytes are added since there is some weird padding and this is the only way it is ommitted
             // WARNING: INSTRUMENT AND ANCILLARY TELEMETRY IS NOT SAVED! It starts at
             // 790 bytes into the file, but we start 32 bytes AHEAD of that to get rid of
             // the padding. Figure the padding (stripes on left/right side of image) out to remove
@@ -285,9 +300,14 @@ namespace seawifs
             imageBuffer.insert(imageBuffer.end(), start, start + IMAGE_DATA_SIZE);
         }
 
-        // We are done processing, write the imagery
-        write_images(timestamps[1]);
-        return;
+        // We are done processing, was data decoded?
+        if (imageBuffer.empty() || timestamps.empty())
+        {
+            logger->error("Didn't decode any data, aborting!");
+            return;
+        }
+
+        write_images();
     }
     void SeaWiFSProcessingModule::drawUI(bool window)
     {
