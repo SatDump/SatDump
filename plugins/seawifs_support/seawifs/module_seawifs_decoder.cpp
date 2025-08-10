@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <string>
 
+#include "common/tracking/tle.h"
 #include "core/resources.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
@@ -34,11 +35,11 @@
 
 #define PRELUDE_SIZE 512
 #define FRAME_SIZE 21504
-#define DATA_OFFSET 790      // Offset of LAC/GAC data from beginning of data (+32 rogue bytes)
-#define LAC_VIDEO_OFFSET 52  // 52 words (2-byte, 10-bit) before video data starts
-#define LAC_WORD_COUNT 10356 // Total amount of 2-byte, 10-bit words in LAC
-#define LAC_PIXEL_COUNT 1285 // SeaWiFS samples per line. GAC only has 285
-#define VIDEO_SIZE 10280     // Combined size of samples for all channels within line (1285*8)
+#define DATA_OFFSET 790       // Offset of LAC/GAC data from beginning of data (+32 rogue bytes)
+#define LAC_VIDEO_OFFSET 52   // 52 words (2-byte, 10-bit) before video data starts
+#define LAC_WORD_COUNT 10356  // Total amount of 2-byte, 10-bit words in LAC
+#define LAC_PIXEL_COUNT 1285  // SeaWiFS samples per line. GAC only has 285
+#define IMAGE_DATA_SIZE 10280 // Combined size of samples for all channels within line (1285*8)
 
 namespace seawifs
 {
@@ -63,18 +64,71 @@ namespace seawifs
             cur_word++;
         }
     }
+
     /**
-     * Writesthe received imagery from imageBuffer
+     * Does some magic for timestamp bytes (Switches endianness?)
+     * Source https://github.com/fengqiaogh/ocssw_src/blob/main/ocssw_src/src/l1agen_seawifs/
+     */
+    void swapc_bytes(uint8_t *in, int nbyte, int ntime)
+    {
+        uint8_t *tmpbuf, *ptr;
+        int i, j, k;
+
+        tmpbuf = (uint8_t *)malloc(nbyte);
+        ptr = in;
+
+        for (j = 0; j < ntime; j++)
+        {
+            for (i = 0, k = nbyte - 1; i < nbyte; i++, k--)
+                tmpbuf[i] = ptr[k];
+
+            memcpy(ptr, tmpbuf, nbyte);
+
+            ptr += nbyte;
+        }
+        free(tmpbuf);
+
+        return;
+    }
+
+    /**
+     * Does some magic to get the proprietary timestamp, converts it to a unix one
+     * Source https://github.com/fengqiaogh/ocssw_src/blob/main/ocssw_src/src/l1agen_seawifs/
+     */
+    double get_timestamp(uint8_t *frame)
+    {
+        int16_t time_tag[4];
+
+        memcpy(time_tag, &frame[7], sizeof(time_tag));
+
+        // Accounts for it being big endian
+        swapc_bytes((uint8_t *)time_tag, 2, 4);
+
+        // Converts to a unix timestamp
+        double sec = 7.2688320e8; /* secs from 1/1/70 to 1/13/93  */
+        int32_t day = 0;
+        int32_t msec = 0;
+
+        day = time_tag[0] << 3 | time_tag[1] >> 7;
+        msec = (time_tag[1] & 0x7F) << 20 | (time_tag[2] << 10) | time_tag[3];
+        sec += ((double)day) * 86400.0 + ((double)msec) / 1000.0;
+
+        return sec;
+    }
+
+    /**
+     * Writes the received imagery from imageBuffer
      */
     void SeaWiFSProcessingModule::write_images(uint32_t reception_timestamp)
     {
+
         if (imageBuffer.empty())
         {
             logger->error("No imagery has been decoded!");
             return;
         }
 
-        int line_count = imageBuffer.size() / VIDEO_SIZE;
+        int line_count = imageBuffer.size() / IMAGE_DATA_SIZE;
 
         if (line_count != floor(line_count))
         {
@@ -94,21 +148,21 @@ namespace seawifs
 
         for (int cur_line = 0; cur_line < line_count; cur_line++)
         {
+            // Rescaled to 16-bit
             for (int cur_px = 0; cur_px < LAC_PIXEL_COUNT; cur_px++)
             {
-                channel1_data.push_back(imageBuffer[VIDEO_SIZE * cur_line + cur_px * 8]);
-                channel2_data.push_back(imageBuffer[VIDEO_SIZE * cur_line + cur_px * 8 + 1]);
-                channel3_data.push_back(imageBuffer[VIDEO_SIZE * cur_line + cur_px * 8 + 2]);
-                channel4_data.push_back(imageBuffer[VIDEO_SIZE * cur_line + cur_px * 8 + 3]);
-                channel5_data.push_back(imageBuffer[VIDEO_SIZE * cur_line + cur_px * 8 + 4]);
-                channel6_data.push_back(imageBuffer[VIDEO_SIZE * cur_line + cur_px * 8 + 5]);
-                channel7_data.push_back(imageBuffer[VIDEO_SIZE * cur_line + cur_px * 8 + 6]);
-                channel8_data.push_back(imageBuffer[VIDEO_SIZE * cur_line + cur_px * 8 + 7]);
+                channel1_data.push_back(imageBuffer[IMAGE_DATA_SIZE * cur_line + cur_px * 8] << 6);
+                channel2_data.push_back(imageBuffer[IMAGE_DATA_SIZE * cur_line + cur_px * 8 + 1] << 6);
+                channel3_data.push_back(imageBuffer[IMAGE_DATA_SIZE * cur_line + cur_px * 8 + 2] << 6);
+                channel4_data.push_back(imageBuffer[IMAGE_DATA_SIZE * cur_line + cur_px * 8 + 3] << 6);
+                channel5_data.push_back(imageBuffer[IMAGE_DATA_SIZE * cur_line + cur_px * 8 + 4] << 6);
+                channel6_data.push_back(imageBuffer[IMAGE_DATA_SIZE * cur_line + cur_px * 8 + 5] << 6);
+                channel7_data.push_back(imageBuffer[IMAGE_DATA_SIZE * cur_line + cur_px * 8 + 6] << 6);
+                channel8_data.push_back(imageBuffer[IMAGE_DATA_SIZE * cur_line + cur_px * 8 + 7] << 6);
             }
         }
 
         // Every channel is now neatly loaded into its own vector
-
         image::Image channel1 = image::Image(channel1_data.data(), 16, LAC_PIXEL_COUNT, line_count, 1);
         image::Image channel2 = image::Image(channel2_data.data(), 16, LAC_PIXEL_COUNT, line_count, 1);
         image::Image channel3 = image::Image(channel3_data.data(), 16, LAC_PIXEL_COUNT, line_count, 1);
@@ -129,21 +183,19 @@ namespace seawifs
         seawifs_product.set_product_timestamp(reception_timestamp);
         seawifs_product.instrument_name = "seawifs";
 
-        // Set for geo correction
-        seawifs_product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/seastar_seawifs.json")));
+        // Projection configuration
+        std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(24883, dataset.timestamp);
+        seawifs_product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/seastar_seawifs.json")), satellite_tle, timestamps);
 
-        // TODOREWORK: Projections are possible! Seadas OCSSW can process l0 to l1a, the satellite
-        // gives everything needed for every line - gps coords, tilt info...
-        // src: https://github.com/fengqiaogh/ocssw_src/blob/main/ocssw_src/src/l1aextract_seawifs/extract_sub.c
 
-        seawifs_product.images.push_back({0, "SeaWiFS-ch1", "1", channel1, 10, satdump::ChannelTransform().init_none()});
-        seawifs_product.images.push_back({1, "SeaWiFS-ch2", "2", channel2, 10, satdump::ChannelTransform().init_none()});
-        seawifs_product.images.push_back({2, "SeaWiFS-ch3", "3", channel3, 10, satdump::ChannelTransform().init_none()});
-        seawifs_product.images.push_back({3, "SeaWiFS-ch4", "4", channel4, 10, satdump::ChannelTransform().init_none()});
-        seawifs_product.images.push_back({4, "SeaWiFS-ch5", "5", channel5, 10, satdump::ChannelTransform().init_none()});
-        seawifs_product.images.push_back({5, "SeaWiFS-ch6", "6", channel6, 10, satdump::ChannelTransform().init_none()});
-        seawifs_product.images.push_back({6, "SeaWiFS-ch7", "7", channel7, 10, satdump::ChannelTransform().init_none()});
-        seawifs_product.images.push_back({7, "SeaWiFS-ch8", "8", channel8, 10, satdump::ChannelTransform().init_none()});
+        seawifs_product.images.push_back({0, "SeaWiFS-1", "1", channel1, 16, satdump::ChannelTransform().init_none()});
+        seawifs_product.images.push_back({1, "SeaWiFS-2", "2", channel2, 16, satdump::ChannelTransform().init_none()});
+        seawifs_product.images.push_back({2, "SeaWiFS-3", "3", channel3, 16, satdump::ChannelTransform().init_none()});
+        seawifs_product.images.push_back({3, "SeaWiFS-4", "4", channel4, 16, satdump::ChannelTransform().init_none()});
+        seawifs_product.images.push_back({4, "SeaWiFS-5", "5", channel5, 16, satdump::ChannelTransform().init_none()});
+        seawifs_product.images.push_back({5, "SeaWiFS-6", "6", channel6, 16, satdump::ChannelTransform().init_none()});
+        seawifs_product.images.push_back({6, "SeaWiFS-7", "7", channel7, 16, satdump::ChannelTransform().init_none()});
+        seawifs_product.images.push_back({7, "SeaWiFS-8", "8", channel8, 16, satdump::ChannelTransform().init_none()});
 
         seawifs_product.set_channel_wavenumber(0, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 0.412e-6));
         seawifs_product.set_channel_wavenumber(1, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 0.443e-6));
@@ -174,7 +226,6 @@ namespace seawifs
     SeaWiFSProcessingModule::SeaWiFSProcessingModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
     {
-        prelude = new uint8_t[PRELUDE_SIZE];
         frame = new uint8_t[FRAME_SIZE];
 
         std::vector<uint16_t> imageBuffer;
@@ -184,14 +235,13 @@ namespace seawifs
 
     SeaWiFSProcessingModule::~SeaWiFSProcessingModule()
     {
-        delete[] prelude;
         delete[] frame;
         imageBuffer.clear();
     }
 
     void SeaWiFSProcessingModule::process()
     {
-        directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/SeaWiFS";
+        directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "SeaWiFS";
 
         if (!std::filesystem::exists(directory))
             std::filesystem::create_directory(directory);
@@ -201,8 +251,9 @@ namespace seawifs
 
         /* Get the data from the file */
 
-        // Save the archival metadata, only present once in the whole file
-        read_data((uint8_t *)prelude, PRELUDE_SIZE);
+        // Get the archival metadata, only present once in the whole file
+        FilePrelude prelude;
+        read_data(reinterpret_cast<uint8_t *>(&prelude), sizeof(FilePrelude));
 
         int frame_count = floor(file_size / FRAME_SIZE);
 
@@ -217,6 +268,9 @@ namespace seawifs
             // Read a frame
             read_data((uint8_t *)frame, FRAME_SIZE);
 
+            double unix_timestamp = get_timestamp(frame);
+            timestamps.push_back(unix_timestamp);
+
             // 10-bit big endian data, has to be repacked
             uint16_t lac_data[LAC_WORD_COUNT];
 
@@ -228,18 +282,13 @@ namespace seawifs
             repack_words_to_16(&frame[DATA_OFFSET + 32], LAC_WORD_COUNT, lac_data);
 
             const uint16_t *start = &lac_data[LAC_VIDEO_OFFSET];
-            imageBuffer.insert(imageBuffer.end(), start, start + VIDEO_SIZE);
+            imageBuffer.insert(imageBuffer.end(), start, start + IMAGE_DATA_SIZE);
         }
 
-        uint32_t timestamp = *(uint32_t *)(&prelude[333]);
-        if (timestamp == 0)
-            logger->warn("File doesn't have a timestamp! Does it use the old format? Not setting!");
-
         // We are done processing, write the imagery
-        write_images(timestamp);
+        write_images(timestamps[1]);
         return;
     }
-
     void SeaWiFSProcessingModule::drawUI(bool window)
     {
         ImGui::Begin("SeaWiFS Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);

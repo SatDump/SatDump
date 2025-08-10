@@ -5,14 +5,22 @@
             "name": "AVHRR 221 False Color",
             "expression": "ch8, ch8, ch5",
             "image": {
-            "individual_equalize": true},
+                "individual_equalize": true
+            },
             "description": "descriptions/221.md"
+        },
+        {
+            "name": "Bathymetric",
+            "expression": "ch6,ch4,ch2",
+            "equalize": true,
+            "autogen": true
         },
         {
             "name": "True Color",
             "expression": "ch6, ch5, ch2",
             "image": {
-            "individual_equalize": true},
+                "individual_equalize": true
+            },
             "description": "descriptions/TrueColor.md"
         }
     ]

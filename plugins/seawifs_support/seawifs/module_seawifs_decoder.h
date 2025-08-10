@@ -2,6 +2,8 @@
 #pragma once
 #include <string>
 
+#include "seawifs_headers.h"
+
 #include "pipeline/module.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
 
@@ -10,9 +12,9 @@ namespace seawifs
     class SeaWiFSProcessingModule : public satdump::pipeline::base::FileStreamToFileStreamModule
     {
     protected:
-        uint8_t *prelude;
         uint8_t *frame;
 
+        std::vector<double> timestamps;
         std::string directory;
         std::vector<uint16_t> imageBuffer;
 

@@ -1,5 +1,21 @@
 {
+    "type": "normal_single_line",
+    // These could be fine tuned a bit further
+    "scan_angle": 116.7,
+    "roll_offset": 1.65,
+    "yaw_offset": 0.350000,
+    "pitch_offset": -20,
+    "timestamp_offset": 2.0,
+    "image_width": 1285,
+    "gcp_spacing_x": 100,
+    "gcp_spacing_y": 100,
+    ///////////////////////
+    "timefilter": {
+        "type": "simple",
+        "scan_time": 0.2,
+        "max_diff": 1.0
+    },
     "corr_swath": 2800,
-    "corr_resol": 1.1,
+    "corr_resol": 1.13,
     "corr_altit": 705
 }
