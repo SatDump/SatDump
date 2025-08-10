@@ -10,6 +10,7 @@
 #include "core/resources.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
+#include "products/dataset.h"
 #include "products/image/channel_transform.h"
 #include "products/image_product.h"
 
@@ -49,7 +50,7 @@ namespace seawifs
      * int8_t word_count: How many 10-bit word (16-bit containers) to process
      * uint16_t output_buffer: Where to write image data to
      */
-    void SeaWIFsProcessingModule::repack_words_to_16(uint8_t *input, int word_count, uint16_t *output_buffer)
+    void SeaWiFSProcessingModule::repack_words_to_16(uint8_t *input, int word_count, uint16_t *output_buffer)
     {
         int cur_word = 0;
         while (cur_word < word_count)
@@ -65,7 +66,7 @@ namespace seawifs
     /**
      * Writesthe received imagery from imageBuffer
      */
-    void SeaWIFsProcessingModule::write_images(uint32_t reception_timestamp)
+    void SeaWiFSProcessingModule::write_images(uint32_t reception_timestamp)
     {
         if (imageBuffer.empty())
         {
@@ -117,6 +118,11 @@ namespace seawifs
         image::Image channel7 = image::Image(channel7_data.data(), 16, LAC_PIXEL_COUNT, line_count, 1);
         image::Image channel8 = image::Image(channel8_data.data(), 16, LAC_PIXEL_COUNT, line_count, 1);
 
+        // Products dataset
+        satdump::products::DataSet dataset;
+        dataset.satellite_name = "OrbView-2 (SeaStar)";
+        dataset.timestamp = reception_timestamp;
+
         // We can now deal with making it a product
         satdump::products::ImageProduct seawifs_product;
         seawifs_product.set_product_source("OrbView-2 (SeaStar)");
@@ -151,6 +157,9 @@ namespace seawifs
         logger->info("Saving imagery to " + directory);
         seawifs_product.save(directory);
 
+        dataset.products_list.push_back("SeaWiFS");
+        dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
+
         // Clears the buffers (is this needed? unsure but I will rather do this than not)
         channel1_data.clear();
         channel2_data.clear();
@@ -162,7 +171,7 @@ namespace seawifs
         channel8_data.clear();
     };
 
-    SeaWIFsProcessingModule::SeaWIFsProcessingModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    SeaWiFSProcessingModule::SeaWiFSProcessingModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
     {
         prelude = new uint8_t[PRELUDE_SIZE];
@@ -173,16 +182,16 @@ namespace seawifs
         fsfsm_enable_output = false;
     }
 
-    SeaWIFsProcessingModule::~SeaWIFsProcessingModule()
+    SeaWiFSProcessingModule::~SeaWiFSProcessingModule()
     {
         delete[] prelude;
         delete[] frame;
         imageBuffer.clear();
     }
 
-    void SeaWIFsProcessingModule::process()
+    void SeaWiFSProcessingModule::process()
     {
-        directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "SeaWIFs";
+        directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/SeaWiFS";
 
         if (!std::filesystem::exists(directory))
             std::filesystem::create_directory(directory);
@@ -231,7 +240,7 @@ namespace seawifs
         return;
     }
 
-    void SeaWIFsProcessingModule::drawUI(bool window)
+    void SeaWiFSProcessingModule::drawUI(bool window)
     {
         ImGui::Begin("SeaWiFS Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
@@ -240,9 +249,9 @@ namespace seawifs
         ImGui::End();
     }
 
-    std::shared_ptr<satdump::pipeline::ProcessingModule> SeaWIFsProcessingModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+    std::shared_ptr<satdump::pipeline::ProcessingModule> SeaWiFSProcessingModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
     {
-        return std::make_shared<SeaWIFsProcessingModule>(input_file, output_file_hint, parameters);
+        return std::make_shared<SeaWiFSProcessingModule>(input_file, output_file_hint, parameters);
     }
 
 } // namespace seawifs

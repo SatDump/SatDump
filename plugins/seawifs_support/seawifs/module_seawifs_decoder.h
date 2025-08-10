@@ -7,7 +7,7 @@
 
 namespace seawifs
 {
-    class SeaWIFsProcessingModule : public satdump::pipeline::base::FileStreamToFileStreamModule
+    class SeaWiFSProcessingModule : public satdump::pipeline::base::FileStreamToFileStreamModule
     {
     protected:
         uint8_t *prelude;
@@ -21,15 +21,15 @@ namespace seawifs
         void write_images(uint32_t reception_timestamp);
 
     public:
-        SeaWIFsProcessingModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
-        ~SeaWIFsProcessingModule();
+        SeaWiFSProcessingModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
+        ~SeaWiFSProcessingModule();
         void process();
         void drawUI(bool window);
         nlohmann::json getModuleStats() { return satdump::pipeline::base::FileStreamToFileStreamModule::getModuleStats(); };
 
     public:
         static std::string getID() { return "module_seawifs_decoder"; }
-        virtual std::string getIDM() { return "SeaWIFs processing"; }
+        virtual std::string getIDM() { return "SeaWiFS processing"; }
         static nlohmann::json getParams() { return {}; } // TODOREWORK
         static std::shared_ptr<ProcessingModule> getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
     };
