@@ -1,6 +1,6 @@
 {
     "seawifs_processing": {
-        "name": "SeaWIFs archival format",
+        "name": "SeaWIFs archival data",
         "work": {
             // Figure out how to only have one step?
             "dat": {
