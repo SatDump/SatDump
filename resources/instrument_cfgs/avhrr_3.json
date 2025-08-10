@@ -13,9 +13,8 @@
         },
         {
             "name": "AVHRR 3a21 False Color",
-            "expression": "cch3a=(3a, sun_angle_compensated_reflective_radiance, 0, 5.41665); cch2=(2, sun_angle_compensated_reflective_radiance, 0, 97.0507); cch1=(1, sun_angle_compensated_reflective_radiance, 0, 46.203); cch3a, cch2, cch1",
+            "expression": "cch3a=(3a,sun_angle_compensated_reflective_radiance, 0,  4.3332); cch2=(2, sun_angle_compensated_reflective_radiance, 0, 77.64); cch1=(1, sun_angle_compensated_reflective_radiance, 0, 36.9624); lut=lut(lut/1d/stretchcon_avhrr.png);lut(cch3a, 0, 0), lut(cch2, 0, 1),lut(cch1, 0, 2)",
             "image": {
-                "white_balance": true,
                 "geo_correct": true
             },
             "description": "descriptions/321.md"
@@ -24,7 +23,6 @@
             "name": "AVHRR 3a21 False Color (uncompensated, NOAA-15)",
             "expression": "cch3a=(3a, reflective_radiance, 0,  2.5); cch2=(2, reflective_radiance, 0, 50); cch1=(1, reflective_radiance, 0, 23); cch3a, cch2, cch1",
             "image": {
-                "white_balance": true,
                 "geo_correct": true
             },
             "description": "descriptions/321.md"
@@ -76,7 +74,7 @@
         },
         {
             "name": "AVHRR 124 False Color (Cloud RGB)",
-            "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0, 46.203); cch2=(2, sun_angle_compensated_reflective_radiance, 0, 97.0507); cch4=(4, brightness_temperature, 203, 323); cch1, cch2, 1-cch4",
+            "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0, 33.3);cch2=(2, sun_angle_compensated_reflective_radiance, 0, 67.84);cch4=(4, brightness_temperature, 203, 323); cch1, cch2, 1-cch4",
             "image": {
                 "geo_correct": true
             },

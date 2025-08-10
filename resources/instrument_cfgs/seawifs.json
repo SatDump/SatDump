@@ -8,10 +8,12 @@
                 "individual_equalize": true
             },
             "description": "descriptions/221.md"
+
         },
         {
             "name": "Bathymetric",
             "expression": "ch6,ch4,ch2",
+
             "image": {
                 "individual_equalize": true
             },
@@ -24,6 +26,7 @@
                 "individual_equalize": true
             },
             "description": "descriptions/TrueColor.md"
+
         }
     ]
 }

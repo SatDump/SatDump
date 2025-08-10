@@ -120,7 +120,30 @@ void BladeRFSource::open()
         // logger->trace("BladeRF device has samplerate %d SPS", i);
         available_samplerates.push_back(i);
     }
+
+    auto old_max = bladerf_range_samplerate->max;
     available_samplerates.push_back(bladerf_range_samplerate->max);
+
+#ifdef BLADERF_HAS_WIDEBAND
+    if (bladerf_model == 2)
+    {
+        if (bladerf_enable_feature(bladerf_dev_obj, BLADERF_FEATURE_OVERSAMPLE, true) != 0)
+            logger->warn("Couldn't set oversample mode!");
+
+        bladerf_get_sample_rate_range(bladerf_dev_obj, BLADERF_CHANNEL_RX(channel_id), &bladerf_range_samplerate);
+
+        for (int i = 1e6; i < bladerf_range_samplerate->max; i += 1e6)
+        {
+            if (i > old_max)
+                available_samplerates.push_back(i);
+        }
+
+        available_samplerates.push_back(bladerf_range_samplerate->max);
+
+        if (bladerf_enable_feature(bladerf_dev_obj, BLADERF_FEATURE_DEFAULT, true) != 0)
+            logger->warn("Couldn't unset oversample mode!");
+    }
+#endif
 
     samplerate_widget.set_list(available_samplerates, true);
     bandwidth_widget.set_list(available_samplerates, true, "Hz");
@@ -185,10 +208,15 @@ void BladeRFSource::start()
     // Setup and start streaming
     // sample_buffer_size = calculate_buffer_size_from_samplerate(samplerate_widget.get_value(), 250);
     sample_buffer_size = std::min<int>(current_samplerate / 250, dsp::STREAM_BUFFER_SIZE);
-    sample_buffer_size = (sample_buffer_size / 1024) * 1024;
+    if (is_8bit && bladerf_model == 2)
+        sample_buffer_size = (sample_buffer_size / 2048) * 2048;
+    else
+        sample_buffer_size = (sample_buffer_size / 1024) * 1024;
     if (sample_buffer_size < 1024)
         sample_buffer_size = 1024;
-    logger->trace("BladeRF Buffer size %d", sample_buffer_size);
+    if (sample_buffer_size > 1048576)
+        sample_buffer_size = 1048576;
+    logger->trace("BladeRF Buffer size %d (%f)", sample_buffer_size, sample_buffer_size / 1024.0);
 
 #ifdef BLADERF_HAS_WIDEBAND
     bladerf_sync_config(bladerf_dev_obj, BLADERF_RX_X1, is_8bit ? BLADERF_FORMAT_SC8_Q7 : BLADERF_FORMAT_SC16_Q11, 16, sample_buffer_size, 8, 4000);
@@ -228,9 +256,7 @@ void BladeRFSource::stop()
     is_started = false;
 }
 
-void BladeRFSource::close()
-{
-}
+void BladeRFSource::close() {}
 
 void BladeRFSource::set_frequency(uint64_t frequency)
 {
@@ -250,17 +276,19 @@ void BladeRFSource::drawControlUI()
     samplerate_widget.render();
 
     if (channel_cnt > 1)
-        RImGui::Combo("Channel", &channel_id, "RX1\0"
-                                              "RX2\0");
+        RImGui::Combo("Channel", &channel_id,
+                      "RX1\0"
+                      "RX2\0");
     if (is_started)
         RImGui::endDisabled();
 
     // Gain settings
-    if (RImGui::Combo("Gain Mode", &gain_mode, "Default\0"
-                                               "Manual\0"
-                                               "Fast\0"
-                                               "Slow\0"
-                                               "Hybrid\0") &&
+    if (RImGui::Combo("Gain Mode", &gain_mode,
+                      "Default\0"
+                      "Manual\0"
+                      "Fast\0"
+                      "Slow\0"
+                      "Hybrid\0") &&
         is_started)
         set_gains();
     if (is_open)
@@ -299,10 +327,7 @@ void BladeRFSource::set_samplerate(uint64_t samplerate)
         throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
-uint64_t BladeRFSource::get_samplerate()
-{
-    return samplerate_widget.get_value();
-}
+uint64_t BladeRFSource::get_samplerate() { return samplerate_widget.get_value(); }
 
 std::vector<dsp::SourceDescriptor> BladeRFSource::getAvailableSources()
 {

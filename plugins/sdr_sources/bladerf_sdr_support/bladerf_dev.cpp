@@ -117,22 +117,76 @@ namespace satdump
                 throw satdump_exception("Could not open BladeRF '" + std::string(info.serial) + "' device! " + std::string(bladerf_strerror(r)));
             is_open = true;
 
-            // TODOREWORK all channels
-            bladerf_set_sample_rate(bladerf_dev_obj, BLADERF_CHANNEL_RX(0), samplerate, NULL);
-            logger->info("Actual samplerate %f (precise)", samplerate);
+            // Get the board version. TODOREWORK MAKE THIS COMMON!!!!
+            int bladerf_model;
+            const char *bladerf_name = bladerf_get_board_name(bladerf_dev_obj);
+            if (std::string(bladerf_name) == "bladerf1")
+                bladerf_model = 1;
+            else if (std::string(bladerf_name) == "bladerf2")
+                bladerf_model = 2;
+            else
+                bladerf_model = 0;
+
+#ifdef BLADERF_HAS_WIDEBAND
+            if (samplerate > 61.44e6)
+            {
+                is_8bit = true;
+                if (bladerf_enable_feature(bladerf_dev_obj, BLADERF_FEATURE_OVERSAMPLE, true) != 0)
+                    logger->error("Could not set Oversample mode");
+                logger->debug("Using BladeRF Wideband mode");
+            }
+            else
+            {
+                is_8bit = false;
+                if (bladerf_enable_feature(bladerf_dev_obj, BLADERF_FEATURE_DEFAULT, true) != 0)
+                    logger->error("Could not set Default mode");
+                logger->debug("Using BladeRF Default mode");
+            }
+#endif
+
+#ifdef BLADERF_HAS_WIDEBAND
+            if (bladerf_model == 2 && samplerate <= 61.44e6)
+            {
+#endif
+                bladerf_set_sample_rate(bladerf_dev_obj, BLADERF_CHANNEL_RX(0), samplerate, NULL);
+                logger->info("Actual samplerate %f (precise)", samplerate);
+#ifdef BLADERF_HAS_WIDEBAND
+            }
+            else
+            {
+                struct bladerf_rational_rate rational_rate, actual;
+                rational_rate.integer = static_cast<uint32_t>(samplerate);
+                rational_rate.den = 10000;
+                rational_rate.num = (samplerate - rational_rate.integer) * rational_rate.den;
+                bladerf_set_rational_sample_rate(bladerf_dev_obj, BLADERF_CHANNEL_RX(0), &rational_rate, &actual);
+                uint64_t actuals = actual.integer + (actual.num / static_cast<double>(actual.den));
+                logger->info("Actual samplerate %d (rational)", actuals);
+            }
+#endif
+
             bladerf_set_bandwidth(bladerf_dev_obj, BLADERF_CHANNEL_RX(0), samplerate, NULL);
 
-            sample_buffer_size = samplerate / 250;
-            sample_buffer_size = (sample_buffer_size / 1024) * 1024;
+            sample_buffer_size = std::min<int>(samplerate / 250, 1e6);
+            if (is_8bit && bladerf_model == 2)
+                sample_buffer_size = (sample_buffer_size / 2048) * 2048;
+            else
+                sample_buffer_size = (sample_buffer_size / 1024) * 1024;
+
             if (sample_buffer_size < 1024)
                 sample_buffer_size = 1024;
+            if (sample_buffer_size > 1048576)
+                sample_buffer_size = 1048576;
             logger->trace("BladeRF Buffer size %d", sample_buffer_size);
 
             init();
 
             if (rx_ch_number > 0)
             {
+#ifdef BLADERF_HAS_WIDEBAND
+                bladerf_sync_config(bladerf_dev_obj, rx_ch_number == 2 ? BLADERF_RX_X2 : BLADERF_RX_X1, is_8bit ? BLADERF_FORMAT_SC8_Q7 : BLADERF_FORMAT_SC16_Q11, 16, sample_buffer_size, 8, 4000);
+#else
                 bladerf_sync_config(bladerf_dev_obj, rx_ch_number == 2 ? BLADERF_RX_X2 : BLADERF_RX_X1, BLADERF_FORMAT_SC16_Q11, 16, sample_buffer_size, 8, 4000);
+#endif
                 if (rx_ch_number == 2 || rx_ch_id == 0)
                     bladerf_enable_module(bladerf_dev_obj, BLADERF_CHANNEL_RX(0), true);
                 if (rx_ch_number == 2 || rx_ch_id == 1)
@@ -140,7 +194,11 @@ namespace satdump
             }
             if (tx_ch_number > 0)
             {
+#ifdef BLADERF_HAS_WIDEBAND
+                bladerf_sync_config(bladerf_dev_obj, tx_ch_number == 2 ? BLADERF_TX_X2 : BLADERF_TX_X1, is_8bit ? BLADERF_FORMAT_SC8_Q7 : BLADERF_FORMAT_SC16_Q11, 16, sample_buffer_size, 8, 4000);
+#else
                 bladerf_sync_config(bladerf_dev_obj, tx_ch_number == 2 ? BLADERF_TX_X2 : BLADERF_TX_X1, BLADERF_FORMAT_SC16_Q11, 16, sample_buffer_size, 8, 4000);
+#endif
                 if (tx_ch_number == 2 || tx_ch_id == 0)
                     bladerf_enable_module(bladerf_dev_obj, BLADERF_CHANNEL_TX(0), true);
                 if (tx_ch_number == 2 || tx_ch_id == 1)
@@ -259,7 +317,30 @@ namespace satdump
                     available_samplerates.push_back(bladerf_range_samplerate->min);
                     for (int i = 1e6; i < bladerf_range_samplerate->max; i += 1e6)
                         available_samplerates.push_back(i);
+                    auto old_max = bladerf_range_samplerate->max;
                     available_samplerates.push_back(bladerf_range_samplerate->max);
+
+#ifdef BLADERF_HAS_WIDEBAND
+                    if (bladerf_model == 2)
+                    {
+                        if (bladerf_enable_feature(bladerf_dev_obj, BLADERF_FEATURE_OVERSAMPLE, true) != 0)
+                            logger->warn("Couldn't set oversample mode!");
+
+                        // Get all ranges
+                        bladerf_get_sample_rate_range(bladerf_dev_obj, BLADERF_CHANNEL_RX(0), &bladerf_range_samplerate);
+
+                        for (int i = 1e6; i < bladerf_range_samplerate->max; i += 1e6)
+                        {
+                            if (i > old_max)
+                                available_samplerates.push_back(i);
+                        }
+
+                        available_samplerates.push_back(bladerf_range_samplerate->max);
+
+                        if (bladerf_enable_feature(bladerf_dev_obj, BLADERF_FEATURE_DEFAULT, true) != 0)
+                            logger->warn("Couldn't unset oversample mode!");
+                    }
+#endif
 
                     //                    add_param_list(c, "samplerate", "uint", available_samplerates, "Samplerate");
                     //                    add_param_range(c, "samplerate", "uint", bladerf_range_samplerate->min, bladerf_range_samplerate->max, bladerf_range_samplerate->step, "Samplerate");

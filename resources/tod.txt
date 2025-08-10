@@ -6,3 +6,4 @@ Did you know that SatDump supports executing an AngelScript script when a pipeli
 Did you know that you can drag and drop HDF files from FengYun-2, -3 and -4 official data?
 Did you know that SatDump has a full-blown LUT generator to help you develop your own LUTs?
 Did you know you can change the theme for SatDump in the settings?
+Farewell NOAA-18, decomissioned on 06/06/2025 17:40 UTC after 20 years of loyal direct broadcast service.
