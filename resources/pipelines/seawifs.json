@@ -2,16 +2,14 @@
     "seawifs_processing": {
         "name": "SeaWIFs archival format",
         "work": {
-            "frm": {
+            // Figure out how to only have one step?
+            "dat": {
                 "module": "module_seawifs_decoder",
-                "parameters": {
-                    "instrument_type": "mtvza"
-                }
+                "parameters": {}
             },
             "products": {
                 "module": "module_seawifs_decoder",
-                "parameters": {
-                }
+                "parameters": {}
             }
         }
     }
