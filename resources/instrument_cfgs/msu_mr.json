@@ -2,7 +2,7 @@
     "name": "MSU-MR",
     "presets": [
         {
-            "name": "AVHRR 221 False Color (Uncalibrated)",
+            "name": "AVHRR 221 False Color (uncalibrated)",
             "expression": "ch2, ch2, ch1",
             "image": {
                 "white_balance": true,
@@ -12,15 +12,22 @@
         },
         {
             "name": "AVHRR 221 False Color",
-            "expression": "cch2=(2, sun_angle_compensated_reflective_radiance, 0, 97.0507); cch1=(1, sun_angle_compensated_reflective_radiance, 0, 46.203); cch2, cch2, cch1",
+            "expression": "cch2=(2, reflective_radiance, 0, 25; cch1=(1, reflective_radiance, 0, 15); cch2, cch2, cch1",
             "image": {
-                "white_balance": true,
                 "geo_correct": true
             },
             "description": "descriptions/221.md"
         },
         {
-            "name": "AVHRR 3a21 False Color (Uncalibrated)",
+            "name": "AVHRR 221 False Color (sun angle compensated)",
+            "expression": "cch2=(2, sun_angle_compensated_reflective_radiance, 0, 25; cch1=(1, sun_angle_compensated_reflective_radiance, 0, 15); cch2, cch2, cch1",
+            "image": {
+                "geo_correct": true
+            },
+            "description": "descriptions/221.md"
+        },
+        {
+            "name": "AVHRR 3a21 False Color (uncalibrated)",
             "expression": "ch3, ch2, ch1",
             "image": {
                 "white_balance": true,
@@ -30,20 +37,25 @@
             "autogen": true
         },
         {
-            "name": "AVHRR 3a21 False Color",
-            "expression": "cch3=(3, sun_angle_compensated_reflective_radiance, 0, 5.41665); cch2=(2, sun_angle_compensated_reflective_radiance, 0, 97.0507); cch1=(1, sun_angle_compensated_reflective_radiance, 0, 46.203); cch3, cch2, cch1",
+            "name": "AVHRR 3a21 False Color ",
+            "expression": "cch3=(3,reflective_radiance, 0, 4.95); cch2=(2, reflective_radiance, 0, 27.5); cch1=(1, reflective_radiance, 0, 16.5); cch3, cch2, cch1",
             "image": {
-                "white_balance": true,
+                "geo_correct": true
+            },
+            "description": "descriptions/321.md"
+        },
+        {
+            "name": "AVHRR 3a21 False Color (sun angle compensated)",
+            "expression": "cch3=(3, sun_angle_compensated_reflective_radiance, 0, 4.95); cch2=(2, sun_angle_compensated_reflective_radiance, 0, 27.5); cch1=(1, sun_angle_compensated_reflective_radiance, 0, 16.5); cch3, cch2, cch1",
+            "image": {
                 "geo_correct": true
             },
             "description": "descriptions/321.md"
         },
         {
             "name": "MSU-MR 124 False Color",
-            "expression": "ch1, ch2, 1-ch4",
+            "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0, 25.3);cch2=(2, sun_angle_compensated_reflective_radiance, 0, 34.84);cch4=(4, brightness_temperature, 263, 383); cch1, cch2, (1-cch4)/2",
             "image": {
-                "individual_equalize": true,
-                "white_balance": true,
                 "geo_correct": true
             }
         },
@@ -57,9 +69,8 @@
         },
         {
             "name": "Natural Color",
-            "expression": "((0.5*max(ch4,min(ch2,ch1)) + 0.5*ch2)+0.3*ch3)*0.85, ch2, ch1",
+            "expression": "cch1=(1, reflective_radiance, 0.000000,15.203000);cch2=(2, reflective_radiance, 0.000000, 24.050700);cch3=(3, reflective_radiance, 0.000000, 3.500000);0.6*max(cch3,min(cch2,ch1)) + 0.35*cch2, cch2, cch1",
             "image": {
-                "white_balance": true,
                 "geo_correct": true
             },
             "description": "descriptions/NatColor.md"
