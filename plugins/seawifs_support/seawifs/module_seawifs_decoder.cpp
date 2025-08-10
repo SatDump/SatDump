@@ -214,7 +214,7 @@ namespace seawifs
             // 32 bytesare  added since there is some weird padding and this is the only way it works
             // WARNING: INSTRUMENT AND ANCILLARY TELEMETRY IS NOT SAVED! It starts at
             // 790 bytes into the file, but we start 32 bytes AHEAD of that to get rid of
-            // the padding. Figure the padding (striped on left/right side of image) out to remove
+            // the padding. Figure the padding (stripes on left/right side of image) out to remove
             // the arbitrary offset
             repack_words_to_16(&frame[DATA_OFFSET + 32], LAC_WORD_COUNT, lac_data);
 
