@@ -279,8 +279,12 @@ namespace satdump
                     plugin_hdl.save();
 
                 // Re-initialize auto TLE update
-                taskScheduler->del_task("auto_tle_update");
-                autoUpdateTLE(user_path + "/satdump_tles.txt");
+                ui_thread_pool.push(
+                    [](int)
+                    {
+                        taskScheduler->del_task("auto_tle_update");
+                        autoUpdateTLE(user_path + "/satdump_tles.txt");
+                    });
 
                 // Save config files
                 satdump_cfg.saveUser();
