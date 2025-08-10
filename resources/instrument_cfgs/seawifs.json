@@ -2,6 +2,15 @@
     "name": "SeaWiFS",
     "presets": [
         {
+            "name": "True Color",
+            "expression": "ch6, ch5, ch2",
+            "image": {
+                "individual_equalize": true
+            },
+            "description": "descriptions/TrueColor.md"
+
+        },
+        {
             "name": "AVHRR 221 False Color",
             "expression": "ch8, ch8, ch5",
             "image": {
@@ -18,15 +27,6 @@
                 "individual_equalize": true
             },
             "autogen": true
-        },
-        {
-            "name": "True Color",
-            "expression": "ch6, ch5, ch2",
-            "image": {
-                "individual_equalize": true
-            },
-            "description": "descriptions/TrueColor.md"
-
         }
     ]
 }
