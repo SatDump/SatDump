@@ -29,7 +29,7 @@ namespace satdump
                 std::shared_ptr<satdump::utils::FilesIteratorItem> _f = std::make_shared<satdump::utils::FolderFileIteratorItem>(fpath);
                 toproc_info = parseOfficialInfo(_f);
 
-                if (toproc_info.type != PRODUCT_NONE)
+                if (toproc_info.type == PRODUCT_NONE)
                 {
                     satdump::utils::ZipFilesIterator fit(fpath);
                     std::shared_ptr<satdump::utils::FilesIteratorItem> f;
