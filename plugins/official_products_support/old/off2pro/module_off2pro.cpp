@@ -9,6 +9,8 @@
 
 #include "../nc2pro/jpss/jpss_viirs.h"
 
+#include "../../procfile.h"
+
 namespace off2pro
 {
     Off2ProModule::Off2ProModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters) : ProcessingModule(input_file, output_file_hint, parameters) {}
@@ -18,6 +20,14 @@ namespace off2pro
         std::string source_off_file = d_input_file;
         std::string pro_output_file = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/";
 
+        auto info = satdump::official::identifyOfficialProductFile(source_off_file);
+
+        auto products = satdump::official::processOfficialProductFile(info, source_off_file);
+
+        products->save(pro_output_file);
+        d_output_file = pro_output_file + "/product.cbor";
+
+#if 0 // TODOREWORK
         filesize = getFilesize(source_off_file);
         std::filesystem::path source_off_path(source_off_file);
 
@@ -65,6 +75,7 @@ namespace off2pro
         {
             d_output_file = pro_output_file + "/product.cbor";
         }
+#endif
     }
 
     void Off2ProModule::drawUI(bool window)
