@@ -127,7 +127,7 @@ namespace satdump
 
             bool handler_present = false;
 
-            if (ImGui::CollapsingHeader("General", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::CollapsingHeader("Root", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 auto prev_curr = curr_handler;
 
@@ -226,10 +226,16 @@ namespace satdump
                         ImGui::EndMenu();
                     }
 
+                    ImGui::EndMenu();
+                }
+
+                if (ImGui::BeginMenu("Add"))
+                {
+                    if (ImGui::MenuItem("Projection"))
+                        addHandler(std::make_shared<handlers::ProjectionHandler>());
+
                     if (ImGui::BeginMenu("Tools"))
                     { // TODOREWORK?
-                        if (ImGui::MenuItem("Projection"))
-                            addHandler(std::make_shared<handlers::ProjectionHandler>());
                         if (ImGui::MenuItem("DSP Flowgraph"))
                             addHandler(std::make_shared<handlers::DSPFlowGraphHandler>());
                         if (ImGui::MenuItem("Waterfall TEST"))
