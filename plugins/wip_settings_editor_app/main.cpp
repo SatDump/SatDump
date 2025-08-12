@@ -13,7 +13,7 @@ public:
 
     static void renderExplorerLoaderButton(const satdump::explorer::RenderLoadMenuElementsEvent &evt)
     {
-        if (ImGui::BeginMenu("File"))
+        if (ImGui::BeginMenu("Add"))
         {
             if (ImGui::BeginMenu("Tools"))
             {

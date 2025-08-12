@@ -101,7 +101,12 @@ namespace satdump
                     if (ImGui::MenuItem("Processing"))
                         offline_en = true;
 
-                    if (ImGui::MenuItem("Add Recorder"))
+                    ImGui::EndMenu();
+                }
+
+                if (ImGui::BeginMenu("Add"))
+                {
+                    if (ImGui::MenuItem("Recorder"))
                     {
                         auto h = std::make_shared<RecorderApplication>();
                         eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({h});
