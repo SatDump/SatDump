@@ -68,13 +68,13 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
     std::filesystem::path extension = ".so";
 #endif
 
+    std::vector<std::string> failed_plugins;
+    std::vector<std::string> already_loaded_plugins;
+
     // Load all plugins
     for (std::string &plugins_path : plugins_paths)
     {
         logger->info("Loading plugins from " + plugins_path);
-
-        std::vector<std::string> failed_plugins;
-        std::vector<std::string> already_loaded_plugins;
 
         std::filesystem::recursive_directory_iterator pluginIterator(plugins_path);
         std::error_code iteratorError;
@@ -112,46 +112,46 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
             if (iteratorError)
                 logger->critical(iteratorError.message());
         }
+    }
 
-        // Try to reload failed ones, just in case. This allows handling dependencies to
-        // some extent.
-        int dependencies_layers = 0;
-        const int max_dependencies_layers = 10;
-        while (failed_plugins.size() && dependencies_layers < max_dependencies_layers)
+    // Try to reload failed ones, just in case. This allows handling dependencies to
+    // some extent.
+    int dependencies_layers = 0;
+    const int max_dependencies_layers = 10;
+    while (failed_plugins.size() && dependencies_layers < max_dependencies_layers)
+    {
+        std::vector<std::string> really_failed;
+        for (auto &s : failed_plugins)
         {
-            std::vector<std::string> really_failed;
-            for (auto &s : failed_plugins)
+            try
             {
-                try
-                {
-                    std::shared_ptr<satdump::Plugin> pl = loadPlugin(s);
-                    loaded_plugins.insert({pl->getID(), pl});
-                }
-                catch (std::runtime_error &e)
-                {
-                    if (dependencies_layers == (max_dependencies_layers - 1))
-                        logger->error(e.what());
-                    really_failed.push_back(s);
-                }
+                std::shared_ptr<satdump::Plugin> pl = loadPlugin(s);
+                loaded_plugins.insert({pl->getID(), pl});
             }
-            failed_plugins = really_failed;
-            dependencies_layers++;
+            catch (std::runtime_error &e)
+            {
+                if (dependencies_layers == (max_dependencies_layers - 1))
+                    logger->error(e.what());
+                really_failed.push_back(s);
+            }
         }
+        failed_plugins = really_failed;
+        dependencies_layers++;
+    }
 
-        if (loaded_plugins.size() > 0)
-        {
-            logger->debug("Loaded plugins (" + std::to_string(loaded_plugins.size()) + ") : ");
-            for (std::pair<const std::string, std::shared_ptr<satdump::Plugin>> &it : loaded_plugins)
-                logger->debug(" - " + it.first);
-        }
-        else
-            logger->warn("No Plugins in " + plugins_path + "!");
+    if (loaded_plugins.size() > 0)
+    {
+        logger->debug("Loaded plugins (" + std::to_string(loaded_plugins.size()) + ") : ");
+        for (std::pair<const std::string, std::shared_ptr<satdump::Plugin>> &it : loaded_plugins)
+            logger->debug(" - " + it.first);
+    }
+    else
+        logger->warn("No Plugins loaded!");
 
-        if (failed_plugins.size())
-        {
-            logger->warn("The following plugins failed to load :");
-            for (auto &s : failed_plugins)
-                logger->warn(" - " + std::filesystem::path(s).stem().string());
-        }
+    if (failed_plugins.size())
+    {
+        logger->warn("The following plugins failed to load :");
+        for (auto &s : failed_plugins)
+            logger->warn(" - " + std::filesystem::path(s).stem().string());
     }
 }

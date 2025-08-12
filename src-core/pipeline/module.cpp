@@ -115,7 +115,7 @@ namespace satdump
             satdump::eventBus->fire_event<RegisterModulesEvent>({modules_registry});
 
             // Log them out
-            logger->debug("Registered modules TODOREWORK (" + std::to_string(modules_registry.size()) + ") : ");
+            logger->debug("Registered modules (" + std::to_string(modules_registry.size()) + ") : ");
             for (auto &it : modules_registry)
                 logger->debug(" - " + it.id);
         }
