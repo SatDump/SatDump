@@ -1,3 +1,4 @@
+#include <algorithm>
 #define SATDUMP_DLL_EXPORT 1
 #include "plugin.h"
 #ifdef _WIN32
@@ -73,6 +74,7 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
         logger->info("Loading plugins from " + plugins_path);
 
         std::vector<std::string> failed_plugins;
+        std::vector<std::string> already_loaded_plugins;
 
         std::filesystem::recursive_directory_iterator pluginIterator(plugins_path);
         std::error_code iteratorError;
@@ -87,10 +89,14 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
                 goto skip_this;
 #endif
 
+            if (std::find_if(already_loaded_plugins.begin(), already_loaded_plugins.end(), [&](auto &v1) { return v1 == std::filesystem::path(path).stem().string(); }) != already_loaded_plugins.end())
+                goto skip_this;
+
             try
             {
                 std::shared_ptr<satdump::Plugin> pl = loadPlugin(path);
                 loaded_plugins.insert({pl->getID(), pl});
+                already_loaded_plugins.push_back(std::filesystem::path(path).stem().string());
             }
             catch (std::runtime_error &e)
             {
