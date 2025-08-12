@@ -90,7 +90,10 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
 #endif
 
             if (std::find_if(already_loaded_plugins.begin(), already_loaded_plugins.end(), [&](auto &v1) { return v1 == std::filesystem::path(path).stem().string(); }) != already_loaded_plugins.end())
+            {
+                logger->trace("Skipping duplicate plugin : " + std::filesystem::path(path).stem().string());
                 goto skip_this;
+            }
 
             try
             {
