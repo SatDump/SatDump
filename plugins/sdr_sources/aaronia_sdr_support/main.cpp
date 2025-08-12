@@ -2,6 +2,7 @@
 #include "core/config.h"
 #include "core/plugin.h"
 #include "dynload.h"
+#include <exception>
 
 class AaroniaSDRSupport : public satdump::Plugin
 {
@@ -19,10 +20,17 @@ public:
         if (!satdump::satdump_cfg.main_cfg["plugin_settings"]["aaronia_support"].is_null())
             rtsa_api_path = satdump::satdump_cfg.main_cfg["plugin_settings"]["aaronia_support"];
 
-        rtsa_api = new RTSAApiInstance(rtsa_api_path);
+        try
+        {
+            rtsa_api = new RTSAApiInstance(rtsa_api_path);
 
-        if (rtsa_api->isOpen())
-            satdump::eventBus->register_handler<dsp::RegisterDSPSampleSourcesEvent>(registerSources);
+            if (rtsa_api->isOpen())
+                satdump::eventBus->register_handler<dsp::RegisterDSPSampleSourcesEvent>(registerSources);
+        }
+        catch (std::exception &e)
+        {
+            logger->error("RTSA API could not be loaded! %s", e.what());
+        }
     }
 
     static void registerSources(const dsp::RegisterDSPSampleSourcesEvent &evt)
