@@ -44,7 +44,7 @@ namespace satdump
             //     Handler::drawTreeMenu(h);
             // }
 
-            std::string getName() { return "ProjectionToRename"; }
+            std::string getName() { return "Projection"; } // TODOREWORK allow renaming?
             std::string getID() { return "projection_handler"; }
         };
     } // namespace handlers
