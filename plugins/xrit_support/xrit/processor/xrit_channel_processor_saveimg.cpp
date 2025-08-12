@@ -18,7 +18,7 @@
 #include <memory>
 #include <string>
 
-#include "../../../official_products_support/processors/nat/msg/nat_utils.h"
+#include "../../../firstparty_support/processors/nat/msg/nat_utils.h"
 
 namespace satdump
 {
@@ -217,8 +217,8 @@ namespace satdump
                     nlohmann::json calib_cfg;
                     for (int i = 0; i < 12; i++)
                     {
-                        double slope = official::get_r8(&header_ptr[hoffset + (i * 2 + 0) * 8]);
-                        double offset = official::get_r8(&header_ptr[hoffset + (i * 2 + 1) * 8]);
+                        double slope = firstparty::get_r8(&header_ptr[hoffset + (i * 2 + 0) * 8]);
+                        double offset = firstparty::get_r8(&header_ptr[hoffset + (i * 2 + 1) * 8]);
                         logger->trace("Channel %d Calibration Slope %f Offset %f", i + 1, slope, offset);
                         calib_cfg["vars"]["slope"][i] = slope;
                         calib_cfg["vars"]["offset"][i] = offset;
@@ -235,9 +235,9 @@ namespace satdump
 
                     int offset = 1 + 2 + 14 + 12 + 192 + 6 * 12 + 16;
 
-                    int LowerEastColumnActual = official::get_i4(&trailer_ptr[offset + 8]);
-                    int UpperSouthLineActual = official::get_i4(&trailer_ptr[offset + 16]);
-                    int UpperEastColumnActual = official::get_i4(&trailer_ptr[offset + 24]);
+                    int LowerEastColumnActual = firstparty::get_i4(&trailer_ptr[offset + 8]);
+                    int UpperSouthLineActual = firstparty::get_i4(&trailer_ptr[offset + 16]);
+                    int UpperEastColumnActual = firstparty::get_i4(&trailer_ptr[offset + 24]);
 
                     logger->debug("int LowerEastColumnActual = %d; int UpperSouthLineActual = %d; int UpperEastColumnActual = %d;", LowerEastColumnActual, UpperSouthLineActual, UpperEastColumnActual);
 
