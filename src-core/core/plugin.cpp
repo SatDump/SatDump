@@ -81,6 +81,7 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
         while (pluginIterator != std::filesystem::recursive_directory_iterator())
         {
             std::string path = pluginIterator->path().string();
+            std::string currfile = std::filesystem::path(path).stem().string();
             if (!std::filesystem::is_regular_file(pluginIterator->path()) || pluginIterator->path().extension() != extension)
                 goto skip_this;
 
@@ -89,9 +90,9 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
                 goto skip_this;
 #endif
 
-            if (std::find_if(already_loaded_plugins.begin(), already_loaded_plugins.end(), [&](auto &v1) { return v1 == std::filesystem::path(path).stem().string(); }) != already_loaded_plugins.end())
+            if (std::find_if(already_loaded_plugins.begin(), already_loaded_plugins.end(), [&](auto &v1) { return v1 == currfile; }) != already_loaded_plugins.end())
             {
-                logger->trace("Skipping duplicate plugin : " + std::filesystem::path(path).stem().string());
+                logger->warn("Skipping duplicate plugin : " + currfile);
                 goto skip_this;
             }
 
@@ -99,7 +100,7 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
             {
                 std::shared_ptr<satdump::Plugin> pl = loadPlugin(path);
                 loaded_plugins.insert({pl->getID(), pl});
-                already_loaded_plugins.push_back(std::filesystem::path(path).stem().string());
+                already_loaded_plugins.push_back(currfile);
             }
             catch (std::runtime_error &e)
             {
