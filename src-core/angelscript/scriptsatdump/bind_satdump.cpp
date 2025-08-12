@@ -1,6 +1,7 @@
 #include "bind_satdump.h"
 
 #include "angelscript/scriptarray/scriptarray.h"
+#include "angelscript/scriptdictionary/scriptdictionary.h"
 #include "angelscript/scriptstdstring/scriptstdstring.h"
 #include "bind_product.h"
 
@@ -24,6 +25,7 @@ namespace satdump
         {
             RegisterStdString(engine);
             RegisterScriptArray(engine, true);
+            RegisterScriptDictionary(engine);
 
             registerLogger(engine);
             registerSystem(engine);
