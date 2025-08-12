@@ -360,13 +360,15 @@ namespace satdump
                     {
                         ImVec2 line_size = ImGui::CalcTextSize("Start Processing");
                         ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), last_pos + (26 * 1) * scale});
-                        ImGui::Button("Start Processing");
+                        if (ImGui::Button("Start Processing"))
+                            showProcessing(); // TODOREWORK do not bind this directly.
                     }
 
                     {
                         ImVec2 line_size = ImGui::CalcTextSize("Add Recorder");
                         ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), last_pos + (26 * 2) * scale});
-                        ImGui::Button("Add Recorder");
+                        if (ImGui::Button("Add Recorder"))
+                            eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({std::make_shared<RecorderApplication>()}); // TODOREWORK do not bind this directly.
                     }
 
                     // ImVec2 slogan_size1 = ImGui::CalcTextSize(slogan1.c_str());

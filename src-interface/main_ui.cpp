@@ -77,6 +77,8 @@ namespace satdump
     bool about_en = false;
     bool settings_en = false;
 
+    void showProcessing() { offline_en = 1; }
+
     void renderMainUI()
     {
         if (update_ui)
@@ -110,10 +112,7 @@ namespace satdump
                 if (ImGui::BeginMenu("Add"))
                 {
                     if (ImGui::MenuItem("Recorder"))
-                    {
-                        auto h = std::make_shared<RecorderApplication>();
-                        eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({h});
-                    }
+                        eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({std::make_shared<RecorderApplication>()});
 
                     ImGui::EndMenu();
                 }

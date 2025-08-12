@@ -18,6 +18,9 @@ namespace satdump
     void exitMainUI();
     void renderMainUI();
 
+    // TODOREWORK
+    void showProcessing();
+
     // TODOREWORK move into another namespace?
     struct SetIsProcessingEvent
     {
