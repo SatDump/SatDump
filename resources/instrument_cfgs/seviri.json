@@ -3,18 +3,16 @@
     "presets": [
         {
             "name": "AVHRR 221 False Color",
-            "expression": "ch2,ch2,ch1",
+            "expression": "cch1=(1, reflective_radiance, 0.000000, 20.760000);cch2=(2, reflective_radiance, 0.000000, 23.240000);ch2,ch2,ch1",
             "image": {
-                "white_balance": true,
                 "remove_background": true
             },
             "description": "descriptions/221.md"
         },
         {
             "name": "AVHRR 3a21 False Color",
-            "expression": "ch3,ch2,ch1",
+            "expression": "cch1=(1, reflective_radiance, 0.000000, 20.760000);cch2=(2, reflective_radiance, 0.000000, 23.240000);cch3=(3, reflective_radiance, 0.000000, 19.850000);ch3,ch2,ch1",
             "image": {
-                "white_balance": true,
                 "remove_background": true
             },
             "description": "descriptions/321.md",
@@ -22,9 +20,8 @@
         },
         {
             "name": "Natural Color",
-            "expression": "((0.5*max(ch3,min(ch2,ch1)) + 0.5*ch2) / 0.7)^0.65, (ch2/0.7)^0.65, (ch1/0.7)^0.65",
+            "expression": "cch1=(1, reflective_radiance, 0.000000, 17.760000);cch2=(2, reflective_radiance, 0.000000, 23.240000);cch3=(3, reflective_radiance, 0.000000, 22.850000);max(cch3,min(cch2,cch1)) + cch2^2.5,cch2,cch1",
             "image": {
-                "white_balance": true,
                 "remove_background": true
             },
             "description": "descriptions/NatColor.md"
@@ -48,24 +45,20 @@
             "description": "descriptions/543b.md"
         },
         {
-            "name": "Day Microphysics",
-            "expression": "ch1,ch4^2.5, ch9",
+            "name": "Day Microphysics (Metop)",
+            "expression": "cch9=(9, brightness_temperature, 203.000000, 323.000000);cch3=(3, reflective_radiance, 0.000000, 15.880000);cch2=(2, reflective_radiance, 0.000000, 18.5840000);cch2,cch3,cch9",
             "image": {
-                "individual_equalize": true,
-                "white_balance": true,
-                "remove_background": true
+                    "remove_background": true
             },
             "description": "descriptions/DayMicro.md"
         },
         {
-            "name": "Snow enhancement",
-            "expression": "cch1=(1, reflective_radiance, 0, 20.76); cch9=(9, reflective_radiance, 5, 100); cch3=(3, reflective_radiance, 0, 19.85); ((3*cch1-cch9)/2)^1.7, ((3*cch1+cch9)/4)^1.7, (cch1-cch3)^1.7",
+            "name": "SEVIRI Snow enhancement",
+            "expression": "cch4=(4, emissive_radiance, 0.010000, 0.690000);cch3=(3, reflective_radiance, 0.000000, 13.8950000);cch2=(2, reflective_radiance, 0.000000, 23.240000);cch2^(1/1.9),cch3^(1/1.9),cch4^(1/1.9)",
             "image": {
-                "individual_equalize": true,
-                "white_balance": true,
                 "remove_background": true
             },
-            "description": "descriptions/Snow.md"
+            "description": "descriptions/SEVIRISnow.md"
         },
         {
             "name": "MeCIDA T6a Cirrus Detection (full)",
