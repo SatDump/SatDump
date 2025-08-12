@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     std::string path = argv[1];
 
     {
-        satdump::official::OfficialProductInfo info;
+        satdump::firstparty::FirstPartyProductInfo info;
 
         bool is_zip = std::filesystem::path(path).extension() == ".zip";
         bool is_file = std::filesystem::is_regular_file(path);
@@ -54,8 +54,8 @@ int main(int argc, char *argv[])
             {
                 if (f)
                 {
-                    info = satdump::official::parseOfficialInfo(f);
-                    if (info.type != satdump::official::PRODUCT_NONE)
+                    info = satdump::firstparty::parseFirstPartyInfo(f);
+                    if (info.type != satdump::firstparty::PRODUCT_NONE)
                         break;
                 }
             }
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
         else if (is_file)
         {
             std::shared_ptr<satdump::utils::FilesIteratorItem> f = std::make_shared<satdump::utils::FolderFileIteratorItem>(path);
-            info = satdump::official::parseOfficialInfo(f);
+            info = satdump::firstparty::parseFirstPartyInfo(f);
         }
         else
         {
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
                 if (!f)
                     continue;
 
-                if (info.group_id == satdump::official::parseOfficialInfo(f).group_id)
+                if (info.group_id == satdump::firstparty::parseFirstPartyInfo(f).group_id)
                 {
                     logger->trace(" - " + f->name);
                 }

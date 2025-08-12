@@ -240,11 +240,11 @@ if(PLUGIN_OTHERS OR PLUGINS_ALL)
   add_subdirectory(others_support)
 endif()
 
-option(PLUGIN_OFFICIAL_PRODUCTS
-       "Enable the support plugin for official satellite products" OFF)
+option(PLUGIN_FIRSTPARTY_SUPPORT
+       "Enable the support plugin for first-party satellite products" OFF)
 
-if(PLUGIN_OFFICIAL_PRODUCTS OR PLUGINS_ALL)
-  add_subdirectory(official_products_support)
+if(PLUGIN_FIRSTPARTY_SUPPORT OR PLUGINS_ALL)
+  add_subdirectory(firstparty_support)
 endif()
 
 option(PLUGIN_DVB "Enable the support plugin for DVB Standards (DVB-S, DVB-S2)"
