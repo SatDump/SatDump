@@ -85,10 +85,9 @@
             "description": "descriptions/ThermalUncal.md"
         },
         {
-            "name": "Day Microphysics",
-            "expression": "ch1, ch4^2.5, ch5",
+            "name": "Day Microphysics (Metop)",
+            "expression": "cch3=(3, sun_angle_compensated_reflective_radiance, 0, 6.265); cch2=(2, sun_angle_compensated_reflective_radiance, 0, 36.7); cch5=(5, brightness_temperature, 203.000000, 323.000000);cch2,cch3,cch5",
             "image": {
-                "individual_equalize": true,
                 "geo_correct": true
             },
             "description": "descriptions/DayMicro.md"

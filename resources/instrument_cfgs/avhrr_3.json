@@ -82,10 +82,9 @@
         },
         {
             "name": "Day Microphysics (Metop)",
-            "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0, 46.203); cch3a=(3a, sun_angle_compensated_reflective_radiance, 0, 1.4); cch4=(4, brightness_temperature, 203, 323); cch1, cch3a, cch4",
+            "expression": "cch4=(4, brightness_temperature, 203.000000, 323.000000);cch3a=(3a, sun_angle_compensated_reflective_radiance, 0.000000, 3.791655);cch2=(2, sun_angle_compensated_reflective_radiance, 0.000000, 97.050700);cch2,cch3a,cch4",
             "image": {
-                "geo_correct": true,
-                "equalize": true
+                "geo_correct": true
             },
             "description": "descriptions/DayMicro.md"
         },
@@ -96,10 +95,8 @@
         },
         {
             "name": "Snow enhancement",
-            "expression": "((3*ch1-ch4)/2)^1.7, ((3*ch1+ch4)/4)^1.7, (ch1-ch3a)^1.7",
+            "expression": "cch4=(4, brightness_temperature, 304.912379, 232.242185);cch3a=(3a, sun_angle_compensated_reflective_radiance, 0.000000, 5.416650);cch2=(2, sun_angle_compensated_reflective_radiance, 0.000000, 97.050700);cch1=(1, sun_angle_compensated_reflective_radiance, 0.000000, 46.203000);((3*cch1 - cch4) / 2),((3*cch1 + cch4) / 4),(cch1 - cch3a)",
             "image": {
-                "individual_equalize": true,
-                "white_balance": true,
                 "geo_correct": true
             },
             "description": "descriptions/Snow.md"
