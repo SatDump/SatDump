@@ -12,7 +12,7 @@ BEGIN_AS_NAMESPACE
 // for a specified delimiter. Example:
 //
 // string str = "A|B||D";
-// array<string>@ array = str.split("|");
+// array<string>@ arr = str.split("|");
 //
 // The resulting array has the following elements:
 //
@@ -70,15 +70,15 @@ static void StringSplit_Generic(asIScriptGeneric *gen)
 // delimiter and concatenates the array elements into one delimited string.
 // Example:
 //
-// array<string> array = {"A", "B", "", "D"};
-// string str = join(array, "|");
+// array<string> arr = {"A", "B", "", "D"};
+// string str = join(arr, "|");
 //
 // The resulting string is:
 //
 // "A|B||D"
 //
 // AngelScript signature:
-// string join(const array<string> &in array, const string &in delim)
+// string join(const array<string> &in arr, const string &in delim)
 static string StringJoin(const CScriptArray &array, const string &delim)
 {
 	// Create the new string

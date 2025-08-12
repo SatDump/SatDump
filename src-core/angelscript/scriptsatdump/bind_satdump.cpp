@@ -25,6 +25,7 @@ namespace satdump
         {
             RegisterStdString(engine);
             RegisterScriptArray(engine, true);
+            RegisterStdStringUtils(engine);
             RegisterScriptDictionary(engine);
 
             registerLogger(engine);

@@ -196,6 +196,31 @@ public:
 	CIterator end() const;
 	CIterator find(const dictKey_t &key) const;
 
+	// Iterator to support foreach in script
+	class CScriptDictIter
+	{
+	public: 
+		// Reference counting
+		void AddRef() const;
+		void Release() const;
+
+	protected:
+		friend class CScriptDictionary;
+
+		CIterator iter;
+		mutable int refCount;
+		asUINT iterGuard;
+
+		CScriptDictIter(const CScriptDictionary* dict);
+		~CScriptDictIter();
+	};
+
+	CScriptDictIter* opForBegin() const;
+	bool opForEnd(const CScriptDictIter &iter) const;
+	CScriptDictIter* opForNext(CScriptDictIter& iter) const;
+	const CScriptDictValue& opForValue0(const CScriptDictIter& iter) const;
+	const dictKey_t& opForValue1(const CScriptDictIter& iter) const;
+
 	// Garbage collections behaviours
 	int GetRefCount();
 	void SetGCFlag();
@@ -221,6 +246,7 @@ protected:
 	mutable int      refCount;
 	mutable bool     gcFlag;
 	dictMap_t        dict;
+	asUINT           iterGuard;
 };
 
 // This function will determine the configuration of the engine

@@ -7,6 +7,8 @@
 #ifndef __psp2__
 	#include <locale.h> // setlocale()
 #endif
+#include <regex>
+
 
 using namespace std;
 
@@ -374,6 +376,51 @@ static int StringFindFirst(const string &sub, asUINT start, const string &str)
 	return (int)str.find(sub, (size_t)(start < 0 ? string::npos : start));
 }
 
+// This function returns the index of the first position that matches the regular expression
+//
+// AngelScript signature:
+// int string::regexFind(const string &in regex, uint start = 0, uint &out lengthOfMatch = void)
+static int StringRegexFind(const string& rex, asUINT start, asUINT& outLengthOfMatch, const string& str)
+{
+	if (start >= str.length())
+	{
+		outLengthOfMatch = 0;
+		return -1;
+	}
+
+	// TODO: If possible add support for matching utf8 characters
+	// However on with MSVC it doesn't seem that std::regex works with utf8
+	// This works with MSVC, but I don't want to have to convert the string to UTF-16 first because the position and length will not work
+	// https://www.regular-expressions.info/stdregex.html
+	// 
+	//  std::wregex pattern(L"[[:alpha:]]+");
+	//  bool result = std::regex_match(std::wstring(L"abcdéfg"), pattern);
+	//
+	// The solution from stack overflow doesn't work with MSVC
+	// https://stackoverflow.com/questions/11254232/do-c11-regular-expressions-work-with-utf-8-strings
+	// 
+	//  std::locale old;
+	//  std::locale::global(std::locale("en_US.UTF-8"));
+	//  std::regex pattern("[[:alpha:]]+", std::regex_constants::extended);
+	//  bool result = std::regex_match(std::string(u8"abcdéfg"), pattern);
+	//
+	// I've tried setting the manifest to use utf8 code page but it also doesn't work with MSVC
+	// https://learn.microsoft.com/en-us/windows/apps/design/globalizing/use-utf8-code-page
+
+	std::regex pattern(rex, std::regex_constants::ECMAScript | std::regex_constants::collate);
+	std::cmatch match;
+	bool result = std::regex_search(str.c_str() + start, str.c_str()+str.length(), match, pattern);
+
+	if (!result)
+	{
+		outLengthOfMatch = 0;
+		return -1;
+	}
+
+	outLengthOfMatch = (asUINT)match[0].length();
+	return (int)match.prefix().length();
+}
+
 // This function returns the index of the first position where the one of the bytes in substring
 // exists in the input string. If the characters in the substring doesn't exist in the input
 // string -1 is returned.
@@ -590,6 +637,169 @@ static string formatFloat(double value, const string &options, asUINT width, asU
 	return buf;
 }
 
+// TODO: variadic: review
+static void StringFormat(asIScriptGeneric* gen)
+{
+	const string& fmt = *(string*)gen->GetArgAddress(0);
+	string result;
+
+	asUINT defaultArgIdx = 1; // Skip the first argument which is the fmt
+	for (asUINT i = 0; i < fmt.size(); ++i)
+	{
+		char ch = fmt[i];
+		if (ch == '{')
+		{
+			if (i + 1 >= (asUINT)fmt.size())
+			{
+				asGetActiveContext()->SetException("Invalid format string");
+				return;
+			}
+
+			if (fmt[i + 1] == '{')
+			{
+				i += 1;
+				result += '{';
+			}
+			else
+			{
+				// TODO: Parse optional argument index to support for relocating argument
+				// e.g. "{1} {0}".format("there", "hello") == "hello there"
+				asUINT argIdx = defaultArgIdx++;
+				if (argIdx >= (asUINT)gen->GetArgCount())
+				{
+					asGetActiveContext()->SetException("Index out of range");
+					return;
+				}
+				int typeId = gen->GetArgTypeId(argIdx);
+				void* ref = gen->GetArgAddress(argIdx);
+
+				switch (typeId)
+				{
+				case asTYPEID_BOOL:
+					result += *(bool*)ref ? "true" : "false";
+					break;
+
+#define AS_STRING_FORMAT_IMPL(tid, type) \
+	case tid: result += to_string(*(type*)ref); break
+
+					AS_STRING_FORMAT_IMPL(asTYPEID_INT8, int8_t);
+					AS_STRING_FORMAT_IMPL(asTYPEID_INT16, int16_t);
+					AS_STRING_FORMAT_IMPL(asTYPEID_INT32, int32_t);
+					AS_STRING_FORMAT_IMPL(asTYPEID_INT64, int64_t);
+
+					AS_STRING_FORMAT_IMPL(asTYPEID_UINT8, uint8_t);
+					AS_STRING_FORMAT_IMPL(asTYPEID_UINT16, uint16_t);
+					AS_STRING_FORMAT_IMPL(asTYPEID_UINT32, uint32_t);
+					AS_STRING_FORMAT_IMPL(asTYPEID_UINT64, uint64_t);
+
+					AS_STRING_FORMAT_IMPL(asTYPEID_FLOAT, float);
+					AS_STRING_FORMAT_IMPL(asTYPEID_DOUBLE, double);
+
+				default:
+					if (typeId & ~asTYPEID_MASK_SEQNBR)
+					{
+						asIScriptEngine* engine = gen->GetEngine();
+						int stringTypeId = engine->GetStringFactory();
+						if (typeId == stringTypeId)
+						{
+							result += *(string*)ref;
+						}
+						else
+						{
+							// TODO: Better explanation
+							asGetActiveContext()->SetException("Unformattable");
+							return;
+						}
+					}
+					else // enums
+					{
+						// TODO: Format enum name
+						result += to_string(*(int*)ref);
+					}
+				}
+			}
+		}
+		else if (ch == '}')
+		{
+			if (i + 1 < (asUINT)fmt.size() && fmt[i + 1] == '}')
+			{
+				i += 1;
+				result += '}';
+			}
+		}
+		else
+		{
+			// Ordinary character
+			result += ch;
+		}
+	}
+
+	new(gen->GetAddressOfReturnLocation()) string(std::move(result));
+}
+
+// TODO: variadic: review
+static void StringScan(asIScriptGeneric* gen)
+{
+	asIScriptEngine* engine = gen->GetEngine();
+
+	stringstream ss(*(string*)gen->GetArgObject(0));
+	asUINT scanned = 0;
+
+	for (asUINT i = 1; i < (asUINT)gen->GetArgCount(); ++i)
+	{
+		int typeId = gen->GetArgTypeId(i);
+		if (!(typeId & ~asTYPEID_MASK_SEQNBR))
+		{
+#define AS_STRING_SCAN_IMPL(tid, type) \
+	case tid:\
+	do {\
+		type val;\
+		ss >> val;\
+		if(!ss) goto end_scan;\
+		void* ref = gen->GetArgAddress(i); \
+		*(type*)ref = val;\
+	} while(0); \
+	break
+
+			switch (typeId)
+			{
+				AS_STRING_SCAN_IMPL(asTYPEID_BOOL, bool);
+
+				AS_STRING_SCAN_IMPL(asTYPEID_INT16, int16_t);
+			default: // enum
+				AS_STRING_SCAN_IMPL(asTYPEID_INT32, int32_t);
+				AS_STRING_SCAN_IMPL(asTYPEID_INT64, int64_t);
+
+				AS_STRING_SCAN_IMPL(asTYPEID_UINT8, uint8_t);
+				AS_STRING_SCAN_IMPL(asTYPEID_UINT16, uint16_t);
+				AS_STRING_SCAN_IMPL(asTYPEID_UINT32, uint32_t);
+				AS_STRING_SCAN_IMPL(asTYPEID_UINT64, uint64_t);
+
+				AS_STRING_SCAN_IMPL(asTYPEID_FLOAT, float);
+				AS_STRING_SCAN_IMPL(asTYPEID_DOUBLE, double);
+			}
+		}
+		else if (typeId == engine->GetStringFactory())
+		{
+			string val;
+			ss >> val;
+			if (!ss) goto end_scan;
+
+			void* ref = gen->GetArgAddress(i);
+			*(string*)ref = std::move(val);
+		}
+		else // Invalid type
+		{
+			goto end_scan;
+		}
+
+		++scanned;
+	}
+
+end_scan:
+	gen->SetReturnDWord(scanned);
+}
+
 // AngelScript signature:
 // int64 parseInt(const string &in val, uint base = 10, uint &out byteCount = 0)
 static asINT64 parseInt(const string &val, asUINT base, asUINT *byteCount)
@@ -697,21 +907,41 @@ double parseFloat(const string &val, asUINT *byteCount)
 {
 	char *end;
 
+	// Set the locale to C so that we are guaranteed to parse the float value correctly
+#if defined(_WIN32)
 	// WinCE doesn't have setlocale. Some quick testing on my current platform
 	// still manages to parse the numbers such as "3.14" even if the decimal for the
 	// locale is ",".
-#if !defined(_WIN32_WCE) && !defined(ANDROID) && !defined(__psp2__)
-	// Set the locale to C so that we are guaranteed to parse the float value correctly
-	char *tmp = setlocale(LC_NUMERIC, 0);
+#if !defined(_WIN32_WCE)
+	// On Windows setlocale is made threadsafe by turning on thread local setlocale
+	// ref: https://learn.microsoft.com/en-us/cpp/parallel/multithreading-and-locales?view=msvc-170&redirectedfrom=MSDN
+	int oldConfig = _configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
+	char* tmp = setlocale(LC_NUMERIC, 0);
 	string orig = tmp ? tmp : "C";
 	setlocale(LC_NUMERIC, "C");
+#endif
+#else
+#if !defined(ANDROID) && !defined(__psp2__)
+	// On Linux and other similar systems the threadsafe option is uselocale
+	// ref: https://stackoverflow.com/questions/4057319/is-setlocale-thread-safe-function
+	locale_t locale = newlocale(LC_NUMERIC_MASK, "C", NULL);
+	locale_t orig_locale = uselocale(locale);
+#endif
 #endif
 
 	double res = strtod(val.c_str(), &end);
 
-#if !defined(_WIN32_WCE) && !defined(ANDROID) && !defined(__psp2__)
-	// Restore the locale
+	// Restore the original locale
+#if defined(_WIN32)
+#if !defined(_WIN32_WCE)
 	setlocale(LC_NUMERIC, orig.c_str());
+	_configthreadlocale(oldConfig);
+#endif
+#else
+#if !defined(ANDROID) && !defined(__psp2__)
+#endif
+	uselocale(orig_locale);
+	freelocale(locale);
 #endif
 
 	if( byteCount )
@@ -833,8 +1063,10 @@ void RegisterStdString_Native(asIScriptEngine *engine)
 	r = engine->RegisterObjectMethod("string", "int findLastNotOf(const string &in, int start = -1) const", asFUNCTION(StringFindLastNotOf), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("string", "void insert(uint pos, const string &in other)", asFUNCTION(StringInsert), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("string", "void erase(uint pos, int count = -1)", asFUNCTION(StringErase), asCALL_CDECL_OBJLAST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("string", "int regexFind(const string  &in regex, uint start = 0, uint &out lengthOfMatch = void) const", asFUNCTION(StringRegexFind), asCALL_CDECL_OBJLAST); assert(r >= 0);
 
-
+	r = engine->RegisterGlobalFunction("uint scan(const string&in str, ?&out ...)", asFUNCTION(StringScan), asCALL_GENERIC); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("string format(const string&in fmt, const ?&in ...)", asFUNCTION(StringFormat), asCALL_GENERIC); assert(r >= 0);
 	r = engine->RegisterGlobalFunction("string formatInt(int64 val, const string &in options = \"\", uint width = 0)", asFUNCTION(formatInt), asCALL_CDECL); assert(r >= 0);
 	r = engine->RegisterGlobalFunction("string formatUInt(uint64 val, const string &in options = \"\", uint width = 0)", asFUNCTION(formatUInt), asCALL_CDECL); assert(r >= 0);
 	r = engine->RegisterGlobalFunction("string formatFloat(double val, const string &in options = \"\", uint width = 0, uint precision = 0)", asFUNCTION(formatFloat), asCALL_CDECL); assert(r >= 0);
@@ -1281,6 +1513,18 @@ static void StringSubString_Generic(asIScriptGeneric *gen)
 	new(gen->GetAddressOfReturnLocation()) string(StringSubString(start, count, *str));
 }
 
+// static int StringRegexFind(const string& rex, asUINT start, asUINT& outLengthOfMatch, const string& str)
+static void StringRegexFind_Generic(asIScriptGeneric* gen)
+{
+	// Get the arguments
+	string* str = (string*)gen->GetObject();
+	string *rex = *(string**)gen->GetAddressOfArg(0);
+	asUINT start = *(asUINT*)gen->GetAddressOfArg(1);
+	asUINT* outLen = *(asUINT**)gen->GetAddressOfArg(2);
+
+	*(int*)(gen->GetAddressOfReturnLocation()) = StringRegexFind(*rex, start, *outLen, *str);
+}
+
 void RegisterStdString_Generic(asIScriptEngine *engine)
 {
 	int r = 0;
@@ -1354,8 +1598,10 @@ void RegisterStdString_Generic(asIScriptEngine *engine)
 	r = engine->RegisterObjectMethod("string", "int findLastNotOf(const string &in, int start = -1) const", asFUNCTION(StringFindLastNotOf_Generic), asCALL_GENERIC); assert(r >= 0);
 	r = engine->RegisterObjectMethod("string", "void insert(uint pos, const string &in other)", asFUNCTION(StringInsert_Generic), asCALL_GENERIC); assert(r >= 0);
 	r = engine->RegisterObjectMethod("string", "void erase(uint pos, int count = -1)", asFUNCTION(StringErase_Generic), asCALL_GENERIC); assert(r >= 0);
+	r = engine->RegisterObjectMethod("string", "int regexFind(const string  &in regex, uint start = 0, uint &out lengthOfMatch = void) const", asFUNCTION(StringRegexFind_Generic), asCALL_GENERIC); assert(r >= 0);
 
-
+	r = engine->RegisterGlobalFunction("uint scan(const string&in str, ?&out ...)", asFUNCTION(StringScan), asCALL_GENERIC); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("string format(const string&in fmt, const ?&in ...)", asFUNCTION(StringFormat), asCALL_GENERIC); assert(r >= 0);
 	r = engine->RegisterGlobalFunction("string formatInt(int64 val, const string &in options = \"\", uint width = 0)", asFUNCTION(formatInt_Generic), asCALL_GENERIC); assert(r >= 0);
 	r = engine->RegisterGlobalFunction("string formatUInt(uint64 val, const string &in options = \"\", uint width = 0)", asFUNCTION(formatUInt_Generic), asCALL_GENERIC); assert(r >= 0);
 	r = engine->RegisterGlobalFunction("string formatFloat(double val, const string &in options = \"\", uint width = 0, uint precision = 0)", asFUNCTION(formatFloat_Generic), asCALL_GENERIC); assert(r >= 0);
