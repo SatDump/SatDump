@@ -1,3 +1,4 @@
+#include "explorer/explorer.h"
 #define SATDUMP_DLL_EXPORT2 1
 
 #include "common/imgui_utils.h"
@@ -112,7 +113,11 @@ namespace satdump
                 if (ImGui::BeginMenu("Add"))
                 {
                     if (ImGui::MenuItem("Recorder"))
-                        eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({std::make_shared<RecorderApplication>()});
+                        explorer_app->tryOpenSomethingInExplorer(
+                            [](explorer::ExplorerApplication *)
+                            {
+                                eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({std::make_shared<RecorderApplication>()}); // TODOREWORK do not bind this directly.
+                            });
 
                     ImGui::EndMenu();
                 }

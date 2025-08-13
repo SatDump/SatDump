@@ -368,7 +368,11 @@ namespace satdump
                         ImVec2 line_size = ImGui::CalcTextSize("Add Recorder");
                         ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), last_pos + (26 * 2) * scale});
                         if (ImGui::Button("Add Recorder"))
-                            eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({std::make_shared<RecorderApplication>()}); // TODOREWORK do not bind this directly.
+                            tryOpenSomethingInExplorer(
+                                [](ExplorerApplication *)
+                                {
+                                    eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({std::make_shared<RecorderApplication>()}); // TODOREWORK do not bind this directly.
+                                });
                     }
 
                     // ImVec2 slogan_size1 = ImGui::CalcTextSize(slogan1.c_str());
@@ -528,6 +532,26 @@ namespace satdump
                     {
                         throw satdump_exception("No loader found for file : " + path + "!");
                     }
+                }
+                catch (std::exception &e)
+                {
+                    logger->error("Error opening file! => %s", e.what());
+                }
+
+                eventBus->fire_event<SetIsDoneProcessingEvent>({});
+            };
+            file_open_queue.push(fun);
+        }
+
+        void ExplorerApplication::tryOpenSomethingInExplorer(std::function<void(ExplorerApplication *)> f)
+        {
+            auto fun = [f, this]()
+            {
+                eventBus->fire_event<SetIsProcessingEvent>({});
+
+                try
+                {
+                    f(this);
                 }
                 catch (std::exception &e)
                 {

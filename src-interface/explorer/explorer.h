@@ -87,6 +87,7 @@ namespace satdump
         public:
             void addHandler(std::shared_ptr<handlers::Handler> h, bool open = false, bool is_processing = false);
             void tryOpenFileInExplorer(std::string path);
+            void tryOpenSomethingInExplorer(std::function<void(ExplorerApplication *)> f);
 
         public:
             ExplorerApplication();
