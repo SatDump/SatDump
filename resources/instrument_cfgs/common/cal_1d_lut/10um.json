@@ -120,7 +120,7 @@
         },
         {
             "name": "Enhanced IR (Transparent)",
-            "expression": "cch4=({10.4um}, brightness_temperature, 200, 241); cch4, 0, 0, cch4 > 0.99 ? 1 : 0",
+            "expression": "cch4=(4, brightness_temperature, 200, 300);lut=lut(lut/cal/EnhancedIR.png); lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2), cch4 > 0.40 ? 0 : 1",
             "image": {
                 "geo_correct": true
             },
