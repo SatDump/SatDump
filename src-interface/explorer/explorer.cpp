@@ -371,6 +371,7 @@ namespace satdump
                             tryOpenSomethingInExplorer(
                                 [](ExplorerApplication *)
                                 {
+                                    logger->warn("Adding Recorder!");
                                     eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({std::make_shared<RecorderApplication>()}); // TODOREWORK do not bind this directly.
                                 });
                     }
