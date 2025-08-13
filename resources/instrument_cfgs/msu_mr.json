@@ -118,8 +118,11 @@
         },
         {
             "name": "Night Time Fire Detection (transparent)",
-            // TODOREWORK
-            "description": "descriptions/NightFire.md"
+            "description": "descriptions/NightFire.md",
+            "expression": "cch4=(4, brightness_temperature, 0.000000, 1000.000000);cch3b=(3b, brightness_temperature, 0.000000, 1000.000000);cch3b > 0.305 ? cch4 > 0.280 ? (cch3b-cch4) > 0.01 ? 1 : 0 : 0 : 0,0,0,cch3b > 0.305 ? cch4 > 0.280 ? (cch3b-cch4) > 0.01 ? 1 : 0 : 0 : 0",
+            "image": {
+                "geo_correct": true
+            }
         },        
         {
             "name": "Automatic Visible False Color (1-4)",
