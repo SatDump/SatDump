@@ -71,6 +71,10 @@ namespace satdump
                                 a = image.getf(3, x, y);
                                 a = image.get(c, x, y) * a + (1.0 - a) * get(c, x + x0, (y + y0));
                                 set(c, x + x0, (y + y0), clamp(a));
+
+                                if (d_channels == 4)
+                                    if (image.get(3, x, y) > get(3, x + x0, (y + y0)))
+                                        set(3, x + x0, (y + y0), image.get(3, x, y));
                             }
                         }
                     }
