@@ -90,6 +90,7 @@ namespace meteor
                     {
                         double timestamp = bism_day + (msumr_frame[8]) * 3600.0 + (msumr_frame[9]) * 60.0 + (msumr_frame[10] + 0.0) + double(msumr_frame[11] / 255.0);
                         timestamp -= 3 * 3600.0;
+                        // logger->trace("%f H%d M%d S%d BS%d", timestamp, msumr_frame[8], msumr_frame[9], msumr_frame[10], msumr_frame[11]);
                         msumr_timestamps.push_back(timestamp);
                         mtvza_reader.latest_msumr_timestamp = mtvza_reader2.latest_msumr_timestamp = timestamp; // MTVZA doesn't have timestamps of its own, so use MSU-MR's
                     }
@@ -207,6 +208,15 @@ namespace meteor
                     // logger->info(v);
                 }
 
+                // METEOR got messed up timestamp on the regular... "FIX" them
+                for (int i = 1; i < filter_timestamps.size() - 1; i++)
+                {
+                    auto &prev = filter_timestamps[i - 1];
+                    auto &curr = filter_timestamps[i];
+
+                    if (curr == -1 && prev != -1)
+                        curr = prev + 0.16;
+                }
                 // for (double &v : filter_timestamps)
                 //     logger->info(v);
 
