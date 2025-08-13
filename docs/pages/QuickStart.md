@@ -38,7 +38,7 @@ This button will add a new `Recorder` to the `Root`. It is the same as the old `
 
 ## Recorder
 
-The `Recorder`is used to record new satellites from a software-defined radio, either directly connected to the computer or via the network. It is also possible to use the `Live Decode` feature to decode a satellite link live, without recording it first. Additionally, the `Tracking` and `Scheduling` features can be configured within the `Recorder`.
+The `Recorder` is used to record new satellites from a software-defined radio, either directly connected to the computer or via the network. It is also possible to use the `Live Decode` feature to decode a satellite link live, without recording it first. Additionally, the `Tracking` and `Scheduling` features can be configured within the `Recorder`.
 
 ![The Recorder in use](quick_start/recorder.png)
 
