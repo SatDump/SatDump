@@ -413,7 +413,7 @@ namespace satdump
 
                 if (all_imgs.size() > 0)
                 {
-                    img.init(all_imgs[0].depth(), all_imgs[0].width(), all_imgs[0].height(), 3);
+                    img.init(all_imgs[0].depth(), all_imgs[0].width(), all_imgs[0].height(), 4);
                     image::set_metadata_proj_cfg(img, image::get_metadata_proj_cfg(all_imgs[0]));
                 }
 
