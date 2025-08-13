@@ -38,6 +38,7 @@ protected:
     bool d_enable_amp = 0;
     bool d_enable_preamp = 0;
     bool d_rescale = 0;
+    float d_rescale_val = 1;
 
     void set_others();
     void set_gains();
@@ -79,7 +80,7 @@ protected:
 
                 // Optionally re-scale to be in the more "standard" 1.0f range
                 if (d_rescale)
-                    volk_32fc_s32fc_multiply_32fc((lv_32fc_t *)output_stream->writeBuf, (lv_32fc_t *)packet.fp32, 1000, cnt);
+                    volk_32fc_s32fc_multiply_32fc((lv_32fc_t *)output_stream->writeBuf, (lv_32fc_t *)packet.fp32, d_rescale_val, cnt);
                 else
                     memcpy(output_stream->writeBuf, (complex_t *)packet.fp32, cnt * sizeof(complex_t));
 

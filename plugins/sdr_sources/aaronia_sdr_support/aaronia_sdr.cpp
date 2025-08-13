@@ -1,4 +1,5 @@
 #include "aaronia_sdr.h"
+#include "common/rimgui.h"
 #include "common/utils.h"
 #include "dynload.h"
 #include "utils/string.h"
@@ -102,6 +103,7 @@ void AaroniaSource::set_settings(nlohmann::json settings)
     d_enable_amp = getValueOrDefault(d_settings["enable_amp"], d_enable_amp);
     d_enable_preamp = getValueOrDefault(d_settings["enable_preamp"], d_enable_preamp);
     d_rescale = getValueOrDefault(d_settings["rescale"], d_rescale);
+    d_rescale_val = getValueOrDefault(d_settings["rescale_val"], d_rescale_val);
 
     if (is_started)
     {
@@ -119,6 +121,7 @@ nlohmann::json AaroniaSource::get_settings()
     d_settings["enable_amp"] = d_enable_amp;
     d_settings["enable_preamp"] = d_enable_preamp;
     d_settings["rescale"] = d_rescale;
+    d_settings["rescale_val"] = d_rescale_val;
 
     return d_settings;
 }
@@ -399,6 +402,8 @@ void AaroniaSource::drawControlUI()
 
     // Rescaling
     RImGui::Checkbox("Rescale##aaronia_rescale", &d_rescale);
+    if (d_rescale)
+        RImGui::SteppedSliderFloat("Rescale Val", &d_rescale_val, 1.0, 10000);
 }
 
 void AaroniaSource::set_samplerate(uint64_t samplerate)
