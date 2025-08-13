@@ -42,10 +42,10 @@ namespace aws
             uint16_t icu_voltage = calib[17] << 8 | calib[16];
             uint16_t icu_current = calib[19] << 8 | calib[18];
 
-            double load1 = (calib[45] << 8 | calib[44]) / 1e3;
-            double load2 = (calib[47] << 8 | calib[46]) / 1e3;
-            double load3 = (calib[49] << 8 | calib[48]) / 1e3;
-            double load4 = (calib[51] << 8 | calib[50]) / 1e3;
+            double load1 = (calib[45] << 8 | calib[44]) / 3e3;
+            double load2 = (calib[47] << 8 | calib[46]) / 3e3;
+            double load3 = (calib[49] << 8 | calib[48]) / 3e3;
+            double load4 = (calib[51] << 8 | calib[50]) / 3e3;
 
             int obct_n = wip_full_pkt[14 + 21] << 8 | wip_full_pkt[14 + 20];
             int cold_n = wip_full_pkt[14 + 25] << 8 | wip_full_pkt[14 + 24];
