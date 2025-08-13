@@ -52,7 +52,8 @@ namespace aws
 
                 // Get cold/hot temps
                 double cold_ref = 2.73;
-                double hot_ref = (cal_load_temps[pos_y][0] + cal_load_temps[pos_y][1] + cal_load_temps[pos_y][2] + cal_load_temps[pos_y][3]) / 4.0 + 273.15;
+                // Broken we need to figure out
+                double hot_ref = 283; //(cal_load_temps[pos_y][0] + cal_load_temps[pos_y][1] + cal_load_temps[pos_y][2] + cal_load_temps[pos_y][3]) / 4.0 + 273.15;
                 double wavenumber = wavenumbers[channel];
 
                 double cold_rad = temperature_to_radiance(cold_ref, wavenumber);
