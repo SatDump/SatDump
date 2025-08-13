@@ -1,7 +1,10 @@
 #include "mwr_reader.h"
 #include "common/ccsds/ccsds_time.h"
 #include "common/repack.h"
+#include "logger.h"
 
+#include <array>
+#include <cstdint>
 #include <cstdio>
 
 namespace aws
@@ -22,18 +25,54 @@ namespace aws
 
         double parseCUC(uint8_t *dat)
         {
-            double seconds = dat[1] << 24 |
-                             dat[2] << 16 |
-                             dat[3] << 8 |
-                             dat[4];
-            double fseconds = dat[5] << 16 |
-                              dat[6] << 8 |
-                              dat[7];
+            double seconds = dat[1] << 24 | dat[2] << 16 | dat[3] << 8 | dat[4];
+            double fseconds = dat[5] << 16 | dat[6] << 8 | dat[7];
             double timestamp = seconds + fseconds / 16777215.0 + 3657 * 24 * 3600;
             if (timestamp > 0)
                 return timestamp;
             else
                 return -1;
+        }
+
+        // Extract calibration telemetry
+        void MWRReader::parseCal()
+        { // TODOREWORK cleanup, and take into account reflector temperature!!!!!!!!
+            uint8_t *calib = &wip_full_pkt[70];
+
+            uint16_t icu_voltage = calib[17] << 8 | calib[16];
+            uint16_t icu_current = calib[19] << 8 | calib[18];
+
+            double load1 = (calib[45] << 8 | calib[44]) / 1e3;
+            double load2 = (calib[47] << 8 | calib[46]) / 1e3;
+            double load3 = (calib[49] << 8 | calib[48]) / 1e3;
+            double load4 = (calib[51] << 8 | calib[50]) / 1e3;
+
+            int obct_n = wip_full_pkt[14 + 21] << 8 | wip_full_pkt[14 + 20];
+            int cold_n = wip_full_pkt[14 + 25] << 8 | wip_full_pkt[14 + 24];
+            int scene_n = wip_full_pkt[14 + 29] << 8 | wip_full_pkt[14 + 28];
+            int acc_n = wip_full_pkt[14 + 31]; //<< 8 | wip_full_pkt[14 + 28];
+
+            // logger->critical("12v Rail %d V %d A, T1 %f T2 %f T3 %f T4 %f  NUMOBCT %d NUMCOLD %d NUMSV %d ACC %d", icu_voltage, icu_current, load1, load2, load3, load4, obct_n, cold_n, scene_n,
+            //                  acc_n);
+
+            std::array<float, 4> v;
+            v[0] = load1;
+            v[1] = load2;
+            v[2] = load3;
+            v[3] = load4;
+            cal_load_temps.push_back(v);
+
+            std::array<std::array<uint16_t, 15>, 19> v2;
+            for (int c = 0; c < 15; c++)
+                for (int i = 0; i < 19; i++)
+                    v2[i][c] = (wip_full_pkt[199 + (c * 40) + (i * 2) + 1] << 8) | wip_full_pkt[199 + (c * 40) + (i * 2) + 0];
+            cal_load_views.push_back(v2);
+
+            std::array<std::array<uint16_t, 25>, 19> v3;
+            for (int c = 0; c < 25; c++)
+                for (int i = 0; i < 19; i++)
+                    v3[i][c] = (wip_full_pkt[799 + (c * 40) + (i * 2) + 1] << 8) | wip_full_pkt[799 + (c * 40) + (i * 2) + 0];
+            cal_cold_views.push_back(v3);
         }
 
         void MWRReader::work(ccsds::CCSDSPacket &pkt)
@@ -57,6 +96,8 @@ namespace aws
                         timestamps.push_back(timestamp);
                     else
                         timestamps.push_back(-1);
+
+                    parseCal();
                 }
                 wip_full_pkt.clear();
 
@@ -84,10 +125,7 @@ namespace aws
                     else
                         timestamps.push_back(-1);
 
-                    //                    printf("%d - ", int(wip_full_pkt[44] << 8 | wip_full_pkt[45]));
-                    //                    printf("%d - ", int(wip_full_pkt[46] << 8 | wip_full_pkt[47]));
-                    //                    printf("%d - ", int(wip_full_pkt[48] << 8 | wip_full_pkt[49]));
-                    //                    printf("%d\n", int(wip_full_pkt[50] << 8 | wip_full_pkt[51]));
+                    parseCal();
                 }
                 wip_full_pkt.clear();
             }
@@ -99,5 +137,5 @@ namespace aws
             img.mirror(true, false);
             return img;
         }
-    }
-}
+    } // namespace mwr
+} // namespace aws

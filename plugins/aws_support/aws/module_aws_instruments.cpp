@@ -133,7 +133,10 @@ namespace aws
             {
                 mwr_products.images.push_back({i, "MWR-" + std::to_string(i + 1), std::to_string(i + 1), mwr_reader.getChannel(i), 16, tran[i]});
                 mwr_products.set_channel_frequency(i, mwr_freqs[i]);
+                mwr_products.set_channel_unit(i, CALIBRATION_ID_EMISSIVE_RADIANCE);
             }
+
+            mwr_products.set_calibration("aws_mwr", mwr_reader.getCal());
 
             mwr_products.save(directory);
             dataset.products_list.push_back("MWR");
