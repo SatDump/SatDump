@@ -59,6 +59,47 @@
             "image": {
                 "individual_equalize": true
             }
+        },
+        //Composites to compare with STAR ICVS and EPS STERNA
+        {
+            "name": "50.3 GHz",
+            "expression": "x=(1, brightness_temperature, 210.000000, 300.000000);lut=lut(lut/generic/rainbow.png);lut(x, 0, 0), lut(x, 0, 1), lut(x, 0, 2)"
+        },
+        {
+            "name": "52.8 GHz",
+            "expression": "x=(2, brightness_temperature, 220.000000, 280.000000);lut=lut(lut/generic/rainbow.png);lut(x, 0, 0), lut(x, 0, 1), lut(x, 0, 2)"
+        },
+        {
+            "name": "53.596 GHz",
+            "expression": "x=(4, brightness_temperature, 220.000000, 280.000000);lut=lut(lut/generic/rainbow.png);lut(x, 0, 0), lut(x, 0, 1), lut(x, 0, 2)"
+        },
+        {
+            "name": "54.4 GHz",
+            "expression": "x=(5, brightness_temperature, 210.000000, 260.000000);lut(x, 0, 0), lut(x, 0, 1), lut(x, 0, 2)"
+        },
+        {
+            "name": "54.94 GHz",
+            "expression": "x=(6, brightness_temperature, 210.000000, 240.000000);lut=lut(lut/generic/rainbow.png);lut(x, 0, 0), lut(x, 0, 1), lut(x, 0, 2)"
+        },
+        {
+            "name": "55.5 GHz",
+            "expression": "x=(7, brightness_temperature, 200.000000, 250.000000);lut=lut(lut/generic/rainbow.png);lut(x, 0, 0), lut(x, 0, 1), lut(x, 0, 2)"
+        },
+        {
+            "name": "57.290344 ± 0.3222 ± 0.048 GHz",
+            "expression": "x=(8, brightness_temperature, 200.000000, 250.000000);lut=lut(lut/generic/rainbow.png);lut(x, 0, 0), lut(x, 0, 1), lut(x, 0, 2)"
+        },
+        {
+            "name": "88.2 GHz",
+            "expression": "x=(9, brightness_temperature, 200.000000, 300.000000);lut=lut(lut/generic/rainbow.png);lut(x, 0, 0), lut(x, 0, 1), lut(x, 0, 2)"
+        },
+        {
+            "name": "165.5 GHz",
+            "expression": "x=(10, brightness_temperature, 235.000000, 285.000000);lut=lut(lut/generic/rainbow.png);lut(x, 0, 0), lut(x, 0, 1), lut(x, 0, 2)"
+        },
+        {
+            "name": "183.31 ± 1.8 GHz",
+            "expression": "x=(15, brightness_temperature, 235.000000, 285.000000);lut=lut(lut/generic/rainbow.png);lut(x, 0, 0), lut(x, 0, 1), lut(x, 0, 2)"
         }
     ]
 }
