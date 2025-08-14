@@ -6,7 +6,7 @@ namespace satdump
     {
         enum firstparty_product_type_t
         {
-            // MSG
+            // Invalid
             PRODUCT_NONE,
 
             // MSG
@@ -19,6 +19,9 @@ namespace satdump
             NATIVE_METOP_HIRS,
             NATIVE_METOP_IASI,
             NATIVE_METOP_GOME,
+
+            // AWS
+            NETCDF_AWS_MWR,
 
             // MTG
             NETCDF_MTG_FCI,

@@ -16,6 +16,7 @@ namespace satdump
         std::string name;
         std::string id;
         bool is_hdf;
+        bool is_single_hdf;
     };
 
     std::vector<EumetSatProductItem> eumetsat_products = {
@@ -23,56 +24,73 @@ namespace satdump
             "MTG FCI 0 deg Normal Resolution",
             "EO%3AEUM%3ADAT%3A0662",
             true,
+            false,
         },
         {
             "MTG FCI 0 deg Full Resolution",
             "EO%3AEUM%3ADAT%3A0665",
             true,
+            false,
         },
         {
             "MSG SEVIRI 0 deg",
             "EO%3AEUM%3ADAT%3AMSG%3AHRSEVIRI",
+            false,
             false,
         },
         {
             "MSG SEVIRI 0 deg RSS",
             "EO%3AEUM%3ADAT%3AMSG%3AMSG15-RSS",
             false,
+            false,
         },
         {
             "MSG SEVIRI IODC",
             "EO%3AEUM%3ADAT%3AMSG%3AHRSEVIRI-IODC",
+            false,
             false,
         },
         {
             "MetOp AVHRR",
             "EO%3AEUM%3ADAT%3AMETOP%3AAVHRRL1",
             false,
+            false,
         },
         {
             "MetOp MHS",
             "EO%3AEUM%3ADAT%3AMETOP%3AMHSL1",
+            false,
             false,
         },
         {
             "MetOp AMSU",
             "EO%3AEUM%3ADAT%3AMETOP%3AAMSUL1",
             false,
+            false,
         },
         {
             "MetOp HIRS",
             "EO%3AEUM%3ADAT%3AMETOP%3AHIRSL1",
             false,
+            false,
+        },
+        {
+            "AWS MWR",
+            "EO%3AEUM%3ADAT%3A0905",
+            true,
+            true,
         },
         {
             "Sentinel-3 OLCI Full Resolution",
             "EO%3AEUM%3ADAT%3A0409",
             true,
+            false,
         },
         {
             "Sentinel-3 SLSTR",
             "EO%3AEUM%3ADAT%3A0411",
             true,
+            false,
         },
     };
 
@@ -188,15 +206,14 @@ namespace satdump
                     if (satdump::perform_http_request(str.href, resp, "") != 1)
                     {
                         nlohmann::json respj = nlohmann::json::parse(resp);
-                        //                        printf("\n%s\n", respj.dump(4).c_str());
+                        // printf("\n%s\n", respj.dump(4).c_str());
 
                         std::string nat_link, file_name;
-                        if (eumetsat_products[eumetsat_selected_dataset].is_hdf)
+                        if (eumetsat_products[eumetsat_selected_dataset].is_hdf && !eumetsat_products[eumetsat_selected_dataset].is_single_hdf)
                         {
                             auto &respj2 = respj["properties"]["links"]["data"];
 
                             for (auto &item : respj2.items())
-
                                 if (item.value()["mediaType"].get<std::string>() == "application/zip")
                                 {
                                     nat_link = item.value()["href"].get<std::string>();
@@ -207,13 +224,24 @@ namespace satdump
                         {
                             auto &respj2 = respj["properties"]["links"]["sip-entries"];
 
-                            for (auto &item : respj2.items())
-
-                                if (item.value()["mediaType"].get<std::string>() == "application/octet-stream")
-                                {
-                                    nat_link = item.value()["href"].get<std::string>();
-                                    file_name = item.value()["title"].get<std::string>();
-                                }
+                            if (eumetsat_products[eumetsat_selected_dataset].is_single_hdf)
+                            {
+                                for (auto &item : respj2.items())
+                                    if (item.value()["mediaType"].get<std::string>() == "application/x-netcdf")
+                                    {
+                                        nat_link = item.value()["href"].get<std::string>();
+                                        file_name = item.value()["title"].get<std::string>();
+                                    }
+                            }
+                            else
+                            {
+                                for (auto &item : respj2.items())
+                                    if (item.value()["mediaType"].get<std::string>() == "application/octet-stream")
+                                    {
+                                        nat_link = item.value()["href"].get<std::string>();
+                                        file_name = item.value()["title"].get<std::string>();
+                                    }
+                            }
                         }
 
                         // logger->trace("\n%s\n", nat_link.c_str());
