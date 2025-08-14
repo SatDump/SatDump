@@ -370,7 +370,7 @@
             // 49008, // FengYun-3E
             // 57490, // FengYun-3F
             // 56232, // FengYun-3G
-            35865 // METEOR-M1
+            35865, // METEOR-M1
             // 40069, // METEOR-M2
             // 44387, // METEOR-M2-2
             // 57166, // METEOR-M2-3
@@ -444,6 +444,7 @@
             // 44547, // Yunhai 1-02
             // 53877 // Yunhai 1-03
             // 59051 // M2-4
+            65159 // MetOp-SG A1
         ]
     },
     // Advanced user settings
