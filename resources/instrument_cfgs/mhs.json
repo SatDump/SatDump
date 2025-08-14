@@ -46,8 +46,20 @@
         },
         {
             "name": "SSEC 89 GHz AMSU-B BT",
-            "expression": "cch1=(cch1, brightness_temperature, 180, 280);lut=lut(lut/cal/ssec_amsu.png);lut(cch1, 0, 0), lut(cch1, 0, 1), lut(cch1, 0, 2)",
+            "expression": "cch1=(1, brightness_temperature, 180, 280);lut=lut(lut/cal/ssec_amsu.png);lut(cch1, 0, 0), lut(cch1, 0, 1), lut(cch1, 0, 2)",
             "description": "descriptions/sounders/SSEC89GHz.md"
+        },
+        {
+            "name": "165.5 GHz",
+            "expression": "x=(2, brightness_temperature, 235.000000, 285.000000);lut=lut(lut/generic/rainbow.png);lut(x, 0, 0), lut(x, 0, 1), lut(x, 0, 2)"
+        },
+        {
+            "name": "183.31 ± 1.8 GHz",
+            "expression": "x=(4, brightness_temperature, 235.000000, 285.000000);lut=lut(lut/generic/rainbow.png);lut(x, 0, 0), lut(x, 0, 1), lut(x, 0, 2)"
+        },
+        {
+            "name": "88.2 GHz",
+            "expression": "x=(1, brightness_temperature, 200.000000, 300.000000);lut=lut(lut/generic/rainbow.png);lut(x, 0, 0), lut(x, 0, 1), lut(x, 0, 2)"
         }
     ],
     "default": {
