@@ -12,6 +12,7 @@
 #include "processors/nat/metop/hirs_nat.h"
 #include "processors/nat/metop/iasi_nat.h"
 #include "processors/nat/metop/mhs_nat.h"
+#include "processors/nc/aws/mwr_nc.h"
 #include "processors/nc/gk2a/ami_nc.h"
 #include "type.h"
 #include "utils/string.h"
@@ -198,6 +199,35 @@ namespace satdump
                      return i;
                  },
                  []() { return std::make_shared<IASINatProcessor>(); }},
+
+                {NETCDF_AWS_MWR,
+                 [](std::shared_ptr<satdump::utils::FilesIteratorItem> &f)
+                 {
+                     FirstPartyProductInfo i;
+
+                     int sat_num, len;
+                     std::tm timeS;
+                     memset(&timeS, 0, sizeof(std::tm));
+                     uint32_t test1, test2;
+                     int day_repeat_cycle;
+                     if (sscanf(f->name.c_str(), "W_NO-KSAT-Tromso,SAT,AWS%1d-MWR-1B-RAD_C_OHB__%4d%2d%2d%2d%2d%2d_G_O_%14u_%14u_C_N____.nc%n", &sat_num, &timeS.tm_year, &timeS.tm_mon, &timeS.tm_mday,
+                                &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec, &test1, &test2, &len) == 9 &&
+                         len == f->name.size())
+                     {
+                         i.type = NETCDF_AWS_MWR;
+
+                         timeS.tm_year -= 1900;
+                         timeS.tm_mon -= 1;
+                         i.timestamp = timegm(&timeS);
+
+                         i.name = "AWS-" + std::to_string(sat_num) + " MWR " + timestamp_to_string(i.timestamp);
+
+                         i.group_id = std::to_string(sat_num) + "_" + std::to_string((uint64_t)i.timestamp);
+                     }
+
+                     return i;
+                 },
+                 []() { return std::make_shared<MWRNcProcessor>(); }},
 
                 {NETCDF_MTG_FCI,
                  [](std::shared_ptr<satdump::utils::FilesIteratorItem> &f)
