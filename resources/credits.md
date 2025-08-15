@@ -109,6 +109,7 @@ First time here? See the reference documents below to get started using SatDump.
 - Mark Pentier
 - Meti (@cpt_dingus)
 - MeteoOleg
+- MrFentazis (Andrew)
 - Oleg Kutkov
 - Peter Kooistra
 - Piefadase

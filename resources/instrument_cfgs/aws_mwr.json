@@ -75,7 +75,7 @@
         },
         {
             "name": "54.4 GHz",
-            "expression": "x=(5, brightness_temperature, 210.000000, 260.000000);lut(x, 0, 0), lut(x, 0, 1), lut(x, 0, 2)"
+            "expression": "x=(5, brightness_temperature, 210.000000, 260.000000);lut=lut(lut/generic/rainbow.png);lut(x, 0, 0), lut(x, 0, 1), lut(x, 0, 2)"
         },
         {
             "name": "54.94 GHz",
