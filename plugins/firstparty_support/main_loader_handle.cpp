@@ -28,7 +28,5 @@ void provideExplorerFileLoader(const satdump::explorer::ExplorerRequestFileLoad 
                                    auto products = satdump::firstparty::processFirstPartyProductFile(info, p);
                                    e->addHandler(satdump::handlers::getProductHandlerForProduct(products));
                                }});
-
-        logger->trace("MSG SEVIRI Images");
     }
 }
