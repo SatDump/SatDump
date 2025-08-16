@@ -71,7 +71,7 @@
             "expression": "cch22=(22, brightness_temperature, , ); cch20=(20, brightness_temperature, , ); (((1-cch22-cch20))-0.95)^0.25, 0, 0, (((1-cch22-cch20))-0.95)^0.25 > 0.01 ? 1 : 0",
             "description": "descriptions/sounders/RainfallTransparent.md"
         },
-        //Composites to compare with STAR ICVS and EPS STERNA
+        //Composites to compare ATMS with STAR ICVS and EPS STERNA
         {
             "name": "50.3 GHz",
             "expression": "x=(3, brightness_temperature, 210.000000, 300.000000);lut=lut(lut/generic/rainbow.png);lut(x, 0, 0), lut(x, 0, 1), lut(x, 0, 2)"
