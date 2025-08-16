@@ -136,7 +136,7 @@ namespace aws
                 mwr_products.set_channel_unit(i, CALIBRATION_ID_EMISSIVE_RADIANCE);
             }
 
-            mwr_products.set_calibration("aws_mwr", mwr_reader.getCal());
+            // mwr_products.set_calibration("aws_mwr", mwr_reader.getCal());
 
             mwr_products.save(directory);
             dataset.products_list.push_back("MWR");
@@ -170,7 +170,7 @@ namespace aws
                 mwr_dump_product.set_channel_unit(i, CALIBRATION_ID_EMISSIVE_RADIANCE);
             }
 
-            mwr_dump_product.set_calibration("aws_mwr", mwr_dump_reader.getCal());
+            //mwr_dump_product.set_calibration("aws_mwr", mwr_dump_reader.getCal());
 
             mwr_dump_product.save(directory);
             dataset.products_list.push_back("MWR_Dump");
