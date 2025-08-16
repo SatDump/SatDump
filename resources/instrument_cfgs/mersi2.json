@@ -12,6 +12,13 @@
             "autogen": true
         },
         {
+            "name": "Day Land Cloud/Fire RGB",
+            "expression": "ch9,ch4,ch3",
+            "image": {
+                "geo_correct": true
+            }
+        },
+        {
             "name": "MERSI False Color",
             "expression": "ch3, (ch2 * 0.43 + ch4 * 0.57), ch1",
             "image": {

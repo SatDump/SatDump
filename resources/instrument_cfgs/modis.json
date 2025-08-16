@@ -10,10 +10,11 @@
             "description": "descriptions/221.md"
         },
         {
-            "name": "Day Fire Detection (Transparent)"
-        },
-        {
-            "name": "Day Fire Detection  (Map overlay)"
+            "name": "Day Land Cloud/Fire RGB",
+            "expression": "ch7, ch2, ch1",
+            "image": {
+                "geo_correct": true
+            }
         },
         {
             "name": "True Color",
