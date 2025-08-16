@@ -35,6 +35,12 @@ namespace aws
                 if (wavenumbers[channel] == 0 || px_val == 0)
                     return CALIBRATION_INVALID_VALUE;
 
+                // TODOREWORK this should not be hardcoded
+                double obct_offsets_k[19] = {
+                    -6.6079 - 6.3901266, -6.3513411, -6.3208873, -5.9229768, -5.6546386, -5.3765322, -4.4867641, 0.0, -3.2160362,
+                    -2.6922883,          -2.8531763, -2.4250993, -2.4871561, -2.0343713, 0.0,        0.0,        0.0, 0.0,
+                };
+
                 // Average cold views
                 double cold_view = 0;
                 for (auto &v : cal_cold_views[pos_y][channel])
@@ -52,11 +58,11 @@ namespace aws
 
                 // Get cold/hot temps
                 double cold_ref = 2.73;
-                double hot_ref = (cal_load_temps[pos_y][0] + cal_load_temps[pos_y][1] + cal_load_temps[pos_y][2] + cal_load_temps[pos_y][3]) / 4.0 + 273.15;
+                double hot_ref = 290.5; // (cal_load_temps[pos_y][0] + cal_load_temps[pos_y][1] + cal_load_temps[pos_y][2] + cal_load_temps[pos_y][3]) / 4.0 + 273.15;
                 double wavenumber = wavenumbers[channel];
 
                 double cold_rad = temperature_to_radiance(cold_ref, wavenumber);
-                double hot_rad = temperature_to_radiance(hot_ref, wavenumber);
+                double hot_rad = temperature_to_radiance(hot_ref + obct_offsets_k[channel], wavenumber);
 
                 double gain_rad = (hot_rad - cold_rad) / (hot_view - cold_view);
                 double rad = cold_rad + (px_val - cold_view) * gain_rad; // hot_rad + ((px_val - hot_view) / gain_rad);
