@@ -222,7 +222,13 @@ namespace satdump
                         }
                         ImGui::SameLine();
                         if (ImGui::Button("Paste & Load"))
-                            tryOpenFileInExplorer(std::string(ImGui::GetClipboardText()));
+                        {
+                            // Returns nullptr if clipboard didn't have text or failed for some reason
+                            if (ImGui::GetClipboardText() != nullptr)
+                            {
+                                tryOpenFileInExplorer(std::string(ImGui::GetClipboardText()));
+                            }
+                        }
                         ImGui::EndMenu();
                     }
 
