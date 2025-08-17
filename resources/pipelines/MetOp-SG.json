@@ -1,0 +1,37 @@
+{
+    "metop-sg_ddb": {
+        "name": "MetOp-SG DDB",
+        "frequencies": [
+            [
+                "Main",
+                7825e6
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "psk_demod",
+                "parameters": {
+                    "constellation": "qpsk",
+                    "symbolrate": 93.3e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.002
+                }
+            },
+            "cadu": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
+                    "constellation": "qpsk",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "nrzm": false,
+                    "rs_i": 4,
+                    "rs_type": "rs223",
+                    "rs_usecheck": false
+                }
+            }
+        }
+    }
+}
