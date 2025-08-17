@@ -90,6 +90,7 @@ namespace satdump
          * @param file filepath to save the image to with extension
          */
         void save_pbm(Image &img, std::string file);
+        void save_hdf(Image &img, std::string file);
 
         /**
          * @brief Load an image from a PBM (and similar) file.
@@ -98,6 +99,7 @@ namespace satdump
          * @param file filepath to load the image from
          */
         void load_pbm(Image &img, std::string file);
+        void load_hdf(Image &img, std::string file);
 
         /**
          * @brief Save an image to a JPEG2000 file.

@@ -167,6 +167,10 @@
                 [
                     "qoi",
                     "Quite OK Image (*.qoi)"
+                ],
+                [
+                    "h5",
+                    "HDF5 (*.h5)"
                 ]
             ],
             "description": "Image format for raw image products\n\n - png: PNG Image (recommended)\n - j2k: JPEG 2000\n - jpg: JPEG Image (not recommended; may result\n   in low-quality composites and projections)\n - pbm : Really fast, but will result is very big files\n - qoi: A very fast image format with compression.\n   8-bit only!"

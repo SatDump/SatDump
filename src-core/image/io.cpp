@@ -28,6 +28,8 @@ namespace satdump
                 load_tiff(img, file);
             else if (signature[0] == 'q' && signature[1] == 'o' && signature[2] == 'i' && signature[3] == 'f')
                 load_qoi(img, file);
+            else if (signature[1] == 'H' && signature[2] == 'D' && signature[3] == 'F')
+                load_hdf(img, file);
         }
 
         void load_img(Image &img, uint8_t *buffer, int size)
@@ -55,6 +57,8 @@ namespace satdump
                 save_tiff(img, file);
             else if (file.find(".qoi") != std::string::npos)
                 save_qoi(img, file);
+            else if (file.find(".h5") != std::string::npos)
+                save_hdf(img, file);
         }
 
         void save_img_safe(Image &img, std::string file, bool fast)
@@ -79,7 +83,7 @@ namespace satdump
             // Do nothing if there's already an extension
             if (file->find(".png") != std::string::npos || file->find(".jpeg") != std::string::npos || file->find(".jpg") != std::string::npos || file->find(".j2k") != std::string::npos ||
                 file->find(".pgm") != std::string::npos || file->find(".pbm") != std::string::npos || file->find(".ppm") != std::string::npos || file->find(".tif") != std::string::npos ||
-                file->find(".tiff") != std::string::npos || file->find(".gtif") != std::string::npos || file->find(".qoi") != std::string::npos)
+                file->find(".tiff") != std::string::npos || file->find(".gtif") != std::string::npos || file->find(".qoi") != std::string::npos || file->find(".h5") != std::string::npos)
                 return true;
 
             // Otherwise, load the user setting

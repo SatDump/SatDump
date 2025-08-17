@@ -275,6 +275,12 @@ else()
             target_compile_definitions(satdump_core PUBLIC VOLK_NO_volk_32fc_x2_add_32fc="1")
         endif()
     endif()
+
+    find_package(PkgConfig)
+    pkg_check_modules(HDF5 hdf5)
+    target_include_directories(satdump_core PUBLIC ${HDF5_INCLUDE_DIRS})
+    target_link_directories(satdump_core PUBLIC ${HDF5_LIBRARY_DIRS})
+    target_link_libraries(satdump_core PUBLIC hdf5 hdf5_hl hdf5_cpp)
 endif()
 
 if(APPLE)
