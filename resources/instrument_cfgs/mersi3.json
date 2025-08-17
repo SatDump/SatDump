@@ -110,7 +110,7 @@
             "description": "descriptions/DayMicro.md"
         },
         {
-            "name": "Day Land Cloud/Fire RGB",
+            "name": "Day Land Cloud-Fire RGB",
             "expression": "ch9,ch4,ch3",
             "image": {
                 "geo_correct": true

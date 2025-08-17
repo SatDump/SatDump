@@ -10,7 +10,7 @@
             "description": "descriptions/221.md"
         },
         {
-            "name": "Day Land Cloud/Fire RGB",
+            "name": "Day Land Cloud-Fire RGB",
             "expression": "ch7, ch2, ch1",
             "image": {
                 "geo_correct": true
