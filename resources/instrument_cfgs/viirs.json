@@ -122,7 +122,7 @@
             "description": "descriptions/CloudPhase.md"
         },
         {
-            "name": "Dust/Ash RGB",
+            "name": "Dust-Ash RGB",
             "expression": "chm16-chm15, chm15-chm14, chm15",
             "image": {
                 "individual_equalize": true
@@ -136,6 +136,10 @@
                 "white_balance": true
             },
             "description": "descriptions/FireTempRGB.md"
+        },
+        {
+            "name": "Day Land-Cloud Fire RGB",
+            "expression": "ref_channel=i1;chm11,chi2,chi1"
         },
         {
             "name": "Panchromatic",
