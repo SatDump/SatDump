@@ -1,5 +1,4 @@
 #include "../io.h"
-#include "H5Zpublic.h"
 #include "core/exception.h"
 #include "image/image.h"
 #include "logger.h"
@@ -8,6 +7,7 @@
 #include <filesystem>
 #include <fstream>
 
+#include "zstd_h5plugin.h"
 #include <H5Cpp.h>
 
 namespace satdump
@@ -16,6 +16,8 @@ namespace satdump
     {
         void save_hdf(Image &img, std::string file)
         {
+            H5Zregister(&zstd_H5Filter);
+
             auto d_depth = img.depth();
             auto d_channels = img.channels();
             auto d_height = img.height();
@@ -33,8 +35,10 @@ namespace satdump
             H5::DataSpace fspace(3, fdim);
 
             H5::DSetCreatPropList plist;
-            plist.setDeflate(6);
+            // plist.setDeflate(6);
+            // plist.setSzip(H5_SZIP_NN_OPTION_MASK, 32);
             /// plist.setFillValue(H5::PredType::NATIVE_INT, &fillvalue);
+            plist.setFilter(ZSTD_FILTER);
 
             hsize_t fdims[] = {d_height / 4, d_width / 4, 1};
             plist.setChunk(3, fdims);
@@ -56,6 +60,8 @@ namespace satdump
             if (!std::filesystem::exists(file))
                 return;
 
+            H5Zregister(&zstd_H5Filter);
+
             H5::H5File hfile(file, H5F_ACC_RDONLY);
 
             H5::DataSet s = hfile.openDataSet("image");
@@ -68,7 +74,7 @@ namespace satdump
 
             hsize_t image_dims[3];
             s.getSpace().getSimpleExtentDims(image_dims);
-            logger->critical("%d %d %d", image_dims[1], image_dims[0], image_dims[2]);
+            //  logger->critical("%d %d %d", image_dims[1], image_dims[0], image_dims[2]);
 
             if (s.getDataType() == H5::PredType::NATIVE_UINT16)
             {
