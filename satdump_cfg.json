@@ -350,7 +350,7 @@
         "urls_to_fetch": [
             "http://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle" // Most sats
         ],
-        "url_template": "http://www.celestrak.org/NORAD/elements/gp.php?CATNR=%NORAD%",
+        "url_template": "http://celestrak.org/NORAD/elements/gp.php?CATNR=%NORAD%",
         "tles_to_fetch": [
             63251, // UVSQSat-NG
             6235, // NOAA-2

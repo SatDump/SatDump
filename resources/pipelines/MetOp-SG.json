@@ -1,5 +1,5 @@
 {
-    "metop-sg_ddb": {
+    "metopsg_ddb": {
         "name": "MetOp-SG DDB",
         "frequencies": [
             [
@@ -27,10 +27,8 @@
                     "viterbi_ber_thresold": 0.300,
                     "viterbi_outsync_after": 20,
                     "derandomize": true,
-                    "nrzm": false,
                     "rs_i": 4,
-                    "rs_type": "rs223",
-                    "rs_usecheck": false
+                    "rs_type": "rs223"
                 }
             }
         }
