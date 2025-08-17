@@ -23,6 +23,7 @@
                 "parameters": {
                     "constellation": "qpsk",
                     "cadu_size": 8192,
+                    "iq_invert": true,
                     "viterbi_ber_thresold": 0.300,
                     "viterbi_outsync_after": 20,
                     "derandomize": true,
