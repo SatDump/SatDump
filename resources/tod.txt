@@ -7,3 +7,4 @@ Did you know that you can drag and drop HDF files from FengYun-2, -3 and -4 firs
 Did you know that SatDump has a full-blown LUT generator to help you develop your own LUTs?
 Did you know you can change the theme for SatDump in the settings?
 Farewell NOAA-18, decomissioned on 06/06/2025 17:40 UTC after 20 years of loyal direct broadcast service.
+Did you know the longest operating weather satellite was NOAA-15? It was launched on May 13th 1998 and operated successfully for over 27 years, until it was killed off on August 19, 2025 while still working. May the "King" rest in peace and its legacy remembered forever.
