@@ -508,8 +508,8 @@ namespace satdump
                                                logger->trace("Viewer loading shapefile " + path);
                                                e->addHandler(std::make_shared<handlers::ShapefileHandler>(path));
                                            }});
-#if 0 // TODOREWORK ADD MENU
-                                           else if (std::filesystem::path(path).has_extension())
+#if 1 // TODOREWORK ADD MENU
+                    else if (std::filesystem::path(path).has_extension())
                         loaders.push_back({"Image Loader", [](std::string path, ExplorerApplication *e)
                                            {
                                                logger->trace("Viewer loading image " + path);
@@ -533,7 +533,8 @@ namespace satdump
                     }
                     else if (loaders.size() > 1)
                     {
-                        throw satdump_exception("More than one loader available! TODO SELECTION MENU!");
+                        logger->error("More than one loader available! TODO SELECTION MENU!");
+                        loaders[loaders.size() - 1].second(path, this);
                     }
                     else
                     {
