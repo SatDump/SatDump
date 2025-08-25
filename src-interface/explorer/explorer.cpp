@@ -508,8 +508,8 @@ namespace satdump
                                                logger->trace("Viewer loading shapefile " + path);
                                                e->addHandler(std::make_shared<handlers::ShapefileHandler>(path));
                                            }});
-#if 1 // TODOREWORK ADD MENU
-                    else if (std::filesystem::path(path).has_extension())
+#if 1                    // TODOREWORK ADD MENU
+                    else // if (std::filesystem::path(path).has_extension())
                         loaders.push_back({"Image Loader", [](std::string path, ExplorerApplication *e)
                                            {
                                                logger->trace("Viewer loading image " + path);
