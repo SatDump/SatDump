@@ -47,7 +47,7 @@ override. If they are omitted but needed, they default to zero.
  -   `offset_x` (float) Offset of the projection from the center (in
      meters)
  -   `offset_y` (float) Offset of the projection from the center (in
-     mesters)
+     meters)
  -   `scalar_x` (float) Scale of the projection (in meters per pixel)
  -   `scalar_y` (float) Scale of the projection (in meters per pixel)
 

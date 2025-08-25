@@ -1,0 +1,43 @@
+{
+    "sts1_9k6": {
+        "name": "SpaceTeamSat1 9k6",
+        "live": [
+            1,
+            2
+        ],
+        "frequencies": [
+            [
+                "STS1 Main",
+                437.395e6
+            ]
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 140e3
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "fsk_demod",
+                "parameters": {
+                    "symbolrate": 9.6e3, //
+                    "rrc_alpha": 0.45,
+                    //"basic_shaping": true,
+                    "clock_alpha": 0.8
+                }
+            },
+            "cadu": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
+                    "constellation": "bpsk",
+                    "cadu_size": 2072,
+                    "rs_dualbasis": true,
+                    "nrzm": false,
+                    "rs_i": 1,
+                    "rs_type": "rs223"
+                }
+            }
+        }
+    }
+}

@@ -486,7 +486,7 @@ namespace satdump
 
                      xrit::XRITFile file;
                      file.lrit_data = f->getPayload();
-                     file.parseHeaders();
+                     file.parseHeaders(true);
 
                      xrit::XRITFileInfo ii = xrit::identifyXRITFIle(file);
 
