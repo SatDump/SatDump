@@ -508,8 +508,12 @@ namespace satdump
                                                logger->trace("Viewer loading shapefile " + path);
                                                e->addHandler(std::make_shared<handlers::ShapefileHandler>(path));
                                            }});
-#if 1                    // TODOREWORK ADD MENU
-                    else // if (std::filesystem::path(path).has_extension())
+
+                    // Plugin loaders
+                    eventBus->fire_event<ExplorerRequestFileLoad>({path, loaders});
+
+#if 1 // TODOREWORK ADD MENU
+                    if (loaders.size() == 0)
                         loaders.push_back({"Image Loader", [](std::string path, ExplorerApplication *e)
                                            {
                                                logger->trace("Viewer loading image " + path);
@@ -522,9 +526,6 @@ namespace satdump
                                                    logger->error("Could not open this file as image!");
                                            }});
 #endif
-
-                    // Plugin loaders
-                    eventBus->fire_event<ExplorerRequestFileLoad>({path, loaders});
 
                     // Load it
                     if (loaders.size() == 1)
