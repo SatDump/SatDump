@@ -209,13 +209,16 @@ namespace meteor
                 }
 
                 // METEOR got messed up timestamp on the regular... "FIX" them
-                for (int i = 1; i < filter_timestamps.size() - 1; i++)
+                if (filter_timestamps.size() > 2)
                 {
-                    auto &prev = filter_timestamps[i - 1];
-                    auto &curr = filter_timestamps[i];
+                    for (int i = 1; i < filter_timestamps.size() - 1; i++)
+                    {
+                        auto &prev = filter_timestamps[i - 1];
+                        auto &curr = filter_timestamps[i];
 
-                    if (curr == -1 && prev != -1)
-                        curr = prev + 0.16;
+                        if (curr == -1 && prev != -1)
+                            curr = prev + 0.16;
+                    }
                 }
                 // for (double &v : filter_timestamps)
                 //     logger->info(v);
