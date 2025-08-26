@@ -1,5 +1,6 @@
-#include "explorer/explorer.h"
 #define SATDUMP_DLL_EXPORT2 1
+
+#include "explorer/explorer.h"
 
 #include "common/imgui_utils.h"
 #include "core/style.h"
