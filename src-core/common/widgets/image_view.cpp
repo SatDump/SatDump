@@ -170,8 +170,10 @@ void ImageViewWidget::draw(ImVec2 win_size)
                                   ImPlotPoint(chunk.offset_x + chunk.img_width, chunk.offset_y + chunk.img_height));
 
             auto pos = ImPlot::GetPlotMousePos(ImAxis_X1, ImAxis_Y1);
+            auto rpos = ImGui::GetMousePos() - ImGui::GetWindowPos();
             if (pos.x >= 0 && pos.y >= 0 && pos.x < fimg_width && pos.y < fimg_height)
-                mouseCallback(pos.x, (fimg_height - 1) - pos.y);
+                if (rpos.x >= 0 && rpos.y >= 0 && rpos.x < ImGui::GetWindowWidth() && rpos.y < ImGui::GetWindowHeight())
+                    mouseCallback(pos.x, (fimg_height - 1) - pos.y);
 
 #ifdef __ANDROID__
             auto pre_pos = ImGui::GetCursorPos();
