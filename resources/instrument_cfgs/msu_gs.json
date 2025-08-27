@@ -56,10 +56,10 @@
                 "remove_background": true
             }
         },
+        // Could use calibrated visible channels if needed
         {
-            // Could use calibrated visible channels if needed
             "name": "False Color + IR Merge",
-            "expression": "cch9=({10.4um}, emissive_radiance, 15, 110);ch2^cch9,ch3^cch9,ch1^cch9",
+            "expression": "cch9=({10.4um}, emissive_radiance, 5, 130);ch2^cch9,ch3^cch9,ch1^cch9",
             "image": {
                 "remove_background": true
             }
