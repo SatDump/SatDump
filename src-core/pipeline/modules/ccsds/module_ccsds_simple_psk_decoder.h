@@ -68,8 +68,6 @@ namespace satdump
                 std::ifstream data_in;
                 std::ofstream data_out;
 
-                int frm = 0;
-
                 std::atomic<uint64_t> filesize;
                 std::atomic<uint64_t> progress;
 

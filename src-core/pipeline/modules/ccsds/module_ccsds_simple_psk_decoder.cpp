@@ -288,8 +288,6 @@ namespace satdump
                                 output_fifo->write((uint8_t *)cadu, d_cadu_bytes);
                             else
                                 data_out.write((char *)cadu, d_cadu_bytes);
-                            frm++;
-                            logger->critical("Got Frame! %d TOTAL %d", int(valid), frm);
                         }
                     }
 
