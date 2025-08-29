@@ -13,7 +13,7 @@ namespace satdump
     {
         BladeRFDevBlock::BladeRFDevBlock() : DeviceBlock("bladerf_dev_cc", {}, {{"RX", DSP_SAMPLE_TYPE_CF32}})
         {
-            outputs[0].fifo = std::make_shared<DspBufferFifo>(16); // TODOREWORK
+            outputs[0].fifo = std::make_shared<DSPStream>(16); // TODOREWORK
         }
 
         BladeRFDevBlock::~BladeRFDevBlock()
@@ -230,7 +230,7 @@ namespace satdump
                         work_thread_rx.join();
                     logger->info("RX Thread stopped");
                     for (int i = 0; i < rx_ch_number; i++)
-                        outputs[i].fifo->wait_enqueue(DSPBuffer::newBufferTerminator());
+                        outputs[i].fifo->wait_enqueue(outputs[i].fifo->newBufferTerminator());
                 }
 
                 if (tx_ch_number > 0)

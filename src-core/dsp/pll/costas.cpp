@@ -13,18 +13,17 @@ namespace satdump
 
         bool CostasBlock::work()
         {
-            DSPBuffer iblk;
-            inputs[0].fifo->wait_dequeue(iblk);
+            DSPBuffer iblk = inputs[0].fifo->wait_dequeue();
 
             if (iblk.isTerminator())
             {
                 if (iblk.terminatorShouldPropagate())
-                    outputs[0].fifo->wait_enqueue(DSPBuffer::newBufferTerminator());
-                iblk.free();
+                    outputs[0].fifo->wait_enqueue(outputs[0].fifo->newBufferTerminator());
+                inputs[0].fifo->free(iblk);
                 return true;
             }
 
-            auto oblk = DSPBuffer::newBufferSamples<complex_t>(iblk.max_size);
+            auto oblk = outputs[0].fifo->newBufferSamples<complex_t>(iblk.max_size);
             complex_t *ibuf = iblk.getSamples<complex_t>();
             complex_t *obuf = oblk.getSamples<complex_t>();
 
@@ -74,7 +73,7 @@ namespace satdump
 
             oblk.size = iblk.size;
             outputs[0].fifo->wait_enqueue(oblk);
-            iblk.free();
+            inputs[0].fifo->free(iblk);
 
             return false;
         }

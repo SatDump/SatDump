@@ -76,7 +76,7 @@ template <typename T>
 void benchmarkNDSPBlock(std::shared_ptr<satdump::ndsp::Block> ptr, int duration, std::string blkname)
 {
     satdump::ndsp::BlockIO istr;
-    istr.fifo = std::make_shared<satdump::ndsp::DspBufferFifo>(4); // TODOREWORK FIFONUM?
+    istr.fifo = std::make_shared<satdump::ndsp::DSPStream>(4); // TODOREWORK FIFONUM?
     istr.name = "o";
     istr.type = satdump::ndsp::DSP_SAMPLE_TYPE_CF32;
 
@@ -87,14 +87,14 @@ void benchmarkNDSPBlock(std::shared_ptr<satdump::ndsp::Block> ptr, int duration,
     {
         while (should_run)
         {
-            satdump::ndsp::DSPBuffer nbuf = satdump::ndsp::DSPBuffer::newBufferSamples<T>(8192 * 4);
+            satdump::ndsp::DSPBuffer nbuf = istr.fifo->newBufferSamples<T>(8192 * 4);
             for (int i = 0; i < 8192 * 4; i++)
                 nbuf.getSamples<T>()[i] = T(i / 1e5);
             nbuf.size = 8192 * 4;
             istr.fifo->wait_enqueue(nbuf);
         }
 
-        istr.fifo->wait_enqueue(satdump::ndsp::DSPBuffer::newBufferTerminator());
+        istr.fifo->wait_enqueue(istr.fifo->newBufferTerminator());
     };
 
     std::thread producer_th(producer);
@@ -110,8 +110,7 @@ void benchmarkNDSPBlock(std::shared_ptr<satdump::ndsp::Block> ptr, int duration,
     {
         while (true)
         {
-            satdump::ndsp::DSPBuffer iblk;
-            blk_out.fifo->wait_dequeue(iblk);
+            satdump::ndsp::DSPBuffer iblk = blk_out.fifo->wait_dequeue();
 
             if (iblk.isTerminator())
                 break;
@@ -120,7 +119,7 @@ void benchmarkNDSPBlock(std::shared_ptr<satdump::ndsp::Block> ptr, int duration,
 
             end_time = satdump::getTime();
 
-            iblk.free();
+            blk_out.fifo->free(iblk);
         }
     };
     std::thread consumer_th(p2);

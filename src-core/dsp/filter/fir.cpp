@@ -28,14 +28,13 @@ namespace satdump
         template <typename T>
         bool FIRBlock<T>::work()
         {
-            DSPBuffer iblk;
-            inputs[0].fifo->wait_dequeue(iblk);
+            DSPBuffer iblk = inputs[0].fifo->wait_dequeue();
 
             if (iblk.isTerminator())
             {
                 if (iblk.terminatorShouldPropagate())
-                    outputs[0].fifo->wait_enqueue(DSPBuffer::newBufferTerminator());
-                iblk.free();
+                    outputs[0].fifo->wait_enqueue(outputs[0].fifo->newBufferTerminator());
+                inputs[0].fifo->free(iblk);
                 return true;
             }
 
@@ -52,7 +51,7 @@ namespace satdump
 
             while (lbuf_offset < iblk.size)
             {
-                DSPBuffer oblk = DSPBuffer::newBufferSamples<T>(lbuf_size);
+                DSPBuffer oblk = outputs[0].fifo->newBufferSamples<T>(lbuf_size);
                 T *obuf = oblk.getSamples<T>();
 
                 memcpy(&buffer[ntaps], ibuf + lbuf_offset, lbuf_size * sizeof(T));
@@ -91,7 +90,7 @@ namespace satdump
                 lbuf_offset += lbuf_size;
             }
 
-            iblk.free();
+            inputs[0].fifo->free(iblk);
 
             return false;
         }

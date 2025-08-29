@@ -9,7 +9,7 @@ namespace satdump
     {
         AirspyHFDevBlock::AirspyHFDevBlock() : DeviceBlock("airspyhf_dev_cc", {}, {{"out", DSP_SAMPLE_TYPE_CF32}})
         {
-            outputs[0].fifo = std::make_shared<DspBufferFifo>(16); // TODOREWORK
+            outputs[0].fifo = std::make_shared<DSPStream>(16); // TODOREWORK
         }
 
         AirspyHFDevBlock::~AirspyHFDevBlock()
@@ -89,7 +89,7 @@ namespace satdump
                 airspyhf_close(airspyhf_dev_obj);
                 is_started = false;
                 is_open = false;
-                outputs[0].fifo->wait_enqueue(DSPBuffer::newBufferTerminator());
+                outputs[0].fifo->wait_enqueue(outputs[0].fifo->newBufferTerminator());
             }
         }
 
@@ -98,7 +98,7 @@ namespace satdump
             AirspyHFDevBlock *tthis = (AirspyHFDevBlock *)t->ctx;
             int &size = t->sample_count;
 
-            DSPBuffer oblk = DSPBuffer::newBufferSamples<complex_t>(size);
+            DSPBuffer oblk = tthis->outputs[0].fifo->newBufferSamples<complex_t>(size);
             memcpy(oblk.getSamples<complex_t>(), t->samples, size * sizeof(complex_t));
             oblk.size = size;
             tthis->outputs[0].fifo->wait_enqueue(oblk);

@@ -66,7 +66,7 @@ namespace satdump
                         {
                             BlockIO o = {{"out" + std::to_string(i + 1), std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}};
                             o.blkdata = std::make_shared<IOInfo>(IOInfo{std::to_string(i + 1), true});
-                            o.fifo = std::make_shared<DspBufferFifo>(4); // TODOREWORK
+                            o.fifo = std::make_shared<DSPStream>(4); // TODOREWORK
                             Block::outputs.push_back(o);
                         }
                     }
@@ -84,7 +84,7 @@ namespace satdump
 
                 BlockIO o = {{id, std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}};
                 o.blkdata = std::make_shared<IOInfo>(IOInfo{id, forward_terminator});
-                o.fifo = std::make_shared<DspBufferFifo>(4); // TODOREWORK
+                o.fifo = std::make_shared<DSPStream>(4); // TODOREWORK
                 Block::outputs.push_back(o);
                 return outputs[outputs.size() - 1];
             }
@@ -97,7 +97,7 @@ namespace satdump
                     if (((IOInfo *)outputs[i].blkdata.get())->id == id)
                     {
                         if (send_terminator)
-                            (outputs.begin() + i)->fifo->wait_enqueue(DSPBuffer::newBufferTerminator());
+                            (outputs.begin() + i)->fifo->wait_enqueue((outputs.begin() + i)->fifo->newBufferTerminator());
                         outputs.erase(outputs.begin() + i);
                     }
             }

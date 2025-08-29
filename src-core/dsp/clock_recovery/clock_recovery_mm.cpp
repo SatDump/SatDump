@@ -64,14 +64,13 @@ namespace satdump
         template <typename T>
         bool MMClockRecoveryBlock<T>::work()
         {
-            DSPBuffer iblk;
-            inputs[0].fifo->wait_dequeue(iblk);
+            DSPBuffer iblk = inputs[0].fifo->wait_dequeue();
 
             if (iblk.isTerminator())
             {
                 if (iblk.terminatorShouldPropagate())
-                    outputs[0].fifo->wait_enqueue(DSPBuffer::newBufferTerminator());
-                iblk.free();
+                    outputs[0].fifo->wait_enqueue(outputs[0].fifo->newBufferTerminator());
+                inputs[0].fifo->free(iblk);
                 return true;
             }
 
@@ -81,7 +80,7 @@ namespace satdump
                 init();
             }
 
-            DSPBuffer oblk = DSPBuffer::newBufferSamples<T>(iblk.max_size);
+            DSPBuffer oblk = outputs[0].fifo->newBufferSamples<T>(iblk.max_size);
             T *ibuf = iblk.getSamples<T>();
             T *obuf = oblk.getSamples<T>();
 
@@ -180,7 +179,7 @@ namespace satdump
 
             oblk.size = ouc;
             outputs[0].fifo->wait_enqueue(oblk);
-            iblk.free();
+            inputs[0].fifo->free(iblk);
 
             return false;
         }

@@ -4,21 +4,17 @@ namespace satdump
 {
     namespace ndsp
     {
-        ConstellationDisplayBlock::ConstellationDisplayBlock()
-            : Block("const_disp_c", {{"in", DSP_SAMPLE_TYPE_CF32}}, {})
-        {
-        }
+        ConstellationDisplayBlock::ConstellationDisplayBlock() : Block("const_disp_c", {{"in", DSP_SAMPLE_TYPE_CF32}}, {}) {}
 
         ConstellationDisplayBlock::~ConstellationDisplayBlock() {}
 
         bool ConstellationDisplayBlock::work()
         {
-            DSPBuffer iblk;
-            inputs[0].fifo->wait_dequeue(iblk);
+            DSPBuffer iblk = inputs[0].fifo->wait_dequeue();
 
             if (iblk.isTerminator())
             {
-                iblk.free();
+                inputs[0].fifo->free(iblk);
                 return true;
             }
 
@@ -26,7 +22,7 @@ namespace satdump
 
             constel.pushComplex(samples, iblk.size);
 
-            iblk.free();
+            inputs[0].fifo->free(iblk);
             return false;
         }
     } // namespace ndsp

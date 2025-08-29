@@ -52,12 +52,16 @@ namespace satdump
         {
         private:
             void *ptr = nullptr;
+            size_t ptr_size = 0;
 
         public:
             dsp_buffer_type_t type = DSP_BUFFER_TYPE_INVALID;
             uint8_t typesize = 0;
             uint32_t max_size = 0;
             uint32_t size = 0;
+
+        public:
+            friend class DSPStream;
 
         public:
             /**
@@ -85,43 +89,44 @@ namespace satdump
              */
             inline bool terminatorShouldPropagate() { return type == DSP_BUFFER_TYPE_TERMINATOR_PROPAGATING; }
 
-            /**
-             * @brief Frees the pointer. This MUST be called once you're
-             * done doing your DSP with this buffer! Otherwise things will
-             * leak. BADLY leak!
-             *
-             * NOTE TODOREWORK : probably only needed for SAMPLES buffers?
-             */
-            inline void free() { volk_free(ptr); }
+            // /**
+            //  * @brief Frees the pointer. This MUST be called once you're
+            //  * done doing your DSP with this buffer! Otherwise things will
+            //  * leak. BADLY leak!
+            //  *
+            //  * NOTE TODOREWORK : probably only needed for SAMPLES buffers?
+            //  */
+            // inline void free() { volk_free(ptr); }
 
-        public:
-            /**
-             * @brief Create a terminator buffer
-             * @param prop Whether this terminator should be propagating
-             * @return the new DSP buffer
-             */
-            static DSPBuffer newBufferTerminator(bool prop = true)
-            {
-                DSPBuffer b;
-                b.type = prop ? DSP_BUFFER_TYPE_TERMINATOR_PROPAGATING : DSP_BUFFER_TYPE_TERMINATOR_NON_PROPAGATING;
-                return b;
-            }
+            // public:
+            //     /**
+            //      * @brief Create a terminator buffer
+            //      * @param prop Whether this terminator should be propagating
+            //      * @return the new DSP buffer
+            //      */
+            //     static DSPBuffer newBufferTerminator(bool prop = true)
+            //     {
+            //         DSPBuffer b;
+            //         b.type = prop ? DSP_BUFFER_TYPE_TERMINATOR_PROPAGATING : DSP_BUFFER_TYPE_TERMINATOR_NON_PROPAGATING;
+            //         return b;
+            //     }
 
-            /**
-             * @brief Create a sample buffer
-             * @param size size of the new buffer (max_size,
-             * size is left at 0)
-             * @return the new DSP buffer
-             */
-            template <typename T>
-            static DSPBuffer newBufferSamples(uint32_t size)
-            {
-                DSPBuffer b;
-                b.type = DSP_BUFFER_TYPE_SAMPLES;
-                b.max_size = size;
-                b.ptr = volk_malloc(size * sizeof(T), volk_alignment);
-                return b;
-            }
+            //     /**
+            //      * @brief Create a sample buffer
+            //      * @param size size of the new buffer (max_size,
+            //      * size is left at 0)
+            //      * @return the new DSP buffer
+            //      */
+            //     template <typename T>
+            //     static DSPBuffer newBufferSamples(uint32_t size)
+            //     {
+            //         DSPBuffer b;
+            //         b.type = DSP_BUFFER_TYPE_SAMPLES;
+            //         b.max_size = size;
+            //         b.ptr_size = size * sizeof(T);
+            //         b.ptr = volk_malloc(b.ptr_size, volk_alignment);
+            //         return b;
+            //     }
         };
     } // namespace ndsp
 } // namespace satdump

@@ -62,12 +62,11 @@ namespace satdump
 
         bool IQSinkBlock::work()
         {
-            DSPBuffer iblk;
-            inputs[0].fifo->wait_dequeue(iblk);
+            DSPBuffer iblk = inputs[0].fifo->wait_dequeue();
 
             if (iblk.isTerminator())
             {
-                iblk.free();
+                inputs[0].fifo->free(iblk);
                 return true;
             }
 
@@ -110,7 +109,7 @@ namespace satdump
 
             total_written_raw += write_sz;
 
-            iblk.free();
+            inputs[0].fifo->free(iblk);
 
             return false;
         }

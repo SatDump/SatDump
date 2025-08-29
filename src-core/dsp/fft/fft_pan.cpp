@@ -1,14 +1,13 @@
 #include "fft_pan.h"
-#include "logger.h"
-#include "common/dsp/window/window.h"
 #include "common/dsp/block.h"
+#include "common/dsp/window/window.h"
+#include "logger.h"
 
 namespace satdump
 {
     namespace ndsp
     {
-        FFTPanBlock::FFTPanBlock()
-            : Block("fft_pan_cc", {{"in", DSP_SAMPLE_TYPE_CF32}}, {})
+        FFTPanBlock::FFTPanBlock() : Block("fft_pan_cc", {{"in", DSP_SAMPLE_TYPE_CF32}}, {})
         {
             output_fft_buff = new float[dsp::STREAM_BUFFER_SIZE]; // TODOREWORK
         }
@@ -74,12 +73,11 @@ namespace satdump
 
         bool FFTPanBlock::work()
         {
-            DSPBuffer iblk;
-            inputs[0].fifo->wait_dequeue(iblk);
+            DSPBuffer iblk = inputs[0].fifo->wait_dequeue();
 
             if (iblk.isTerminator())
             {
-                iblk.free();
+                inputs[0].fifo->free(iblk);
                 return true;
             }
 
@@ -92,7 +90,7 @@ namespace satdump
                 memcpy(&fft_reshape_buffer[in_reshape_buffer], iblk.getSamples<complex_t>(), nsamples * sizeof(complex_t));
                 in_reshape_buffer += nsamples;
             }
-            iblk.free();
+            inputs[0].fifo->free(iblk);
 
             if (in_reshape_buffer > rbuffer_rate)
             {
@@ -130,5 +128,5 @@ namespace satdump
             fft_mutex.unlock();
             return false;
         }
-    }
-}
+    } // namespace ndsp
+} // namespace satdump

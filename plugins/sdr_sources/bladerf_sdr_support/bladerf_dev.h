@@ -70,7 +70,7 @@ namespace satdump
 
                         if (rx_ch_number == 1)
                         {
-                            DSPBuffer oblk = DSPBuffer::newBufferSamples<complex_t>(sample_buffer_size);
+                            DSPBuffer oblk = outputs[0].fifo->newBufferSamples<complex_t>(sample_buffer_size);
                             if (is_8bit)
                                 volk_8i_s32f_convert_32f((float *)oblk.getSamples<complex_t>(), (int8_t *)sample_buffer, 127.0f, sample_buffer_size * 2);
                             else
@@ -83,7 +83,7 @@ namespace satdump
                             int nsam = meta.actual_count / 2;
                             for (int s = 0; s < 2; s++)
                             {
-                                DSPBuffer oblk = DSPBuffer::newBufferSamples<complex_t>(sample_buffer_size);
+                                DSPBuffer oblk = outputs[s].fifo->newBufferSamples<complex_t>(sample_buffer_size);
                                 auto c = oblk.getSamples<complex_t>();
                                 if (is_8bit)
                                 {
@@ -126,12 +126,11 @@ namespace satdump
                     {
                         if (tx_ch_number == 1)
                         {
-                            DSPBuffer iblk;
-                            inputs[0].fifo->wait_dequeue(iblk);
+                            DSPBuffer iblk = inputs[0].fifo->wait_dequeue();
 
                             if (iblk.isTerminator())
                             {
-                                iblk.free();
+                                inputs[0].fifo->free(iblk);
                                 break;
                             }
 
@@ -142,7 +141,7 @@ namespace satdump
                             if (bladerf_sync_tx(bladerf_dev_obj, sample_buffer, iblk.size, &meta, 4000) != 0)
                                 std::this_thread::sleep_for(std::chrono::seconds(1));
 
-                            iblk.free();
+                            inputs[0].fifo->free(iblk);
                         }
                         else
                             throw satdump_exception("BladeRX TX can't have more than one channel (YET)!");

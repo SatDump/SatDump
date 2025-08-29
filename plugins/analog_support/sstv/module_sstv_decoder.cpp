@@ -103,7 +103,7 @@ namespace sstv
         satdump::ndsp::BlockIO io_in;
         io_in.name = "in";
         io_in.type = satdump::ndsp::DSP_SAMPLE_TYPE_F32;
-        io_in.fifo = std::make_shared<satdump::ndsp::DspBufferFifo>(2);
+        io_in.fifo = std::make_shared<satdump::ndsp::DSPStream>(2);
 
         bpf.set_input(io_in, 0);
         hilb.link(&bpf, 0, 0, 2);
@@ -125,7 +125,7 @@ namespace sstv
                 else
                     input_fifo->read((uint8_t *)s16_buf, buffer_size * sizeof(int16_t));
 
-                auto nblk = satdump::ndsp::DSPBuffer::newBufferSamples<float>(buffer_size);
+                auto nblk = io_in.fifo->newBufferSamples<float>(buffer_size);
 
                 if (is_stereo)
                 {
@@ -150,7 +150,7 @@ namespace sstv
                 }
             }
             delete[] s16_buf;
-            io_in.fifo->wait_enqueue(satdump::ndsp::DSPBuffer::newBufferTerminator());
+            io_in.fifo->wait_enqueue(io_in.fifo->newBufferTerminator());
         };
 
         std::thread feeder_thread(feeder_func);
@@ -169,12 +169,11 @@ namespace sstv
         {
             while (true)
             {
-                satdump::ndsp::DSPBuffer iblk;
-                io_out.fifo->wait_dequeue(iblk);
+                satdump::ndsp::DSPBuffer iblk = io_out.fifo->wait_dequeue();
 
                 if (iblk.isTerminator())
                 {
-                    iblk.free();
+                    io_out.fifo->free(iblk);
                     break;
                 }
 
@@ -200,7 +199,7 @@ namespace sstv
                     has_to_update = true;
                 }
 
-                iblk.free();
+                io_out.fifo->free(iblk);
             }
 
             logger->info("BYE!");

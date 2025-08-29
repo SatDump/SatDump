@@ -4,27 +4,23 @@ namespace satdump
 {
     namespace ndsp
     {
-        CyclostationaryAnalysis::CyclostationaryAnalysis()
-            : Block("cyclostationary_analysis_cf", {{"in", DSP_SAMPLE_TYPE_CF32}}, {{"out", DSP_SAMPLE_TYPE_F32}})
-        {
-        }
+        CyclostationaryAnalysis::CyclostationaryAnalysis() : Block("cyclostationary_analysis_cf", {{"in", DSP_SAMPLE_TYPE_CF32}}, {{"out", DSP_SAMPLE_TYPE_F32}}) {}
 
         CyclostationaryAnalysis::~CyclostationaryAnalysis() {}
 
         bool CyclostationaryAnalysis::work()
         {
-            DSPBuffer iblk;
-            inputs[0].fifo->wait_dequeue(iblk);
+            DSPBuffer iblk = inputs[0].fifo->wait_dequeue();
 
             if (iblk.isTerminator())
             {
                 if (iblk.terminatorShouldPropagate())
-                    outputs[0].fifo->wait_enqueue(DSPBuffer::newBufferTerminator());
-                iblk.free();
+                    outputs[0].fifo->wait_enqueue(outputs[0].fifo->newBufferTerminator());
+                inputs[0].fifo->free(iblk);
                 return true;
             }
 
-            auto oblk = DSPBuffer::newBufferSamples<float>(iblk.max_size * 2); // complex_t = 2 floats
+            auto oblk = outputs[0].fifo->newBufferSamples<float>(iblk.max_size * 2); // complex_t = 2 floats
             complex_t *ibuf = iblk.getSamples<complex_t>();
             complex_t *obuf = oblk.getSamples<complex_t>();
             float *obuff = oblk.getSamples<float>();
@@ -35,7 +31,7 @@ namespace satdump
 
             oblk.size = iblk.size;
             outputs[0].fifo->wait_enqueue(oblk);
-            iblk.free();
+            inputs[0].fifo->free(iblk);
 
             return false;
         }

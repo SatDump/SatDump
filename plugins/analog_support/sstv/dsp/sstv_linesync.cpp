@@ -20,14 +20,13 @@ namespace satdump
 
         bool SSTVLineSyncBlock::work()
         {
-            DSPBuffer iblk;
-            inputs[0].fifo->wait_dequeue(iblk);
+            DSPBuffer iblk = inputs[0].fifo->wait_dequeue();
 
             if (iblk.isTerminator())
             {
                 if (iblk.terminatorShouldPropagate())
-                    outputs[0].fifo->wait_enqueue(DSPBuffer::newBufferTerminator());
-                iblk.free();
+                    outputs[0].fifo->wait_enqueue(outputs[0].fifo->newBufferTerminator());
+                inputs[0].fifo->free(iblk);
                 return true;
             }
 
@@ -76,7 +75,7 @@ namespace satdump
                     }
                 }
 
-                auto oblk = DSPBuffer::newBufferSamples<float>(line_length);
+                auto oblk = outputs[0].fifo->newBufferSamples<float>(line_length);
                 oblk.size = line_length;
                 for (int i = 0; i < line_length; i++)
                     oblk.getSamples<float>()[i] = lineGetScaledIMG(sync_line_buffer[best_pos + i]);
@@ -85,7 +84,7 @@ namespace satdump
                 skip = line_length;
             }
 
-            iblk.free();
+            inputs[0].fifo->free(iblk);
 
             return false;
         }

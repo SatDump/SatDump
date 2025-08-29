@@ -10,12 +10,11 @@ namespace satdump
 
         bool HistogramDisplayBlock::work()
         {
-            DSPBuffer iblk;
-            inputs[0].fifo->wait_dequeue(iblk);
+            DSPBuffer iblk = inputs[0].fifo->wait_dequeue();
 
             if (iblk.isTerminator())
             {
-                iblk.free();
+                inputs[0].fifo->free(iblk);
                 return true;
             }
 
@@ -23,7 +22,7 @@ namespace satdump
 
             histo.pushComplex(samples, iblk.size);
 
-            iblk.free();
+            inputs[0].fifo->free(iblk);
             return false;
         }
     } // namespace ndsp

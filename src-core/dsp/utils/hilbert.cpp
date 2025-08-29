@@ -19,14 +19,13 @@ namespace satdump
 
         bool HilbertBlock::work()
         {
-            DSPBuffer iblk;
-            inputs[0].fifo->wait_dequeue(iblk);
+            DSPBuffer iblk = inputs[0].fifo->wait_dequeue();
 
             if (iblk.isTerminator())
             {
                 if (iblk.terminatorShouldPropagate())
-                    outputs[0].fifo->wait_enqueue(DSPBuffer::newBufferTerminator());
-                iblk.free();
+                    outputs[0].fifo->wait_enqueue(outputs[0].fifo->newBufferTerminator());
+                inputs[0].fifo->free(iblk);
                 return true;
             }
 
@@ -43,7 +42,7 @@ namespace satdump
 
             while (lbuf_offset < iblk.size)
             {
-                DSPBuffer oblk = DSPBuffer::newBufferSamples<complex_t>(lbuf_size);
+                DSPBuffer oblk = outputs[0].fifo->newBufferSamples<complex_t>(lbuf_size);
                 complex_t *obuf = oblk.getSamples<complex_t>();
 
                 memcpy(&buffer[p_ntaps], ibuf + lbuf_offset, lbuf_size * sizeof(float));
@@ -61,7 +60,7 @@ namespace satdump
                 lbuf_offset += lbuf_size;
             }
 
-            iblk.free();
+            inputs[0].fifo->free(iblk);
 
             return false;
         }

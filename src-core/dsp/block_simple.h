@@ -21,23 +21,22 @@ namespace satdump
         private:
             bool work()
             {
-                DSPBuffer iblk;
-                inputs[0].fifo->wait_dequeue(iblk);
+                DSPBuffer iblk = inputs[0].fifo->wait_dequeue();
 
                 if (iblk.isTerminator())
                 {
                     if (iblk.terminatorShouldPropagate())
-                        outputs[0].fifo->wait_enqueue(DSPBuffer::newBufferTerminator());
-                    iblk.free();
+                        outputs[0].fifo->wait_enqueue(outputs[0].fifo->newBufferTerminator());
+                    inputs[0].fifo->free(iblk);
                     return true;
                 }
 
-                DSPBuffer oblk = DSPBuffer::newBufferSamples<To>(iblk.max_size);
+                DSPBuffer oblk = outputs[0].fifo->newBufferSamples<To>(iblk.max_size);
 
                 oblk.size = process(iblk.getSamples<Ti>(), iblk.size, oblk.getSamples<To>());
 
                 outputs[0].fifo->wait_enqueue(oblk);
-                iblk.free();
+                inputs[0].fifo->free(iblk);
 
                 return false;
             }

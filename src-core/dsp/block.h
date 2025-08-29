@@ -7,6 +7,7 @@
 #include "base/dsp_buffer.h"
 #include "base/readerwritercircularbuffer.h"
 #include "core/exception.h"
+#include "dsp/base/stream.h"
 #include "nlohmann/json.hpp"
 #include <mutex>
 #include <thread>
@@ -16,8 +17,6 @@ namespace satdump
 {
     namespace ndsp // TODOREWORK back to normal DSP!
     {
-        typedef moodycamel::BlockingReaderWriterCircularBuffer<DSPBuffer> DspBufferFifo;
-
         /**
          * @brief Block IO types.
          *
@@ -44,7 +43,7 @@ namespace satdump
         {
             std::string name;
             BlockIOType type;
-            std::shared_ptr<DspBufferFifo> fifo = nullptr;
+            std::shared_ptr<DSPStream> fifo = nullptr;
             std::shared_ptr<void> blkdata = nullptr;
 
             // TODOREWORK DOCUMENT
@@ -149,7 +148,7 @@ namespace satdump
                 if (i >= (int)outputs.size())
                     throw satdump_exception("Ouput index " + std::to_string(i) + " does not exist for " + d_id + "!");
                 if (nbuf > 0)
-                    outputs[i].fifo = std::make_shared<DspBufferFifo>(nbuf);
+                    outputs[i].fifo = std::make_shared<DSPStream>(nbuf);
                 return outputs[i];
             }
 

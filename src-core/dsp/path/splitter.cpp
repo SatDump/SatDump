@@ -19,8 +19,7 @@ namespace satdump
         template <typename T>
         bool SplitterBlock<T>::work()
         {
-            DSPBuffer iblk;
-            inputs[0].fifo->wait_dequeue(iblk);
+            DSPBuffer iblk = inputs[0].fifo->wait_dequeue();
 
             if (iblk.isTerminator())
             {
@@ -31,11 +30,11 @@ namespace satdump
                     {
                         IOInfo *i = ((IOInfo *)o.blkdata.get());
                         if (i->forward_terminator)
-                            o.fifo->wait_enqueue(DSPBuffer::newBufferTerminator());
+                            o.fifo->wait_enqueue(o.fifo->newBufferTerminator());
                     }
                     vfos_mtx.unlock();
                 }
-                iblk.free();
+                inputs[0].fifo->free(iblk);
                 return true;
             }
 
@@ -44,14 +43,14 @@ namespace satdump
             {
                 IOInfo *i = ((IOInfo *)o.blkdata.get());
 
-                DSPBuffer oblk = DSPBuffer::newBufferSamples<T>(iblk.max_size);
+                DSPBuffer oblk = o.fifo->newBufferSamples<T>(iblk.max_size);
                 memcpy(oblk.getSamples<T>(), iblk.getSamples<T>(), iblk.size * sizeof(T));
                 oblk.size = iblk.size;
                 o.fifo->wait_enqueue(oblk);
             }
             vfos_mtx.unlock();
 
-            iblk.free();
+            inputs[0].fifo->free(iblk);
 
             return false;
         }

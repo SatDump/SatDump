@@ -4,20 +4,15 @@ namespace satdump
 {
     namespace ndsp
     {
-        FileSourceBlock::FileSourceBlock()
-            : Block("file_source_cc", {}, {{"out", DSP_SAMPLE_TYPE_CF32}})
-        {
-        }
+        FileSourceBlock::FileSourceBlock() : Block("file_source_cc", {}, {{"out", DSP_SAMPLE_TYPE_CF32}}) {}
 
-        FileSourceBlock::~FileSourceBlock()
-        {
-        }
+        FileSourceBlock::~FileSourceBlock() {}
 
         bool FileSourceBlock::work()
         {
             if (!baseband_reader.is_eof() && !work_should_exit)
             {
-                auto oblk = DSPBuffer::newBufferSamples<complex_t>(d_buffer_size);
+                auto oblk = outputs[0].fifo->newBufferSamples<complex_t>(d_buffer_size);
                 complex_t *obuf = oblk.getSamples<complex_t>();
 
                 int read = baseband_reader.read_samples(obuf, d_buffer_size);
@@ -34,11 +29,11 @@ namespace satdump
             else
             {
                 d_eof = true;
-                outputs[0].fifo->wait_enqueue(DSPBuffer::newBufferTerminator());
+                outputs[0].fifo->wait_enqueue(outputs[0].fifo->newBufferTerminator());
                 return true;
             }
 
             return false;
         }
-    }
-}
+    } // namespace ndsp
+} // namespace satdump

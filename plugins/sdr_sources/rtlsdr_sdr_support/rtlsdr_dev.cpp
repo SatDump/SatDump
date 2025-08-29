@@ -10,7 +10,7 @@ namespace satdump
     {
         RTLSDRDevBlock::RTLSDRDevBlock() : DeviceBlock("rtlsdr_dev_cc", {}, {{"out", DSP_SAMPLE_TYPE_CF32}})
         {
-            outputs[0].fifo = std::make_shared<DspBufferFifo>(16); // TODOREWORK
+            outputs[0].fifo = std::make_shared<DSPStream>(16); // TODOREWORK
         }
 
         RTLSDRDevBlock::~RTLSDRDevBlock()
@@ -182,7 +182,7 @@ namespace satdump
 
                 is_started = false;
                 is_open = false;
-                outputs[0].fifo->wait_enqueue(DSPBuffer::newBufferTerminator());
+                outputs[0].fifo->wait_enqueue(outputs[0].fifo->newBufferTerminator());
             }
         }
 
@@ -192,7 +192,7 @@ namespace satdump
 
             {
                 int nsam = len / 2;
-                DSPBuffer oblk = DSPBuffer::newBufferSamples<complex_t>(nsam);
+                DSPBuffer oblk = tthis->outputs[0].fifo->newBufferSamples<complex_t>(nsam);
 
                 for (int i = 0; i < (int)len / 2; i++)
                 {
