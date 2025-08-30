@@ -45,7 +45,7 @@ namespace satdump
         // Init Obj Tracker
         object_tracker.setQTH(qth_lon, qth_lat, qth_alt);
         object_tracker.setRotator(rotator_handler);
-        object_tracker.setObject(object_tracker.TRACKING_SATELLITE, 25338);
+        object_tracker.setObject(object_tracker.TRACKING_SATELLITE, 57166); //Phoenix replaced King for default sat
         object_tracker.rotator_target_pos_updated_callback = [this](double az, double el) { sat_finder.setTarget(az, el); };
 
         // Init Sat finder
