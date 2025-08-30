@@ -50,8 +50,17 @@ namespace metopsg
             }
 
             // Demuxers
+            ccsds::ccsds_aos::Demuxer demuxer_vcid10(884, false);
             ccsds::ccsds_aos::Demuxer demuxer_vcid13(884, false);
             ccsds::ccsds_aos::Demuxer demuxer_vcid14(884, false);
+
+            // Setup Admin Message
+            {
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/Admin Messages";
+                if (!std::filesystem::exists(directory))
+                    std::filesystem::create_directory(directory);
+                admin_msg_reader.directory = directory;
+            }
 
             std::vector<uint8_t> metop_scids;
 
@@ -78,6 +87,13 @@ namespace metopsg
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid14.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         threemi_reader.work(pkt);
+                }
+                else if (vcdu.vcid == 10) // Admin Messages
+                {
+                    std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid10.work(cadu);
+                    for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
+                        if (pkt.header.apid == 577)
+                            admin_msg_reader.work(pkt);
                 }
             }
 
@@ -159,6 +175,13 @@ namespace metopsg
                 mws_status = DONE;
             }
 
+            // Admin Messages
+            {
+                admin_msg_status = DONE;
+                logger->info("----------- Admin Message");
+                logger->info("Count : " + std::to_string(admin_msg_reader.count));
+            }
+
             dataset.save(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')));
         }
 
@@ -191,6 +214,14 @@ namespace metopsg
                 ImGui::TextColored(style::theme.green, "%d", threemi_reader.img_n);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(threemi_status);
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Admin Messages");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextColored(style::theme.green, "%d", admin_msg_reader.count);
+                ImGui::TableSetColumnIndex(2);
+                drawStatus(admin_msg_status);
 
                 ImGui::EndTable();
             }
