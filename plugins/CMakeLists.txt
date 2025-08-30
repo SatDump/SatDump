@@ -98,6 +98,15 @@ if(PLUGIN_NOAA_METOP OR PLUGINS_ALL)
   add_subdirectory(noaa_metop_support)
 endif()
 
+option(
+  PLUGIN_METOPSG
+  "Enable the MetOp-SG support plugin"
+  OFF)
+
+if(PLUGIN_METOPSG OR PLUGINS_ALL)
+  add_subdirectory(metopsg_support)
+endif()
+
 option(PLUGIN_DMSP "Enable the DMSP support plugin" OFF)
 
 if(PLUGIN_DMSP OR PLUGINS_ALL)

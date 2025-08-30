@@ -30,6 +30,9 @@
                     "rs_i": 4,
                     "rs_type": "rs223"
                 }
+            },
+            "products": {
+                "module": "metopsg_instruments"
             }
         }
     }
