@@ -1,11 +1,7 @@
 #include "explorer.h"
-// #include "image_handler.h"
-// #include "radiation_handler.h"
-// #include "scatterometer_handler.h"
-// #include "core/config.h"
-// #include "products/dataset.h"
+
 #include "common/utils.h"
-// #include "core/resources.h"
+
 #include "core/exception.h"
 #include "core/plugin.h"
 
@@ -381,39 +377,6 @@ namespace satdump
                                     eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({std::make_shared<RecorderApplication>()}); // TODOREWORK do not bind this directly.
                                 });
                     }
-
-                    // ImVec2 slogan_size1 = ImGui::CalcTextSize(slogan1.c_str());
-                    // ImGui::SetCursorPos({((float)dims.first / 2) - (slogan_size1.x / 2), ((float)dims.second / 2) + (80 * scale)});
-                    // ImGui::TextUnformatted(slogan1.c_str());
-
-                    // ImVec2 slogan_size2 = ImGui::CalcTextSize(slogan2.c_str());
-                    // ImGui::SetCursorPos({((float)dims.first / 2) - (slogan_size2.x / 2), ((float)dims.second / 2) + (100 * scale)});
-                    // ImGui::TextUnformatted(slogan2.c_str());
-
-                    // ImGui::SetCursorPos({20 * ui_scale, ((float)dims.second / 2.2f)});
-                    // float table_height = dims.second - 250 * ui_scale;
-                    // if (ImGui::BeginTable("##dscovrinstrumentstable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg, {ImGui::GetWindowWidth() - 40 * ui_scale, table_height}))
-                    // {
-                    //     ImGui::TableNextRow(0, table_height / 2);
-                    //     ImGui::TableSetColumnIndex(0);
-                    //     ImGui::Text("Shortcuts");
-                    //     ImGui::Button("Add Recorder");
-                    //     ImGui::Button("Open File");
-
-                    //     ImGui::TableSetColumnIndex(1);
-                    //     ImGui::Text("Tip of the day");
-                    //     ImGui::Text("Did you know you could know that you could");
-                    //     ImGui::Text("know that you could know how to know to be");
-                    //     ImGui::Text("able to know?");
-
-                    //     ImGui::TableNextRow(0, table_height / 2);
-                    //     ImGui::TableSetColumnIndex(0);
-                    //     ImGui::Text("Something else!?");
-                    //     ImGui::TableSetColumnIndex(1);
-                    //     ImGui::Text("Yes, why not?");
-
-                    //     ImGui::EndTable();
-                    // }
                 }
 #endif
 

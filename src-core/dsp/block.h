@@ -5,7 +5,6 @@
  */
 
 #include "base/dsp_buffer.h"
-#include "base/readerwritercircularbuffer.h"
 #include "core/exception.h"
 #include "dsp/base/stream.h"
 #include "nlohmann/json.hpp"

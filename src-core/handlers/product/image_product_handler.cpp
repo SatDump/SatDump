@@ -113,7 +113,7 @@ namespace satdump
                 }
 
                 // If possible, display physical channel info (wavelength etc)
-                if (channel_selection_curr_id != -1)
+                if (channel_selection_curr_id != -1 && product->images.size() > channel_selection_curr_id)
                 {
                     auto &ch = product->images[channel_selection_curr_id];
 
@@ -248,6 +248,8 @@ namespace satdump
             channels_calibration_units_and_converters.clear();
             if (channel_selection_curr_id == -1 && images_can_be_calibrated)
                 return;
+            if (product->images.size() >= channel_selection_curr_id)
+                return;
 
             // Just setup all possible converters and unit infos
             for (auto &cc : calibration::getAvailableConversions(product->images[channel_selection_curr_id].calibration_type))
@@ -351,7 +353,7 @@ namespace satdump
             try
             {
 
-                if (channel_selection_curr_id == -1)
+                if (channel_selection_curr_id == -1 || product->images.size() <= channel_selection_curr_id)
                 { // Expression case
                     auto img = products::generate_expression_product_composite(product, expression, &progress);
                     img_handler->setImage(img);
