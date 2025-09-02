@@ -103,8 +103,9 @@ namespace codings
             {
                 out[i] = (uint8_t)(d_vns[i] >= 0 ? 1 : 0);
 
-                if ((out[i] > 0) != (in[i] > 0))
-                    corrections++;
+                if (i < d_pcm_num_vn - d_pcm_num_cn)
+                    if ((out[i] > 0) != (in[i] > 0))
+                        corrections++;
             }
 
             return corrections;
@@ -121,8 +122,7 @@ namespace codings
 
             for (int vn_idx = 0; vn_idx < cn_deg; vn_idx++)
             {
-                d_vns_to_cn_msgs[vn_idx] =
-                    *d_vn_addr[cn_row_base + vn_idx] - d_cn_to_vn_msgs[cn_offset + vn_idx];
+                d_vns_to_cn_msgs[vn_idx] = *d_vn_addr[cn_row_base + vn_idx] - d_cn_to_vn_msgs[cn_offset + vn_idx];
                 // printf("%d \n", d_vns_to_cn_msgs[vn_idx]);
             }
 
@@ -192,5 +192,5 @@ namespace codings
                 *d_vn_addr[cn_row_base + vn_idx] = to_vn;
             }
         }
-    }
-}
+    } // namespace ldpc
+} // namespace codings
