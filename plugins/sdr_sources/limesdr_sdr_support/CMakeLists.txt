@@ -1,10 +1,25 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.15)
 project(limesdr_sdr_support)
 
 
 find_library(LIMESDR_LIBRARY LimeSuite)
+find_library(LIMESDR_NG_LIBRARY limesuiteng)
 
-if(LIMESDR_LIBRARY OR MSVC OR ANDROID)
+if(LIMESDR_NG_LIBRARY)
+    message("Building with LimeSDR (NG) support")
+    file(GLOB_RECURSE limesdr_sdr_support_CPPS *.cpp)
+    add_library(limesdr_sdr_support SHARED ${limesdr_sdr_support_CPPS})
+    target_include_directories(limesdr_sdr_support PUBLIC src)
+
+    if(MSVC)
+        target_link_libraries(limesdr_sdr_support PUBLIC ${LIMESDR_NG_LIBRARY})
+        install(TARGETS limesdr_sdr_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+    elseif(ANDROID)
+    else()
+        target_link_libraries(limesdr_sdr_support PUBLIC ${LIMESDR_NG_LIBRARY})
+        install(TARGETS limesdr_sdr_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+    endif()
+elseif(LIMESDR_LIBRARY OR MSVC OR ANDROID)
     message("Building with LimeSDR support")
     file(GLOB_RECURSE limesdr_sdr_support_CPPS *.cpp)
     add_library(limesdr_sdr_support SHARED ${limesdr_sdr_support_CPPS})
