@@ -1,46 +1,25 @@
 #include "lime_sdr.h"
 
-using namespace lime;
-
-static void lime_log(LogLevel lvl, const std::string& msg)
-{
-    if (lvl <= LogLevel::Warning) logger->warn("%s", msg.c_str());
-    else                          logger->trace("%s", msg.c_str());
-}
-
-LimeSDRSource::LimeSDRSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate"), bandwidth_widget("Bandwidth")
-{
-    lime::registerLogHandler(lime_log);
-}
-
-LimeSDRSource::~LimeSDRSource()
-{
-    stop();
-    close();
-}
-
 void LimeSDRSource::set_gains()
 {
     if (!is_started)
         return;
 
-    //lime::LMS7_Device *lms = (lime::LMS7_Device *)limeDevice;
+    lime::LMS7_Device *lms = (lime::LMS7_Device *)limeDevice;
 
     if (gain_mode_manual)
     {
-        limeDevice->SetGain(moduleIndex, TRXDir::Rx, channel_id, eGainTypes::LNA, gain_lna);
-        limeDevice->SetGain(moduleIndex, TRXDir::Rx, channel_id, eGainTypes::TIA, gain_tia);
-        limeDevice->SetGain(moduleIndex, TRXDir::Rx, channel_id, eGainTypes::PGA, gain_pga);
+        lms->SetGain(false, channel_id, gain_lna, "LNA");
+        lms->SetGain(false, channel_id, gain_tia, "TIA");
+        lms->SetGain(false, channel_id, gain_pga, "PGA");
         logger->debug("Set LimeSDR (LNA) Gain to %d", gain_lna);
         logger->debug("Set LimeSDR (TIA) Gain to %d", gain_tia);
         logger->debug("Set LimeSDR (PGA) Gain to %d", gain_pga);
     }
     else
     {
-        limeDevice->SetGain(moduleIndex, TRXDir::Rx, channel_id, eGainTypes::LNA, 0);
-        limeDevice->SetGain(moduleIndex, TRXDir::Rx, channel_id, eGainTypes::TIA, 0);
-        limeDevice->SetGain(moduleIndex, TRXDir::Rx, channel_id, eGainTypes::PGA, 0);
-        logger->error("Set LimeSDR (auto) Gain to %d (unsupported)", gain);
+        lms->SetGain(false, channel_id, gain, "");
+        logger->debug("Set LimeSDR (auto) Gain to %d", gain);
     }
 }
 
@@ -49,13 +28,17 @@ void LimeSDRSource::set_others()
     if (!is_started)
         return;
 
+    // lime::LMS7_Device *lms = (lime::LMS7_Device *)limeDevice;
+
     if (manual_bandwidth)
     {
-        limeDevice->SetLowPassFilter(moduleIndex, TRXDir::Rx, channel_id, bandwidth_widget.get_value());
+        LMS_SetLPFBW(limeDevice, false, channel_id, bandwidth_widget.get_value());
+        LMS_SetLPF(limeDevice, false, channel_id, true);
     }
     else
     {
-        limeDevice->SetLowPassFilter(moduleIndex, TRXDir::Rx, channel_id, samplerate_widget.get_value());
+        LMS_SetLPFBW(limeDevice, false, channel_id, samplerate_widget.get_value());
+        LMS_SetLPF(limeDevice, false, channel_id, true);
     }
 }
 
@@ -112,36 +95,50 @@ void LimeSDRSource::start()
 
     uint64_t current_samplerate = samplerate_widget.get_value();
 
-    if(!is_started)
+    if (!is_started)
     {
-        auto handles = DeviceRegistry::enumerate();
-        if (handles.empty())
-            throw std::runtime_error("No LimeSDR devices found");
+        lms_info_str_t found_devices[256];
+        LMS_GetDeviceList(found_devices);
 
-        limeDevice = DeviceRegistry::makeDevice(handles.at(stoi(d_sdr_id)));
-        limeDevice->Init();
+        limeDevice = NULL;
+        LMS_Open(&limeDevice, found_devices[std::stoi(d_sdr_id)], NULL);
+        int err = LMS_Init(limeDevice);
+
+        // LimeSuite Bug
+        if (err)
+        {
+            LMS_Close(limeDevice);
+            LMS_Open(&limeDevice, found_devices[std::stoi(d_sdr_id)], NULL);
+            err = LMS_Init(limeDevice);
+        }
+
+        if (err)
+            throw satdump_exception("Could not open LimeSDR Device!");
     }
 
-    limeDevice->EnableChannel(moduleIndex, TRXDir::Rx, channel_id, true);
-    limeDevice->SetAntenna(moduleIndex, TRXDir::Rx, channel_id, path_id);
+    LMS_EnableChannel(limeDevice, false, channel_id, true);
+    LMS_SetAntenna(limeDevice, false, channel_id, path_id);
 
-    StreamConfig scfg;
-    scfg.channels.at(TRXDir::Rx).push_back(channel_id);
-    scfg.format     = DataFormat::F32;  // host: float IQ; change to I16 if your DSP expects int16
-    scfg.linkFormat = DataFormat::I16;  // typical link format
+    // limeStream.align = false;
+    limeStream.isTx = false;
+    limeStream.throughputVsLatency = 0.5;
+    limeStream.fifoSize = 8192 * 10; // auto
+    limeStream.dataFmt = limeStream.LMS_FMT_F32;
+    limeStream.channel = channel_id;
 
     logger->debug("Set LimeSDR samplerate to " + std::to_string(current_samplerate));
-    limeDevice->SetSampleRate(moduleIndex, TRXDir::Rx, channel_id, current_samplerate, 0);
+    LMS_SetSampleRate(limeDevice, current_samplerate, 0);
 
     is_started = true;
 
-    limeDevice->SetFrequency(moduleIndex, TRXDir::Rx, channel_id, d_frequency);
+    set_frequency(d_frequency);
 
     set_gains();
     set_others();
 
-    limeStream = limeDevice->StreamCreate(scfg, moduleIndex);
-    limeStream->Start();
+    LMS_SetupStream(limeDevice, &limeStream);
+
+    LMS_StartStream(&limeStream);
 
     thread_should_run = true;
     work_thread = std::thread(&LimeSDRSource::mainThread, this);
@@ -160,9 +157,10 @@ void LimeSDRSource::stop()
     logger->info("Thread stopped");
     if (is_started)
     {
-        limeStream->Stop();
-        limeDevice->EnableChannel(moduleIndex, TRXDir::Rx, channel_id, false);
-        DeviceRegistry::freeDevice(limeDevice);
+        LMS_StopStream(&limeStream);
+        LMS_DestroyStream(limeDevice, &limeStream);
+        LMS_EnableChannel(limeDevice, false, channel_id, false);
+        LMS_Close(limeDevice);
     }
     is_started = false;
 }
@@ -177,8 +175,7 @@ void LimeSDRSource::set_frequency(uint64_t frequency)
     if (is_started)
     {
 
-        //LMS_SetLOFrequency(limeDevice, false, channel_id, frequency);
-        limeDevice->SetFrequency(moduleIndex, TRXDir::Rx, channel_id, frequency);
+        LMS_SetLOFrequency(limeDevice, false, channel_id, frequency);
 
         logger->debug("Set LimeSDR frequency to %d", frequency);
     }
@@ -207,19 +204,17 @@ void LimeSDRSource::drawControlUI()
     // Gain settings
     bool gain_changed = false;
 
-    // Fixme: LimeSuite NG doesn't support automatic gain
-    //if (RImGui::RadioButton("Auto", !gain_mode_manual))
-    //{
-    //    gain_mode_manual = false;
-    //    gain_changed = true;
-    //}
-    //RImGui::SameLine();
-    //if (RImGui::RadioButton("Manual", gain_mode_manual))
-    //{
-    //    gain_mode_manual = true;
-    //    gain_changed = true;
-    //}
-    gain_mode_manual = true; // Auto isn't supported in LimeSuiteNG
+    if (RImGui::RadioButton("Auto", !gain_mode_manual))
+    {
+        gain_mode_manual = false;
+        gain_changed = true;
+    }
+    RImGui::SameLine();
+    if (RImGui::RadioButton("Manual", gain_mode_manual))
+    {
+        gain_mode_manual = true;
+        gain_changed = true;
+    }
 
     if (gain_mode_manual)
     {
@@ -255,32 +250,22 @@ uint64_t LimeSDRSource::get_samplerate()
 
 std::vector<dsp::SourceDescriptor> LimeSDRSource::getAvailableSources()
 {
-    int k=0;
     std::vector<dsp::SourceDescriptor> results;
-    auto handles = DeviceRegistry::enumerate();
-    for (const auto& h : handles)
+
+    lms_info_str_t devices[256];
+    int cnt = LMS_GetDeviceList(devices);
+
+    for (int i = 0; i < cnt; i++)
     {
+        lms_device_t *device = nullptr;
+        if (LMS_Open(&device, devices[i], NULL) == -1)
+            continue;
+        const lms_dev_info_t *device_info = LMS_GetDeviceInfo(device);
         std::stringstream ss;
-        ss << std::hex << h.Serialize();
-        results.push_back({"limesdr", "LimeSDR " + ss.str(), std::to_string(k++)});
+        ss << std::hex << device_info->boardSerialNumber;
+        LMS_Close(device);
+        results.push_back({"limesdr", "LimeSDR " + ss.str(), std::to_string(i)});
     }
+
     return results;
-}
-
-void LimeSDRSource::mainThread()
-{
-    int buffer_size = std::min<int>(samplerate_widget.get_value() / 250, dsp::STREAM_BUFFER_SIZE);
-    logger->trace("LimeSDR Buffer size %d", buffer_size);
-
-    StreamMeta md;
-
-    while (thread_should_run)
-    {
-        auto* buf0 = reinterpret_cast<lime::complex32f_t*>(output_stream->writeBuf);
-        lime::complex32f_t* dest[1] = { buf0 };
-        uint32_t cnt = limeStream->StreamRx(dest, buffer_size, &md, std::chrono::milliseconds(2000));
-
-        if (cnt > 0)
-            output_stream->swap(cnt);
-    }
 }

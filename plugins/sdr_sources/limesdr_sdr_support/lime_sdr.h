@@ -1,22 +1,25 @@
 #pragma once
 
 #include "common/dsp_source_sink/dsp_sample_source.h"
-#include <limesuiteng/limesuiteng.hpp>
+#ifdef __ANDROID__
+#include "API/lms7_device.h"
+#include "lime/LimeSuite.h"
+#else
+#include <lime/LimeSuite.h>
+#include <lime/lms7_device.h>
+#endif
 #include <thread>
 #include "logger.h"
 #include "common/rimgui.h"
 #include "common/widgets/double_list.h"
-
-using namespace lime;
 
 class LimeSDRSource : public dsp::DSPSampleSource
 {
 protected:
     bool is_open = false, is_started = false;
 
-    SDRDevice* limeDevice = nullptr;
-    std::unique_ptr<RFStream> limeStream;
-    uint8_t moduleIndex = 0;
+    lms_device_t *limeDevice;
+    lms_stream_t limeStream;
 
     widgets::DoubleList samplerate_widget;
     widgets::DoubleList bandwidth_widget;
@@ -36,11 +39,33 @@ protected:
 
     std::thread work_thread;
     bool thread_should_run = false;
-    void mainThread();
+    void mainThread()
+    {
+        lms_stream_meta_t md;
+
+        // int buffer_size = calculate_buffer_size_from_samplerate(samplerate_widget.get_value());
+        int buffer_size = std::min<int>(samplerate_widget.get_value() / 250, dsp::STREAM_BUFFER_SIZE);
+        logger->trace("LimeSDR Buffer size %d", buffer_size);
+
+        while (thread_should_run)
+        {
+            int cnt = LMS_RecvStream(&limeStream, output_stream->writeBuf, buffer_size, &md, 2000);
+
+            if (cnt > 0)
+                output_stream->swap(cnt);
+        }
+    }
 
 public:
-    LimeSDRSource(dsp::SourceDescriptor source);
-    ~LimeSDRSource();
+    LimeSDRSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate"), bandwidth_widget("Bandwidth")
+    {
+    }
+
+    ~LimeSDRSource()
+    {
+        stop();
+        close();
+    }
 
     void set_settings(nlohmann::json settings);
     nlohmann::json get_settings();
