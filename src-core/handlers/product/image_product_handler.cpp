@@ -352,7 +352,6 @@ namespace satdump
         {
             try
             {
-
                 if (channel_selection_curr_id == -1 || product->images.size() <= channel_selection_curr_id)
                 { // Expression case
                     auto img = products::generate_expression_product_composite(product, expression, &progress);

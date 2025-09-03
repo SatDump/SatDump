@@ -179,6 +179,7 @@ namespace satdump
             width = j.contains("width") ? j["width"].get<int>() : -1;
             fwd_type = PROJ_INVALID;
             inv_type = PROJ_INVALID;
+            init(0, 0);
         }
     } // namespace projection
 } // namespace satdump
