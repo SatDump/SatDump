@@ -158,7 +158,12 @@ namespace satdump
                 }
 
                 if (needs_to_update)
-                    asyncProcess();
+                {
+                    if (file_save_thread_running)
+                        logger->error("Please wait for saving to end first!");
+                    else
+                        asyncProcess();
+                }
                 wasMenuTriggered = needs_to_update;
             }
         }
@@ -174,6 +179,7 @@ namespace satdump
             {
                 auto fun = [this]()
                 {
+                    set_is_processing(true);
                     file_save_thread_running = true;
                     // TODOREWORK!!!!
                     std::string save_type = "png";
@@ -185,11 +191,15 @@ namespace satdump
                     else
                         logger->info("Saved current image at %s", saved_at.c_str());
                     file_save_thread_running = false;
+                    set_is_processing(false);
                 };
 
                 if (file_save_thread.joinable())
                     file_save_thread.join();
-                file_save_thread = std::thread(fun);
+                if (file_save_thread_running)
+                    logger->error("Please wait for processing to end first!");
+                else
+                    file_save_thread = std::thread(fun);
             }
 
             if (needs_to_be_disabled)

@@ -15,7 +15,7 @@ namespace satdump
         SSTVLineSyncBlock::~SSTVLineSyncBlock()
         {
             if (sync_line_buffer != nullptr)
-                volk_free(sync_line_buffer);
+                delete[] sync_line_buffer;
         }
 
         bool SSTVLineSyncBlock::work()
