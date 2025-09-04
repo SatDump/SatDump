@@ -125,8 +125,8 @@ void LimeXTRXSDRSource::start()
 
     StreamConfig scfg;
     scfg.channels.at(TRXDir::Rx).push_back(channel_id);
-    scfg.format     = DataFormat::F32;  // host: float IQ; change to I16 if your DSP expects int16
-    scfg.linkFormat = DataFormat::I16;  // typical link format
+    scfg.format     = DataFormat::F32;  // host float IQ
+    scfg.linkFormat = DataFormat::I16;  // link format
 
     logger->debug("Set Lime XTRX SDR samplerate to " + std::to_string(current_samplerate));
     limeDevice->SetSampleRate(moduleIndex, TRXDir::Rx, channel_id, current_samplerate, 0);
