@@ -15,7 +15,7 @@
         },
         {
         "name": "AVHRR 543b IR False Color",
-        "expression": "ch5 == 0 ? 0 : 1-ch5, ch4 == 0 ? 0 : 1-ch4, ch2 == 0 ? 0 : 1-ch2",
+        "expression": "ch5,ch4,ch2",
         "image": {
             "individual_equalize": true,
             "white_balance": true
@@ -30,6 +30,14 @@
             "white_balance": true
         },
         "description": "descriptions/124.md"
+        },
+        {
+            "name": "7.35 µm Uncalibrated Water Vapor",
+            "expression": "cch12=(3, equalized, 0, 0);lut=lut(lut/cal/purpleorange.png);lut(cch12, 0, 0), lut(cch12,0,1), lut(cch12,0,2)",
+            "image": {
+                "equalize": true,
+                "geo_correct": true
+            }
         }
     ]
 
