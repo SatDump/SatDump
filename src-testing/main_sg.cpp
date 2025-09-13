@@ -12,10 +12,12 @@
 
 #include "image/image.h"
 #include "image/io.h"
+#include "image/processing.h"
 #include "logger.h"
 #include <cstdint>
 #include <cstring>
 #include <fstream>
+#include <string>
 
 #include "common/ccsds/ccsds_aos/demuxer.h"
 #include "common/ccsds/ccsds_aos/vcdu.h"
@@ -32,7 +34,8 @@ int main(int argc, char *argv[])
 
     ccsds::ccsds_aos::Demuxer demuxer_vcid(884, false);
 
-    std::vector<uint16_t> img_vec;
+    std::vector<uint8_t> img_vec(520 * 520 * 2);
+    int img_n = 0;
 
     while (!data_in.eof())
     {
@@ -41,27 +44,32 @@ int main(int argc, char *argv[])
         // Parse this transport frame
         ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
-        // printf("VCID %d\n", vcdu.vcid);
+        printf("VCID %d\n", vcdu.vcid);
+
+        if (vcdu.vcid != 10)
+            continue;
 
         std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid.work(cadu);
         for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
         {
-            //  printf("APID %d\n", pkt.header.apid);
+            printf("APID %d\n", pkt.header.apid);
 
-#if 1                                    // Img?
-            if (pkt.header.apid == 1443) // pkt.header.apid == 1440 || pkt.header.apid == 1443 || pkt.header.apid == 1444)
+#if 1                                   // Img?
+                                        // 1104, 1105, 1106, 1107, 1108, 1109, 1110, 1111
+            if (pkt.header.apid == 577) // pkt.header.apid == 1440 || pkt.header.apid == 1443 || pkt.header.apid == 1444)
             {
-                int mkr = pkt.payload[45];
+                // int mkr = pkt.payload[21];
 
-                printf("LEN %d %d MKR %d\n", pkt.header.sequence_flag, pkt.payload.size() + 6, mkr);
+                //  printf("LEN %d %d MKR %d\n", pkt.header.sequence_flag, pkt.payload.size() + 6, mkr);
 
-                // if (mkr == 23)
                 {
-                    pkt.payload.resize(400 - 6);
+                    pkt.payload.resize(5000 - 6);
 
-                    data_ou.write((char *)pkt.header.raw, 6);
+                    //  data_ou.write((char *)pkt.header.raw, 6);
                     data_ou.write((char *)pkt.payload.data(), pkt.payload.size());
                 }
+
+                // data_ou.write((char *)pkt.payload.data() + 4320, pkt.payload.size() - 4320 - 4);
             }
             // else
             //     printf("APID %d\n", pkt.header.apid);
@@ -88,6 +96,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    image::Image img(img_vec.data(), 16, 1542, img_vec.size() / 1542, 1);
-    image::save_png(img, "/tmp/test.png");
+    // image::Image img(img_vec.data(), 16, 1542, img_vec.size() / 1542, 1);
+    // image::save_png(img, "/tmp/test.png");
 }
