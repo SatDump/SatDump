@@ -1,15 +1,42 @@
 #pragma once
 
 #include "image/svissr_reader.h"
-#include <string>
-#include "image/svissr_reader.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
+#include <cstdint>
+#include <string>
 #include <thread>
 
 namespace fengyun_svissr
 {
+    enum SVISSRSubCommunicaitonBlockType
+    {
+        Simplified_mapping,
+        Orbit_and_attitude,
+        MANAM,
+        Calibration_1,
+        Calibration_2,
+        Spare
+    };
+
+    struct SVISSRSubcommunicationBlock
+    {
+        int start_offset;
+        int end_offset;
+    };
+
+    // Abstracts the stupid idiot subcommunication groups away
+    typedef std::vector<uint8_t> Group;
+    typedef std::vector<uint8_t> MinorFrame;
+
     class SVISSRImageDecoderModule : public satdump::pipeline::base::FileStreamToFileStreamModule
     {
+        struct SVISSRSubcommunicationBlock
+        {
+            std::string name;
+            int start_offset;
+            int end_offset;
+        };
+
     protected:
         // Settings
         std::string sat_name;
@@ -77,7 +104,12 @@ namespace fengyun_svissr
 
         // Stats
         std::vector<int> scid_stats;
-        std::vector<int> timestamp_stats;
+
+        // Subcommunication block handling
+        void save_minor_frame();
+        std::vector<MinorFrame> subcommunication_frames; /* 25 2097 byte groups forming a full subcommunication frame */
+        MinorFrame minor_frame;                          /* The individual groups, used to build a full frame */
+        std::vector<Group> group_retransmissions;        /* Retransmissions of a given group */
 
         // UI Stuff
         float corr_history_ca[200];
