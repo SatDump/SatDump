@@ -3,6 +3,7 @@
 #include "common/codings/deframing/bpsk_ccsds_deframer.h"
 #include "common/codings/generic_correlator.h"
 #include "common/codings/ldpc/ccsds_ldpc.h"
+#include "common/codings/ldpc/labrador/decoder.h"
 #include "common/dsp/demod/constellation.h"
 #include "common/dsp/utils/random.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
@@ -23,6 +24,7 @@ namespace satdump
             {
             protected:
                 const bool is_ccsds; // Just to know if we should output .cadu or .frm
+                const bool use_ldpc2;
 
                 const std::string d_constellation_str;     // Constellation type string
                 dsp::constellation_type_t d_constellation; // Constellation type
@@ -53,6 +55,7 @@ namespace satdump
 
                 std::unique_ptr<CorrelatorGeneric> correlator;
                 std::unique_ptr<codings::ldpc::CCSDSLDPC> ldpc_dec;
+                std::unique_ptr<labrador::code_params_t> ldpc2_params;
                 std::unique_ptr<deframing::BPSK_CCSDS_Deframer> deframer;
 
                 // UI Stuff

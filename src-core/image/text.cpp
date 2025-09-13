@@ -60,13 +60,14 @@ namespace satdump
 
         void TextDrawer::init_font() { init_font(resources::getResourcePath("fonts/font.ttf")); }
 
-        void TextDrawer::draw_text(Image &img, int xs0, int ys0, std::vector<double> color, int s, std::string text)
+        int TextDrawer::draw_text(Image &img, int xs0, int ys0, std::vector<double> color, int s, std::string text)
         {
             if (!has_font)
             {
                 logger->error("Tried to draw text without having a font initialized!");
-                return;
+                return 0;
             }
+
             int CP = 0;
             std::vector<char> cstr(text.c_str(), text.c_str() + text.size() + 1);
             char *c = cstr.data();
@@ -149,6 +150,8 @@ namespace satdump
 
                 CP += SF * info.advance;
             }
+
+            return CP;
         }
     } // namespace image
 } // namespace satdump

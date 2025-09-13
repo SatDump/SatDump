@@ -72,8 +72,9 @@ namespace satdump
              * @param color of the text
              * @param size size/height (in pixels) of the text to draw
              * @param text string the draw
+             * @return text length on X axis in pixels
              */
-            void draw_text(Image &img, int xs0, int ys0, std::vector<double> color, int size, std::string text);
+            int draw_text(Image &img, int xs0, int ys0, std::vector<double> color, int size, std::string text);
         };
     } // namespace image
 } // namespace satdump

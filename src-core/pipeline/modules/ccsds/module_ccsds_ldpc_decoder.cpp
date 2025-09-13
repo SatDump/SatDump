@@ -1,4 +1,6 @@
 #include "module_ccsds_ldpc_decoder.h"
+#include "common/codings/ldpc/ccsds_ldpc.h"
+#include "common/codings/ldpc/labrador/decoder.h"
 #include "common/codings/randomization.h"
 #include "common/codings/rotation.h"
 #include "common/utils.h"
@@ -15,7 +17,10 @@ namespace satdump
         namespace ccsds
         {
             CCSDSLDPCDecoderModule::CCSDSLDPCDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-                : base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters), is_ccsds(parameters.count("ccsds") > 0 ? parameters["ccsds"].get<bool>() : true),
+                : base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters),
+
+                  is_ccsds(parameters.count("ccsds") > 0 ? parameters["ccsds"].get<bool>() : true), //
+                  use_ldpc2(parameters.count("ldpc2") > 0 ? parameters["ldpc2"].get<bool>() : false),
 
                   d_constellation_str(parameters["constellation"].get<std::string>()),
                   // d_iq_invert(parameters.count("iq_invert") > 0 ? parameters["iq_invert"].get<bool>() : false),
@@ -44,6 +49,37 @@ namespace satdump
 
                 ldpc_dec = std::make_unique<codings::ldpc::CCSDSLDPC>(d_ldpc_rate, d_ldpc_block_size);
                 d_ldpc_simd = ldpc_dec->simd();
+
+                if (use_ldpc2)
+                {
+                    d_ldpc_simd = 1;
+                    labrador::ldpc_code_t c;
+                    if (d_ldpc_block_size == 1024)
+                    {
+                        if (d_ldpc_rate == codings::ldpc::RATE_4_5)
+                            c = labrador::TM1280;
+                        else if (d_ldpc_rate == codings::ldpc::RATE_2_3)
+                            c = labrador::TM1536;
+                        else if (d_ldpc_rate == codings::ldpc::RATE_1_2)
+                            c = labrador::TM2048;
+                        else
+                            throw satdump_exception("Invalid LDPC Option for LDPC2!");
+                    }
+                    else if (d_ldpc_block_size == 4096)
+                    {
+                        if (d_ldpc_rate == codings::ldpc::RATE_4_5)
+                            c = labrador::TM5120;
+                        else if (d_ldpc_rate == codings::ldpc::RATE_2_3)
+                            c = labrador::TM6144;
+                        else if (d_ldpc_rate == codings::ldpc::RATE_1_2)
+                            c = labrador::TM8192;
+                        else
+                            throw satdump_exception("Invalid LDPC Option for LDPC2!");
+                    }
+                    else
+                        throw satdump_exception("Invalid LDPC Option for LDPC2!");
+                    ldpc2_params = std::make_unique<labrador::code_params_t>(labrador::get_code_params(c));
+                }
 
                 if (d_ldpc_rate == codings::ldpc::RATE_7_8)
                     d_ldpc_asm_size = 32;
@@ -142,7 +178,7 @@ namespace satdump
 
                     // Derand
                     if (d_derand)
-                        derand_ccsds_soft(&soft_buffer[d_ldpc_asm_size], d_ldpc_codeword_size - d_ldpc_asm_size);
+                        derand_ccsds_soft(&soft_buffer[d_ldpc_asm_size], d_ldpc_codeword_size);
 
                     // LDPC Decoding
                     memcpy(&ldpc_input_buffer[frames_in_ldpc_buffer * d_ldpc_codeword_size], &soft_buffer[d_ldpc_asm_size], d_ldpc_codeword_size);
@@ -150,48 +186,83 @@ namespace satdump
 
                     if (frames_in_ldpc_buffer == d_ldpc_simd)
                     {
-#if 1 // For debug if necessary
-                        ldpc_corr = ldpc_dec->decode(ldpc_input_buffer, ldpc_output_buffer, d_ldpc_iterations);
-#else
-                        for (int i = 0; i < d_ldpc_simd * d_ldpc_codeword_size; i++)
-                            ldpc_output_buffer[i] = ldpc_input_buffer[i] > 0;
-#endif
-
-                        if (d_internal_stream)
+                        if (use_ldpc2)
                         {
-                            for (int i = 0; i < d_ldpc_simd; i++)
+                            for (int i = 0; i < d_ldpc_codeword_size; i++)
                             {
-                                // Deframe
-                                int frames = deframer->work(&ldpc_output_buffer[i * d_ldpc_codeword_size], d_ldpc_data_size, deframer_buffer);
-                                for (int i = 0; i < frames; i++)
-                                    write_data(&deframer_buffer[i * d_cadu_bytes], d_cadu_bytes);
+                                ldpc_input_buffer[i] = -ldpc_input_buffer[i];
+                                ldpc_input_buffer[i] /= 4;
                             }
+
+                            uint64_t trials2 = 0;
+                            int8_t working[ldpc2_params->decode_ms_working_len];
+                            uint8_t working_u8[ldpc2_params->decode_ms_working_u8_len];
+                            labrador::decode_ms(*ldpc2_params, ldpc_input_buffer, deframer_buffer, working, working_u8, d_ldpc_iterations, &trials2);
+                            ldpc_corr = trials2;
+
+                            // Write directly
+                            if (d_ldpc_asm_size == 32)
+                            {
+                                const uint32_t sync = 0x1acffc1d;
+                                write_data((uint8_t *)&sync, 4);
+                            }
+                            else if (d_ldpc_asm_size == 64)
+                            {
+                                const uint64_t sync = 0x034776c7272895b0;
+                                for (int i = 7; i >= 0; i--)
+                                {
+                                    uint8_t v = (sync >> i * 8) & 0xFF;
+                                    write_data((uint8_t *)&v, 1);
+                                }
+                            }
+
+                            write_data(deframer_buffer, (d_ldpc_frame_size - d_ldpc_asm_size) / 8);
                         }
                         else
                         {
-                            // Repack
+#if 1 // For debug if necessary
+                            ldpc_corr = ldpc_dec->decode(ldpc_input_buffer, ldpc_output_buffer, d_ldpc_iterations);
+#else
                             for (int i = 0; i < d_ldpc_simd * d_ldpc_codeword_size; i++)
-                                deframer_buffer[i / 8] = deframer_buffer[i / 8] << 1 | ldpc_output_buffer[i];
+                                ldpc_output_buffer[i] = ldpc_input_buffer[i] > 0;
+#endif
 
-                            for (int i = 0; i < d_ldpc_simd; i++)
+                            if (d_internal_stream)
                             {
-                                // Write directly
-                                if (d_ldpc_asm_size == 32)
+                                for (int i = 0; i < d_ldpc_simd; i++)
                                 {
-                                    const uint32_t sync = 0x1acffc1d;
-                                    write_data((uint8_t *)&sync, 4);
+                                    // Deframe
+                                    int frames = deframer->work(&ldpc_output_buffer[i * d_ldpc_codeword_size], d_ldpc_data_size, deframer_buffer);
+                                    for (int i = 0; i < frames; i++)
+                                        write_data(&deframer_buffer[i * d_cadu_bytes], d_cadu_bytes);
                                 }
-                                else if (d_ldpc_asm_size == 64)
-                                {
-                                    const uint64_t sync = 0x034776c7272895b0;
-                                    for (int i = 7; i >= 0; i--)
-                                    {
-                                        uint8_t v = (sync >> i * 8) & 0xFF;
-                                        write_data((uint8_t *)&v, 1);
-                                    }
-                                }
+                            }
+                            else
+                            {
+                                // Repack
+                                for (int i = 0; i < d_ldpc_simd * d_ldpc_codeword_size; i++)
+                                    deframer_buffer[i / 8] = deframer_buffer[i / 8] << 1 | ldpc_output_buffer[i];
 
-                                write_data((uint8_t *)&deframer_buffer[i * (d_ldpc_codeword_size / 8)], (d_ldpc_frame_size - d_ldpc_asm_size) / 8);
+                                for (int i = 0; i < d_ldpc_simd; i++)
+                                {
+                                    // Write directly
+                                    if (d_ldpc_asm_size == 32)
+                                    {
+                                        const uint32_t sync = 0x1acffc1d;
+                                        write_data((uint8_t *)&sync, 4);
+                                    }
+                                    else if (d_ldpc_asm_size == 64)
+                                    {
+                                        const uint64_t sync = 0x034776c7272895b0;
+                                        for (int i = 7; i >= 0; i--)
+                                        {
+                                            uint8_t v = (sync >> i * 8) & 0xFF;
+                                            write_data((uint8_t *)&v, 1);
+                                        }
+                                    }
+
+                                    write_data((uint8_t *)&deframer_buffer[i * (d_ldpc_codeword_size / 8)], (d_ldpc_frame_size - d_ldpc_asm_size) / 8);
+                                }
                             }
                         }
 
