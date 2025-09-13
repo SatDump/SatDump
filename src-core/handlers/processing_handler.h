@@ -39,6 +39,7 @@ namespace satdump
 
         protected:
             bool is_processing = false;
+            std::mutex is_processing_mtx;
 
             /**
              * @brief Actual processing function to be implemented by the child class
@@ -53,9 +54,24 @@ namespace satdump
              */
             void process()
             {
+                is_processing_mtx.lock();
                 is_processing = true;
+                is_processing_mtx.unlock();
                 do_process();
+                is_processing_mtx.lock();
                 is_processing = false;
+                is_processing_mtx.unlock();
+            }
+
+            /**
+             * @brief Set the processing status externally, to force waiting before starting a new thread
+             * @param v to set if it's processing or not
+             */
+            void set_is_processing(bool v)
+            {
+                is_processing_mtx.lock();
+                is_processing = v;
+                is_processing_mtx.unlock();
             }
 
             /**
@@ -63,11 +79,14 @@ namespace satdump
              */
             void asyncProcess()
             {
+                is_processing_mtx.lock();
                 if (is_processing && async_thread.joinable())
                 {
                     printf("ALREADY PROCESSING!!!!\n"); // TODOREWORK
+                    is_processing_mtx.unlock();
                     return;
                 }
+                is_processing_mtx.unlock();
 
                 try
                 {
@@ -77,7 +96,9 @@ namespace satdump
                 {
                 }
 
+                is_processing_mtx.lock();
                 is_processing = true;
+                is_processing_mtx.unlock();
                 auto fun = [this]() { process(); };
                 async_thread = std::thread(fun);
             }

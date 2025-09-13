@@ -96,7 +96,7 @@ namespace satdump
         {
             ImGui::SetNextWindowPos({0, 0});
             ImGui::SetNextWindowSize({(float)dims.first, (float)dims.second});
-            ImGui::Begin("SatDump UI", nullptr, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_MenuBar);
+            ImGui::Begin("SatDump UI", nullptr, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoScrollWithMouse);
 
             if (ImGui::BeginMenuBar())
             {

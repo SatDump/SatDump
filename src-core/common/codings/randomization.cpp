@@ -86,3 +86,12 @@ void derand_ccsds_soft(int8_t *data, int length)
             data[i] = ~data[i];
     }
 }
+
+void derand_ccsds_bits(uint8_t *data, int length) {
+     for (int i = 0; i < length; i++)
+    {
+        // If the bit is set, invert soft bit. Otherwise, do nothing
+        if (ccsds_soft_pn[i % 255])
+            data[i] = !data[i];
+    }
+}

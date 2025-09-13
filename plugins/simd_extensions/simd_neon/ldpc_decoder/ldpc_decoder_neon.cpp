@@ -110,8 +110,9 @@ namespace codings
                 {
                     out[z * d_pcm_num_vn + i] = (uint8_t)(ptrVar[8 * i + z] >= 0 ? 1 : 0);
 
-                    if ((out[z * d_pcm_num_vn + i] > 0) != (in[z * d_pcm_num_vn + i] > 0))
-                        corrections++;
+                    if (i < d_pcm_num_vn - d_pcm_num_cn)
+                        if ((out[z * d_pcm_num_vn + i] > 0) != (in[z * d_pcm_num_vn + i] > 0))
+                            corrections++;
                 }
             }
 

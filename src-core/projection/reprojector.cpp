@@ -1,8 +1,8 @@
 #include "reprojector.h"
 
-#include "logger.h"
 #include "core/exception.h"
 #include "image/meta.h"
+#include "logger.h"
 
 #include "projection/standard/proj_json.h"
 
@@ -101,8 +101,7 @@ namespace satdump
                 src_proj_err = true;
             }
 
-            if (src_proj.init(true, false) && !src_proj_err &&
-                src_proj.getInvType() != Projection::PROJ_RAYTRACER /*TODOREWORK*/)
+            if (src_proj.getInvType() != Projection::PROJ_RAYTRACER && src_proj.init(true, false) && !src_proj_err)
             { // If the input is a standard projection
                 geodetic::geodetic_coords_t pos;
                 for (int x = 0; x < (int)result_img.width(); x++)
@@ -273,5 +272,5 @@ namespace satdump
             //            proj::projection_free(&trg_proj);
             return result_img;
         }
-    }
-}
+    } // namespace projection
+} // namespace satdump
