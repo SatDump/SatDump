@@ -104,7 +104,7 @@ namespace fengyun_svissr
         // Subcommunication block handling
         void save_minor_frame();
         std::vector<MinorFrame> subcommunication_frames; /* 25 2097 byte groups forming a full subcommunication frame */
-        MinorFrame minor_frame;                          /* The individual groups, used to build a full frame */
+        MinorFrame current_subcom_frame;                          /* A full subcommunication frame */
         std::vector<Group> group_retransmissions;        /* Retransmissions of a given group */
 
         // UI Stuff

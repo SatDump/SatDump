@@ -58,7 +58,7 @@ namespace fengyun_svissr
         }
 
         subcommunication_frames.clear();
-        minor_frame.clear();
+        current_subcom_frame.clear();
         group_retransmissions.clear();
     }
 
@@ -105,9 +105,9 @@ namespace fengyun_svissr
     /**
      * Countrs the amount of errors in a subcommunication frame's 179-byte spare. Helps us ensure we are not looking at junk.
      * This works because it is supposed to be all zeroes. Helpful for determining SNR (ruoughly)
-     * Max errors: 1432 (theory, 179*8), 716 (realistic for BPSK, 50% chance)
+     * Max errors: 35800 (theory, 179*25*8), 17900 (realistic for BPSK, 50% chance)
      *
-     *  @param subcom_Frame The minor frame to check the spare of
+     *  @param subcom_Frame The subcommunication frame to check the spare of
      */
     int get_spare_errors(MinorFrame subcom_frame)
     {
@@ -133,7 +133,7 @@ namespace fengyun_svissr
 
     void SVISSRImageDecoderModule::save_minor_frame()
     {
-        if (!group_retransmissions.empty() && minor_frame.size() / SUBCOM_GROUP_SIZE == 24)
+        if (!group_retransmissions.empty() && current_subcom_frame.size() / SUBCOM_GROUP_SIZE == 24)
         {
 
             // Process the last group
@@ -141,22 +141,22 @@ namespace fengyun_svissr
             group_retransmissions.clear();
 
             // Add group to the frame
-            minor_frame.insert(minor_frame.end(), last_group.begin(), last_group.end());
+            current_subcom_frame.insert(current_subcom_frame.end(), last_group.begin(), last_group.end());
 
             // Save the frame
             logger->debug("Saved a subcom frame!");
-            subcommunication_frames.push_back(minor_frame);
-            minor_frame.clear();
+            subcommunication_frames.push_back(current_subcom_frame);
+            current_subcom_frame.clear();
         }
         else if (group_retransmissions.empty())
         {
             logger->debug("Failed to get the last group!");
-            minor_frame.clear();
+            current_subcom_frame.clear();
         }
         else
         {
-            logger->debug("Minor frame size is not valid, skipping! %d bytes, %f groups", minor_frame.size(), minor_frame.size() / SUBCOM_GROUP_SIZE);
-            minor_frame.clear();
+            logger->debug("Minor frame size is not valid, skipping! %d bytes, %f groups", current_subcom_frame.size(), current_subcom_frame.size() / SUBCOM_GROUP_SIZE);
+            current_subcom_frame.clear();
         }
     }
 
@@ -165,8 +165,9 @@ namespace fengyun_svissr
         writingImage = true;
         // Save products
         satdump::products::ImageProduct svissr_product;
+        svissr_product.instrument_name = "fy2-svissr";
+        double unix_timestamp = 0;
 
-        // Get the sat name
         switch (buffer.scid)
         {
         case (40):
@@ -207,204 +208,191 @@ namespace fengyun_svissr
             svissr_product.set_product_source("Unknown FengYun-2");
         }
 
-        svissr_product.instrument_name = "fy2-svissr";
-
-        // For calibration data
-        std::array<std::array<float, 1024>, 5> LUTs;
-        bool calibrated = false;
-        double unix_timestamp = 0;
-
         // -> SUBCOMMUNICATION BLOCK HANDLING <-
 
+        MinorFrame final_subcom_frame; /* Result of majority law between all subcommunication frames */
+
+        std::array<std::array<float, 1024>, 5> LUTs; /* Calibration LUTs */
+        bool process_subcom_data = false;
+
+        // Ensures we can and should decode it in the first place
         if (!subcommunication_frames.empty())
         {
-            std::vector<uint8_t> minor_frame = majority_law(subcommunication_frames, false);
+            logger->debug("Pulled %d subcommunication frames", subcommunication_frames.size());
+            final_subcom_frame = majority_law(subcommunication_frames, false);
 
-            // ----> Integrity check <----
-            int errors = get_spare_errors(minor_frame);
-            if (errors > 32)
+            // - Integrity check -
+            int errors = get_spare_errors(final_subcom_frame);
+            logger->debug("Final subcom data errors: %d/35800", errors);
+
+            // 32 decided arbitrarily - we are good if less than 32 out of 35800 bits are flipped
+            if (errors < 32)
             {
-                logger->warn("Subcommunication data is too damaged, NOT Using! Errors: %d/1432", errors);
+                process_subcom_data = true;
             }
-            else
+        }
+
+        if (process_subcom_data)
+        {
+            // ----> Orbit & Attitude block <----
+
+            std::vector<uint8_t> orbit_attitude_block = get_subcom_block(final_subcom_frame, Orbit_and_attitude);
+
+            // - Timestamp handling -
+
+            // R6*8 -> Big endian 6 byte integer, needs 10^-8 to read the value
+            uint64_t raw_timestamp = ((uint64_t)orbit_attitude_block[0] << 40 | (uint64_t)orbit_attitude_block[1] << 32 | (uint64_t)orbit_attitude_block[2] << 24 |
+                                      (uint64_t)orbit_attitude_block[3] << 16 | (uint64_t)orbit_attitude_block[4] << 8 | (uint64_t)orbit_attitude_block[5]);
+
+            unix_timestamp = ((raw_timestamp * 1e-8) - 40587) * 86400;
+
+            // ----> Simplified mapping (GCP) <----
+
+            // TODO: GCP loading not implemented yet
+            /*
+            std::vector<uint8_t> simplified_mapping = get_subcom_block(minor_frame, Simplified_mapping);
+            nlohmann::json proj_cfg;
+
+            std::vector<satdump::projection::GCP> raw; // debug
+            nlohmann::json gcps;
+            int gcp_count = 0;
+
+            for (int index = 0, longitude = 45, latitude = 60; index < simplified_mapping.size(); index += 4)
             {
-                logger->debug("Subcom data OK, errors: %d/1432", errors);
-                logger->debug("Pulled %d subcommunication frames", subcommunication_frames.size());
+                // LONGITUDE 45°E through 165°E
+                // LATITUDE 60°N through 60°S
 
-                // ----> Orbit & Attitude block <----
+                uint16_t x_offset = (uint16_t)simplified_mapping[index] << 8 | (uint16_t)simplified_mapping[index + 1];
+                uint16_t y_offset = (uint16_t)simplified_mapping[index + 2] << 8 | (uint16_t)simplified_mapping[index + 3];
 
-                std::vector<uint8_t> orbit_attitude_block = get_subcom_block(minor_frame, Orbit_and_attitude);
+                gcps[gcp_count]["x"] = static_cast<double>(x_offset);
+                gcps[gcp_count]["y"] = static_cast<double>(y_offset);
+                gcps[gcp_count]["lat"] = static_cast<double>(latitude);
+                gcps[gcp_count]["lon"] = static_cast<double>(longitude);
+                gcp_count++;
 
-                // - Timestamp handling -
+                // just for debugging
+                raw.push_back({static_cast<double>(x_offset), static_cast<double>(y_offset), static_cast<double>(longitude), static_cast<double>(latitude)});
 
-                // R6*8 -> Big endian 6 byte integer, needs 10^-8 to read the value
-                uint64_t raw_timestamp = ((uint64_t)orbit_attitude_block[0] << 40 | (uint64_t)orbit_attitude_block[1] << 32 | (uint64_t)orbit_attitude_block[2] << 24 |
-                                          (uint64_t)orbit_attitude_block[3] << 16 | (uint64_t)orbit_attitude_block[4] << 8 | (uint64_t)orbit_attitude_block[5]);
-
-                // note for future developers that will save you 6 hours of your life debugging
-                // 10x10^-8 != 10^-8
-                // i hate myself
-                unix_timestamp = ((raw_timestamp * 1e-8) - 40587) * 86400;
-
-                // TODOREWORK this does not work, is the offset wrong?
-
-                // ----> Simplified mapping (GCP) <----
-
-                // TODO: GCP loading not implemented yet
-                /*
-
-
-                std::vector<uint8_t> simplified_mapping = get_subcom_block(minor_frame, Simplified_mapping);
-                nlohmann::json proj_cfg;
-
-                std::vector<satdump::projection::GCP> raw;
-                nlohmann::json gcps;
-                int gcp_count = 0;
-
-                for (int index = 0, longitude = 45, latitude = 60; index < simplified_mapping.size(); index += 4)
+                // End of a line
+                if (longitude == 165)
                 {
-                    // LONGITUDE 45°E through 165°E
-                    // LATITUDE 60°N through 60°S
-
-                    uint16_t x_offset = (uint16_t)simplified_mapping[index] << 8 | (uint16_t)simplified_mapping[index + 1];
-                    uint16_t y_offset = (uint16_t)simplified_mapping[index + 2] << 8 | (uint16_t)simplified_mapping[index + 3];
-
-                    gcps[gcp_count]["x"] = static_cast<double>(x_offset);
-                    gcps[gcp_count]["y"] = static_cast<double>(y_offset);
-                    gcps[gcp_count]["lat"] = static_cast<double>(latitude);
-                    gcps[gcp_count]["lon"] = static_cast<double>(longitude);
-                    gcp_count++;
-
-                    // just for debugging
-                    raw.push_back({static_cast<double>(x_offset), static_cast<double>(y_offset), static_cast<double>(longitude), static_cast<double>(latitude)});
-
-                    // End of a line
-                    if (longitude == 165)
-                    {
-                        latitude -= 5;
-                        longitude = 45;
-                    }
-                    else
-                    {
-                        longitude += 5;
-                    }
+                    latitude -= 5;
+                    longitude = 45;
                 }
-                proj_cfg["type"] = "gcps_timestamps_line";
-                proj_cfg["gcp_cnt"] = gcp_count;
-                proj_cfg["gcps"] = gcps;
-                proj_cfg["gcp_spacing_x"] = 200;
-                proj_cfg["gcp_spacing_y"] = 200;
+                else
+                {
+                    longitude += 5;
+                }
+            }
+            proj_cfg["type"] = "gcps_timestamps_line";
+            proj_cfg["gcp_cnt"] = gcp_count;
+            proj_cfg["gcps"] = gcps;
+            proj_cfg["gcp_spacing_x"] = 200;
+            proj_cfg["gcp_spacing_y"] = 200;
 
 
-                // SHIM
+            // SHIM
 
-                std::vector<double> timestamps;
-                timestamps.insert(timestamps.end(), buffer.image1.height(), unix_timestamp);
-                proj_cfg["timestamps"] = timestamps;
-                svissr_product.set_proj_cfg(proj_cfg);
-                */
+            std::vector<double> timestamps;
+            timestamps.insert(timestamps.end(), buffer.image1.height(), unix_timestamp);
+            proj_cfg["timestamps"] = timestamps;
+            svissr_product.set_proj_cfg(proj_cfg);
+            */
 
-                // ----> MANAM <----
+            // ----> MANAM <----
 
-                std::vector<uint8_t> manam_data = get_subcom_block(minor_frame, MANAM);
+            std::vector<uint8_t> manam_data = get_subcom_block(final_subcom_frame, MANAM);
 
-                std::string manam_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MANAM";
+            std::string manam_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MANAM";
 
-                if (!std::filesystem::exists(manam_directory))
-                    std::filesystem::create_directory(manam_directory);
+            if (!std::filesystem::exists(manam_directory))
+                std::filesystem::create_directory(manam_directory);
 
-                const time_t timevalue = unix_timestamp;
-                std::tm timeReadable = *gmtime(&timevalue);
-                std::string timestamp = std::to_string(timeReadable.tm_year + 1900) + "-" +
-                                        (timeReadable.tm_mon + 1 > 9 ? std::to_string(timeReadable.tm_mon + 1) : "0" + std::to_string(timeReadable.tm_mon + 1)) + "-" +
-                                        (timeReadable.tm_mday > 9 ? std::to_string(timeReadable.tm_mday) : "0" + std::to_string(timeReadable.tm_mday)) + "_" +
-                                        (timeReadable.tm_hour > 9 ? std::to_string(timeReadable.tm_hour) : "0" + std::to_string(timeReadable.tm_hour)) + "-" +
-                                        (timeReadable.tm_min > 9 ? std::to_string(timeReadable.tm_min) : "0" + std::to_string(timeReadable.tm_min));
+            const time_t timevalue = unix_timestamp;
+            std::tm timeReadable = *gmtime(&timevalue);
+            std::string timestamp = std::to_string(timeReadable.tm_year + 1900) + "-" +
+                                    (timeReadable.tm_mon + 1 > 9 ? std::to_string(timeReadable.tm_mon + 1) : "0" + std::to_string(timeReadable.tm_mon + 1)) + "-" +
+                                    (timeReadable.tm_mday > 9 ? std::to_string(timeReadable.tm_mday) : "0" + std::to_string(timeReadable.tm_mday)) + "_" +
+                                    (timeReadable.tm_hour > 9 ? std::to_string(timeReadable.tm_hour) : "0" + std::to_string(timeReadable.tm_hour)) + "-" +
+                                    (timeReadable.tm_min > 9 ? std::to_string(timeReadable.tm_min) : "0" + std::to_string(timeReadable.tm_min));
 
-                std::string manam_path = manam_directory + "/MANAM_" + timestamp + ".txt";
-                std::ofstream outfile(manam_path, std::ios::out | std::ios::binary);
+            std::string manam_path = manam_directory + "/MANAM_" + timestamp + ".txt";
+            std::ofstream outfile(manam_path, std::ios::out | std::ios::binary);
 
-                // Writes MANAM
-                outfile.write(reinterpret_cast<const char *>(&manam_data[0]), 10250);
-                outfile.close();
+            // Writes MANAM
+            outfile.write(reinterpret_cast<const char *>(&manam_data[0]), 10250);
+            outfile.close();
 
-                // ----> Calibration 2 <----
+            // Calibration 1 has the same data, just a lower resolution for IR - no point in getting it
+            // ----> Calibration 2 <----
 
-                // Calibration 1 has the same data, just a lower RES for IR
+            std::vector<uint8_t> Calib_2_block = get_subcom_block(final_subcom_frame, Calibration_2);
 
-                std::vector<uint8_t> Calib_2_block = get_subcom_block(minor_frame, Calibration_2);
+            // - VIS calibration -
 
-                // - VIS calibration -
+            for (int byte_index = 256; byte_index <= 512; byte_index += 4)
+            {
+                uint32_t raw_value = ((uint32_t)Calib_2_block[byte_index] << 24 | (uint32_t)Calib_2_block[byte_index + 1] << 16 | (uint32_t)Calib_2_block[byte_index + 2] << 8 |
+                                      (uint32_t)Calib_2_block[byte_index + 3]);
 
-                for (int byte_index = 256; byte_index <= 512; byte_index += 4)
+                float value = raw_value * 1e-8;
+                std::string strvalue = "word: " + std::to_string(byte_index) + " value: " + std::to_string(value) + "\n";
+
+                // 64 values, we interpolate 15 between them to get values for all 1024 counts
+                int lut_index = ((byte_index - 256) / 4) * 16;
+                LUTs[0][lut_index] = value;
+
+                // No interpolation for the first value
+                if (lut_index == 0)
+                    continue;
+
+                // last value is max, so 1
+                if (lut_index == 1024)
+                    value = 1;
+
+                float last_value = LUTs[0][lut_index - 16];
+                float diff = value - last_value;
+
+                for (int interpolation_count = 1; interpolation_count < 16; interpolation_count++)
+                {
+                    // Interpolates the previous 15 values
+                    LUTs[0][lut_index - 16 + interpolation_count] = last_value + (diff * interpolation_count / 15.0f);
+                }
+            }
+
+            // - IR calibration -
+
+            // Starts at zero to account for offsets more nicely
+            for (int ir_channel = 0; ir_channel < 4; ir_channel++)
+            {
+                int start_byte = 1280 + 4096 * ir_channel;
+
+                for (int byte_index = start_byte; byte_index < start_byte + 4096; byte_index += 4)
                 {
                     uint32_t raw_value = ((uint32_t)Calib_2_block[byte_index] << 24 | (uint32_t)Calib_2_block[byte_index + 1] << 16 | (uint32_t)Calib_2_block[byte_index + 2] << 8 |
                                           (uint32_t)Calib_2_block[byte_index + 3]);
 
-                    float value = raw_value * 1e-8;
-                    std::string strvalue = "word: " + std::to_string(byte_index) + " value: " + std::to_string(value) + "\n";
+                    float value = raw_value * 1e-3;
 
-                    // 64 values, we interpolate 15 between them to get values for all 1024 counts
-                    int lut_index = ((byte_index - 256) / 4) * 16;
-                    LUTs[0][lut_index] = value;
+                    int lut_index = (byte_index - start_byte) / 4;
 
-                    // No interpolation for the first value
-                    if (lut_index == 0)
-                        continue;
-
-                    // last value is max, so 1
-                    if (lut_index == 1024)
-                        value = 1;
-
-                    float last_value = LUTs[0][lut_index - 16];
-                    float diff = value - last_value;
-
-                    for (int interpolation_count = 1; interpolation_count < 16; interpolation_count++)
-                    {
-                        // Interpolates the last 15 values
-                        LUTs[0][lut_index - 16 + interpolation_count] = last_value + (diff * interpolation_count / 15.0f);
-                    }
+                    // Values are inverted for some reason, docs say they shouldn't be but whatever
+                    LUTs[ir_channel + 1][1023 - lut_index] = value;
                 }
-
-                // - IR calibration -
-
-                // Starts at zero to account for offsets more nicely
-                for (int ir_channel = 0; ir_channel < 4; ir_channel++)
-                {
-                    int start_byte = 1280 + 4096 * ir_channel;
-
-                    for (int byte_index = start_byte; byte_index < start_byte + 4096; byte_index += 4)
-                    {
-                        uint32_t raw_value = ((uint32_t)Calib_2_block[byte_index] << 24 | (uint32_t)Calib_2_block[byte_index + 1] << 16 | (uint32_t)Calib_2_block[byte_index + 2] << 8 |
-                                              (uint32_t)Calib_2_block[byte_index + 3]);
-
-                        float value = raw_value * 1e-3;
-
-                        // 64 values iterated by 4, we interpolate 16 - cancels out to *4
-                        int lut_index = (byte_index - start_byte) / 4;
-
-                        // 1024-index because the values are inverted for some reason
-                        LUTs[ir_channel + 1][1023 - lut_index] = value;
-                    }
-                }
-                calibrated = true;
             }
         }
+        // Either we didn't pull any subcom frames or they were too damaged
         else
         {
-            logger->warn("Reception was too short or SNR was too low, projections and calibration will be disabled!");
-        }
-
-        if (unix_timestamp == 0)
-        {
-            // TODOREWORK word this more nicely or move into the subcom block
-            // maybe do old handling too? not that much overhead..
-            logger->warn("No timestamps were pulled! Was the reception too short? Defaulting to system time");
+            logger->warn("Reception was too short or SNR was too low: timestamps, projections, and calibration will be disabled!");
+            // Defaults timestamp to system time
             unix_timestamp = time(0);
         }
+
         // Sanity check, if the timestamp isn't between 2000 and 2050, consider it to be incorrect
         // (I don't think the Fengyun 2 satellites will live for another 25 years)
-        else if (unix_timestamp < 946681200 || unix_timestamp > 2524604400)
+        if (unix_timestamp < 946681200 || unix_timestamp > 2524604400)
         {
             logger->warn("The pulled timestamp looks erroneous! Was the SNR too low? Defaulting to system time");
             unix_timestamp = time(0);
@@ -443,7 +431,7 @@ namespace fengyun_svissr
         // TODOREWORK: Add back composite autogeneration
 
         // Calibrate if we got the calibration data
-        if (calibrated)
+        if (process_subcom_data)
         {
             logger->trace("Got calibration info");
 
@@ -474,10 +462,11 @@ namespace fengyun_svissr
         buffer.image4.clear();
         buffer.image5.clear();
 
-        // Ensures we have no leftovers
+        // Ensures we have no leftovers from subcom handling
         subcommunication_frames.clear();
-        minor_frame.clear();
+        current_subcom_frame.clear();
         group_retransmissions.clear();
+        final_subcom_frame.clear();
 
         writingImage = false;
     }
@@ -571,7 +560,7 @@ namespace fengyun_svissr
                     save_minor_frame();
                 }
                 // We have finished this group, save it. If we didn't get the previous groups, do NOT Proceed!!!
-                else if (group_retransmissions.size() < 9 && (minor_frame.size() / SUBCOM_GROUP_SIZE) == group_id - 1 //&& group_id-last_group_id==1
+                else if (group_retransmissions.size() < 9 && (current_subcom_frame.size() / SUBCOM_GROUP_SIZE) == group_id - 1 //&& group_id-last_group_id==1
                 )
                 {
                     // TODO: how to avoid junk? if we lose sync within a group we screw the whole thing over
@@ -579,7 +568,7 @@ namespace fengyun_svissr
                     if (!group_retransmissions.empty())
                     { // The group is finished, push back the result of majority law to the minor frame set
                         Group group = majority_law(group_retransmissions, false);
-                        minor_frame.insert(minor_frame.end(), group.begin(), group.end());
+                        current_subcom_frame.insert(current_subcom_frame.end(), group.begin(), group.end());
 
                         group_retransmissions.clear();
                     }
@@ -601,7 +590,7 @@ namespace fengyun_svissr
 
                 // If we have a group saved, we are in a new frame!!! Save it too
                 // ONLY save it if we got the previous ones already
-                if ((minor_frame.size() / SUBCOM_GROUP_SIZE) == group_id)
+                if ((current_subcom_frame.size() / SUBCOM_GROUP_SIZE) == group_id)
                 {
                     Group current_retransmission(frame + SUBCOM_START_OFFSET, frame + SUBCOM_START_OFFSET + SUBCOM_GROUP_SIZE);
                     group_retransmissions.push_back(current_retransmission);
