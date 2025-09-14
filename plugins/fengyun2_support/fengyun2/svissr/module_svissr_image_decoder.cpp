@@ -428,15 +428,15 @@ namespace fengyun_svissr
         std::string disk_folder = buffer.directory + "/" + timestamp;
 
         // Raw Images
-        svissr_product.images.push_back({0, getSvissrFilename(&timeReadable, "1"), "1", buffer.image5, 10, satdump::ChannelTransform().init_none()});
-        svissr_product.images.push_back({1, getSvissrFilename(&timeReadable, "2"), "2", buffer.image4, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
+        svissr_product.images.push_back({0, getSvissrFilename(&timeReadable, "1"), "1", buffer.image1, 10, satdump::ChannelTransform().init_none()});
+        svissr_product.images.push_back({1, getSvissrFilename(&timeReadable, "2"), "2", buffer.image2, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
         svissr_product.images.push_back({2, getSvissrFilename(&timeReadable, "3"), "3", buffer.image3, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
-        svissr_product.images.push_back({3, getSvissrFilename(&timeReadable, "4"), "4", buffer.image1, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
-        svissr_product.images.push_back({4, getSvissrFilename(&timeReadable, "5"), "5", buffer.image2, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
+        svissr_product.images.push_back({3, getSvissrFilename(&timeReadable, "4"), "4", buffer.image4, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
+        svissr_product.images.push_back({4, getSvissrFilename(&timeReadable, "5"), "5", buffer.image5, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
 
-        svissr_product.set_channel_wavenumber(0, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 0.65e-6));
+        svissr_product.set_channel_wavenumber(0, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 0.7e-6));
         svissr_product.set_channel_wavenumber(1, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 3.75e-6));
-        svissr_product.set_channel_wavenumber(2, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 7.15e-6));
+        svissr_product.set_channel_wavenumber(2, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 6.75e-6));
         svissr_product.set_channel_wavenumber(3, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 10.8e-6));
         svissr_product.set_channel_wavenumber(4, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 12e-6));
 
@@ -448,11 +448,15 @@ namespace fengyun_svissr
             logger->trace("Got calibration info");
 
             nlohmann::json calib_cfg;
+
+            // LUTs transmitted in order: VIS -> IR1 -> IR2 -> IR3 -> IR4
+            // Ergo Visible (0.7 μm) -> LWIR (10.8 μm) -> Split window (12 μm) -> Water vapour (6.75 μm) -> MWIR (3.75 μm)
+            // We order them based on the wavelength.
             calib_cfg["ch1_lut"] = LUTs[0];
-            calib_cfg["ch2_lut"] = LUTs[1];
-            calib_cfg["ch3_lut"] = LUTs[2];
-            calib_cfg["ch4_lut"] = LUTs[3];
-            calib_cfg["ch5_lut"] = LUTs[4];
+            calib_cfg["ch2_lut"] = LUTs[4];
+            calib_cfg["ch3_lut"] = LUTs[3];
+            calib_cfg["ch4_lut"] = LUTs[1];
+            calib_cfg["ch5_lut"] = LUTs[2];
 
             svissr_product.set_calibration("fy2_svissr", calib_cfg);
 
@@ -618,11 +622,13 @@ namespace fengyun_svissr
             scid_stats.push_back(scid);
 
             // Safeguard
-            if (counter > 2500) {
+            if (counter > 2500)
+            {
                 // Unlocks since we are locked at an impossible value.. somehow
                 counter_locked = false;
                 continue;
-}
+            }
+
             // We only want forward scan data
             backwardScan = (frame[3] & 0b11) == 0;
 
@@ -650,11 +656,11 @@ namespace fengyun_svissr
                 std::shared_ptr<SVISSRBuffer> buffer = std::make_shared<SVISSRBuffer>();
 
                 // Backup images
-                buffer->image1 = vissrImageReader.getImageIR1();
-                buffer->image2 = vissrImageReader.getImageIR2();
+                buffer->image1 = vissrImageReader.getImageVIS();
+                buffer->image2 = vissrImageReader.getImageIR4();
                 buffer->image3 = vissrImageReader.getImageIR3();
-                buffer->image4 = vissrImageReader.getImageIR4();
-                buffer->image5 = vissrImageReader.getImageVIS();
+                buffer->image4 = vissrImageReader.getImageIR1();
+                buffer->image5 = vissrImageReader.getImageIR2();
 
                 buffer->scid = satdump::most_common(scid_stats.begin(), scid_stats.end(), 0);
                 scid_stats.clear();

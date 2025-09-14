@@ -55,11 +55,11 @@ namespace fengyun_svissr
         {
             int scid;
 
-            image::Image image1;
-            image::Image image2;
-            image::Image image3;
-            image::Image image4;
-            image::Image image5;
+            image::Image image1; /* VIS Visible 500-900 nm */
+            image::Image image2; /* IR4 Medium wave 3.5-4.0 μm */
+            image::Image image3; /* IR3 Water vapour 6.5-7.0 μm */
+            image::Image image4; /* IR1 Long wave IR 10.3-11.3 μm */
+            image::Image image5; /* IR2 Split window 11.5-12.5 μm*/
 
             std::string directory;
         };
