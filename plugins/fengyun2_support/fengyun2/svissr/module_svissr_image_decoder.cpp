@@ -1,5 +1,7 @@
 #include "module_svissr_image_decoder.h"
 
+#include <array>
+#include <cmath>
 #include <cstdint>
 #include <filesystem>
 #include <vector>
@@ -8,14 +10,14 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
 #include "logger.h"
+#include "products/image/calibration_units.h"
 #include "products/image_product.h"
-#include "projection/thinplatespline.h"
 #include "utils/stats.h"
 
 #define FRAME_SIZE 44356 /* Standard S-VISSR frame in bytes */
 
 // Sector ID (2) + S/C & CDAS block (126) + Constants (64) + Subcom ID (4)
-#define SUBCOM_START_OFFSET 196
+#define SUBCOM_START_OFFSET 196 /* Offset from start of frame to the Subcom section*/
 
 // Simplified mapping (100) + Orbit & attitude (128) + MANAM (410) + Calib (256+1024) + Spare (179)
 #define SUBCOM_GROUP_SIZE 2097 /* Size of the repeated (Subcommunication) section of the documentation sector */
@@ -56,7 +58,7 @@ namespace fengyun_svissr
         }
 
         subcommunication_frames.clear();
-        // delete[] minor_frame;
+        minor_frame.clear();
         group_retransmissions.clear();
     }
 
@@ -103,7 +105,7 @@ namespace fengyun_svissr
     /**
      * Countrs the amount of errors in a subcommunication frame's 179-byte spare. Helps us ensure we are not looking at junk.
      * This works because it is supposed to be all zeroes. Helpful for determining SNR (ruoughly)
-     * Max errors: 1435 (theory), 716 (realstic for BPSK, 50% chance)
+     * Max errors: 1432 (theory, 179*8), 716 (realistic for BPSK, 50% chance)
      *
      *  @param subcom_Frame The minor frame to check the spare of
      */
@@ -142,13 +144,13 @@ namespace fengyun_svissr
             minor_frame.insert(minor_frame.end(), last_group.begin(), last_group.end());
 
             // Save the frame
-            logger->info("Saved a subcom frame!");
+            logger->debug("Saved a subcom frame!");
             subcommunication_frames.push_back(minor_frame);
             minor_frame.clear();
         }
         else
         {
-            logger->critical("Minor frame size is not valid! %d bytes, %f groups", minor_frame.size(), minor_frame.size() / SUBCOM_GROUP_SIZE);
+            logger->debug("Minor frame size is not valid, skipping! %d bytes, %f groups", minor_frame.size(), minor_frame.size() / SUBCOM_GROUP_SIZE);
             minor_frame.clear();
         }
     }
@@ -203,10 +205,12 @@ namespace fengyun_svissr
         svissr_product.instrument_name = "fy2-svissr";
         svissr_product.set_product_timestamp(buffer.timestamp);
 
+        // For calibration data
+        std::array<std::array<float, 1024>, 5> LUTs;
+        bool calibrated = false;
+
         // -> SUBCOMMUNICATION BLOCK HANDLING <-
 
-        // calib lut
-        std::vector<std::pair<int, float>> lut;
         if (!subcommunication_frames.empty())
         {
             std::vector<uint8_t> minor_frame = majority_law(subcommunication_frames, false);
@@ -215,21 +219,42 @@ namespace fengyun_svissr
             int errors = get_spare_errors(minor_frame);
             if (errors > 32)
             {
-                logger->warn("Subcommunication data is too damaged, NOT Using! Errors: %d", errors);
+                logger->warn("Subcommunication data is too damaged, NOT Using! Errors: %d/1432", errors);
             }
             else
             {
-                logger->debug("Subcom data errors: %d", errors);
+                logger->debug("Subcom data OK, errors: %d/1432", errors);
                 logger->debug("Pulled %d subcommunication frames", subcommunication_frames.size());
 
-                // Prepare config
-                nlohmann::json proj_cfg;
+                // ----> Orbit & Attitude block <----
+
+                std::vector<uint8_t> orbit_attitude_block = get_subcom_block(minor_frame, Orbit_and_attitude);
+
+                // - Timestamp handling -
+
+                // R6*8 -> Big endian 6 byte integer, needs 10^-8 to read the value
+                uint64_t raw_timestamp = ((uint64_t)orbit_attitude_block[0] << 40 | (uint64_t)orbit_attitude_block[1] << 32 | (uint64_t)orbit_attitude_block[2] << 24 |
+                                          (uint64_t)orbit_attitude_block[3] << 16 | (uint64_t)orbit_attitude_block[4] << 8 | (uint64_t)orbit_attitude_block[5]);
+
+                // note for future developers that will save you 6 hours of your life debugging
+                // 10x10^-8 != 10^-8
+                // i hate myself
+                double timestamp = raw_timestamp * 1e-8;
+
+                // Converts the MJD timestamp to a unix timestamp
+                buffer.timestamp = (timestamp - 40587) * 86400;
+
+                // TODOREWORK this does not work, is the offset wrong?
+
 
                 // ----> Simplified mapping (GCP) <----
 
                 // TODO: GCP loading not implemented yet
                 /*
+
+
                 std::vector<uint8_t> simplified_mapping = get_subcom_block(minor_frame, Simplified_mapping);
+                nlohmann::json proj_cfg;
 
                 std::vector<satdump::projection::GCP> raw;
                 nlohmann::json gcps;
@@ -278,30 +303,12 @@ namespace fengyun_svissr
                 svissr_product.set_proj_cfg(proj_cfg);
                 */
 
-                // ----> Orbit & Attitude block <----
-
-                std::vector<uint8_t> orbit_attitude_block = get_subcom_block(minor_frame, Orbit_and_attitude);
-
-                // - Timestamp handling -
-
-                // R6*8 -> Big endian 6 byte integer, needs 10^-8 to read the value
-                uint64_t raw_timestamp = ((uint64_t)orbit_attitude_block[0] << 40 | (uint64_t)orbit_attitude_block[1] << 32 | (uint64_t)orbit_attitude_block[2] << 24 |
-                                          (uint64_t)orbit_attitude_block[3] << 16 | (uint64_t)orbit_attitude_block[4] << 8 | (uint64_t)orbit_attitude_block[5]);
-
-                // note for future developers that will save you 6 hours of your life debugging
-                // 10x10^-8 != 10^-8
-                // i hate myself
-                double timestamp = raw_timestamp * 1e-8;
-
-                // Converts the MJD timestamp to a unix timestamp
-                buffer.timestamp = (timestamp - 40587) * 86400;
-
-                // TODOREWORK this does not work, is the offset wrong?
 
                 // ----> MANAM <----
 
                 std::vector<uint8_t> manam_data = get_subcom_block(minor_frame, MANAM);
 
+                // TODOREWRORK timestamps in filename
                 std::string manam_path = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MANAM.txt";
                 std::ofstream outfile(manam_path, std::ios::out | std::ios::binary);
 
@@ -309,28 +316,65 @@ namespace fengyun_svissr
                 outfile.write(reinterpret_cast<const char *>(&manam_data[0]), 10250);
                 outfile.close();
 
-                // ----> Calibration 1 <----
+                // ----> Calibration 2 <----
 
-                // TODO: still broken
-                /*
-                std::vector<uint8_t> Calib_1_block = get_subcom_block(minor_frame, Calibration_1);
+                // Calibration 1 has the same data, just a lower RES for IR
 
-                // calibration
-                for (int index = 256; index < 512; index += 4)
+                std::vector<uint8_t> Calib_2_block = get_subcom_block(minor_frame, Calibration_2);
+
+                // - VIS calibration -
+
+                for (int byte_index = 256; byte_index <= 512; byte_index += 4)
                 {
-                    uint32_t value = ((uint32_t)Calib_1_block[index] << 24 | (uint32_t)Calib_1_block[index + 1] << 16 | (uint32_t)Calib_1_block[index + 2] << 8 | (uint32_t)Calib_1_block[index + 3]);
+                    uint32_t raw_value = ((uint32_t)Calib_2_block[byte_index] << 24 | (uint32_t)Calib_2_block[byte_index + 1] << 16 | (uint32_t)Calib_2_block[byte_index + 2] << 8 |
+                                          (uint32_t)Calib_2_block[byte_index + 3]);
 
-                    std::string strvalue = "word: " + std::to_string(index) + " value: " + std::to_string(value * 1e-8) + "\n";
-                    outfile << strvalue;
+                    float value = raw_value * 1e-8;
+                    std::string strvalue = "word: " + std::to_string(byte_index) + " value: " + std::to_string(value) + "\n";
 
-                    lut.push_back({((index - 256) / 4) + 1, value * 1e-8});
+                    // 64 values, we interpolate 15 between them to get values for all 1024 counts
+                    int lut_index = ((byte_index - 256) / 4) * 16;
+                    LUTs[0][lut_index] = value;
+
+                    // No interpolation for the first value
+                    if (lut_index == 0)
+                        continue;
+
+                    // last value is max, so 1
+                    if (lut_index == 1024)
+                        value = 1;
+
+                    float last_value = LUTs[0][lut_index - 16];
+                    float diff = value - last_value;
+
+                    for (int interpolation_count = 1; interpolation_count < 16; interpolation_count++)
+                    {
+                        // Interpolates the last 15 values
+                        LUTs[0][lut_index - 16 + interpolation_count] = last_value + (diff * interpolation_count / 15.0f);
+                    }
                 }
-                nlohmann::json calib_cfg = svissr_product.get_calibration_raw();
-                calib_cfg["0"] = lut;
-                svissr_product.set_calibration("generic_xrit", calib_cfg);
-                svissr_product.set_channel_unit(0, CALIBRATION_ID_ALBEDO);
 
-                */
+                // - IR calibration -
+
+                // Starts at zero to account for offsets more nicely
+                for (int ir_channel = 0; ir_channel < 4; ir_channel++)
+                {
+                    int start_byte = 1280 + 4096 * ir_channel;
+
+                    for (int byte_index = start_byte; byte_index < start_byte + 4096; byte_index += 4)
+                    {
+                        uint32_t raw_value = ((uint32_t)Calib_2_block[byte_index] << 24 | (uint32_t)Calib_2_block[byte_index + 1] << 16 | (uint32_t)Calib_2_block[byte_index + 2] << 8 |
+                                              (uint32_t)Calib_2_block[byte_index + 3]);
+
+                        float value = raw_value * 1e-3;
+
+                        // 64 values iterated by 4, we interpolate 16 - cancels out to *4
+                        int lut_index = (byte_index - start_byte) / 4;
+                        LUTs[ir_channel + 1][lut_index] = value;
+                    }
+                }
+                calibrated = true;
+
             }
         }
         else
@@ -383,6 +427,26 @@ namespace fengyun_svissr
 
         // TODOREWORK: Add back composite autogeneration
 
+        // Calibrate if we got the calibration data
+        if (calibrated)
+        {
+            logger->trace("Got calibration info");
+
+            nlohmann::json calib_cfg;
+            calib_cfg["ch1_lut"] = LUTs[0];
+            calib_cfg["ch2_lut"] = LUTs[1];
+            calib_cfg["ch3_lut"] = LUTs[2];
+            calib_cfg["ch4_lut"] = LUTs[3];
+            calib_cfg["ch5_lut"] = LUTs[4];
+
+            svissr_product.set_calibration("fy2_svissr", calib_cfg);
+
+            svissr_product.set_channel_unit(0, CALIBRATION_ID_ALBEDO);
+            svissr_product.set_channel_unit(1, CALIBRATION_ID_BRIGHTNESS_TEMPERATURE);
+            svissr_product.set_channel_unit(2, CALIBRATION_ID_BRIGHTNESS_TEMPERATURE);
+            svissr_product.set_channel_unit(3, CALIBRATION_ID_BRIGHTNESS_TEMPERATURE);
+            svissr_product.set_channel_unit(4, CALIBRATION_ID_BRIGHTNESS_TEMPERATURE);
+        }
         svissr_product.save(disk_folder);
 
         buffer.image1.clear();
@@ -391,8 +455,13 @@ namespace fengyun_svissr
         buffer.image4.clear();
         buffer.image5.clear();
 
+        // Ensures we have no leftovers
+        subcommunication_frames.clear();
+        minor_frame.clear();
+        group_retransmissions.clear();
+
         writingImage = false;
-    }
+     }
 
     void SVISSRImageDecoderModule::process()
     {
