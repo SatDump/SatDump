@@ -331,7 +331,7 @@ namespace fengyun_svissr
 
             // - VIS calibration -
 
-            for (int byte_index = 256; byte_index <= 512; byte_index += 4)
+            for (int byte_index = 256; byte_index < 512; byte_index += 4)
             {
                 uint32_t raw_value = ((uint32_t)Calib_2_block[byte_index] << 24 | (uint32_t)Calib_2_block[byte_index + 1] << 16 | (uint32_t)Calib_2_block[byte_index + 2] << 8 |
                                       (uint32_t)Calib_2_block[byte_index + 3]);
@@ -347,10 +347,6 @@ namespace fengyun_svissr
                 if (lut_index == 0)
                     continue;
 
-                // last value is max, so 1
-                if (lut_index == 1024)
-                    value = 1;
-
                 float last_value = LUTs[0][lut_index - 16];
                 float diff = value - last_value;
 
@@ -360,6 +356,15 @@ namespace fengyun_svissr
                     LUTs[0][lut_index - 16 + interpolation_count] = last_value + (diff * interpolation_count / 15.0f);
                 }
             }
+
+            // Invalidate first 16 counts - It would refer to 0 albedo (true white) which is impossible to reach
+            for (int i = 0; i < 16; i++){
+                LUTs[0][i] = 0;
+            } 
+            // Same for the last 16 counts - just with true black
+            for (int i = 63*16; i < 64*16; i++){
+                LUTs[0][i] = 0;
+            } 
 
             // - IR calibration -
 

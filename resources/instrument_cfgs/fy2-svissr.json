@@ -28,6 +28,10 @@
             "description": "descriptions/NightMicro.md"
         },
         {
+            "name": "Day Cloud Convection",
+            "expression": "cch4=(4, brightness_temperature, 203.000000, 323.000000);cch1=(1, albedo, 0.000000, 1.000000);cch1^0.58823529411,cch1^0.58823529411,1-cch4"
+        },
+        {
             // Arbitrarily defined, since no absolute calibration has been done yet
             "name": "AVHRR 543b IR False Color",
             "expression": "cch3=(3, brightness_temperature, 280.000000, 180.000000);cch4=(4, brightness_temperature, 310.000000, 210.000000);cch5=(5, brightness_temperature, 310.000000, 210.000000);cch5,cch4,cch3",
