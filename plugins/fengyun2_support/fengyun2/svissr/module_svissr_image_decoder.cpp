@@ -370,7 +370,9 @@ namespace fengyun_svissr
 
                         // 64 values iterated by 4, we interpolate 16 - cancels out to *4
                         int lut_index = (byte_index - start_byte) / 4;
-                        LUTs[ir_channel + 1][lut_index] = value;
+
+                        // 1024-index because the values are inverted for some reason
+                        LUTs[ir_channel + 1][1023-lut_index] = value;
                     }
                 }
                 calibrated = true;
