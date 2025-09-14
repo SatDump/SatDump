@@ -207,7 +207,7 @@ namespace fengyun_svissr
         // For calibration data
         std::array<std::array<float, 1024>, 5> LUTs;
         bool calibrated = false;
-        double unix_timestamp;
+        double unix_timestamp=0;
 
         // -> SUBCOMMUNICATION BLOCK HANDLING <-
 
