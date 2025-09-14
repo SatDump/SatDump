@@ -2,16 +2,13 @@
     "name": "S-VISSR",
     "presets": [
         {
-            "name": "False Color",
-            "expression": "lut=lut(lut/fy2/svissr/lut.png);ref_channel=1;lut(ch2, 1-ch1, 0),lut(ch2, 1-ch1, 1),lut(ch2, 1-ch1, 2)",
-            "autogen": true
+            "name": "Legacy S-VISSR False Color",
+            "expression": "lut=lut(lut/fy2/svissr/lut.png);ref_channel=1;lut(ch2, 1-ch1, 0),lut(ch2, 1-ch1, 1),lut(ch2, 1-ch1, 2)"
         },
         {
-            "name": "EWS-G False Color (WIP)",
+            "name": "False Color",
             "expression": "lut=lut(lut/fy2/svissr/experimental.png);lut(ch1/3, ch4, 0),lut(ch1/3, ch4, 1),lut(ch1/3, ch4, 2)",
-            "image": {
-                "white_balance": true
-            }
+            "autogen": true
         },
         {
             "name": "S-VISSR EView",
