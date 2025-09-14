@@ -133,7 +133,7 @@ namespace fengyun_svissr
 
     void SVISSRImageDecoderModule::save_minor_frame()
     {
-        if (minor_frame.size() / SUBCOM_GROUP_SIZE == 24)
+        if (!group_retransmissions.empty() && minor_frame.size() / SUBCOM_GROUP_SIZE == 24)
         {
 
             // Process the last group
@@ -146,6 +146,11 @@ namespace fengyun_svissr
             // Save the frame
             logger->debug("Saved a subcom frame!");
             subcommunication_frames.push_back(minor_frame);
+            minor_frame.clear();
+        }
+        else if (group_retransmissions.empty())
+        {
+            logger->debug("Failed to get the last group!");
             minor_frame.clear();
         }
         else
@@ -207,7 +212,7 @@ namespace fengyun_svissr
         // For calibration data
         std::array<std::array<float, 1024>, 5> LUTs;
         bool calibrated = false;
-        double unix_timestamp=0;
+        double unix_timestamp = 0;
 
         // -> SUBCOMMUNICATION BLOCK HANDLING <-
 
@@ -303,8 +308,20 @@ namespace fengyun_svissr
 
                 std::vector<uint8_t> manam_data = get_subcom_block(minor_frame, MANAM);
 
-                // TODOREWRORK timestamps in filename
-                std::string manam_path = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MANAM.txt";
+                std::string manam_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MANAM";
+
+                if (!std::filesystem::exists(manam_directory))
+                    std::filesystem::create_directory(manam_directory);
+
+                const time_t timevalue = unix_timestamp;
+                std::tm timeReadable = *gmtime(&timevalue);
+                std::string timestamp = std::to_string(timeReadable.tm_year + 1900) + "-" +
+                                        (timeReadable.tm_mon + 1 > 9 ? std::to_string(timeReadable.tm_mon + 1) : "0" + std::to_string(timeReadable.tm_mon + 1)) + "-" +
+                                        (timeReadable.tm_mday > 9 ? std::to_string(timeReadable.tm_mday) : "0" + std::to_string(timeReadable.tm_mday)) + "_" +
+                                        (timeReadable.tm_hour > 9 ? std::to_string(timeReadable.tm_hour) : "0" + std::to_string(timeReadable.tm_hour)) + "-" +
+                                        (timeReadable.tm_min > 9 ? std::to_string(timeReadable.tm_min) : "0" + std::to_string(timeReadable.tm_min));
+
+                std::string manam_path = manam_directory + "/MANAM_" + timestamp + ".txt";
                 std::ofstream outfile(manam_path, std::ios::out | std::ios::binary);
 
                 // Writes MANAM
@@ -378,9 +395,10 @@ namespace fengyun_svissr
             logger->warn("Reception was too short or SNR was too low, projections and calibration will be disabled!");
         }
 
-        // TODOREWORK: maybe add old timestamp handling as a backup?
         if (unix_timestamp == 0)
         {
+            // TODOREWORK word this more nicely or move into the subcom block
+            // maybe do old handling too? not that much overhead..
             logger->warn("No timestamps were pulled! Was the reception too short? Defaulting to system time");
             unix_timestamp = time(0);
         }
@@ -490,8 +508,8 @@ namespace fengyun_svissr
             // Read a buffer
             read_data((uint8_t *)frame, FRAME_SIZE);
 
-            // Parse counter
-            int counter = frame[67] << 8 | frame[68];
+            // Parse counter, masked since first four bits should NEVER be 0
+            int counter = (frame[67] << 8 | frame[68]) & 0x0fff;
 
             // Does correction logic if specified by the user
             if (apply_correction)
@@ -600,9 +618,11 @@ namespace fengyun_svissr
             scid_stats.push_back(scid);
 
             // Safeguard
-            if (counter > 2500)
+            if (counter > 2500) {
+                // Unlocks since we are locked at an impossible value.. somehow
+                counter_locked = false;
                 continue;
-
+}
             // We only want forward scan data
             backwardScan = (frame[3] & 0b11) == 0;
 
@@ -611,7 +631,6 @@ namespace fengyun_svissr
 
             // Try to detect a new scan
             uint8_t backward_scanning = satdump::most_common(&last_status[0], &last_status[20], 0);
-
             // Ensures the counter doesn't lock during rollback
             // Situation:
             //   Image ends -> Rollback starts -> Corrector erroneously locks during rollback
