@@ -55,8 +55,6 @@ namespace fengyun_svissr
         {
             int scid;
 
-            double timestamp;
-
             image::Image image1;
             image::Image image2;
             image::Image image3;

@@ -203,11 +203,11 @@ namespace fengyun_svissr
         }
 
         svissr_product.instrument_name = "fy2-svissr";
-        svissr_product.set_product_timestamp(buffer.timestamp);
 
         // For calibration data
         std::array<std::array<float, 1024>, 5> LUTs;
         bool calibrated = false;
+        double unix_timestamp;
 
         // -> SUBCOMMUNICATION BLOCK HANDLING <-
 
@@ -239,13 +239,9 @@ namespace fengyun_svissr
                 // note for future developers that will save you 6 hours of your life debugging
                 // 10x10^-8 != 10^-8
                 // i hate myself
-                double timestamp = raw_timestamp * 1e-8;
-
-                // Converts the MJD timestamp to a unix timestamp
-                buffer.timestamp = (timestamp - 40587) * 86400;
+                unix_timestamp = ((raw_timestamp * 1e-8) - 40587) * 86400;
 
                 // TODOREWORK this does not work, is the offset wrong?
-
 
                 // ----> Simplified mapping (GCP) <----
 
@@ -298,11 +294,10 @@ namespace fengyun_svissr
                 // SHIM
 
                 std::vector<double> timestamps;
-                timestamps.insert(timestamps.end(), buffer.image1.height(), buffer.timestamp);
+                timestamps.insert(timestamps.end(), buffer.image1.height(), unix_timestamp);
                 proj_cfg["timestamps"] = timestamps;
                 svissr_product.set_proj_cfg(proj_cfg);
                 */
-
 
                 // ----> MANAM <----
 
@@ -372,11 +367,10 @@ namespace fengyun_svissr
                         int lut_index = (byte_index - start_byte) / 4;
 
                         // 1024-index because the values are inverted for some reason
-                        LUTs[ir_channel + 1][1023-lut_index] = value;
+                        LUTs[ir_channel + 1][1023 - lut_index] = value;
                     }
                 }
                 calibrated = true;
-
             }
         }
         else
@@ -385,20 +379,21 @@ namespace fengyun_svissr
         }
 
         // TODOREWORK: maybe add old timestamp handling as a backup?
-        if (buffer.timestamp == 0)
+        if (unix_timestamp == 0)
         {
             logger->warn("No timestamps were pulled! Was the reception too short? Defaulting to system time");
-            buffer.timestamp = time(0);
+            unix_timestamp = time(0);
         }
         // Sanity check, if the timestamp isn't between 2000 and 2050, consider it to be incorrect
         // (I don't think the Fengyun 2 satellites will live for another 25 years)
-        else if (buffer.timestamp < 946681200 || buffer.timestamp > 2524604400)
+        else if (unix_timestamp < 946681200 || unix_timestamp > 2524604400)
         {
             logger->warn("The pulled timestamp looks erroneous! Was the SNR too low? Defaulting to system time");
-            buffer.timestamp = time(0);
+            unix_timestamp = time(0);
         }
 
-        const time_t timevalue = buffer.timestamp;
+        svissr_product.set_product_timestamp(unix_timestamp);
+        const time_t timevalue = unix_timestamp;
 
         // Copies the gmtime result since it gets modified elsewhere
         std::tm timeReadable = *gmtime(&timevalue);
@@ -463,7 +458,7 @@ namespace fengyun_svissr
         group_retransmissions.clear();
 
         writingImage = false;
-     }
+    }
 
     void SVISSRImageDecoderModule::process()
     {
