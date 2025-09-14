@@ -358,13 +358,15 @@ namespace fengyun_svissr
             }
 
             // Invalidate first 16 counts - It would refer to 0 albedo (true white) which is impossible to reach
-            for (int i = 0; i < 16; i++){
+            for (int i = 0; i < 16; i++)
+            {
                 LUTs[0][i] = 0;
-            } 
+            }
             // Same for the last 16 counts - just with true black
-            for (int i = 63*16; i < 64*16; i++){
+            for (int i = 63 * 16; i < 64 * 16; i++)
+            {
                 LUTs[0][i] = 0;
-            } 
+            }
 
             // - IR calibration -
 
@@ -512,12 +514,9 @@ namespace fengyun_svissr
             // Does correction logic if specified by the user
             if (apply_correction)
             {
-                // Unlocks if we are starting a new series
-                if (counter_locked && (counter == 1 || counter == 2))
-                {
-                    counter_locked = false;
-                }
-                else if (!counter_locked)
+                // TODOREWORK is this check needed? we already unlock on FD end
+                // TEST ON LONG!!!!!!!!!!!!!!!!!!!!!!
+                if (!counter_locked)
                 {
                     // Can we lock?
                     if (counter == global_counter + 1)
@@ -631,6 +630,7 @@ namespace fengyun_svissr
 
             // Try to detect a new scan
             uint8_t backward_scanning = satdump::most_common(&last_status[0], &last_status[20], 0);
+
             // Ensures the counter doesn't lock during rollback
             // Situation:
             //   Image ends -> Rollback starts -> Corrector erroneously locks during rollback
@@ -649,7 +649,7 @@ namespace fengyun_svissr
 
                 std::shared_ptr<SVISSRBuffer> buffer = std::make_shared<SVISSRBuffer>();
 
-                // Backup images
+                // Offload the images
                 buffer->image1 = vissrImageReader.getImageVIS();
                 buffer->image2 = vissrImageReader.getImageIR4();
                 buffer->image3 = vissrImageReader.getImageIR3();
@@ -658,11 +658,6 @@ namespace fengyun_svissr
 
                 buffer->scid = satdump::most_common(scid_stats.begin(), scid_stats.end(), 0);
                 scid_stats.clear();
-
-                // TODOREWORK majority law would be incredibly useful here, but needs N-element
-                // implementation because we might sync less frames than intended
-                // Please note that the timestamps are already converted to unix timestamps,
-                // this would have to happen on the raw JD one (see where the the stats are pushed to)
 
                 buffer->directory = directory;
 
