@@ -394,7 +394,7 @@ static int StringRegexFind(const string& rex, asUINT start, asUINT& outLengthOfM
 	// https://www.regular-expressions.info/stdregex.html
 	// 
 	//  std::wregex pattern(L"[[:alpha:]]+");
-	//  bool result = std::regex_match(std::wstring(L"abcdéfg"), pattern);
+	//  bool result = std::regex_match(std::wstring(L"abcdï¿½fg"), pattern);
 	//
 	// The solution from stack overflow doesn't work with MSVC
 	// https://stackoverflow.com/questions/11254232/do-c11-regular-expressions-work-with-utf-8-strings
@@ -402,7 +402,7 @@ static int StringRegexFind(const string& rex, asUINT start, asUINT& outLengthOfM
 	//  std::locale old;
 	//  std::locale::global(std::locale("en_US.UTF-8"));
 	//  std::regex pattern("[[:alpha:]]+", std::regex_constants::extended);
-	//  bool result = std::regex_match(std::string(u8"abcdéfg"), pattern);
+	//  bool result = std::regex_match(std::string(u8"abcdï¿½fg"), pattern);
 	//
 	// I've tried setting the manifest to use utf8 code page but it also doesn't work with MSVC
 	// https://learn.microsoft.com/en-us/windows/apps/design/globalizing/use-utf8-code-page
@@ -939,9 +939,9 @@ double parseFloat(const string &val, asUINT *byteCount)
 #endif
 #else
 #if !defined(ANDROID) && !defined(__psp2__)
-#endif
 	uselocale(orig_locale);
 	freelocale(locale);
+#endif
 #endif
 
 	if( byteCount )
