@@ -51,7 +51,7 @@ namespace satdump
 
             while (lbuf_offset < iblk.size)
             {
-                DSPBuffer oblk = outputs[0].fifo->newBufferSamples<T>(lbuf_size);
+                DSPBuffer oblk = outputs[0].fifo->template newBufferSamples<T>(lbuf_size);
                 T *obuf = oblk.getSamples<T>();
 
                 memcpy(&buffer[ntaps], ibuf + lbuf_offset, lbuf_size * sizeof(T));
