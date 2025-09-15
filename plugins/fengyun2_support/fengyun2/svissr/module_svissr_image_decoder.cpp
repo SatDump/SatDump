@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <vector>
 
-#include "common/majority_law.h"
+#include "utils/majority_law.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
 #include "logger.h"
