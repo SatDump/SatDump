@@ -219,8 +219,8 @@
             }
         }
     },
-    "arktika_ggak": {
-        "name": "ARKTIKA-M GGAK",
+    "arktika_m1_ggak": {
+        "name": "ARKTIKA-M N°1 GGAK",
         "live": [
             1,
             2
@@ -237,6 +237,47 @@
             "soft": {
                 "module": "pm_demod",
                 "parameters": {
+                    "enable_doppler": true,
+                    "satellite_freqency": 1703e6,
+                    "satellite_norad": 47719,
+                    "symbolrate": 5e3,
+                    "pll_bw": 0.02,
+                    "rrc_alpha": 0.5
+                }
+            },
+            "cadu": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
+                    "constellation": "bpsk",
+                    "cadu_size": 1792,
+                    "derandomize": false,
+                    "nrzm": false,
+                    "rs_i": 0
+                }
+            }
+        }
+    },
+    "arktika_m2_ggak": {
+        "name": "ARKTIKA-M N°2 GGAK",
+        "live": [
+            1,
+            2
+        ],
+        "frequencies": [
+            [
+                "SEM TLM",
+                1703.0e6
+            ]
+        ],
+        "samplerate": 3e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "pm_demod",
+                "parameters": {
+                    "enable_doppler": true,
+                    "satellite_freqency": 1703e6,
+                    "satellite_norad": 58584,
                     "symbolrate": 5e3,
                     "pll_bw": 0.02,
                     "rrc_alpha": 0.5
