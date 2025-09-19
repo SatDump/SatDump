@@ -111,9 +111,9 @@ cmake -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_B
 make -j$(sysctl -n hw.logicalcpu)
 
 # To run without bundling
-ln -s ../pipelines .        # Symlink pipelines so it can run
-ln -s ../resources .        # Symlink resources so it can run
-ln -s ../satdump_cfg.json . # Symlink settings so it can run
+ln -s ./resources/pipelines . # Symlink pipelines so it can run
+ln -s ../resources .          # Symlink resources so it can run
+ln -s ../satdump_cfg.json .   # Symlink settings so it can run
 ./satdump-ui
 
 # Make an app bundle (to add to your /Applications folder). Saves to build/MacApp, and
