@@ -6,12 +6,12 @@
 #include <filesystem>
 #include <vector>
 
-#include "utils/majority_law.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
 #include "logger.h"
 #include "products/image/calibration_units.h"
 #include "products/image_product.h"
+#include "utils/majority_law.h"
 #include "utils/stats.h"
 
 #define FRAME_SIZE 44356 /* Standard S-VISSR frame in bytes */
@@ -216,9 +216,9 @@ namespace fengyun_svissr
         bool process_subcom_data = false;
 
         // Ensures we can and should decode it in the first place
+        logger->debug("Pulled %d subcommunication frames", subcommunication_frames.size());
         if (!subcommunication_frames.empty())
         {
-            logger->debug("Pulled %d subcommunication frames", subcommunication_frames.size());
             final_subcom_frame = majority_law(subcommunication_frames, false);
 
             // - Integrity check -
@@ -230,6 +230,14 @@ namespace fengyun_svissr
             {
                 process_subcom_data = true;
             }
+            else
+            {
+                logger->warn("Subcommunication data too damaged, not using! Timestamps, projections, and calibration will be disabled");
+            }
+        }
+        else
+        {
+            logger->warn("Reception was too short or SNR was too low: Timestamps, projections, and calibration will be disabled!");
         }
 
         if (process_subcom_data)
@@ -337,7 +345,7 @@ namespace fengyun_svissr
                                       (uint32_t)Calib_2_block[byte_index + 3]);
 
                 float value = raw_value * 1e-8;
-                //std::string strvalue = "word: " + std::to_string(byte_index) + " value: " + std::to_string(value) + "\n";
+                // std::string strvalue = "word: " + std::to_string(byte_index) + " value: " + std::to_string(value) + "\n";
 
                 // 64 values, we interpolate 15 between them to get values for all 1024 counts
                 int lut_index = ((byte_index - 256) / 4) * 16;
@@ -389,10 +397,9 @@ namespace fengyun_svissr
                 }
             }
         }
-        // Either we didn't pull any subcom frames or they were too damaged
+        // Too damaged or too low SNR, default to system time
         else
         {
-            logger->warn("Reception was too short or SNR was too low: timestamps, projections, and calibration will be disabled!");
             // Defaults timestamp to system time
             unix_timestamp = time(0);
         }
@@ -568,7 +575,7 @@ namespace fengyun_svissr
                 else if (group_retransmissions.size() < 9 && (current_subcom_frame.size() / SUBCOM_GROUP_SIZE) == group_id - 1)
                 {
                     if (!group_retransmissions.empty())
-                    { 
+                    {
                         // The group is finished, push back the result of majority law to the minor frame set
                         Group group = majority_law(group_retransmissions, false);
                         current_subcom_frame.insert(current_subcom_frame.end(), group.begin(), group.end());
