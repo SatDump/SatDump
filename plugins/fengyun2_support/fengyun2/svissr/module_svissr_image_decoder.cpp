@@ -565,8 +565,7 @@ namespace fengyun_svissr
                     save_minor_frame();
                 }
                 // We have finished this group, save it. If we didn't get the previous groups, do NOT Proceed!!!
-                // Delta between groups should NEVER be greater than 1 (other than a new series but we already check htat)
-                else if (group_retransmissions.size() < 9 && (current_subcom_frame.size() / SUBCOM_GROUP_SIZE) == group_id - 1 && group_id-last_group_id == 1)
+                else if (group_retransmissions.size() < 9 && (current_subcom_frame.size() / SUBCOM_GROUP_SIZE) == group_id - 1)
                 {
                     if (!group_retransmissions.empty())
                     { 
