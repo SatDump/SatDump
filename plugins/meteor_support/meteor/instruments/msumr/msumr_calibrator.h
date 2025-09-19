@@ -1,10 +1,11 @@
 #pragma once
 
 #include "common/calibration.h"
-#include "utils/stats.h"
 #include "nlohmann/json.hpp"
 #include "nlohmann/json_utils.h"
+#include "products/image/calibration_units.h"
 #include "products/image/image_calibrator.h"
+#include "utils/stats.h"
 
 namespace meteor
 {
@@ -47,12 +48,13 @@ namespace meteor
 
             if (can_ir_calib)
             {
-                views.resize(d_pro->images.size());
+                views.resize(6);
 
                 int max_lcnt = 0;
-                for (size_t i = 0; i < d_pro->images.size(); i++)
+                for (size_t ii = 0; ii < d_pro->images.size(); ii++)
                 {
-                    wavenumbers.push_back(d_pro->get_channel_wavenumber(d_pro->images[i].abs_index));
+                    int i = d_pro->images[ii].abs_index;
+                    wavenumbers.push_back(d_pro->get_channel_wavenumber(i));
                     int lcnt = d_cfg["vars"]["views"][i][0].size();
                     max_lcnt = std::max(lcnt, max_lcnt);
                     for (int j = 0; j < lcnt; j++)
@@ -139,6 +141,12 @@ namespace meteor
                 if (!can_ir_calib)
                     return CALIBRATION_INVALID_VALUE;
 
+                if (views.size() <= channel || cold_temps.size() <= channel)
+                {
+                    printf("Should not happen! %d/%d\n", (int)views.size(), channel);
+                    return CALIBRATION_INVALID_VALUE;
+                }
+
                 double cold_view = views[channel][pos_y].first;
                 double hot_view = views[channel][pos_y].second;
                 if (cold_view == 0 || hot_view == 0 || px_val == 0)
@@ -147,6 +155,9 @@ namespace meteor
                 double cold_ref = cold_temps[pos_y]; // 225;
                 double hot_ref = hot_temps[pos_y];   // 312;
                 double wavenumber = wavenumbers[channel];
+
+                if (cold_ref == 0 && hot_ref == 0)
+                    return CALIBRATION_INVALID_VALUE;
 
                 double cold_rad = temperature_to_radiance(cold_ref, wavenumber);
                 double hot_rad = temperature_to_radiance(hot_ref, wavenumber);

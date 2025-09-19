@@ -248,7 +248,7 @@ namespace satdump
             channels_calibration_units_and_converters.clear();
             if (channel_selection_curr_id == -1 && images_can_be_calibrated)
                 return;
-            if (product->images.size() >= channel_selection_curr_id)
+            if ((int)product->images.size() <= channel_selection_curr_id)
                 return;
 
             // Just setup all possible converters and unit infos

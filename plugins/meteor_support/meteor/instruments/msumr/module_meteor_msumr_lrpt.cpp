@@ -282,24 +282,25 @@ namespace meteor
                 {
                     msumr_images.push_back({i, "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, 10});
                     lrpt_channels |= 1 << i;
-                    nlohmann::json channel_views = nlohmann::json::array();
-                    channel_views[0] = nlohmann::json::array();
-                    channel_views[1] = nlohmann::json::array();
-                    for (double &this_timestamp : msureader.timestamps)
-                    {
-                        if (telemetry_timestamps.count(this_timestamp) == 0)
-                        {
-                            channel_views[0].push_back(0);
-                            channel_views[1].push_back(0);
-                        }
-                        else
-                        {
-                            channel_views[0].push_back(calibration_info[i][telemetry_timestamps[this_timestamp]].first);
-                            channel_views[1].push_back(calibration_info[i][telemetry_timestamps[this_timestamp]].second);
-                        }
-                    }
-                    calib_cfg["vars"]["views"].push_back(channel_views);
                 }
+
+                nlohmann::json channel_views = nlohmann::json::array();
+                channel_views[0] = nlohmann::json::array();
+                channel_views[1] = nlohmann::json::array();
+                for (double &this_timestamp : msureader.timestamps)
+                {
+                    if (telemetry_timestamps.count(this_timestamp) == 0)
+                    {
+                        channel_views[0].push_back(0);
+                        channel_views[1].push_back(0);
+                    }
+                    else
+                    {
+                        channel_views[0].push_back(calibration_info[i][telemetry_timestamps[this_timestamp]].first);
+                        channel_views[1].push_back(calibration_info[i][telemetry_timestamps[this_timestamp]].second);
+                    }
+                }
+                calib_cfg["vars"]["views"][i] = channel_views;
             }
 
             for (double &this_timestamp : msureader.timestamps)
