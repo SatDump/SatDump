@@ -337,7 +337,7 @@ namespace fengyun_svissr
                                       (uint32_t)Calib_2_block[byte_index + 3]);
 
                 float value = raw_value * 1e-8;
-                std::string strvalue = "word: " + std::to_string(byte_index) + " value: " + std::to_string(value) + "\n";
+                //std::string strvalue = "word: " + std::to_string(byte_index) + " value: " + std::to_string(value) + "\n";
 
                 // 64 values, we interpolate 15 between them to get values for all 1024 counts
                 int lut_index = ((byte_index - 256) / 4) * 16;
@@ -357,7 +357,7 @@ namespace fengyun_svissr
                 }
             }
 
-            // Invalidate first 16 counts - It would refer to 0 albedo (true white) which is impossible to reach
+            // Invalidate first 16 counts - They refer to 0 albedo (true white) which is impossible to reach
             for (int i = 0; i < 16; i++)
             {
                 LUTs[0][i] = 0;
@@ -384,7 +384,7 @@ namespace fengyun_svissr
 
                     int lut_index = (byte_index - start_byte) / 4;
 
-                    // Values are inverted for some reason, docs say they shouldn't be but whatever
+                    // Values are inverted for some reason, no idea why - so we just write them from the back
                     LUTs[ir_channel + 1][1023 - lut_index] = value;
                 }
             }
@@ -397,8 +397,9 @@ namespace fengyun_svissr
             unix_timestamp = time(0);
         }
 
-        // Sanity check, if the timestamp isn't between 2000 and 2050, consider it to be incorrect
+        // Sanity check, if the timestamp isn't between the years 2000 and 2050, consider it to be incorrect
         // (I don't think the Fengyun 2 satellites will live for another 25 years)
+        // This shouldn't happen with the subcom handling.
         if (unix_timestamp < 946681200 || unix_timestamp > 2524604400)
         {
             logger->warn("The pulled timestamp looks erroneous! Was the SNR too low? Defaulting to system time");
@@ -440,13 +441,13 @@ namespace fengyun_svissr
         // Calibrate if we got the calibration data
         if (process_subcom_data)
         {
-            logger->trace("Got calibration info");
+            logger->trace("Calibrating channels");
 
             nlohmann::json calib_cfg;
 
             // LUTs transmitted in order: VIS -> IR1 -> IR2 -> IR3 -> IR4
             // Ergo Visible (0.7 μm) -> LWIR (10.8 μm) -> Split window (12 μm) -> Water vapour (6.75 μm) -> MWIR (3.75 μm)
-            // We order them based on the wavelength.
+            // We order them based on the wavelength so 0-4-3-1-2
             calib_cfg["ch1_lut"] = LUTs[0];
             calib_cfg["ch2_lut"] = LUTs[4];
             calib_cfg["ch3_lut"] = LUTs[3];
@@ -461,6 +462,7 @@ namespace fengyun_svissr
             svissr_product.set_channel_unit(3, CALIBRATION_ID_BRIGHTNESS_TEMPERATURE);
             svissr_product.set_channel_unit(4, CALIBRATION_ID_BRIGHTNESS_TEMPERATURE);
         }
+
         svissr_product.save(disk_folder);
 
         buffer.image1.clear();
@@ -521,7 +523,6 @@ namespace fengyun_svissr
                     // Can we lock?
                     if (counter == global_counter + 1)
                     {
-                        // LOCKED!
                         logger->debug("Counter correction LOCKED! Counter: " + std::to_string(counter));
                         counter_locked = true;
                     }
@@ -564,17 +565,20 @@ namespace fengyun_svissr
                     save_minor_frame();
                 }
                 // We have finished this group, save it. If we didn't get the previous groups, do NOT Proceed!!!
-                else if (group_retransmissions.size() < 9 && (current_subcom_frame.size() / SUBCOM_GROUP_SIZE) == group_id - 1 //&& group_id-last_group_id==1
-                )
+                // Delta between groups should NEVER be greater than 1 (other than a new series but we already check htat)
+                else if (group_retransmissions.size() < 9 && (current_subcom_frame.size() / SUBCOM_GROUP_SIZE) == group_id - 1 && group_id-last_group_id == 1)
                 {
-                    // TODO: how to avoid junk? if we lose sync within a group we screw the whole thing over
-                    // has to be more robust when it comes to frame drops too!!!
                     if (!group_retransmissions.empty())
-                    { // The group is finished, push back the result of majority law to the minor frame set
+                    { 
+                        // The group is finished, push back the result of majority law to the minor frame set
                         Group group = majority_law(group_retransmissions, false);
                         current_subcom_frame.insert(current_subcom_frame.end(), group.begin(), group.end());
 
                         group_retransmissions.clear();
+
+                        // Push the current one
+                        Group current_retransmission(frame + SUBCOM_START_OFFSET, frame + SUBCOM_START_OFFSET + SUBCOM_GROUP_SIZE);
+                        group_retransmissions.push_back(current_retransmission);
                     }
                     else
                     {
@@ -594,7 +598,8 @@ namespace fengyun_svissr
 
                 // If we have a group saved, we are in a new frame!!! Save it too
                 // ONLY save it if we got the previous ones already
-                if ((current_subcom_frame.size() / SUBCOM_GROUP_SIZE) == group_id)
+                // Discard if GID seems invalid
+                if (group_id < 25 && (current_subcom_frame.size() / SUBCOM_GROUP_SIZE) == group_id)
                 {
                     Group current_retransmission(frame + SUBCOM_START_OFFSET, frame + SUBCOM_START_OFFSET + SUBCOM_GROUP_SIZE);
                     group_retransmissions.push_back(current_retransmission);
