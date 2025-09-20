@@ -238,7 +238,7 @@
                 "module": "pm_demod",
                 "parameters": {
                     "enable_doppler": true,
-                    "satellite_freqency": 1703e6,
+                    "satellite_frequency": 1703e6,
                     "satellite_norad": 47719,
                     "symbolrate": 5e3,
                     "pll_bw": 0.02,
@@ -276,7 +276,7 @@
                 "module": "pm_demod",
                 "parameters": {
                     "enable_doppler": true,
-                    "satellite_freqency": 1703e6,
+                    "satellite_frequency": 1703e6,
                     "satellite_norad": 58584,
                     "symbolrate": 5e3,
                     "pll_bw": 0.02,
