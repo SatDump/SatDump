@@ -20,7 +20,7 @@
         },
         {
             "name": "AVHRR 221 False Color (sun angle compensated)",
-            "expression": "cch2=(2, sun_angle_compensated_reflective_radiance, 0, 25; cch1=(1, sun_angle_compensated_reflective_radiance, 0, 15); cch2, cch2, cch1",
+            "expression": "cch2=(2, sun_angle_compensated_reflective_radiance, 0, 43.5;cch1=(1, sun_angle_compensated_reflective_radiance, 0, 31.5); lut=lut(lut/1d/stretchcon_avhrr.png);lut(cch2, 0, 0), lut(cch2, 0, 1),lut(cch1, 0, 2)",
             "image": {
                 "geo_correct": true
             },
