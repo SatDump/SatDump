@@ -49,12 +49,13 @@ namespace meteor
             if (can_ir_calib)
             {
                 views.resize(6);
+                wavenumbers.resize(6);
 
                 int max_lcnt = 0;
                 for (size_t ii = 0; ii < d_pro->images.size(); ii++)
                 {
                     int i = d_pro->images[ii].abs_index;
-                    wavenumbers.push_back(d_pro->get_channel_wavenumber(i));
+                    wavenumbers[i] = d_pro->get_channel_wavenumber(i);
                     int lcnt = d_cfg["vars"]["views"][i][0].size();
                     max_lcnt = std::max(lcnt, max_lcnt);
                     for (int j = 0; j < lcnt; j++)
@@ -165,7 +166,7 @@ namespace meteor
                 double gain_rad = (hot_rad - cold_rad) / (hot_view - cold_view);
                 double rad = cold_rad + (px_val - cold_view) * gain_rad; // hot_rad + ((px_val - hot_view) / gain_rad);
 
-                // printf("VIEW %f, %f %f %f %f (%f)=> %f\n", double(px_val), hot_view, cold_view, hot_rad, cold_rad, gain_rad, rad);
+                // printf("VIEW %f, %f %f %f %f (%f)=> %f (W %f)\n", double(px_val), hot_view, cold_view, hot_rad, cold_rad, gain_rad, rad, wavenumber);
 
                 return rad;
             }
