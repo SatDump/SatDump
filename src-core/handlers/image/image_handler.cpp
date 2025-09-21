@@ -264,6 +264,8 @@ namespace satdump
 
                 if (image_proj_valid)
                 {
+                    if (rotate180_image)
+                        style::beginDisabled();
                     if (ImGui::MenuItem("Add To Proj"))
                     { // TODOREWORK
                         std::shared_ptr<Handler> h;
@@ -277,6 +279,8 @@ namespace satdump
                             eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({p});
                         }
                     }
+                    if (rotate180_image)
+                        style::endDisabled();
                 }
 
                 ImGui::EndMenuBar();
