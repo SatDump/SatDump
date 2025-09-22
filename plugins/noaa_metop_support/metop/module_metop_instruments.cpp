@@ -1,20 +1,20 @@
 #include "module_metop_instruments.h"
+#include "common/calibration.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
 #include "common/ccsds/ccsds_aos/vcdu.h"
+#include "common/tracking/tle.h"
 #include "common/utils.h"
+#include "core/resources.h"
 #include "image/bowtie.h"
+#include "image/io.h"
+#include "image/processing.h"
 #include "imgui/imgui.h"
 #include "logger.h"
 #include "metop.h"
-#include <filesystem>
-#include <fstream>
-#include "common/calibration.h"
-#include "common/tracking/tle.h"
-#include "core/resources.h"
-#include "image/io.h"
-#include "image/processing.h"
 #include "nlohmann/json_utils.h"
 #include "utils/stats.h"
+#include <filesystem>
+#include <fstream>
 
 #include "products/dataset.h"
 #include "products/image_product.h"
@@ -206,7 +206,8 @@ namespace metop
                 {
                     avhrr_products.images.push_back({i, "AVHRR-" + names[i], names[i], avhrr_reader.getChannel(i), 10});
                     avhrr_products.set_channel_unit(i, i < 3 ? CALIBRATION_ID_REFLECTIVE_RADIANCE : CALIBRATION_ID_EMISSIVE_RADIANCE);
-                    avhrr_products.set_channel_wavenumber(i, calib_coefs[sat_name]["channels"][i]["wavnb"]);
+                    if (calib_coefs.contains(sat_name))
+                        avhrr_products.set_channel_wavenumber(i, calib_coefs[sat_name]["channels"][i]["wavnb"]);
                 }
 
                 // calib
