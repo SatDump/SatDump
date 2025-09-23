@@ -18,8 +18,8 @@ import android.net.Uri;
 import RealPathUtil;
 
 import android.Manifest;
-import androidx.core.content.PermissionChecker;
-import androidx.core.app.ActivityCompat;
+import android.support.v4.content.PermissionChecker;
+import android.support.v4.app.ActivityCompat;
 import android.content.pm.PackageManager;
 import android.provider.DocumentsContract;
 
