@@ -10,7 +10,7 @@
 #ifndef NOVAS_CALCEPH_H_
 #define NOVAS_CALCEPH_H_
 
-#  include <calceph.h>
+#  include "libs/calceph/calceph.h"
 
 int novas_use_calceph(t_calcephbin *eph);
 
