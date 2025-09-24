@@ -171,7 +171,7 @@ if(MSVC)
     endif()
 
     target_include_directories(satdump_core PUBLIC libs/lua)
-    target_link_libraries(satdump_core PUBLIC ws2_32)
+    target_link_libraries(satdump_core PUBLIC ws2_32 pthreadVC3)
 elseif(ANDROID)
     # Jemalloc
     # TODO

@@ -10,7 +10,11 @@
 #include <math.h>
 #include <errno.h>
 #include <string.h>
+#ifdef _WIN32
+#include "libs/strings_h_win.h"
+#else
 #include <strings.h>              // strcasecmp() / strncasecmp()
+#endif
 #include <ctype.h>
 
 /// \cond PRIVATE

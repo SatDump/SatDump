@@ -99,10 +99,10 @@ static const itrf_transform realizations[] = { //
                 { {    0.0,   0.1,    0.2 },   0.00, {    0.00,    0.00,    0.00 } }  //
         }, //
         { 2020, 2015.0, //
-                {},
-                {}
+                {{0,0,0},0,  {0,0,0}},
+                {{0,0,0},0,  {0,0,0}}
         }, //
-        {}
+        {0,0, {{0,0,0},0,  {0,0,0}}, {{0,0,0},0,  {0,0,0}}}
 };
 
 
@@ -228,7 +228,7 @@ int novas_itrf_transform(int from_year, const double *restrict from_coords, cons
   const itrf_transform *to = get_transform((int) floor(to_year));
   const double dt = (to->epoch - from->epoch);
 
-  itrf_terms T0 = {}, T1 = {};
+  itrf_terms T0, T1; memset(&T0, 0, sizeof(itrf_terms)); memset(&T1, 0, sizeof(itrf_terms));
   double x[3] = {0.0}, r[3] = {0.0}, RX[3], R1X[3];
   int i;
 
@@ -308,7 +308,7 @@ int novas_itrf_transform_eop(int from_year, double from_xp, double from_yp, doub
   const itrf_transform *from = get_transform((int) floor(from_year));
   const itrf_transform *to = get_transform((int) floor(to_year));
 
-  itrf_terms T0 = {};
+  itrf_terms T0; memset(&T0, 0, sizeof(itrf_terms));
 
   get_diff_terms(&to->terms, &from->terms, &T0);
 

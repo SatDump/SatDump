@@ -253,7 +253,7 @@ int make_observer_at_site(const on_surface *restrict site, observer *restrict ob
  *     novas_make_frame()
  */
 int make_itrf_observer(double latitude, double longitude, double height, observer *obs) {
-  on_surface site = {};
+  on_surface site; memset(&site, 0, sizeof(on_surface));
   make_itrf_site(latitude, longitude, height, &site);
   prop_error("make_itrf_observer", make_observer_at_site(&site, obs), 0);
   return 0;
@@ -284,7 +284,7 @@ int make_itrf_observer(double latitude, double longitude, double height, observe
  *     novas_geodetic_transform_site()
  */
 int make_gps_observer(double latitude, double longitude, double height, observer *obs) {
-  on_surface site = {};
+  on_surface site; memset(&site, 0, sizeof(on_surface));
   make_gps_site(latitude, longitude, height, &site);
   prop_error("make_gps_observer", make_observer_at_site(&site, obs), 0);
   return 0;

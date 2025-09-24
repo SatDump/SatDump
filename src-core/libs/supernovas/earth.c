@@ -527,7 +527,7 @@ int novas_diurnal_eop(double gmst, const novas_delaunay_args *restrict delaunay,
  * @sa novas_diurnal_eop()
  */
 int novas_diurnal_eop_at_time(const novas_timespec *restrict time, double *restrict dxp, double *restrict dyp, double *restrict dut1) {
-  novas_delaunay_args a = {};
+  novas_delaunay_args a = {0, 0, 0, 0, 0};
 
   if(!time)
     return novas_error(-1, EINVAL, "novas_diurnal_eop_at_time", "time argument is NULL");

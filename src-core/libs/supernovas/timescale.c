@@ -18,9 +18,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+//#include <unistd.h>
 #include <string.h>
+#ifdef _WIN32
+#include "libs/strings_h_win.h"
+#else
 #include <strings.h>              // strcasecmp() / strncasecmp()
+#endif
 #include <errno.h>
 #include <math.h>
 #include <ctype.h>                // isspace()
@@ -300,7 +304,7 @@ double tt2tdb_fp(double jd_tt, double limit) {
           {    0.009858,    6309.374169791, 1.061816410 }, //
           {    0.009963,     149.563197135, 4.870690598 }, //
           {    0.009370,  149854.400134205, 0.673880395 }, //
-          {} //
+          {0, 0, 0} //
   };
 
   static const double b[][3] = { //
@@ -331,7 +335,7 @@ double tt2tdb_fp(double jd_tt, double limit) {
           {    0.010143,    4694.002954708, 4.044013795 }, //
           {    0.010084,     522.577418094, 0.749320262 }, //
           {    0.009357,    5486.777843175, 3.416081409 }, //
-          {} //
+          {0, 0, 0} //
   };
 
   static const double c[][3] = { //
@@ -341,7 +345,7 @@ double tt2tdb_fp(double jd_tt, double limit) {
           {    0.019476,     213.299095438, 1.642186981 }, //
           {    0.016916,     529.690965095, 4.510959344 }, //
           {    0.013374,      -3.523118349, 1.502210314 }, //
-          {} //
+          {0 ,0 , 0} //
   };
 
   static const double d[3] = { 0.143388, 6283.075849991, 1.131453581 };
@@ -887,12 +891,12 @@ int novas_set_unix_time(time_t unix_time, long nanos, int leap, double dut1, nov
  *
  * @see novas_set_unix_time()
  */
-int novas_set_current_time(int leap, double dut1, novas_timespec *restrict time) {
-  struct timespec t = {};
-  clock_gettime(CLOCK_REALTIME, &t);
-  prop_error("novas_set_current_time", novas_set_unix_time(t.tv_sec, t.tv_nsec, leap, dut1, time), 0);
-  return 0;
-}
+// int novas_set_current_time(int leap, double dut1, novas_timespec *restrict time) {
+//   struct timespec t = {};
+//   clock_gettime(CLOCK_REALTIME, &t);
+//   prop_error("novas_set_current_time", novas_set_unix_time(t.tv_sec, t.tv_nsec, leap, dut1, time), 0);
+//   return 0;
+// }
 
 /**
  * Returns the UNIX time for an astronomical time instant.

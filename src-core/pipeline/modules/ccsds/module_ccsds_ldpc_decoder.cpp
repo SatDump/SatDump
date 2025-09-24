@@ -195,8 +195,8 @@ namespace satdump
                             }
 
                             uint64_t trials2 = 0;
-                            int8_t working[ldpc2_params->decode_ms_working_len];
-                            uint8_t working_u8[ldpc2_params->decode_ms_working_u8_len];
+                            int8_t *working = new int8_t[ldpc2_params->decode_ms_working_len];
+                            uint8_t *working_u8 = new uint8_t[ldpc2_params->decode_ms_working_u8_len];
                             labrador::decode_ms(*ldpc2_params, ldpc_input_buffer, deframer_buffer, working, working_u8, d_ldpc_iterations, &trials2);
                             ldpc_corr = trials2;
 
@@ -215,6 +215,9 @@ namespace satdump
                                     write_data((uint8_t *)&v, 1);
                                 }
                             }
+
+                            delete[] working;
+                            delete[] working_u8;
 
                             write_data(deframer_buffer, (d_ldpc_frame_size - d_ldpc_asm_size) / 8);
                         }

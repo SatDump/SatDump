@@ -29,6 +29,11 @@
 
 /* Define to 1 if you have a working `mmap' system call. */
 #define HAVE_MMAP 1 
+#if defined(_WIN32)
+#include "libs/mmap_windows.h"
+#else
+#include <sys/mman.h>
+#endif
 
 /* Define to 1 if you have the `newlocale' function. */
 #define HAVE_NEWLOCALE 1 
@@ -59,6 +64,9 @@
 
 /* Define to 1 if you have the `strcasecmp' function. */
 #define HAVE_STRCASECMP 1 
+#ifdef _WIN32
+#include "libs/strings_h_win.h"
+#endif
 
 /* Define to 1 if you have the `_stricmp' function. */
 /* #undef HAVE__STRICMP */
@@ -70,7 +78,7 @@
 #define HAVE_STRTOD_L 0 
 
 /* Define to 1 if you have the <sys/mman.h> header file. */
-#define HAVE_SYS_MMAN_H 1 
+// #define HAVE_SYS_MMAN_H 1 
 
 /* Define to 1 if you have the <sys/resource.h> header file. */
 #define HAVE_SYS_RESOURCE_H 1 
@@ -85,16 +93,16 @@
 #define HAVE_TIME_H 1 
 
 /* Define to 1 if you have the <unistd.h> header file. */
-#define HAVE_UNISTD_H 1 
+// #define HAVE_UNISTD_H 1 
 
 /* Define to 1 if the system has the `unused' variable attribute */
-#define HAVE_VAR_ATTRIBUTE_UNUSED 1 
+// #define HAVE_VAR_ATTRIBUTE_UNUSED 1 
 
 /* Define to 1 if you have the `snprintf' function. */
 #define HAVE_SNPRINTF 1 
 
 /* Define to 1 if you have the `vasprintf' function. */
-#define HAVE_VASPRINTF 1 
+// #define HAVE_VASPRINTF 1
 
 /* Define to 1 if you have the `_vscprintf' function. */
 /* #undef HAVE__VSCPRINTF */
@@ -106,7 +114,7 @@
 /* #undef HAVE_XLOCALE_H */
 
 /* Define to 1 if you have the `strerror_r' function. */
-#define HAVE_STRERROR_R 1
+// #define HAVE_STRERROR_R 1
 
 /* Define to 1 if you have the `strerror_s' function. */
 /* #undef HAVE_STRERROR_S */
@@ -156,7 +164,7 @@
 
 
 #if defined(__MINGW32__) || defined (__MINGW64__) || defined(_MSC_VER)
-#if __MSVCRT_VERSION__<0x0800 &&  (defined(__MINGW32__) || defined (__MINGW64__))
+#if (__MSVCRT_VERSION__<0x0800 &&  (defined(__MINGW32__) || defined (__MINGW64__))) || defined(_WIN32)
 /* mingw defined _fseeki64 only for __MSVCRT_VERSION__>=0x0800 */
 #define fseeko fseek
 #define ftello ftell

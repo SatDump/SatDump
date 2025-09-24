@@ -50,6 +50,12 @@
 #include <stdarg.h>   // stdarg.h before stdio.h (for older gcc...)
 #include <stddef.h>
 
+#ifdef _WIN32
+#include "libs/strings_h_win.h"
+#else
+#include <strings.h>              // strcasecmp() / strncasecmp()
+#endif
+
 #include "novas.h"
 
 #if __Lynx__ && __powerpc__

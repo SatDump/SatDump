@@ -2281,7 +2281,7 @@ double novas_clock_skew(const novas_frame *frame, enum novas_timescale timescale
 
 double novas_mean_clock_skew(const novas_frame *frame, enum novas_timescale timescale);
 
-int novas_set_current_time(int leap, double dut1, novas_timespec *restrict time);
+// int novas_set_current_time(int leap, double dut1, novas_timespec *restrict time);
 
 int novas_set_str_time(enum novas_timescale timescale, const char *restrict str, int leap, double dut1, novas_timespec *restrict time);
 

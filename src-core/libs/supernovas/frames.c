@@ -103,7 +103,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+//#include <unistd.h>
 #include <string.h>
 #include <errno.h>
 #include <math.h>
@@ -240,7 +240,7 @@ static int set_frame_tie(novas_frame *frame) {
   static const double ax = ETA0;
   static const double ay = -XI0;
   static const double az = -DA0;
-  static const double X = ax * ax, Y = ay * ay, Z = az * az;
+  const double X = ax * ax, Y = ay * ay, Z = az * az;
 
   novas_matrix *T = &frame->icrs_to_j2000;
 
@@ -260,8 +260,8 @@ static int set_frame_tie(novas_frame *frame) {
 }
 
 static int set_gcrs_to_cirs(novas_frame *frame) {
-  novas_transform T = {};
-  novas_matrix tod2cirs = {};
+  novas_transform T; memset(&T, 0, sizeof(novas_transform));
+  novas_matrix tod2cirs; memset(&tod2cirs, 0, sizeof(novas_matrix));
 
   set_spin_matrix(15.0 * frame->gst - frame->era, &tod2cirs);
 
