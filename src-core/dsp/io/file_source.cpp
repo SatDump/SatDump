@@ -12,7 +12,7 @@ namespace satdump
         {
             if (!baseband_reader.is_eof() && !work_should_exit)
             {
-                auto oblk = outputs[0].fifo->newBufferSamples<complex_t>(d_buffer_size);
+                auto oblk = outputs[0].fifo->newBufferSamples(d_buffer_size, sizeof(complex_t));
                 complex_t *obuf = oblk.getSamples<complex_t>();
 
                 int read = baseband_reader.read_samples(obuf, d_buffer_size);

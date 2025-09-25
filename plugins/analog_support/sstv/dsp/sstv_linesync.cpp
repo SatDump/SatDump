@@ -75,7 +75,7 @@ namespace satdump
                     }
                 }
 
-                auto oblk = outputs[0].fifo->newBufferSamples<float>(line_length);
+                auto oblk = outputs[0].fifo->newBufferSamples(line_length, sizeof(float));
                 oblk.size = line_length;
                 for (int i = 0; i < line_length; i++)
                     oblk.getSamples<float>()[i] = lineGetScaledIMG(sync_line_buffer[best_pos + i]);

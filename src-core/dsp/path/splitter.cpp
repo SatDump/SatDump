@@ -43,7 +43,7 @@ namespace satdump
             {
                 IOInfo *i = ((IOInfo *)o.blkdata.get());
 
-                DSPBuffer oblk = o.fifo->newBufferSamples<T>(iblk.max_size);
+                DSPBuffer oblk = o.fifo->newBufferSamples(iblk.max_size, sizeof(T));
                 memcpy(oblk.getSamples<T>(), iblk.getSamples<T>(), iblk.size * sizeof(T));
                 oblk.size = iblk.size;
                 o.fifo->wait_enqueue(oblk);

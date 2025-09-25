@@ -42,7 +42,7 @@ namespace satdump
 
             while (lbuf_offset < iblk.size)
             {
-                DSPBuffer oblk = outputs[0].fifo->newBufferSamples<complex_t>(lbuf_size);
+                DSPBuffer oblk = outputs[0].fifo->newBufferSamples(lbuf_size, sizeof(complex_t));
                 complex_t *obuf = oblk.getSamples<complex_t>();
 
                 memcpy(&buffer[p_ntaps], ibuf + lbuf_offset, lbuf_size * sizeof(float));

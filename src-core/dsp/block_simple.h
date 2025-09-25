@@ -31,7 +31,7 @@ namespace satdump
                     return true;
                 }
 
-                DSPBuffer oblk = outputs[0].fifo->newBufferSamples<To>(iblk.max_size);
+                DSPBuffer oblk = outputs[0].fifo->newBufferSamples(iblk.max_size, sizeof(To));
 
                 oblk.size = process(iblk.getSamples<Ti>(), iblk.size, oblk.getSamples<To>());
 

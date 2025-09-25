@@ -125,7 +125,7 @@ namespace sstv
                 else
                     input_fifo->read((uint8_t *)s16_buf, buffer_size * sizeof(int16_t));
 
-                auto nblk = io_in.fifo->newBufferSamples<float>(buffer_size);
+                auto nblk = io_in.fifo->newBufferSamples(buffer_size, sizeof(float));
 
                 if (is_stereo)
                 {
@@ -136,7 +136,7 @@ namespace sstv
                 }
                 else
                 {
-                    volk_16i_s32f_convert_32f_u(nblk.getSamples<float>(), (const int16_t *)s16_buf, 32767, buffer_size);
+                    volk_16i_s32f_convert_32f_u((&nblk)->getSamples<float>(), (const int16_t *)s16_buf, 32767, buffer_size);
                     nblk.size = buffer_size;
                     io_in.fifo->wait_enqueue(nblk);
                 }

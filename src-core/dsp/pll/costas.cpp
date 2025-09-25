@@ -23,7 +23,7 @@ namespace satdump
                 return true;
             }
 
-            auto oblk = outputs[0].fifo->newBufferSamples<complex_t>(iblk.max_size);
+            auto oblk = outputs[0].fifo->newBufferSamples(iblk.max_size, sizeof(complex_t));
             complex_t *ibuf = iblk.getSamples<complex_t>();
             complex_t *obuf = oblk.getSamples<complex_t>();
 

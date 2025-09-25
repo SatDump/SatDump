@@ -192,7 +192,7 @@ namespace satdump
 
             {
                 int nsam = len / 2;
-                DSPBuffer oblk = tthis->outputs[0].fifo->newBufferSamples<complex_t>(nsam);
+                DSPBuffer oblk = tthis->outputs[0].fifo->newBufferSamples(nsam, sizeof(complex_t));
 
                 for (int i = 0; i < (int)len / 2; i++)
                 {

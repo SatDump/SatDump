@@ -87,7 +87,7 @@ void benchmarkNDSPBlock(std::shared_ptr<satdump::ndsp::Block> ptr, int duration,
     {
         while (should_run)
         {
-            satdump::ndsp::DSPBuffer nbuf = istr.fifo->newBufferSamples<T>(8192 * 4);
+            satdump::ndsp::DSPBuffer nbuf = istr.fifo->newBufferSamples(8192 * 4, sizeof(T));
             for (int i = 0; i < 8192 * 4; i++)
                 nbuf.getSamples<T>()[i] = T(i / 1e5);
             nbuf.size = 8192 * 4;

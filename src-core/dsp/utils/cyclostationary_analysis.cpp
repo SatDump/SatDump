@@ -20,7 +20,7 @@ namespace satdump
                 return true;
             }
 
-            auto oblk = outputs[0].fifo->newBufferSamples<float>(iblk.max_size * 2); // complex_t = 2 floats
+            auto oblk = outputs[0].fifo->newBufferSamples(iblk.max_size * 2, sizeof(float)); // complex_t = 2 floats
             complex_t *ibuf = iblk.getSamples<complex_t>();
             complex_t *obuf = oblk.getSamples<complex_t>();
             float *obuff = oblk.getSamples<float>();

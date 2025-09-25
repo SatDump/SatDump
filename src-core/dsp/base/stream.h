@@ -76,10 +76,9 @@ namespace satdump
                 return b;
             }
 
-            template <typename T>
-            DSPBuffer newBufferSamples(uint32_t size)
+            DSPBuffer newBufferSamples(uint32_t size, int typesize)
             {
-                DSPBuffer b = alloc(size * sizeof(T));
+                DSPBuffer b = alloc(size * typesize);
                 b.type = DSP_BUFFER_TYPE_SAMPLES;
                 b.max_size = size;
                 return b;

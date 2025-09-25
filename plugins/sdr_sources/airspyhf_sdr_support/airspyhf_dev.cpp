@@ -98,7 +98,7 @@ namespace satdump
             AirspyHFDevBlock *tthis = (AirspyHFDevBlock *)t->ctx;
             int &size = t->sample_count;
 
-            DSPBuffer oblk = tthis->outputs[0].fifo->newBufferSamples<complex_t>(size);
+            DSPBuffer oblk = tthis->outputs[0].fifo->newBufferSamples(size, sizeof(complex_t));
             memcpy(oblk.getSamples<complex_t>(), t->samples, size * sizeof(complex_t));
             oblk.size = size;
             tthis->outputs[0].fifo->wait_enqueue(oblk);
