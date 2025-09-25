@@ -75,9 +75,11 @@ namespace fengyun_svissr
     }
 
     /**
-     * Extracts a specific block from the subcommunication minor frame
+     * @brief Extracts a specific block from the subcommunication minor frame
+     *
      * @param subcom_frame The minor frame to get the block from
-     * @param block_type The SVISSRSubCommunicaitonBlockType to get
+     * @param block_type The specific subcommunication block to extract
+     * @return std::vector<uint8_t> A vector containing the requested block's data
      */
     std::vector<uint8_t> get_subcom_block(MinorFrame subcom_frame, SVISSRSubCommunicaitonBlockType block_type)
     {
@@ -103,11 +105,13 @@ namespace fengyun_svissr
     };
 
     /**
-     * Countrs the amount of errors in a subcommunication frame's 179-byte spare. Helps us ensure we are not looking at junk.
-     * This works because it is supposed to be all zeroes. Helpful for determining SNR (ruoughly)
+     * @brief Counts the amount of errors in a subcommunication frame's 4475-byte spare. Used to ensure we are not looking at junk.
+     *
+     * Works because the spare is supposed to be all zeroes, helpful to evade decode attempts on damaged data.
      * Max errors: 35800 (theory, 179*25*8), 17900 (realistic for BPSK, 50% chance)
      *
-     *  @param subcom_Frame The subcommunication frame to check the spare of
+     * @param subcom_frame
+     * @return int
      */
     int get_spare_errors(MinorFrame subcom_frame)
     {
@@ -131,6 +135,10 @@ namespace fengyun_svissr
         return errors;
     }
 
+    /**
+     * @brief Builds the 25 received groups of a minor frame, saves it. Aborts if we didn't get 25 groups.
+     *
+     */
     void SVISSRImageDecoderModule::save_minor_frame()
     {
         if (!group_retransmissions.empty() && current_subcom_frame.size() / SUBCOM_GROUP_SIZE == 24)
@@ -148,6 +156,7 @@ namespace fengyun_svissr
             subcommunication_frames.push_back(current_subcom_frame);
             current_subcom_frame.clear();
         }
+        // Below are useful for troubleshooting low SNR
         else if (group_retransmissions.empty())
         {
             logger->debug("Failed to get the last group!");
@@ -160,6 +169,11 @@ namespace fengyun_svissr
         }
     }
 
+    /**
+     * @brief Processes the received products
+     *
+     * @param buffer
+     */
     void SVISSRImageDecoderModule::writeImages(SVISSRBuffer &buffer)
     {
         writingImage = true;
@@ -256,7 +270,7 @@ namespace fengyun_svissr
 
             // ----> Simplified mapping (GCP) <----
 
-            // TODO: GCP loading not implemented yet
+            // TODOREWORK: Implement when GCPs are patchedback in
             /*
             std::vector<uint8_t> simplified_mapping = get_subcom_block(minor_frame, Simplified_mapping);
             nlohmann::json proj_cfg;
@@ -328,12 +342,12 @@ namespace fengyun_svissr
             std::string manam_path = manam_directory + "/MANAM_" + timestamp + ".txt";
             std::ofstream outfile(manam_path, std::ios::out | std::ios::binary);
 
-            // Writes MANAM
+            // Writes the rudimentary MANAM schedule
             outfile.write(reinterpret_cast<const char *>(&manam_data[0]), 10250);
             outfile.close();
 
-            // Calibration 1 has the same data, just a lower resolution for IR - no point in getting it
             // ----> Calibration 2 <----
+            // Calibration 1 block has the same data, just a lower resolution for IR - no point in getting it
 
             std::vector<uint8_t> Calib_2_block = get_subcom_block(final_subcom_frame, Calibration_2);
 
@@ -341,11 +355,10 @@ namespace fengyun_svissr
 
             for (int byte_index = 256; byte_index < 512; byte_index += 4)
             {
-                uint32_t raw_value = ((uint32_t)Calib_2_block[byte_index] << 24 | (uint32_t)Calib_2_block[byte_index + 1] << 16 | (uint32_t)Calib_2_block[byte_index + 2] << 8 |
-                                      (uint32_t)Calib_2_block[byte_index + 3]);
-
-                float value = raw_value * 1e-8;
-                // std::string strvalue = "word: " + std::to_string(byte_index) + " value: " + std::to_string(value) + "\n";
+                // 4 byte big-endian integer, 10^-3 for value
+                float value = (((uint32_t)Calib_2_block[byte_index] << 24) | ((uint32_t)Calib_2_block[byte_index + 1] << 16) | ((uint32_t)Calib_2_block[byte_index + 2] << 8) |
+                               (uint32_t)Calib_2_block[byte_index + 3]) *
+                              1e-8f;
 
                 // 64 values, we interpolate 15 between them to get values for all 1024 counts
                 int lut_index = ((byte_index - 256) / 4) * 16;
@@ -385,10 +398,10 @@ namespace fengyun_svissr
 
                 for (int byte_index = start_byte; byte_index < start_byte + 4096; byte_index += 4)
                 {
-                    uint32_t raw_value = ((uint32_t)Calib_2_block[byte_index] << 24 | (uint32_t)Calib_2_block[byte_index + 1] << 16 | (uint32_t)Calib_2_block[byte_index + 2] << 8 |
-                                          (uint32_t)Calib_2_block[byte_index + 3]);
-
-                    float value = raw_value * 1e-3;
+                    // 4 byte big-endian integer, 10^-3 for value
+                    float value = (((uint32_t)Calib_2_block[byte_index] << 24) | ((uint32_t)Calib_2_block[byte_index + 1] << 16) | ((uint32_t)Calib_2_block[byte_index + 2] << 8) |
+                                   (uint32_t)Calib_2_block[byte_index + 3]) *
+                                  1e-3f;
 
                     int lut_index = (byte_index - start_byte) / 4;
 
@@ -400,13 +413,11 @@ namespace fengyun_svissr
         // Too damaged or too low SNR, default to system time
         else
         {
-            // Defaults timestamp to system time
             unix_timestamp = time(0);
         }
 
         // Sanity check, if the timestamp isn't between the years 2000 and 2050, consider it to be incorrect
         // (I don't think the Fengyun 2 satellites will live for another 25 years)
-        // This shouldn't happen with the subcom handling.
         if (unix_timestamp < 946681200 || unix_timestamp > 2524604400)
         {
             logger->warn("The pulled timestamp looks erroneous! Was the SNR too low? Defaulting to system time");
@@ -454,7 +465,8 @@ namespace fengyun_svissr
 
             // LUTs transmitted in order: VIS -> IR1 -> IR2 -> IR3 -> IR4
             // Ergo Visible (0.7 μm) -> LWIR (10.8 μm) -> Split window (12 μm) -> Water vapour (6.75 μm) -> MWIR (3.75 μm)
-            // We order them based on the wavelength so 0-4-3-1-2
+            // We order them based on the wavelength so 1-5-4-2-3
+
             calib_cfg["ch1_lut"] = LUTs[0];
             calib_cfg["ch2_lut"] = LUTs[4];
             calib_cfg["ch3_lut"] = LUTs[3];
@@ -523,13 +535,12 @@ namespace fengyun_svissr
             // Does correction logic if specified by the user
             if (apply_correction)
             {
-                // TODOREWORK is this check needed? we already unlock on FD end
-                // TEST ON LONG!!!!!!!!!!!!!!!!!!!!!!
                 if (!counter_locked)
                 {
                     // Can we lock?
                     if (counter == global_counter + 1)
                     {
+                        // TODOREWORK make this shut up - it is called 6x because satdump unlocks it since it thinks it is still rolling back
                         logger->debug("Counter correction LOCKED! Counter: " + std::to_string(counter));
                         counter_locked = true;
                     }
@@ -553,15 +564,14 @@ namespace fengyun_svissr
                 }
             }
 
-            // ID of the block group: Simplified mapping, Orbit and attitude data, MANAM,
-            // Calibration block 1 and 2 are all sent in 25 separate groups because of their
-            // size. The group ID defines which group is sent. Every group gets transmitted
-            // 8 times every 200 lines
+            // - Subcommunication handling -
+
             // Masked since max GID is 25. Increases reliability
             int group_id = frame[193] & 0x1f;
 
-            // Each group is transmitted 8 subsequent times
-            // int repeat_id = frame[195];
+            // Each group is transmitted 8 subsequent times - max number is 8, masked for reliability
+            // Currently unused. Helpful for a potential logic rewrite to increase performance @ low SNRs
+            // int repeat_id = frame[195] & 0xf;
 
             if (group_id != last_group_id)
             {
@@ -589,12 +599,13 @@ namespace fengyun_svissr
                     else
                     {
                         // Can happen if we sync 1/8 frames
-                        logger->debug("TRIED SAVING EMPTY RETRANSMISSION GROUP!!!");
+                        logger->debug("Tried to save empty retransmission group!");
                     }
                 }
+                // This should NEVER happen, TODOREWORK handle more nicely?
                 else if (group_retransmissions.size() > 8)
                 {
-                    logger->critical("GROUP RETRANSMISSIONS OVERFLOW!!!!");
+                    logger->debug("GROUP RETRANSMISSIONS OVERFLOW!!!!");
                     group_retransmissions.clear();
                 }
             }
@@ -604,11 +615,15 @@ namespace fengyun_svissr
 
                 // If we have a group saved, we are in a new frame!!! Save it too
                 // ONLY save it if we got the previous ones already
-                // Discard if GID seems invalid
-                if (group_id < 25 && (current_subcom_frame.size() / SUBCOM_GROUP_SIZE) == group_id)
+
+                if ((current_subcom_frame.size() / SUBCOM_GROUP_SIZE) == group_id)
                 {
-                    Group current_retransmission(frame + SUBCOM_START_OFFSET, frame + SUBCOM_START_OFFSET + SUBCOM_GROUP_SIZE);
-                    group_retransmissions.push_back(current_retransmission);
+                    // Discarded if GID seems invalid
+                    if (group_id < 25)
+                    {
+                        Group current_retransmission(frame + SUBCOM_START_OFFSET, frame + SUBCOM_START_OFFSET + SUBCOM_GROUP_SIZE);
+                        group_retransmissions.push_back(current_retransmission);
+                    }
                 }
                 else
                 {
