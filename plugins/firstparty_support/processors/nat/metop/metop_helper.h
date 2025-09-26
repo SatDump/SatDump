@@ -2,6 +2,7 @@
 
 #include "common/tracking/tle.h"
 #include "core/exception.h"
+#include "init.h"
 #include "libs/bzlib_utils.h"
 #include "logger.h"
 #include <cstdint>
@@ -37,7 +38,7 @@ namespace satdump
             else if (sat_id == "M03")
                 info.norad = 43689;
 
-            info.satellite_tle = satdump::general_tle_registry->get_from_norad_time(info.norad, prod_timestamp);
+            info.satellite_tle = satdump::db_tle->get_from_norad_time(info.norad, prod_timestamp);
 
             return info;
         }

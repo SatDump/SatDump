@@ -253,9 +253,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    // TLE
-    satdump::ui_thread_pool.push([&](int) { satdump::autoUpdateTLE(satdump::user_path + "/satdump_tles.txt"); });
-
     // Attach signal
     signal(SIGINT, sig_handler_ui);
     signal(SIGTERM, sig_handler_ui);

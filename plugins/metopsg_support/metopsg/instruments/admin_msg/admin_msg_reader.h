@@ -23,7 +23,7 @@ namespace metopsg
         public:
             int count;
             std::string directory = "";
-            satdump::TLERegistry tles;
+            std::vector<satdump::TLE> tles;
 
         public:
             AdminMsgReader();

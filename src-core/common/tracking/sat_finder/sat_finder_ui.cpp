@@ -3,6 +3,7 @@
 #include "common/tracking/tle.h"
 #include "core/config.h"
 #include "imgui/imgui.h"
+#include "init.h"
 
 namespace satdump
 {
@@ -42,7 +43,8 @@ namespace satdump
 
                 if (observer_station != nullptr && target_az >= 0 && target_el >= 0)
                 {
-                    for (const auto &tle : *general_tle_registry)
+                    auto reg = db_tle->all;
+                    for (const auto &tle : reg)
                     {
                         if (!containsSubstring(tle.name, blacklist.begin(), blacklist.end()))
                         {

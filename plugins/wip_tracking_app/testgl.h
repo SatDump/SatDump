@@ -8,6 +8,7 @@
 #include "image/io.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
+#include "init.h"
 #include "libs/predict/predict.h"
 #include "logger.h"
 
@@ -128,10 +129,10 @@ private:
 public:
     OpenGLScene()
     {
-        auto tle = satdump::general_tle_registry->get_from_norad(40069);
+        auto tle = satdump::db_tle->get_from_norad(40069);
         satellite_object = predict_parse_tle(tle->line1.c_str(), tle->line2.c_str());
 
-        auto tle2 = satdump::general_tle_registry->get_from_norad(25338);
+        auto tle2 = satdump::db_tle->get_from_norad(25338);
         satellite_object2 = predict_parse_tle(tle2->line1.c_str(), tle2->line2.c_str());
 
         // Original

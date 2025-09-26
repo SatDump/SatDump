@@ -9,6 +9,7 @@
 #include "image/io.h"
 #include "image/processing.h"
 #include "imgui/imgui.h"
+#include "init.h"
 #include "logger.h"
 #include "metopsg.h"
 #include "nlohmann/json_utils.h"
@@ -137,7 +138,7 @@ namespace metopsg
 
             std::optional<satdump::TLE> satellite_tle; // TODOREWORK = admin_msg_reader.tles.get_from_norad(norad);
             if (!satellite_tle.has_value() || ignore_integrated_tle)
-                satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
+                satellite_tle = satdump::db_tle->get_from_norad_time(norad, dataset.timestamp);
 
             // Satellite ID
             {

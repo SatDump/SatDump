@@ -1,5 +1,6 @@
 #include "passes.h"
 #include "common/geodetic/geodetic_coordinates.h"
+#include "init.h"
 #include "libs/predict/predict.h"
 #include "logger.h"
 
@@ -9,7 +10,7 @@ namespace satdump
     {
         std::vector<SatellitePass> passes;
         predict_observer_t *observer_station = predict_create_observer("Main", qth_lat * DEG_TO_RAD, qth_lon * DEG_TO_RAD, qth_alt * DEG_TO_RAD);
-        auto tle = general_tle_registry->get_from_norad(norad);
+        auto tle = db_tle->get_from_norad(norad);
         if (!tle.has_value())
         {
             logger->warn("NORAD #%d is not available! Skipping pass calculation", norad);
@@ -163,9 +164,7 @@ namespace satdump
                 // if (picked_pass.aos_time < selectedPass.los_time)
                 //     continue;
 
-                if (picked_pass.norad != selectedPass.norad ||
-                    picked_pass.aos_time != selectedPass.aos_time ||
-                    picked_pass.los_time != selectedPass.los_time)
+                if (picked_pass.norad != selectedPass.norad || picked_pass.aos_time != selectedPass.aos_time || picked_pass.los_time != selectedPass.los_time)
                 {
                     selectedPass = picked_pass;
                     passes2.push_back(picked_pass);
@@ -177,4 +176,4 @@ namespace satdump
 
         return passes2;
     }
-}
+} // namespace satdump

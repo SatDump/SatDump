@@ -155,10 +155,10 @@ namespace elektro_arktika
                 satdump::products::ImageProduct msuvis_product;
                 msuvis_product.instrument_name = "msugs_vis";
                 //                    msuvis_products.has_timestamps = true; // TODOREWORK
-                //                    msuvis_products.set_tle(satdump::general_tle_registry.get_from_norad(norad));
+                //                    msuvis_products.set_tle(satdump::db_tle.get_from_norad(norad));
                 //                    msuvis_products.set_timestamps(timestamps);
                 // msuvis_product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/elektro_l3_msugs_vis2.json")),
-                //                                            satdump::general_tle_registry->get_from_norad(44903), vis1_reader.timestamps);
+                //                                            satdump::db_tle->get_from_norad(44903), vis1_reader.timestamps);
 
                 msuvis_product.images.push_back({0, "MSUGS-VIS-1", "1", vis1_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});
                 msuvis_product.images.push_back({1, "MSUGS-VIS-2", "2", vis2_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});

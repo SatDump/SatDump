@@ -7,6 +7,7 @@
 #include "common/utils.h"
 #include "core/resources.h"
 #include "imgui/imgui.h"
+#include "init.h"
 #include "logger.h"
 #include "lrpt_msumr_reader.h"
 #include "msumr_tlm.h"
@@ -31,7 +32,7 @@ namespace meteor
             auto msu_cfg = loadJsonFile(resources::getResourcePath("calibration/MSU-MR.json"));
 
             product.instrument_name = "msu_mr";
-            auto tle = satdump::general_tle_registry->get_from_norad_time(norad, timestamp);
+            auto tle = satdump::db_tle->get_from_norad_time(norad, timestamp);
             if (msumr_serial_number == 0) // M2
                 product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")), tle, timestamps);
             else if (msumr_serial_number == 3) // M2-3

@@ -164,6 +164,7 @@ if(MSVC)
     target_link_libraries(satdump_core PUBLIC nng.dll)
     target_link_libraries(satdump_core PUBLIC tiff.dll)
     target_link_libraries(satdump_core PUBLIC libcurl.dll)
+    target_link_libraries(satdump_core PUBLIC sqlite3.dll)
 
     if(BUILD_ZIQ)
         target_link_libraries(satdump_core PUBLIC zstd.dll)
@@ -258,6 +259,15 @@ else()
         target_link_libraries(satdump_core PUBLIC ${CURL_LIBRARIES})
         target_include_directories(satdump_core PUBLIC ${CURL_INCLUDE_DIRS})
         message("-- Building with curl!")
+    endif()
+
+    # SQLite3
+    find_package(SQLite3 REQUIRED)
+
+    if(SQLite3_FOUND)
+        target_link_libraries(satdump_core PUBLIC ${SQLite3_LIBRARIES})
+        target_include_directories(satdump_core PUBLIC ${SQLite3_INCLUDE_DIRS})
+        message("-- Building with SQLite3!")
     endif()
 
     # Dynamic linking

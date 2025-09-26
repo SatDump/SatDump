@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 
     logger->debug("Start generation...");
 
-    auto tles = satdump::general_tle_registry->get_from_norad(norad).value();
+    auto tles = satdump::db_tle->get_from_norad(norad).value();
     satdump::SatelliteTracker sat_tracker(tles);
 
     logger->trace(tles.name);

@@ -4,6 +4,7 @@
 #include "common/utils.h"
 #include "image/io.h"
 #include "imgui/imgui.h"
+#include "init.h"
 #include "logger.h"
 #include "utils/stats.h"
 #include <cstdint>
@@ -82,7 +83,7 @@ namespace jason3
             dataset.satellite_name = "Jason-3";
             dataset.timestamp = satdump::get_median(amr2_reader.timestamps);
 
-            std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(41240, dataset.timestamp);
+            std::optional<satdump::TLE> satellite_tle = satdump::db_tle->get_from_norad_time(41240, dataset.timestamp);
 
             /* // AMR-2
              {

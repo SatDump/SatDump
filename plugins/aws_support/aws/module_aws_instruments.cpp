@@ -4,6 +4,7 @@
 #include "common/utils.h"
 #include "core/resources.h"
 #include "imgui/imgui.h"
+#include "init.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
 #include "products/dataset.h"
@@ -87,7 +88,7 @@ namespace aws
         if (dataset.timestamp == -1)
             dataset.timestamp = satdump::get_median(mwr_dump_reader.timestamps);
 
-        std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
+        std::optional<satdump::TLE> satellite_tle = satdump::db_tle->get_from_norad_time(norad, dataset.timestamp);
 
         // Satellite ID
         {

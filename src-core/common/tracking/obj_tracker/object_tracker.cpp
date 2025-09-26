@@ -1,36 +1,39 @@
 #include "object_tracker.h"
 #include "common/geodetic/geodetic_coordinates.h"
 #include "common/tracking/tle.h"
-#include "core/plugin.h"
 #include "common/utils.h"
+#include "core/plugin.h"
+#include "init.h"
 
 namespace satdump
 {
     ObjectTracker::ObjectTracker(bool is_gui) : is_gui(is_gui)
     {
-        auto tle_registry = general_tle_registry;
-        if (tle_registry->size() > 0)
+        auto tle_registry = db_tle->all;
+        if (tle_registry.size() > 0)
             has_tle = true;
 
-        for (auto &tle : *tle_registry)
+        for (auto &tle : tle_registry)
             satoptions.push_back(tle.name);
 
         satellite_observer_station = predict_create_observer("Main", 0, 0, 0);
 
         // Updates on registry updates
-        eventBus->register_handler<TLEsUpdatedEvent>([this](TLEsUpdatedEvent)
-                                                     {
-                                                            general_mutex.lock();
+        eventBus->register_handler<TLEsUpdatedEvent>(
+            [this](TLEsUpdatedEvent)
+            {
+                general_mutex.lock();
 
-                                                            auto tle_registry = general_tle_registry;
-                                                            if (tle_registry->size() > 0)
-                                                                has_tle = true;
+                auto tle_registry = db_tle->all;
+                if (tle_registry.size() > 0)
+                    has_tle = true;
 
-                                                            satoptions.clear();
-                                                            for (auto &tle : *tle_registry)
-                                                                satoptions.push_back(tle.name);
-                                                                
-                                                            general_mutex.unlock(); });
+                satoptions.clear();
+                for (auto &tle : tle_registry)
+                    satoptions.push_back(tle.name);
+
+                general_mutex.unlock();
+            });
 
         // Start threads
         backend_thread = std::thread(&ObjectTracker::backend_run, this);
@@ -87,10 +90,10 @@ namespace satdump
         }
         else if (mode == TRACKING_SATELLITE)
         {
-            auto tle_registry = general_tle_registry;
+            auto tle_registry = db_tle->all;
             for (int i = 0; i < (int)satoptions.size(); i++)
             {
-                if ((*tle_registry)[i].norad == objid)
+                if (tle_registry[i].norad == objid)
                 {
                     tracking_mode = TRACKING_SATELLITE;
                     current_satellite_id = i;
@@ -131,4 +134,4 @@ namespace satdump
         rot_current_req_pos.el = el;
         rotator_handler_mtx.unlock();
     }
-}
+} // namespace satdump

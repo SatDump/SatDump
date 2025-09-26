@@ -1,4 +1,5 @@
 #include "explorer/processing/processing.h"
+#include "init.h"
 #include "recorder.h"
 
 #include "logger.h"
@@ -306,7 +307,7 @@ namespace satdump
                         {
                             std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_live";
                             std::string name = std::to_string(obj.norad);
-                            std::optional<TLE> this_tle = satdump::general_tle_registry->get_from_norad(obj.norad);
+                            std::optional<TLE> this_tle = satdump::db_tle->get_from_norad(obj.norad);
                             if (this_tle.has_value())
                                 name = this_tle->name;
                             name += " - " + format_notated(dl.frequency, "Hz");
@@ -317,7 +318,7 @@ namespace satdump
                         {
                             std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_record";
                             std::string name = std::to_string(obj.norad);
-                            std::optional<TLE> this_tle = satdump::general_tle_registry->get_from_norad(obj.norad);
+                            std::optional<TLE> this_tle = satdump::db_tle->get_from_norad(obj.norad);
                             if (this_tle.has_value())
                                 name = this_tle->name;
                             name += " - " + format_notated(dl.frequency, "Hz");

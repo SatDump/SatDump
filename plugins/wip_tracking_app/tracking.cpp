@@ -12,7 +12,7 @@ namespace satdump
     {
         handler_tree_icon = u8"\uf471";
 
-        auto tle = general_tle_registry->get_from_norad(40069);
+        auto tle = db_tle->get_from_norad(40069);
         satellite_object = predict_parse_tle(tle->line1.c_str(), tle->line2.c_str());
     }
 

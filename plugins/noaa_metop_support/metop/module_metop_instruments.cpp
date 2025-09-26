@@ -9,6 +9,7 @@
 #include "image/io.h"
 #include "image/processing.h"
 #include "imgui/imgui.h"
+#include "init.h"
 #include "logger.h"
 #include "metop.h"
 #include "nlohmann/json_utils.h"
@@ -162,9 +163,9 @@ namespace metop
             dataset.satellite_name = sat_name;
             dataset.timestamp = satdump::get_median(avhrr_reader.timestamps);
 
-            std::optional<satdump::TLE> satellite_tle = admin_msg_reader.tles.get_from_norad(norad);
+            std::optional<satdump::TLE> satellite_tle = get_from_norad_in_vec(admin_msg_reader.tles, norad);
             if (!satellite_tle.has_value() || ignore_integrated_tle)
-                satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
+                satellite_tle = satdump::db_tle->get_from_norad_time(norad, dataset.timestamp);
 
             if (write_hpt)
             {

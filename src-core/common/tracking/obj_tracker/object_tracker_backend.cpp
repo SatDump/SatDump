@@ -1,8 +1,9 @@
-#include "object_tracker.h"
 #include "common/geodetic/geodetic_coordinates.h"
-#include "common/utils.h"
-#include "logger.h"
 #include "common/tracking/tle.h"
+#include "common/utils.h"
+#include "init.h"
+#include "logger.h"
+#include "object_tracker.h"
 #include "utils/time.h"
 #include <cfloat>
 
@@ -73,7 +74,8 @@ namespace satdump
                     if (satellite_object != nullptr)
                         predict_destroy_orbital_elements(satellite_object);
 
-                    auto &tle = (*general_tle_registry)[current_satellite_id];
+                    auto reg = db_tle->all;
+                    auto &tle = reg[current_satellite_id];
 
                     satellite_object = predict_parse_tle(tle.line1.c_str(), tle.line2.c_str());
                     updateNextPass(current_time);
@@ -253,4 +255,4 @@ namespace satdump
 
         upcoming_passes_mtx.unlock();
     }
-}
+} // namespace satdump

@@ -4,6 +4,7 @@
 #include "common/utils.h"
 #include "core/resources.h"
 #include "imgui/imgui.h"
+#include "init.h"
 #include "instruments/msumr/msumr_tlm.h"
 #include "logger.h"
 #include "meteor.h"
@@ -184,7 +185,7 @@ namespace meteor
 
                 satdump::products::ImageProduct msumr_products;
                 msumr_products.instrument_name = "msu_mr";
-                auto tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
+                auto tle = satdump::db_tle->get_from_norad_time(norad, dataset.timestamp);
 
                 std::vector<double> filter_timestamps = msumr_timestamps;
                 double last = 0;
@@ -280,7 +281,7 @@ namespace meteor
 
                 satdump::products::ImageProduct mtvza_products;
                 mtvza_products.instrument_name = "mtvza";
-                auto tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
+                auto tle = satdump::db_tle->get_from_norad_time(norad, dataset.timestamp);
 
                 if (msumr_serial_number == 2)
                     mtvza_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_mtvza.json")), tle, mreader.timestamps);

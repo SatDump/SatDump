@@ -1,4 +1,5 @@
 #include "autotrack.h"
+#include "init.h"
 #include "logger.h"
 #include "common/utils.h"
 #include "utils/time.h"
@@ -255,8 +256,8 @@ void AutoTrackApp::setup_schedular_callbacks()
                 {
                     std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_live";
                     std::string name = std::to_string(obj.norad);
-                    if (satdump::general_tle_registry->get_from_norad(obj.norad).has_value())
-                        name = satdump::general_tle_registry->get_from_norad(obj.norad)->name;
+                    if (satdump::db_tle->get_from_norad(obj.norad).has_value())
+                        name = satdump::db_tle->get_from_norad(obj.norad)->name;
                     name += " - " + format_notated(dl.frequency, "Hz");
                     add_vfo_live(id, name, dl.frequency, dl.pipeline_selector->selected_pipeline, dl.pipeline_selector->getParameters());
                 }
@@ -265,8 +266,8 @@ void AutoTrackApp::setup_schedular_callbacks()
                 {
                     std::string id = std::to_string(obj.norad) + "_" + std::to_string(dl.frequency) + "_record";
                     std::string name = std::to_string(obj.norad);
-                    if (satdump::general_tle_registry->get_from_norad(obj.norad).has_value())
-                        name = satdump::general_tle_registry->get_from_norad(obj.norad)->name;
+                    if (satdump::db_tle->get_from_norad(obj.norad).has_value())
+                        name = satdump::db_tle->get_from_norad(obj.norad)->name;
                     name += " - " + format_notated(dl.frequency, "Hz");
                     add_vfo_reco(id, name, dl.frequency, dl.baseband_format, dl.baseband_decimation);
                 }

@@ -1,3 +1,7 @@
+#include "db/db_handler.h"
+#include "db/iers/iers_handler.h"
+#include "db/tle/tle_handler.h"
+#include <memory>
 #define SATDUMP_DLL_EXPORT 1
 
 #include "pipeline/module.h"
@@ -24,6 +28,10 @@ namespace satdump
     SATDUMP_DLL std::string user_path;
     SATDUMP_DLL std::string tle_file_override = "";
     SATDUMP_DLL bool tle_do_update_on_init = true;
+
+    SATDUMP_DLL std::shared_ptr<DBHandler> db;
+    SATDUMP_DLL std::shared_ptr<TleDBHandler> db_tle;
+    SATDUMP_DLL std::shared_ptr<IersDBHandler> db_iers;
 
     void initSatdump(bool is_gui)
     {
@@ -53,6 +61,8 @@ namespace satdump
                 satdump_cfg.load("satdump_cfg.json", user_path);
             else
                 satdump_cfg.load(satdump::RESPATH + "satdump_cfg.json", user_path);
+
+            db = std::make_shared<DBHandler>(user_path + "/main.db");
         }
         catch (std::exception &e)
         {
@@ -109,20 +119,10 @@ namespace satdump
         opencl::initOpenCL();
 #endif
 
-        // TLEs
-        if (tle_file_override == "")
-        {
-            loadTLEFileIntoRegistry(user_path + "/satdump_tles.txt");
-            if (tle_do_update_on_init)
-                autoUpdateTLE(user_path + "/satdump_tles.txt");
-        }
-        else
-        {
-            if (std::filesystem::exists(tle_file_override))
-                loadTLEFileIntoRegistry(tle_file_override);
-            else
-                logger->error("TLE File doesn't exist : " + tle_file_override);
-        }
+        // Database : TLEs, IERS stuff, etc...
+        db->subhandlers.push_back(db_tle = std::make_shared<TleDBHandler>(db));
+        db->subhandlers.push_back(db_iers = std::make_shared<IersDBHandler>(db));
+        db->init();
 
         // Products
         products::registerProducts();

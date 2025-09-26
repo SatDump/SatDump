@@ -171,7 +171,7 @@ namespace satdump
                             [](int)
                             {
                                 tles_are_update = true;
-                                updateTLEFile(satdump::user_path + "/satdump_tles.txt");
+                                db_tle->updateTLEDatabase();
                                 tles_are_update = false;
                             });
                     }
@@ -282,8 +282,7 @@ namespace satdump
                 ui_thread_pool.push(
                     [](int)
                     {
-                        taskScheduler->del_task("auto_tle_update");
-                        autoUpdateTLE(user_path + "/satdump_tles.txt");
+                       
                     });
 
                 // Save config files

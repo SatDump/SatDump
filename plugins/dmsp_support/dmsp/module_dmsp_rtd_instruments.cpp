@@ -5,6 +5,7 @@
 #include "core/resources.h"
 #include "dmsp/instruments/utils.h"
 #include "imgui/imgui.h"
+#include "init.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
 #include "products/dataset.h"
@@ -144,7 +145,7 @@ namespace dmsp
         dataset.satellite_name = "DMSP-F1x";
         dataset.timestamp = last_timestamp == -1 ? time(0) : last_timestamp;
 
-        std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
+        std::optional<satdump::TLE> satellite_tle = satdump::db_tle->get_from_norad_time(norad, dataset.timestamp);
 
         // OLS
         {

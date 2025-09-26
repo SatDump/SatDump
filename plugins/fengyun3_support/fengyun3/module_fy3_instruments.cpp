@@ -10,6 +10,7 @@
 #include "image/bowtie.h"
 #include "image/io.h"
 #include "imgui/imgui.h"
+#include "init.h"
 #include "instruments/mersi_histmatch.h"
 #include "instruments/mersi_offset_interleaved.h"
 #include "logger.h"
@@ -471,7 +472,7 @@ namespace fengyun3
             else if (d_satellite == FY_3G)
                 dataset.timestamp = satdump::get_median(mersirm_reader.timestamps);
 
-            std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(norad, dataset.timestamp);
+            std::optional<satdump::TLE> satellite_tle = satdump::db_tle->get_from_norad_time(norad, dataset.timestamp);
 
             // Satellite ID
             {
