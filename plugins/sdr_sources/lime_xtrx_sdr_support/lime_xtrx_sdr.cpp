@@ -97,7 +97,7 @@ void LimeXTRXSDRSource::open()
 
     // Set available samplerates
     std::vector<double> available_samplerates;
-    for (int i = 1; i < 81; i++)
+    for (int i = 1; i <= 120; i++)
         available_samplerates.push_back(i * 1e6);
 
     samplerate_widget.set_list(available_samplerates, true);
@@ -140,6 +140,8 @@ void LimeXTRXSDRSource::start()
 
     limeStream = limeDevice->StreamCreate(scfg, moduleIndex);
     limeStream->Start();
+
+    set_gains(); // Needs to configure twice because of a bug in Lime Suite NG
 
     thread_should_run = true;
     work_thread = std::thread(&LimeXTRXSDRSource::mainThread, this);
