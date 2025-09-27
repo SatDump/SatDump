@@ -182,7 +182,7 @@ namespace meteor
 
                 long last_subsecond_cnt = -1;
 
-                std::ofstream header_out(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/hdr.raw");
+                std::ofstream header_out(d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/hdr.raw", std::ios::binary);
 
                 std::vector<double> timestamps;
 
