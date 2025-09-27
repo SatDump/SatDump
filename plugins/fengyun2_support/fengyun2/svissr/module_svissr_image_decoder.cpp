@@ -1,8 +1,5 @@
 #include "module_svissr_image_decoder.h"
 
-#include <array>
-#include <cmath>
-#include <cstdint>
 #include <filesystem>
 #include <vector>
 
