@@ -139,7 +139,7 @@ namespace fengyun_svissr
      * @brief Builds the 25 received groups of a minor frame, saves it. Aborts if we didn't get 25 groups.
      *
      */
-    void SVISSRImageDecoderModule::save_minor_frame()
+    void SVISSRImageDecoderModule::save_subcom_frame()
     {
         if (!group_retransmissions.empty() && current_subcom_frame.size() / SUBCOM_GROUP_SIZE == 24)
         {
@@ -577,9 +577,9 @@ namespace fengyun_svissr
             {
 
                 // Subcom frame finished, we should have 24 saved (1 still in buffer)
-                if (group_id == 0 && last_group_id == 24)
+                if ((group_id == 0 && last_group_id == 24) || (current_subcom_frame.size() / SUBCOM_GROUP_SIZE) == 24)
                 {
-                    save_minor_frame();
+                    save_subcom_frame();
                 }
                 // We have finished this group, save it. If we didn't get the previous groups, do NOT Proceed!!!
                 else if (group_retransmissions.size() < 9 && (current_subcom_frame.size() / SUBCOM_GROUP_SIZE) == group_id - 1)
@@ -601,12 +601,6 @@ namespace fengyun_svissr
                         // Can happen if we sync 1/8 frames
                         logger->debug("Tried to save empty retransmission group!");
                     }
-                }
-                // This should NEVER happen, TODOREWORK handle more nicely?
-                else if (group_retransmissions.size() > 8)
-                {
-                    logger->debug("GROUP RETRANSMISSIONS OVERFLOW!!!!");
-                    group_retransmissions.clear();
                 }
             }
             else
@@ -630,6 +624,18 @@ namespace fengyun_svissr
                     // We missed the beginning of the frame, discard the rest as it is useless
                     group_retransmissions.clear();
                 }
+            }
+
+            // Sanity checks
+            if (current_subcom_frame.size() > SUBCOM_GROUP_SIZE * 24)
+            {
+                logger->debug("Subcommunication frame overflow, clearing buffer!");
+                current_subcom_frame.clear();
+            }
+            if (group_retransmissions.size() > 8)
+            {
+                logger->debug("Group retransmissions overflowed, clearing buffer!");
+                group_retransmissions.clear();
             }
 
             // Store the last GID to make sure we can parse the retransmission groups
@@ -661,7 +667,7 @@ namespace fengyun_svissr
             // Situation:
             //   Image ends -> Rollback starts -> Corrector erroneously locks during rollback
             //   -> Corrector shows "LOCKED" until 40 rollback lines are scanned
-            if (backward_scanning && valid_lines < 5)
+            if (backward_scanning && valid_lines < 3)
             {
                 counter_locked = false;
             }

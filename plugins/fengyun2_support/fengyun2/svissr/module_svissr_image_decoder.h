@@ -59,7 +59,7 @@ namespace fengyun_svissr
             image::Image image2; /* IR4 Medium wave 3.5-4.0 μm */
             image::Image image3; /* IR3 Water vapour 6.5-7.0 μm */
             image::Image image4; /* IR1 Long wave IR 10.3-11.3 μm */
-            image::Image image5; /* IR2 Split window 11.5-12.5 μm*/
+            image::Image image5; /* IR2 Split window 11.5-12.5 μm */
 
             std::string directory;
         };
@@ -102,7 +102,7 @@ namespace fengyun_svissr
         std::vector<int> scid_stats;
 
         // Subcommunication block handling
-        void save_minor_frame();
+        void save_subcom_frame();
         std::vector<MinorFrame> subcommunication_frames; /* 25 2097 byte groups forming a full subcommunication frame */
         MinorFrame current_subcom_frame;                          /* A full subcommunication frame */
         std::vector<Group> group_retransmissions;        /* Retransmissions of a given group */
