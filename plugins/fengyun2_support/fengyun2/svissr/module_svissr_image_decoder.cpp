@@ -535,9 +535,8 @@ namespace fengyun_svissr
                 if (!counter_locked)
                 {
                     // Can we lock?
-                    if (counter == global_counter + 1)
+                    if (counter == global_counter + 1 && !backwardScan)
                     {
-                        // TODOREWORK make this shut up - it is called 6x because satdump unlocks it since it thinks it is still rolling back
                         logger->debug("Counter correction LOCKED! Counter: " + std::to_string(counter));
                         counter_locked = true;
                     }
@@ -664,7 +663,7 @@ namespace fengyun_svissr
             // Situation:
             //   Image ends -> Rollback starts -> Corrector erroneously locks during rollback
             //   -> Corrector shows "LOCKED" until 40 rollback lines are scanned
-            if (backward_scanning && valid_lines < 3)
+            if (backward_scanning && valid_lines < 6)
             {
                 counter_locked = false;
             }
