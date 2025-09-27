@@ -3,9 +3,11 @@
 #include <vector>
 
 /**
- * Applies majority law between input elements on a bit level, returns a vector of the corrected value
- * @param elements A vector of vectors of bytes to apply majority law between. ALL ELEMENT VECTORS SHOULD BE THE SAME SIZE!!!
- * @param big_endian If the data should be interpreted in big endian order (back to front)
+ * @brief Applies majority law between input elements on a bit level, returns a vector of the corrected value
+ *
+ * @param input A vector of vectors of bytes to apply majority law between. ALL ELEMENT VECTORS SHOULD BE THE SAME SIZE!!!
+ * @param big_endian If the data should be interpreted in big-endian order (back to front), returned output is in little-endian
+ * @return std::vector<unsigned char>
  */
 std::vector<unsigned char> majority_law(std::vector<std::vector<unsigned char>> input, bool big_endian)
 {
@@ -13,7 +15,7 @@ std::vector<unsigned char> majority_law(std::vector<std::vector<unsigned char>> 
     std::unordered_map<int, int> votes = {{0, 0}, {1, 0}};
     int byte_count = input[0].size();
     int stop_byte_count = byte_count;
-    
+
     if (byte_count == 0)
     {
         logger->error("Majority law was attempted with an empty vector!");
@@ -25,7 +27,6 @@ std::vector<unsigned char> majority_law(std::vector<std::vector<unsigned char>> 
     {
         cur_byte_position = byte_count - 1;
         stop_byte_count = 0;
-        
     }
 
     while (cur_byte_position != stop_byte_count)
