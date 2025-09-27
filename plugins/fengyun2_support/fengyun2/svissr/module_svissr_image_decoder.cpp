@@ -663,7 +663,7 @@ namespace fengyun_svissr
             // Situation:
             //   Image ends -> Rollback starts -> Corrector erroneously locks during rollback
             //   -> Corrector shows "LOCKED" until 40 rollback lines are scanned
-            if (backward_scanning && valid_lines < 6)
+            if (backward_scanning && valid_lines < 3)
             {
                 counter_locked = false;
             }
