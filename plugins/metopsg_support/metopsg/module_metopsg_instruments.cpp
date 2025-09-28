@@ -2,13 +2,16 @@
 #include "common/calibration.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
 #include "common/ccsds/ccsds_aos/vcdu.h"
+#include "common/repack.h"
 #include "common/tracking/tle.h"
 #include "common/utils.h"
 #include "core/resources.h"
 #include "image/bowtie.h"
+#include "image/image.h"
 #include "image/io.h"
 #include "image/processing.h"
 #include "imgui/imgui.h"
+#include "init.h"
 #include "logger.h"
 #include "metopsg.h"
 #include "nlohmann/json_utils.h"
@@ -53,6 +56,7 @@ namespace metopsg
             ccsds::ccsds_aos::Demuxer demuxer_vcid10(884, false);
             ccsds::ccsds_aos::Demuxer demuxer_vcid13(884, false);
             ccsds::ccsds_aos::Demuxer demuxer_vcid14(884, false);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid16(884, false);
 
             // Setup Admin Message
             {
@@ -87,6 +91,12 @@ namespace metopsg
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid14.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         threemi_reader.work(pkt);
+                }
+                else if (vcdu.vcid == 16) // METImage
+                {
+                    std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid16.work(cadu);
+                    for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
+                        metimage_reader.work(pkt);
                 }
                 else if (vcdu.vcid == 10) // Admin Messages
                 {
@@ -175,6 +185,60 @@ namespace metopsg
                 mws_status = DONE;
             }
 
+            // METImage
+            {
+                metimage_status = SAVING;
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/METImage";
+
+                if (!std::filesystem::exists(directory))
+                    std::filesystem::create_directory(directory);
+
+                logger->info("----------- METImage");
+                logger->info("Segments : " + std::to_string(metimage_reader.segments)); // TODOREWORK
+
+                satdump::products::ImageProduct metimage_products;
+                metimage_products.instrument_name = "metimage";
+                // mws_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")), satellite_tle, avhrr_reader.timestamps);
+
+                const float ch_offsets[20] = {
+                    0,   //
+                    -6,  //
+                    -15, //
+                    -23, //
+                    -34, //
+                    -26, //
+                    -35, //
+                    -26, //
+                    -23, //
+                    -24, //
+                    -21, //
+                    -16, //
+                    -12, //
+                    -8,  //
+                    0,   // TODO
+                    -18, //
+                    -24, //
+                    0,   // TODO
+                    -28, //
+                    0,   // TODO
+                };
+
+                for (int i = 0; i < 20; i++)
+                {
+                    metimage_products.images.push_back({i, "METImage-" + std::to_string(i + 1), std::to_string(i + 1), metimage_reader.getChannel(i), 16, //
+                                                        satdump::ChannelTransform().init_affine(1, 1, ch_offsets[i], 0)});
+                    // mws_products.set_channel_unit(i, i < 3 ? CALIBRATION_ID_REFLECTIVE_RADIANCE : CALIBRATION_ID_EMISSIVE_RADIANCE);
+                    //  mws_products.set_channel_wavenumber(i, calib_coefs[sat_name]["channels"][i]["wavnb"]);
+                }
+
+                metimage_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metopsg_a_metimage.json")), satellite_tle, metimage_reader.timestamps);
+
+                metimage_products.save(directory);
+                dataset.products_list.push_back("METImage");
+
+                metimage_status = DONE;
+            }
+
             // Admin Messages
             {
                 admin_msg_status = DONE;
@@ -198,6 +262,14 @@ namespace metopsg
                 ImGui::Text("Lines / Frames");
                 ImGui::TableSetColumnIndex(2);
                 ImGui::Text("Status");
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("METImage");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextColored(style::theme.green, "%d", metimage_reader.segments);
+                ImGui::TableSetColumnIndex(2);
+                drawStatus(metimage_status);
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);

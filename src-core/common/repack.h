@@ -20,6 +20,9 @@ int repackBytesTo16bits(uint8_t *bytes, int byte_length, uint16_t *words);
 // Repack bytes to 17-bits words, returns word count
 int repackBytesTo17bits(uint8_t *bytes, int byte_length, uint32_t *words);
 
+// Repack bytes to 18-bits words, returns word count
+int repackBytesTo18bits(uint8_t *bytes, int byte_length, uint32_t *words);
+
 // Repack bytes to 20-bits words, returns word count
 int repackBytesTo20bits(uint8_t *bytes, int byte_length, uint32_t *words);
 
