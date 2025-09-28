@@ -32,7 +32,8 @@
                 }
             },
             "products": {
-                "module": "metopsg_instruments"
+                "module": "metopsg_instruments",
+                "metimage_bowtie": true
             }
         }
     }

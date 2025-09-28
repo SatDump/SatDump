@@ -33,6 +33,7 @@ namespace metopsg
             : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
             ignore_integrated_tle = parameters.contains("ignore_integrated_tle") ? parameters["ignore_integrated_tle"].get<bool>() : false;
+            metimage_bowtie = parameters.contains("metimage_bowtie") ? parameters["metimage_bowtie"].get<bool>() : false;
             fsfsm_enable_output = false;
         }
 
@@ -223,10 +224,18 @@ namespace metopsg
                     0,   // TODO
                 };
 
+                // BowTie values
+                const float alpha = 1.0 / 1.8;
+                const float beta = 0.58333;
+                const long scanHeight_500 = 24;
+
                 for (int i = 0; i < 20; i++)
                 {
                     int vii = metimage_reader.out_ch_n[i];
-                    metimage_products.images.push_back({i, "METImage-" + std::to_string(vii), std::to_string(vii), metimage_reader.getChannel(i), 16, //
+                    auto img = metimage_reader.getChannel(i);
+                    if (metimage_bowtie)
+                        img = image::bowtie::correctGenericBowTie(img, 1, scanHeight_500, alpha, beta);
+                    metimage_products.images.push_back({i, "METImage-" + std::to_string(vii), std::to_string(vii), img, 16, //
                                                         satdump::ChannelTransform().init_affine(1, 1, ch_offsets[i], 0)});
                     // mws_products.set_channel_unit(i, i < 3 ? CALIBRATION_ID_REFLECTIVE_RADIANCE : CALIBRATION_ID_EMISSIVE_RADIANCE);
                     //  mws_products.set_channel_wavenumber(i, calib_coefs[sat_name]["channels"][i]["wavnb"]);

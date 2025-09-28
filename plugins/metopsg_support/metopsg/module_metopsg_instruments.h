@@ -15,6 +15,7 @@ namespace metopsg
         {
         protected:
             bool ignore_integrated_tle = false;
+            bool metimage_bowtie = false;
 
             // Readers
             mws::MWSReader mws_reader;
