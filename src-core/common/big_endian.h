@@ -32,7 +32,7 @@ __attribute__((packed));
 #ifdef _WIN32
 #pragma pack(pop)
 #endif
-
+///////////////////////////////////
 #ifdef _WIN32
 #pragma pack(push, 1)
 #endif
@@ -47,6 +47,58 @@ public:
 
 private:
     uint32_t be_val_;
+}
+#ifdef _WIN32
+;
+#else
+__attribute__((packed));
+#endif
+#ifdef _WIN32
+#pragma pack(pop)
+#endif
+///////////////////////////////////
+#ifdef _WIN32
+#pragma pack(push, 1)
+#endif
+/**
+ * @brief Takes 6 bytes, creates an integer from the big endian form and returns it in an 8-byte little endian form.
+ *
+ */
+struct be_uint48_t
+{
+    uint8_t bytes[6];
+
+    uint64_t value() const
+    {
+        return ((uint64_t)bytes[0] << 40) | ((uint64_t)bytes[1] << 32) | ((uint64_t)bytes[2] << 24) | ((uint64_t)bytes[3] << 16) | ((uint64_t)bytes[4] << 8) | ((uint64_t)bytes[5]);
+    }
+
+    operator uint64_t() const { return value(); }
+}
+
+#ifdef _WIN32
+;
+#else
+__attribute__((packed));
+#endif
+#ifdef _WIN32
+#pragma pack(pop)
+#endif
+//////////////////////////////
+#ifdef _WIN32
+#pragma pack(push, 1)
+#endif
+class be_uint64_t
+{
+public:
+    be_uint64_t() : be_val_(0) {}
+    // Transparently cast from uint32_t
+    be_uint64_t(const uint64_t &val) : be_val_(htonl(val)) {}
+    // Transparently cast to uint32_t
+    operator uint64_t() const { return ntohl(be_val_); }
+
+private:
+    uint64_t be_val_;
 }
 #ifdef _WIN32
 ;
