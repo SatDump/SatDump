@@ -1,4 +1,5 @@
 #include "module_svissr_image_decoder.h"
+#include "svissr_blocks.h"
 
 #include <filesystem>
 #include <vector>
@@ -142,7 +143,7 @@ namespace fengyun_svissr
         {
 
             // Process the last group
-            Group last_group = majority_law(group_retransmissions, false);
+            Group last_group = majority_law_vec(group_retransmissions);
             group_retransmissions.clear();
 
             // Add group to the frame
@@ -230,7 +231,7 @@ namespace fengyun_svissr
         logger->debug("Pulled %d subcommunication frames", subcommunication_frames.size());
         if (!subcommunication_frames.empty())
         {
-            final_subcom_frame = majority_law(subcommunication_frames, false);
+            final_subcom_frame = majority_law_vec(subcommunication_frames);
 
             // - Integrity check -
             int errors = get_spare_errors(final_subcom_frame);
@@ -240,10 +241,16 @@ namespace fengyun_svissr
             if (errors < 32)
             {
                 process_subcom_data = true;
+
+                // This only really happpens at dismal SNRs, worth a notice
+                if (errors != 0)
+                {
+                    logger->warn("Subcommunication data had light damage, timestamps/projections/calibration/MANAM might have some errors!");
+                }
             }
             else
             {
-                logger->warn("Subcommunication data too damaged, not using! Timestamps, projections, and calibration will be disabled");
+                logger->warn("Reception was too short or SNR was too low, subcommunication data is too damaged! Timestamps, projections, and calibration will be disabled");
             }
         }
         else
@@ -253,17 +260,30 @@ namespace fengyun_svissr
 
         if (process_subcom_data)
         {
+            logger->debug("Processing subcom data...");
+
             // ----> Orbit & Attitude block <----
 
-            std::vector<uint8_t> orbit_attitude_block = get_subcom_block(final_subcom_frame, Orbit_and_attitude);
+            std::vector<uint8_t> orbit_attitude_data_unstructured = get_subcom_block(final_subcom_frame, Orbit_and_attitude);
+
+            // get_subcom_block returns a vector, to directly map to memory we need to reinterpret cast
+            OrbitAndAttitudeData *orbit_attitude_block = reinterpret_cast<OrbitAndAttitudeData *>(orbit_attitude_data_unstructured.data());
+
+            // TODOREWORK: Implement when J2000 is supported.
+            /*
+            // - J2000 projection data handling -
+
+            AttitudePredictionSubBlock attitude_prediction_data;
+            majority_law(orbit_attitude_block->ATTITUDE_PREDICTION_SUBBLOCKS, reinterpret_cast<uint8_t*>(&attitude_prediction_data));
+
+            OrbitPredictionSubBlock orbit_prediction_data;
+            majority_law(orbit_attitude_block->ORBIT_PREDICTION_SUBBLOCKS, reinterpret_cast<uint8_t*>(&orbit_prediction_data));
+
+            // Everything is not loaded into orbit_attitude_block, attitude_prediction_data, and orbit_prediction_data
+            */
 
             // - Timestamp handling -
-
-            // R6*8 -> Big endian 6 byte integer, needs 10^-8 to read the value
-            uint64_t raw_timestamp = ((uint64_t)orbit_attitude_block[0] << 40 | (uint64_t)orbit_attitude_block[1] << 32 | (uint64_t)orbit_attitude_block[2] << 24 |
-                                      (uint64_t)orbit_attitude_block[3] << 16 | (uint64_t)orbit_attitude_block[4] << 8 | (uint64_t)orbit_attitude_block[5]);
-
-            unix_timestamp = ((raw_timestamp * 1e-8) - 40587) * 86400;
+            unix_timestamp = ((orbit_attitude_block->IMAGE_START_TIME * 1e-8) - 40587) * 86400;
 
             // ----> Simplified mapping (GCP) <----
 
@@ -456,8 +476,6 @@ namespace fengyun_svissr
         // Calibrate if we got the calibration data
         if (process_subcom_data)
         {
-            logger->trace("Calibrating channels");
-
             nlohmann::json calib_cfg;
 
             // LUTs transmitted in order: VIS -> IR1 -> IR2 -> IR3 -> IR4
@@ -583,7 +601,7 @@ namespace fengyun_svissr
                     if (!group_retransmissions.empty())
                     {
                         // The group is finished, push back the result of majority law to the minor frame set
-                        Group group = majority_law(group_retransmissions, false);
+                        Group group = majority_law_vec(group_retransmissions);
                         current_subcom_frame.insert(current_subcom_frame.end(), group.begin(), group.end());
 
                         group_retransmissions.clear();
