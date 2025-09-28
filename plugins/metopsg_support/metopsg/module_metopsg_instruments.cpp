@@ -225,7 +225,8 @@ namespace metopsg
 
                 for (int i = 0; i < 20; i++)
                 {
-                    metimage_products.images.push_back({i, "METImage-" + std::to_string(i + 1), std::to_string(i + 1), metimage_reader.getChannel(i), 16, //
+                    int vii = metimage_reader.out_ch_n[i];
+                    metimage_products.images.push_back({i, "METImage-" + std::to_string(vii), std::to_string(vii), metimage_reader.getChannel(i), 16, //
                                                         satdump::ChannelTransform().init_affine(1, 1, ch_offsets[i], 0)});
                     // mws_products.set_channel_unit(i, i < 3 ? CALIBRATION_ID_REFLECTIVE_RADIANCE : CALIBRATION_ID_EMISSIVE_RADIANCE);
                     //  mws_products.set_channel_wavenumber(i, calib_coefs[sat_name]["channels"][i]["wavnb"]);
