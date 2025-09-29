@@ -27,8 +27,8 @@ struct OrbitAndAttitudeData
     be_uint32_t IR_SENSOR_NUMBER;                        /* R*4.0 Number of IR channel sensors */
     be_uint32_t VIS_TOTAL_LINE_NUMBER;                   /* R*4.0 Total number of VIS channel lines in VISSR frame */
     be_uint32_t IR_TOTAL_LINE_NUMBER;                    /* R*4.0 Total number of IR channel lines in VISSR frame */
-    be_uint32_t VIS_PX_LINE;                             /* R*4.0 Pixels per VIS line */
-    be_uint32_t IR_PX_LINE;                              /* R*4.0 Pixel per IR line */
+    be_uint32_t VIS_LINE_PX;                             /* R*4.0 Pixels per VIS line */
+    be_uint32_t IR_LINE_PX;                              /* R*4.0 Pixel per IR line */
     be_uint32_t VISSR_MISALIGNMENT_ANGLE_X_AXIS;         /* R*4.10, VISSR misalignment angle around the x axis, [rad] */
     be_uint32_t VISSR_MISALIGNMENT_ANGLE_Y_AXIS;         /* R*4.10, VISSR misalignment angle around the y axis, [rad] */
     be_uint32_t VISSR_MISALIGNMENT_ANGLE_Z_AXIS;         /* R*4.10, VISSR misalignment angle around the z axis, [rad] */
@@ -73,7 +73,7 @@ struct OrbitAndAttitudeData
     uint8_t spare2[10];
 
     uint8_t ATTITUDE_PREDICTION_SUBBLOCKS[10][64]; /* 10x 64-byte attitude prediction sub block*/
-    uint8_t ORBIT_PREDICTION_SUBBLOCKS[8][256];    /* 8* 256-byte orbit prediction sub block */
+    uint8_t ORBIT_PREDICTION_SUBBLOCKS[8][256];    /* 8x 256-byte orbit prediction sub block */
     be_uint48_t FIRST_ATTITUDE_PREDICTION;         /* R*6.8, Time of the first attitude prediction record, [MJD]*/
     be_uint48_t LATEST_ATTITUDE_PREDICTION;        /* R*6.8, Time of the last attitude prediction record, [MJD]*/
     be_uint48_t ATTITUDE_PREDICTION_INTERVAL;      /* R*6.8, fixed value (0.00347222), Interval time of attitude prediction data, [MJD]*/
