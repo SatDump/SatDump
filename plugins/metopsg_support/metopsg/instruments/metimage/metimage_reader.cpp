@@ -7,7 +7,7 @@ namespace metopsg
 {
     namespace metimage
     {
-        METImageReader::METImageReader()
+        METimageReader::METimageReader()
         {
             for (int c = 0; c < 20; c++)
                 for (int l = 0; l < 24; l++)
@@ -15,9 +15,9 @@ namespace metopsg
             segments = 0;
         }
 
-        METImageReader::~METImageReader() {}
+        METimageReader::~METimageReader() {}
 
-        void METImageReader::work(ccsds::CCSDSPacket &pkt)
+        void METimageReader::work(ccsds::CCSDSPacket &pkt)
         {
             if ((pkt.header.apid == 1443 || pkt.header.apid == 1444) && pkt.payload.size() >= 20)
             {
@@ -75,7 +75,7 @@ namespace metopsg
             }
         }
 
-        image::Image METImageReader::getChannel(int c)
+        image::Image METimageReader::getChannel(int c)
         {
             image::Image img(channels[c].data(), 16, LWIDTH - 56 /*TODOREWORK clean this up*/, segments * 24, 1);
             // img.crop(0, 0, 95, img.height());

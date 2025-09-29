@@ -9,7 +9,7 @@ namespace metopsg
 {
     namespace metimage
     {
-        class METImageReader
+        class METimageReader
         {
         private:
             const int SUBPKTN = 56; // Number of 25-pixels "groups" in each packet
@@ -56,8 +56,8 @@ namespace metopsg
             std::vector<double> timestamps;
 
         public:
-            METImageReader();
-            ~METImageReader();
+            METimageReader();
+            ~METimageReader();
 
             void work(ccsds::CCSDSPacket &packet);
 
