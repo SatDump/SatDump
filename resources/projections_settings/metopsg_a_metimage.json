@@ -1,15 +1,18 @@
 {
     "type": "normal_single_line_old",
-    "scan_angle": 110.6,
-    "roll_offset": -0.03, //-0.13,
-    "timestamp_offset": 0.3,
-    "image_width": 2048,
-    "gcp_spacing_x": 100,
-    "gcp_spacing_y": 100,
+    "scan_angle": 110.1,
+    "roll_offset": 0.75,
+    "timestamp_offset": -19,
+    "yaw_offset": 0.1,
+    "image_width": 3192,
+    "gcp_spacing_x": 150,
+    "gcp_spacing_y": 150,
+    "interpolate_timestamps": 24,
+    "interpolate_timestamps_scantime": 0.07,
     ///////////////////////
     "timefilter": {
         "type": "simple",
-        "scan_time": 0.2,
+        "scan_time": 1.7,
         "max_diff": 1.0
     },
     ///////////////////////

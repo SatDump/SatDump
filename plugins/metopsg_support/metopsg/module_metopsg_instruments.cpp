@@ -144,7 +144,7 @@ namespace metopsg
             // Products dataset
             satdump::products::DataSet dataset;
             dataset.satellite_name = sat_name;
-            // dataset.timestamp = satdump::get_median(avhrr_reader.timestamps);
+            dataset.timestamp = satdump::get_median(metimage_reader.timestamps);
 
             std::optional<satdump::TLE> satellite_tle; // TODOREWORK = admin_msg_reader.tles.get_from_norad(norad);
             if (!satellite_tle.has_value() || ignore_integrated_tle)
@@ -165,12 +165,14 @@ namespace metopsg
                 if (!std::filesystem::exists(directory))
                     std::filesystem::create_directory(directory);
 
+                mws_reader.correlate();
+
                 logger->info("----------- MWS");
                 logger->info("Lines : " + std::to_string(mws_reader.lines[0])); // TODOREWORK
 
                 satdump::products::ImageProduct mws_products;
                 mws_products.instrument_name = "metopsg_mws";
-                // mws_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")), satellite_tle, avhrr_reader.timestamps);
+                mws_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metopsg_a_mws.json")), satellite_tle, mws_reader.timestamps[0]);
 
                 for (int i = 0; i < 24; i++)
                 {
@@ -199,7 +201,7 @@ namespace metopsg
 
                 satdump::products::ImageProduct metimage_products;
                 metimage_products.instrument_name = "metimage";
-                // mws_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metop_abc_avhrr.json")), satellite_tle, avhrr_reader.timestamps);
+                metimage_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metopsg_a_metimage.json")), satellite_tle, metimage_reader.timestamps);
 
                 const float ch_offsets[20] = {
                     0,   //
