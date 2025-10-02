@@ -1,4 +1,6 @@
 #include <optional>
+#include <string>
+#include <vector>
 #define SATDUMP_DLL_EXPORT 1
 #include "common/utils.h"
 #include "core/config.h"
@@ -261,6 +263,7 @@ namespace satdump
             tle.name = res["TLE_LINE0"].get<std::string>().substr(2, res["TLE_LINE0"].get<std::string>().size());
             tle.line1 = res["TLE_LINE1"].get<std::string>();
             tle.line2 = res["TLE_LINE2"].get<std::string>();
+            tle.time = timestamp; // TODOREWORK actual time!!!!
             return tle;
         }
         catch (std::exception &e)
@@ -270,6 +273,115 @@ namespace satdump
         }
 
         return std::optional<TLE>();
+    }
+
+    std::vector<TLE> get_from_spacetrack_latest_list(std::vector<int> norad)
+    {
+        time_t last_update = getValueOrDefault<time_t>(satdump_cfg.main_cfg["user"]["tles_last_updated"], 0);
+        std::string sc_login = satdump_cfg.getValueFromSatDumpGeneral<std::string>("tle_space_track_login");
+        std::string sc_passw = satdump_cfg.getValueFromSatDumpGeneral<std::string>("tle_space_track_password");
+
+        // Otherwise, request on Space-Track's archive
+        logger->warn("Pulling current TLEs from Space Track... (ONLY COVERS OBJECTS CURRENTLY IN DATABASE!)");
+        CURL *curl;
+        CURLcode res;
+        curl_global_init(CURL_GLOBAL_ALL);
+        curl = curl_easy_init();
+
+        if (!curl)
+        {
+            logger->warn("Failed to pull current TLEs due to internal curl failure! Using current TLE");
+            curl_global_cleanup();
+            return std::vector<TLE>();
+        }
+
+        // Get the cookie
+        std::string post_fields = "identity=" + sc_login + "&password=" + sc_passw;
+        curl_easy_setopt(curl, CURLOPT_COOKIEFILE, "");
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, std::string((std::string) "SatDump/v" + SATDUMP_VERSION).c_str());
+        curl_easy_setopt(curl, CURLOPT_URL, "https://www.space-track.org/ajaxauth/login");
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post_fields.c_str());
+
+#ifdef CURLSSLOPT_NATIVE_CA
+        curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, CURLSSLOPT_NATIVE_CA);
+#endif
+
+        res = curl_easy_perform(curl);
+        if (res != CURLE_OK)
+        {
+            logger->warn("Failed to authenticate to Space Track! Using current TLE");
+            curl_easy_cleanup(curl);
+            curl_global_cleanup();
+            return std::vector<TLE>();
+        }
+
+        std::string final_url = "https://www.space-track.org/basicspacedata/query/class/gp/NORAD_CAT_ID/";
+        for (int i = 0; i < norad.size() - 1; i++)
+            final_url += std::to_string(norad[i]) + "%2C";
+        final_url += std::to_string(norad[norad.size() - 1]);
+        final_url += "/orderby/NORAD_CAT_ID%20desc/emptyresult/show";
+
+        std::string result;
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, NULL);
+        curl_easy_setopt(curl, CURLOPT_POST, 0);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, satdump::curl_write_std_string);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
+        curl_easy_setopt(curl, CURLOPT_URL, final_url.c_str());
+
+        logger->trace("Request URL : %s", final_url.c_str());
+
+        res = curl_easy_perform(curl);
+        if (res != CURLE_OK)
+        {
+            logger->warn("Failed to download TLE from Space Track! Using built-in TLE");
+            curl_easy_cleanup(curl);
+            curl_global_cleanup();
+            return std::vector<TLE>();
+        }
+
+        // Log out and clean up
+        std::string logout_result;
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &logout_result);
+        curl_easy_setopt(curl, CURLOPT_URL, "https://www.space-track.org/ajaxauth/logout");
+        curl_easy_perform(curl); // We do not care about the result
+        curl_easy_cleanup(curl);
+        curl_global_cleanup();
+
+        // Parse the downloaded TLE
+        try
+        {
+            bool parsed = true;
+            nlohmann::json res;
+            try
+            {
+                res = nlohmann::json::parse(result);
+            }
+            catch (std::exception &)
+            {
+                parsed = false;
+            }
+
+            std::vector<TLE> tles;
+            for (int g = 0; g < res.size(); g++)
+            {
+                auto &f = res[g];
+
+                TLE tle;
+                tle.norad = std::stoi(f["NORAD_CAT_ID"].get<std::string>());
+                tle.name = f["TLE_LINE0"].get<std::string>().substr(2, f["TLE_LINE0"].get<std::string>().size());
+                tle.line1 = f["TLE_LINE1"].get<std::string>();
+                tle.line2 = f["TLE_LINE2"].get<std::string>();
+                tles.push_back(tle);
+            }
+            return tles;
+        }
+        catch (std::exception &e)
+        {
+            logger->error("Could not get current TLEs from Space-Track : %s", e.what());
+            return std::vector<TLE>();
+        }
+
+        return std::vector<TLE>();
     }
 
     std::optional<TLE> get_from_norad_in_vec(std::vector<TLE> vec, int norad)

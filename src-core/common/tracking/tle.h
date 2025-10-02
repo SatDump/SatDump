@@ -15,6 +15,7 @@ namespace satdump
         std::string name;
         std::string line1;
         std::string line2;
+        uint64_t time;
     };
 
     inline void to_json(nlohmann::json &j, const TLE &v)
@@ -42,6 +43,7 @@ namespace satdump
     std::vector<TLE> tryFetchTLEsFromFileURL(std::string url_str);
     std::vector<TLE> tryFetchSingleTLEwithNorad(int norad);
     std::optional<TLE> get_from_spacetrack_time(int norad, time_t timestamp);
+    std::vector<TLE> get_from_spacetrack_latest_list(std::vector<int> norad);
 
     std::optional<TLE> get_from_norad_in_vec(std::vector<TLE> vec, int norad);
 } // namespace satdump

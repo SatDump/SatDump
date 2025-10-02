@@ -1,5 +1,6 @@
 #include "tle_handler.h"
 #include "core/config.h"
+#include "db/db_handler.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
 #include <string>
@@ -93,6 +94,30 @@ namespace satdump
                 logger->error("There should only be one TLE per norad! %d", norad);
         }
 
+        {
+            time_t tt = time(0);
+            std::vector<int> norads;
+            for (auto &t : get_all_tles())
+                if (tt - t.time > (3600 * 24 * 2)) // TODOREWORK respect update interval!
+                    norads.push_back(t.norad);
+
+            if (norads.size())
+                logger->error("%d TLEs are too old in database, even after attempting an update. Pulling from space-track. This is NOT optimal!", norads.size());
+
+            while (norads.size() > 0)
+            {
+                std::vector<int> cnorads = norads;
+                cnorads.resize(std::min<int>(2000, cnorads.size()));
+                norads.erase(norads.begin(), norads.begin() + cnorads.size());
+                auto tles = get_from_spacetrack_latest_list(cnorads); // tryFetchTLEsFromFileURL(url_str);
+
+                h->tr_begin();
+                for (auto &t : tles)
+                    putTLE(t);
+                h->tr_end();
+            }
+        }
+
         // Update last update timestamp & other stuff
         h->set_meta("tles_last_updated", std::to_string(time(0)));
         logger->info("%d TLEs in database!", h->get_table_size("tle"));
@@ -100,7 +125,7 @@ namespace satdump
         all = get_all_tles(); // TODOREWORK REMOVE
     }
 
-    void TleDBHandler::putTLE(TLE tle)
+    void TleDBHandler::putTLE(TLE tle) // TODOREWORK put actual time of TLE!!!!!
     {
         std::string sql = "INSERT INTO tle (norad, name, time, line1, line2) VALUES (" + std::to_string(tle.norad) + //
                           ", \"" + tle.name + "\", '" + std::to_string(time(0)) + "', '" + tle.line1 + "', '" +      //
@@ -120,7 +145,7 @@ namespace satdump
         TLE r;
         sqlite3_stmt *res;
 
-        if (sqlite3_prepare_v2(h->db, ("SELECT name,line1,line2 from tle where norad=" + std::to_string(norad)).c_str(), -1, &res, 0))
+        if (sqlite3_prepare_v2(h->db, ("SELECT name,line1,line2,time from tle where norad=" + std::to_string(norad)).c_str(), -1, &res, 0))
             logger->error("Couldn't fetch TLE from DB! " + std::string(sqlite3_errmsg(h->db)));
         else if (sqlite3_step(res) == SQLITE_ROW)
         {
@@ -128,6 +153,7 @@ namespace satdump
             r.name = (char *)sqlite3_column_text(res, 0);
             r.line1 = (char *)sqlite3_column_text(res, 1);
             r.line2 = (char *)sqlite3_column_text(res, 2);
+            r.time = sqlite3_column_int64(res, 3);
         }
 
         sqlite3_finalize(res);
@@ -148,7 +174,7 @@ namespace satdump
         std::vector<TLE> rr;
         sqlite3_stmt *res;
 
-        if (sqlite3_prepare_v2(h->db, "select norad,name,line1,line2 from tle;", -1, &res, 0))
+        if (sqlite3_prepare_v2(h->db, "select norad,name,line1,line2,time from tle;", -1, &res, 0))
             logger->error("Couldn't fetch TLE from DB! " + std::string(sqlite3_errmsg(h->db)));
         else
         {
@@ -159,6 +185,7 @@ namespace satdump
                 r.name = (char *)sqlite3_column_text(res, 1);
                 r.line1 = (char *)sqlite3_column_text(res, 2);
                 r.line2 = (char *)sqlite3_column_text(res, 3);
+                r.time = sqlite3_column_int64(res, 4);
                 rr.push_back(r);
             }
         }
