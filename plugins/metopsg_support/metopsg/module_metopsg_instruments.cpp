@@ -54,6 +54,7 @@ namespace metopsg
             }
 
             // Demuxers
+            ccsds::ccsds_aos::Demuxer demuxer_vcid9(884, false);
             ccsds::ccsds_aos::Demuxer demuxer_vcid10(884, false);
             ccsds::ccsds_aos::Demuxer demuxer_vcid13(884, false);
             ccsds::ccsds_aos::Demuxer demuxer_vcid14(884, false);
@@ -81,7 +82,13 @@ namespace metopsg
                     vcdu.spacecraft_id == METOPSG_B1_SCID || vcdu.spacecraft_id == METOPSG_B2_SCID || vcdu.spacecraft_id == METOPSG_B3_SCID)
                     metop_scids.push_back(vcdu.spacecraft_id);
 
-                if (vcdu.vcid == 13) // MWS
+                if (vcdu.vcid == 9) // NAVATT
+                {
+                    std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid9.work(cadu);
+                    // for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
+                    //     logger->critical("APID %d LEN %d", pkt.header.apid, pkt.payload.size() + 6);
+                }
+                else if (vcdu.vcid == 13) // MWS
                 {
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid13.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)

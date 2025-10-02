@@ -53,7 +53,7 @@ namespace satdump
 
         // Update now, if needed
         time_t now = time(NULL);
-        if ((honor_setting && now > last_update + update_interval) || h->get_table_size("tle") <= 0)
+        if (/*(honor_setting && now > last_update + update_interval) ||*/ h->get_table_size("tle") <= 0)
         {
             updateTLEDatabase();
             last_update = now;

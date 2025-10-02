@@ -5,6 +5,7 @@
 #include "common/tracking/tle.h"
 #include "common/tracking/tracking.h"
 #include "common/utils.h"
+#include "core/resources.h"
 #include "init.h"
 
 extern "C"
@@ -93,7 +94,8 @@ namespace aws
             {
                 if (ephems_n == 0)
                 {
-                    const char *arrr[] = {"/home/alan/Downloads/de440s.bsp"};
+                    std::string de440_f = resources::getResourcePath("spice/de440s.bsp");
+                    const char *arrr[] = {de440_f.c_str()};
                     t_calcephbin *de440 = calceph_open_array(1, arrr); //// calceph_open("/home/alan/Downloads/de440s.bsp");
                     if (!de440)
                         fprintf(stderr, "ERROR! could not open ephemeris data\n");

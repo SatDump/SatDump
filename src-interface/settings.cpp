@@ -36,7 +36,9 @@ namespace satdump
         std::vector<std::string> themes;
         std::string themes_str = "";
 
+        bool iers_are_update = false;
         bool tles_are_update = false;
+        char iers_last_update[80];
         char tle_last_update[80];
 
         bool show_imgui_demo = false;
@@ -158,6 +160,7 @@ namespace satdump
                     for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_general)
                         p.second.draw();
 
+                    // TLEs
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("Update TLEs Now");
@@ -178,7 +181,7 @@ namespace satdump
                     if (disable_update_button)
                         style::endDisabled();
 
-                    time_t last_update = getValueOrDefault<time_t>(satdump_cfg.main_cfg["user"]["tles_last_updated"], 0);
+                    time_t last_update = std::stod(db->get_meta("tles_last_updated", "0"));
                     if (last_update == 0)
                         strcpy(tle_last_update, "Never");
                     else
@@ -189,6 +192,39 @@ namespace satdump
                     }
                     ImGui::SameLine(0.0f, 10.0f * ui_scale);
                     ImGui::TextDisabled("Last updated: %s", tle_last_update);
+
+                    // IERS
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("Update IERS Bulletin Now");
+                    ImGui::TableSetColumnIndex(1);
+                    disable_update_button = iers_are_update;
+                    if (disable_update_button)
+                        style::beginDisabled();
+                    if (ImGui::Button("Update###updateIERS"))
+                    {
+                        ui_thread_pool.push(
+                            [](int)
+                            {
+                                iers_are_update = true;
+                                db_iers->updateIERS();
+                                iers_are_update = false;
+                            });
+                    }
+                    if (disable_update_button)
+                        style::endDisabled();
+
+                    last_update = std::stod(db->get_meta("iers_last_updated", "0"));
+                    if (last_update == 0)
+                        strcpy(iers_last_update, "Never");
+                    else
+                    {
+                        struct tm ts;
+                        ts = *gmtime(&last_update);
+                        strftime(iers_last_update, sizeof(iers_last_update), "%Y-%m-%d %H:%M:%S UTC", &ts);
+                    }
+                    ImGui::SameLine(0.0f, 10.0f * ui_scale);
+                    ImGui::TextDisabled("Last updated: %s", iers_last_update);
 
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);

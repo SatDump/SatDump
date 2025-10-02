@@ -26,7 +26,7 @@ namespace satdump
 
         // Update now, if needed
         time_t now = time(NULL);
-        if ((honor_setting && now > last_update + update_interval) || h->get_table_size("iers") <= 0)
+        if (/*(honor_setting && now > last_update + update_interval) ||*/ h->get_table_size("iers") <= 0)
         {
             updateIERS();
             last_update = now;
