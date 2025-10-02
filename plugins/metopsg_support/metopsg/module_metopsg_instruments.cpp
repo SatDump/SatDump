@@ -33,6 +33,7 @@ namespace metopsg
             : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
             ignore_integrated_tle = parameters.contains("ignore_integrated_tle") ? parameters["ignore_integrated_tle"].get<bool>() : false;
+            metimage_bowtie = parameters.contains("metimage_bowtie") ? parameters["metimage_bowtie"].get<bool>() : false;
             fsfsm_enable_output = false;
         }
 
@@ -92,7 +93,7 @@ namespace metopsg
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         threemi_reader.work(pkt);
                 }
-                else if (vcdu.vcid == 16) // METImage
+                else if (vcdu.vcid == 16) // METimage
                 {
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid16.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
@@ -185,15 +186,15 @@ namespace metopsg
                 mws_status = DONE;
             }
 
-            // METImage
+            // METimage
             {
                 metimage_status = SAVING;
-                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/METImage";
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/METimage";
 
                 if (!std::filesystem::exists(directory))
                     std::filesystem::create_directory(directory);
 
-                logger->info("----------- METImage");
+                logger->info("----------- METimage");
                 logger->info("Segments : " + std::to_string(metimage_reader.segments)); // TODOREWORK
 
                 satdump::products::ImageProduct metimage_products;
@@ -223,9 +224,18 @@ namespace metopsg
                     0,   // TODO
                 };
 
+                // BowTie values
+                const float alpha = 1.0 / 1.8;
+                const float beta = 0.58333;
+                const long scanHeight_500 = 24;
+
                 for (int i = 0; i < 20; i++)
                 {
-                    metimage_products.images.push_back({i, "METImage-" + std::to_string(i + 1), std::to_string(i + 1), metimage_reader.getChannel(i), 16, //
+                    int vii = metimage_reader.out_ch_n[i];
+                    auto img = metimage_reader.getChannel(i);
+                    if (metimage_bowtie)
+                        img = image::bowtie::correctGenericBowTie(img, 1, scanHeight_500, alpha, beta);
+                    metimage_products.images.push_back({i, "METimage-" + std::to_string(vii), std::to_string(vii), img, 16, //
                                                         satdump::ChannelTransform().init_affine(1, 1, ch_offsets[i], 0)});
                     // mws_products.set_channel_unit(i, i < 3 ? CALIBRATION_ID_REFLECTIVE_RADIANCE : CALIBRATION_ID_EMISSIVE_RADIANCE);
                     //  mws_products.set_channel_wavenumber(i, calib_coefs[sat_name]["channels"][i]["wavnb"]);
@@ -234,7 +244,7 @@ namespace metopsg
                 metimage_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/metopsg_a_metimage.json")), satellite_tle, metimage_reader.timestamps);
 
                 metimage_products.save(directory);
-                dataset.products_list.push_back("METImage");
+                dataset.products_list.push_back("METimage");
 
                 metimage_status = DONE;
             }
@@ -265,7 +275,7 @@ namespace metopsg
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                ImGui::Text("METImage");
+                ImGui::Text("METimage");
                 ImGui::TableSetColumnIndex(1);
                 ImGui::TextColored(style::theme.green, "%d", metimage_reader.segments);
                 ImGui::TableSetColumnIndex(2);

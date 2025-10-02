@@ -15,12 +15,13 @@ namespace metopsg
         {
         protected:
             bool ignore_integrated_tle = false;
+            bool metimage_bowtie = false;
 
             // Readers
             mws::MWSReader mws_reader;
             threemi::ThreeMIReader threemi_reader;
             admin_msg::AdminMsgReader admin_msg_reader;
-            metimage::METImageReader metimage_reader;
+            metimage::METimageReader metimage_reader;
 
             // Statuses
             instrument_status_t mws_status = DECODING;
