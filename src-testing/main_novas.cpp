@@ -14,9 +14,9 @@
 #include "common/geodetic/geodetic_coordinates.h"
 #include "common/geodetic/wgs84.h"
 #include "common/utils.h"
+#include "libs/calceph/calceph.h"
+#include "libs/supernovas/nutation.h"
 #include "logger.h"
-#include "nutation.h"
-#include <calceph.h>
 #include <cstdio>
 #include <cstring>
 #include <sstream>
@@ -25,20 +25,20 @@
 #if 1
 extern "C"
 {
-#include <novas.h>
+#include "libs/supernovas/novas.h"
 
-#include <novas-calceph.h>
-#include <novas-cspice.h>
+#include "libs/supernovas/novas-calceph.h"
+    // #include <novas-cspice.h>
 }
 
 // Below are some Earth orientation values. Here we define them as constants, but they may
 // of course be variables. They should be set to the appropriate values for the time
 // of observation based on the IERS Bulletins...
 
-#define LEAP_SECONDS 37            ///< [s] current leap seconds from IERS Bulletin C
-#define DUT1 0.114                 ///< [s] current UT1 - UTC time difference from IERS Bulletin A
-#define POLAR_DX (0.0863 / 1000.0) // 230.0 ///< [mas] Earth polar offset x, e.g. from IERS Bulletin A.
-#define POLAR_DY (0.4178 / 1000.0) // -62.0             ///< [mas] Earth polar offset y, e.g. from IERS Bulletin A.
+#define LEAP_SECONDS 37          ///< [s] current leap seconds from IERS Bulletin C
+#define DUT1 0.114               ///< [s] current UT1 - UTC time difference from IERS Bulletin A
+#define POLAR_DX (0.2316 * 1000) // 230.0 ///< [mas] Earth polar offset x, e.g. from IERS Bulletin A.
+#define POLAR_DY (0.3580 * 1000) // -62.0             ///< [mas] Earth polar offset y, e.g. from IERS Bulletin A.
 #endif
 
 #define ENABLE_CUSTOM_AZ_EL 1
@@ -125,9 +125,10 @@ int main(int argc, char *argv[])
     const char *arrr[] = {
         "/home/alan/Downloads/juice_orbc_000082_230414_310721_v01.bsp", //
         "/home/alan/Downloads/de440s.bsp",                              //
-        "/home/alan/Downloads/jwst_pred.bsp"                            //
+        "/home/alan/Downloads/ahead_2025_261_01.epm.bsp",
+        "/home/alan/Downloads/jwst_pred.bsp" //
     };
-    t_calcephbin *de440 = calceph_open_array(2, arrr); //// calceph_open("/home/alan/Downloads/de440s.bsp");
+    t_calcephbin *de440 = calceph_open_array(3, arrr); //// calceph_open("/home/alan/Downloads/de440s.bsp");
     if (!de440)
     {
         fprintf(stderr, "ERROR! could not open ephemeris data\n");
@@ -157,6 +158,7 @@ int main(int argc, char *argv[])
             // t_calcephcharvalue objname;
             // calceph_getnamebyidss(de440, target, 1, objname);
             // logger->trace(objname);
+            // printf("%s\n\0", objname);
 
             char timestamp1[40], timestamp2[40];
             novas_timespec timespec1, timespec2;
@@ -166,7 +168,7 @@ int main(int argc, char *argv[])
             novas_iso_timestamp(&timespec1, timestamp1, sizeof(timestamp1));
             novas_iso_timestamp(&timespec2, timestamp2, sizeof(timestamp2));
 
-            logger->info("- Body ID %d || %s %s", /* std::string(objname).c_str(),*/ target, timestamp1, timestamp2);
+            logger->info("- Body ID %d || %s %s", target, /*std::string(objname).c_str(),*/ timestamp1, timestamp2);
         }
     }
 
@@ -230,13 +232,14 @@ int main(int argc, char *argv[])
     // Set Callisto as the observed object
     make_orbital_object("Callisto", 501, &orbit, &source);
 #elif 1
-    make_planet(NOVAS_MOON, &source);
+    // make_planet(NOVAS_MOON, &source);
     // make_planet(NOVAS_SUN, &source);
-    // make_planet(NOVAS_MERCURY, &source);
-    //      make_ephem_object("STEREO-A", -234, &source);
-    //  make_ephem_object("Io", 501, &source);
-    // make_ephem_object("JWST", -170, &source);
-    // make_ephem_object("JUICE", -28, &source);
+    //  make_planet(NOVAS_MERCURY, &source);
+    //       make_ephem_object("STEREO-A", -234, &source);
+    // make_ephem_object("Io", 501, &source);
+    //  make_ephem_object("JWST", -170, &source);
+    make_ephem_object("JUICE", -28, &source);
+    // make_ephem_object("STEREO-A", -234, &source);
 #endif
 
     // -------------------------------------------------------------------------
@@ -338,11 +341,19 @@ int main(int argc, char *argv[])
         }
 
         double pos2[3];
+#if 0
         if (cirs_to_itrs(/*double jd_tt_high*/ obs_time.ijd_tt, /*double jd_tt_low*/ obs_time.fjd_tt, obs_time.ut1_to_tt, NOVAS_FULL_ACCURACY, POLAR_DX * 1e3, POLAR_DY * 1e3, pos, pos2))
         {
             fprintf(stderr, "ERROR! failed to calculate CIRS => ITRS.\n");
             return 1;
         }
+#else
+        {
+            novas_transform testt;
+            novas_make_transform(&obs_frame, NOVAS_CIRS, NOVAS_ITRS, &testt);
+            novas_transform_vector(pos, &testt, pos2);
+        }
+#endif
 
         geodetic::geodetic_coords_t c;
         t::xyz2lla({pos2[0] * NOVAS_AU_KM, pos2[1] * NOVAS_AU_KM, pos2[2] * NOVAS_AU_KM}, c);
