@@ -1,7 +1,7 @@
 #include "metimage_reader.h"
-#include "common/ccsds/ccsds_time.h"
 #include "common/repack.h"
 #include "image/image.h"
+#include "metopsg/instruments/cuc.h"
 
 namespace metopsg
 {
@@ -24,6 +24,8 @@ namespace metopsg
                 int ch = pkt.payload[15];                            // Channel marker
                 int offset = pkt.payload[19] << 8 | pkt.payload[20]; // Current segment offset in pixels
 
+                double timestamp = parseCUC(&pkt.payload[3]);
+
                 // On a new scan start, push what we got
                 if (offset == 0 && ch == 30)
                 {
@@ -38,6 +40,7 @@ namespace metopsg
                         }
                     }
 
+                    timestamps.push_back(timestamp);
                     segments++;
                 }
 

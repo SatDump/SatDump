@@ -2,7 +2,6 @@
 
 #include "common/ccsds/ccsds.h"
 #include "image/image.h"
-#include "nlohmann/json.hpp"
 
 namespace metopsg
 {
@@ -13,12 +12,14 @@ namespace metopsg
         public:
             int lines[24];
             std::vector<uint16_t> channels[24];
-            std::vector<double> timestamps;
+            std::vector<double> timestamps[24];
 
         public:
             MWSReader();
             ~MWSReader();
             void work(ccsds::CCSDSPacket &packet);
+
+            void correlate();
 
             image::Image getChannel(int c);
         };
