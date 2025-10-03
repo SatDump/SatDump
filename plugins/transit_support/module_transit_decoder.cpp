@@ -73,7 +73,7 @@ namespace transit
     {
         auto v = satdump::pipeline::base::FileStreamToFileStreamModule::getModuleStats();
         v["frame_count"] = frame_count;
-        v["frame_count_coherent"] = framecounter_coherent;
+        v["frame_count_coherent"] = coherent_frames;
 
         std::string deframer_state = def->getState() == 1 ? "SYNCED" : "NOSYNC";
         v["deframer_state"] = deframer_state;
