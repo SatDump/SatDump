@@ -1,5 +1,10 @@
 #pragma once
 
+/**
+ * @file big_endian.h
+ * @brief Big endian integer structs
+ */
+
 #include <cstdint>
 #if defined(_WIN32)
 #include <WS2tcpip.h>

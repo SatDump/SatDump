@@ -2,6 +2,11 @@
 #include <cstdint>
 #include <vector>
 
+/**
+ * @file majority_law.h
+ * @brief Functions to perform majority law between arrays or vectors of bytes
+ */
+
 std::vector<unsigned char> majority_law_vec(std::vector<std::vector<unsigned char>> input);
 
 /**

@@ -1,5 +1,10 @@
 #pragma once
 
+/**
+ * @file module_svissr_image_decoder.h
+ * @brief Fengyun-2 S-VISSR decoding module
+ */
+
 #include "image/svissr_reader.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
 #include <thread>

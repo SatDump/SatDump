@@ -1,5 +1,11 @@
 #include <cstdint>
 
+/**
+ * @file svissr_blocks.h
+ * @brief Definitions for subcommunication blocks
+ */
+
+
 #ifdef _WIN32
 #pragma pack(push, 1)
 #endif
