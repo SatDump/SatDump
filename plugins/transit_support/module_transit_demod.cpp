@@ -199,17 +199,17 @@ namespace transit
                 else
                 {
                     // convert complex to imaginary
-                    volk_32fc_deinterleave_imag_32f(demod_stream->writeBuf, (lv_32fc_t*)carrier_pll->output_stream->readBuf, dat_size);
+                    volk_32fc_deinterleave_imag_32f(output_real, (lv_32fc_t*)carrier_pll->output_stream->readBuf, dat_size);
 
                     // save WAV
                     if (save_wav)
                     {
                         for (int i = 0; i < dat_size; i++)
                         {
-                            if (fsk_rec->output_stream->readBuf[i] > 1.0f)
-                                fsk_rec->output_stream->readBuf[i] = 1.0f;
-                            if (fsk_rec->output_stream->readBuf[i] < -1.0f)
-                                fsk_rec->output_stream->readBuf[i] = -1.0f;
+                            if (output_real[i] > 1.0f)
+                                output_real[i] = 1.0f;
+                            if (output_real[i] < -1.0f)
+                                output_real[i] = -1.0f;
                         }
 
                         volk_32f_s32f_convert_16i(output_wav_buffer, demod_stream->writeBuf, 32767, dat_size);
@@ -219,7 +219,7 @@ namespace transit
                     }
 
                     // forward to demods
-                    // memcpy(demod_stream->writeBuf, output_real_pam, dat_size * sizeof(float));
+                    memcpy(demod_stream->writeBuf, output_real, dat_size * sizeof(float));
                     demod_stream->swap(dat_size);
                     carrier_pll->output_stream->flush();
                 }
