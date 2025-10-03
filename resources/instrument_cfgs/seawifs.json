@@ -7,7 +7,8 @@
             "image": {
                 "individual_equalize": true
             },
-            "description": "descriptions/TrueColor.md"
+            "description": "descriptions/TrueColor.md",
+            "autogen": true
 
         },
         {
@@ -25,8 +26,7 @@
 
             "image": {
                 "individual_equalize": true
-            },
-            "autogen": true
+            }
         }
     ]
 }
