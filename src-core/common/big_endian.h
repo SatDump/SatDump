@@ -12,6 +12,10 @@
 #ifdef _WIN32
 #pragma pack(push, 1)
 #endif
+/**
+ * @brief Creates an unsigned 2-byte integer from big-endian bytes
+ *
+ */
 class be_uint16_t
 {
 public:
@@ -36,6 +40,10 @@ __attribute__((packed));
 #ifdef _WIN32
 #pragma pack(push, 1)
 #endif
+/**
+ * @brief Creates an unsigned 4-byte integer from big-endian bytes
+ *
+ */
 class be_uint32_t
 {
 public:
@@ -61,7 +69,7 @@ __attribute__((packed));
 #pragma pack(push, 1)
 #endif
 /**
- * @brief Takes 6 bytes, creates an integer from the big endian form and returns it in an 8-byte little endian form.
+ * @brief Takes 6 bytes, creates an unsigned 48-bit integer in big endian. Stored in a 64 bit signed integer
  *
  */
 struct be_uint48_t
@@ -88,6 +96,10 @@ __attribute__((packed));
 #ifdef _WIN32
 #pragma pack(push, 1)
 #endif
+/**
+ * @brief Creates an unsigned 8-byte integer from big-endian bytes
+ *
+ */
 class be_uint64_t
 {
 public:

@@ -270,9 +270,9 @@ namespace fengyun_svissr
             OrbitAndAttitudeData *orbit_attitude_block = reinterpret_cast<OrbitAndAttitudeData *>(orbit_attitude_data_unstructured.data());
 
             // TODOREWORK: Implement when J2000 is supported.
-            /*
+            
             // - J2000 projection data handling -
-
+            /*
             AttitudePredictionSubBlock attitude_prediction_data;
             majority_law(orbit_attitude_block->ATTITUDE_PREDICTION_SUBBLOCKS, reinterpret_cast<uint8_t*>(&attitude_prediction_data));
 
@@ -281,7 +281,6 @@ namespace fengyun_svissr
 
             // Everything is not loaded into orbit_attitude_block, attitude_prediction_data, and orbit_prediction_data
             */
-
             // - Timestamp handling -
             unix_timestamp = ((orbit_attitude_block->IMAGE_START_TIME * 1e-8) - 40587) * 86400;
 
