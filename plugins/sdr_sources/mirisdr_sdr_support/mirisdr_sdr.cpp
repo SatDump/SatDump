@@ -1,15 +1,5 @@
 #include "mirisdr_sdr.h"
 
-#ifdef __ANDROID__
-#include "common/dsp_source_sink/android_usb_backend.h"
-
-const std::vector<DevVIDPID> MIRISDR_USB_VID_PID = {{0x1df7, 0x2500},
-                                                    {0x2040, 0xd300},
-                                                    {0x07ca, 0x8591},
-                                                    {0x04bb, 0x0537},
-                                                    {0x0511, 0x0037}};
-#endif
-
 void MiriSdrSource::_rx_callback_8(unsigned char *buf, uint32_t len, void *ctx)
 {
     std::shared_ptr<dsp::stream<complex_t>> stream = *((std::shared_ptr<dsp::stream<complex_t>> *)ctx);
@@ -86,16 +76,9 @@ void MiriSdrSource::open()
 void MiriSdrSource::start()
 {
     DSPSampleSource::start();
-#ifndef __ANDROID__
+
     if (mirisdr_open(&mirisdr_dev_obj, std::stoull(d_sdr_id)) != 0)
         throw satdump_exception("Could not open MiriSDR device!");
-#else
-    int vid, pid;
-    std::string path;
-    int fd = getDeviceFD(vid, pid, MIRISDR_USB_VID_PID, path);
-    if (mirisdr_open_fd(&mirisdr_dev_obj, 0, fd) != 0)
-        throw satdump_exception("Could not open MiriSDR device!");
-#endif
 
     uint64_t current_samplerate = samplerate_widget.get_value();
 
@@ -208,7 +191,6 @@ std::vector<dsp::SourceDescriptor> MiriSdrSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
-#ifndef __ANDROID__
     int c = mirisdr_get_device_count();
 
     for (int i = 0; i < c; i++)
@@ -216,12 +198,6 @@ std::vector<dsp::SourceDescriptor> MiriSdrSource::getAvailableSources()
         const char *name = mirisdr_get_device_name(i);
         results.push_back({"mirisdr", std::string(name) + " #" + std::to_string(i), std::to_string(i)});
     }
-#else
-    int vid, pid;
-    std::string path;
-    if (getDeviceFD(vid, pid, MIRISDR_USB_VID_PID, path) != -1)
-        results.push_back({"mirisdr", "MiriSDR USB", "0"});
-#endif
 
     return results;
 }

@@ -1,11 +1,5 @@
 #include "hackrf_sdr_sink.h"
 
-#ifdef __ANDROID__
-#include "common/dsp_source_sink/android_usb_backend.h"
-
-const std::vector<DevVIDPID> HACKRF_USB_VID_PID = {{0x1d50, 0x604b}, {0x1d50, 0x6089}, {0x1d50, 0xcc15}};
-#endif
-
 int HackRFSink::_tx_callback(hackrf_transfer *t)
 {
     ((dsp::RingBuffer<uint8_t> *)t->tx_ctx)->read(t->buffer, t->valid_length);
@@ -130,16 +124,8 @@ void HackRFSink::start(std::shared_ptr<dsp::stream<complex_t>> stream)
 {
     DSPSampleSink::start(stream);
 
-#ifndef __ANDROID__
     if (hackrf_open_by_serial(d_sdr_id.c_str(), &hackrf_dev_obj) != 0)
         throw satdump_exception("Could not open HackRF device!");
-#else
-    int vid, pid;
-    std::string path;
-    int fd = getDeviceFD(vid, pid, HACKRF_USB_VID_PID, path);
-    if (hackrf_open_by_fd(&hackrf_dev_obj, fd) != 0)
-        throw satdump_exception("Could not open HackRF device!");
-#endif
 
     // hackrf_reset(hackrf_dev_obj);
 
@@ -244,7 +230,6 @@ std::vector<dsp::SinkDescriptor> HackRFSink::getAvailableSinks()
 {
     std::vector<dsp::SinkDescriptor> results;
 
-#ifndef __ANDROID__
     hackrf_device_list_t *devlist = hackrf_device_list();
 
     if (devlist != nullptr)
@@ -261,12 +246,6 @@ std::vector<dsp::SinkDescriptor> HackRFSink::getAvailableSinks()
 
         hackrf_device_list_free(devlist);
     }
-#else
-    int vid, pid;
-    std::string path;
-    if (getDeviceFD(vid, pid, HACKRF_USB_VID_PID, path) != -1)
-        results.push_back({"hackrf", "HackRF One USB", "0"});
-#endif
 
     return results;
 }

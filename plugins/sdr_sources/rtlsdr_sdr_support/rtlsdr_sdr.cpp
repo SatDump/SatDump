@@ -1,52 +1,5 @@
 #include "rtlsdr_sdr.h"
 
-#ifdef __ANDROID__
-#include "common/dsp_source_sink/android_usb_backend.h"
-
-const std::vector<DevVIDPID> RTLSDR_USB_VID_PID = {{0x0bda, 0x2832},
-                                                   {0x0bda, 0x2838},
-                                                   {0x0413, 0x6680},
-                                                   {0x0413, 0x6f0f},
-                                                   {0x0458, 0x707f},
-                                                   {0x0ccd, 0x00a9},
-                                                   {0x0ccd, 0x00b3},
-                                                   {0x0ccd, 0x00b4},
-                                                   {0x0ccd, 0x00b5},
-                                                   {0x0ccd, 0x00b7},
-                                                   {0x0ccd, 0x00b8},
-                                                   {0x0ccd, 0x00b9},
-                                                   {0x0ccd, 0x00c0},
-                                                   {0x0ccd, 0x00c6},
-                                                   {0x0ccd, 0x00d3},
-                                                   {0x0ccd, 0x00d7},
-                                                   {0x0ccd, 0x00e0},
-                                                   {0x1554, 0x5020},
-                                                   {0x15f4, 0x0131},
-                                                   {0x15f4, 0x0133},
-                                                   {0x185b, 0x0620},
-                                                   {0x185b, 0x0650},
-                                                   {0x185b, 0x0680},
-                                                   {0x1b80, 0xd393},
-                                                   {0x1b80, 0xd394},
-                                                   {0x1b80, 0xd395},
-                                                   {0x1b80, 0xd397},
-                                                   {0x1b80, 0xd398},
-                                                   {0x1b80, 0xd39d},
-                                                   {0x1b80, 0xd3a4},
-                                                   {0x1b80, 0xd3a8},
-                                                   {0x1b80, 0xd3af},
-                                                   {0x1b80, 0xd3b0},
-                                                   {0x1d19, 0x1101},
-                                                   {0x1d19, 0x1102},
-                                                   {0x1d19, 0x1103},
-                                                   {0x1d19, 0x1104},
-                                                   {0x1f4d, 0xa803},
-                                                   {0x1f4d, 0xb803},
-                                                   {0x1f4d, 0xc803},
-                                                   {0x1f4d, 0xd286},
-                                                   {0x1f4d, 0xd803}};
-#endif
-
 void RtlSdrSource::_rx_callback(unsigned char *buf, uint32_t len, void *ctx)
 {
     std::shared_ptr<dsp::stream<complex_t>> stream = *((std::shared_ptr<dsp::stream<complex_t>> *)ctx);
@@ -215,17 +168,10 @@ void RtlSdrSource::open()
 void RtlSdrSource::start()
 {
     DSPSampleSource::start();
-#ifndef __ANDROID__
+
     int index = rtlsdr_get_index_by_serial(d_sdr_id.c_str());
     if (index != -1 && rtlsdr_open(&rtlsdr_dev_obj, index) != 0)
         throw satdump_exception("Could not open RTL-SDR device!");
-#else
-    int vid, pid;
-    std::string path;
-    int fd = getDeviceFD(vid, pid, RTLSDR_USB_VID_PID, path);
-    if (rtlsdr_open_fd(&rtlsdr_dev_obj, fd) != 0)
-        throw satdump_exception("Could not open RTL-SDR device!");
-#endif
 
     // Set available gains
     int gains[256];
@@ -352,7 +298,6 @@ std::vector<dsp::SourceDescriptor> RtlSdrSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
-#ifndef __ANDROID__
     int c = rtlsdr_get_device_count();
 
     for (int i = 0; i < c; i++)
@@ -364,12 +309,6 @@ std::vector<dsp::SourceDescriptor> RtlSdrSource::getAvailableSources()
         else
             results.push_back({"rtlsdr", std::string(manufact) + " " + std::string(product) + " #" + std::string(serial), std::string(serial)});
     }
-#else
-    int vid, pid;
-    std::string path;
-    if (getDeviceFD(vid, pid, RTLSDR_USB_VID_PID, path) != -1)
-        results.push_back({"rtlsdr", "RTL-SDR USB", "0"});
-#endif
 
     return results;
 }

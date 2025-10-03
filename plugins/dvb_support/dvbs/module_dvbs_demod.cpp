@@ -6,6 +6,8 @@
 #include "dvbs/dvbs_reedsolomon.h"
 #include "dvbs/dvbs_scrambling.h"
 #include "dvbs/dvbs_defines.h"
+#include <chrono>
+#include <thread>
 
 namespace dvb
 {
@@ -131,6 +133,9 @@ namespace dvb
 
         int failed_rs_nums = 0;
 
+         std::thread th2(
+                    [&]()
+                    {
         int dat_size = 0;
         while (demod_should_run())
         {
@@ -159,8 +164,6 @@ namespace dvb
                 module_stats["deframer_synced"] = def->isSynced();
             module_stats["rs_avg"] = (errors[0] + errors[1] + errors[2] + errors[3] + errors[4] + errors[5] + errors[6] + errors[7]) / 8;
 
-            if (input_data_type == DATA_FILE)
-                progress = file_source->getPosition();
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
@@ -226,11 +229,22 @@ namespace dvb
 #endif
             def->output_stream->flush();
         }
+    });
+
+        while (demod_should_run())
+        {
+            if (input_data_type == DATA_FILE)
+                progress = file_source->getPosition();
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        }
 
         logger->info("Demodulation finished");
 
         if (input_data_type == DATA_FILE)
             stop();
+
+        if(th2.joinable())
+            th2.join();
     }
 
     void DVBSDemodModule::stop()

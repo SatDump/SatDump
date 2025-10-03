@@ -78,6 +78,7 @@ $null = mkdir build
 cd build
 $build_args="-DCMAKE_TOOLCHAIN_FILE=$($(Get-Item ..\scripts\buildsystems\vcpkg.cmake).FullName)", "-DVCPKG_TARGET_TRIPLET=$platform", "-DCMAKE_INSTALL_PREFIX=$($(Get-Item ..\installed\$platform).FullName)", "-DCMAKE_BUILD_TYPE=Release", "-A", $generator
 $standard_include=$(Get-Item ..\installed\$platform\include).FullName
+$standard_lib=$(Get-Item ..\installed\$platform\lib).FullName
 $pthread_lib=$(Get-Item ..\installed\$platform\lib\pthreadVC3.lib).FullName
 $libusb_include=$(Get-Item ..\installed\$platform\include\libusb-1.0).FullName
 $libusb_lib=$(Get-Item ..\installed\$platform\lib\libusb-1.0.lib).FullName
@@ -92,6 +93,7 @@ if($env:PROCESSOR_ARCHITECTURE -ne $arch)
 Write-Output "Building libusb..."
 git clone https://github.com/HannesFranke-smartoptics/libusb -b raw_io_v2
 cd libusb\msvc
+(Get-Content -raw Base.props) -replace "<TreatWarningAsError>true</TreatWarningAsError>", "<TreatWarningAsError>false</TreatWarningAsError>" | Set-Content -Encoding ASCII Base.props
 msbuild -m -v:m -p:Platform=$generator,Configuration=Release .\libusb.sln
 msbuild -m -v:m -p:Platform=$generator,Configuration=Debug .\libusb.sln
 $toolset_used=$(get-childitem ..\build\)[0].Name
@@ -106,9 +108,8 @@ cd ..\..
 rm -recurse -force libusb
 
 Write-Output "Building cpu_features..."
-git clone https://github.com/google/cpu_features # -b 0.9.1 (not released as of this writing)
+git clone https://github.com/google/cpu_features -b v0.10.1
 cd cpu_features
-git checkout 6aecde5
 $null = mkdir build
 cd build
 cmake $build_args -DBUILD_TESTING=OFF -DBUILD_EXECUTABLE=OFF ..
@@ -177,6 +178,35 @@ cmake --install .
 cd ..\..\..\..
 rm -recurse -force hackrf
 
+Write-Output "Building HydraSDR..."
+git clone https://github.com/hydrasdr/rfone_host -b v1.0.1 #TODO: Patch for Raw IO support to avoid sample drops?
+cd rfone_host\libhydrasdr
+$null = mkdir build
+cd build
+cmake $build_args -DLIBUSB_INCLUDE_DIR="$($libusb_include)" -DLIBUSB_LIBRARIES="$($libusb_lib)" -DTHREADS_PTHREADS_WIN32_LIBRARY="$($pthread_lib)" ..
+cmake --build . --config Release
+cmake --install .
+cd ..\..\..
+rm -recurse -force rfone_host
+
+Write-Output "Building FobosSDR..."
+git clone https://github.com/rigexpert/libfobos -b v.2.2.2 #TODO: Patch for Raw IO support to avoid sample drops?
+cd libfobos
+
+# FobosSDR wants us to load libusb into its directory, and install udev rules to the root of the drive.
+# We want it to share libusb, with no udev. Patches herein to make it play ball
+(Get-Content -raw CMakeLists.txt) -replace "(?ms)find_package\(PkgConfig\).*message\(FATAL_ERROR `"LibUSB 1.0 required`"\)`r`nendif\(\)", "" | Set-Content -Encoding ASCII CMakeLists.txt
+(Get-Content -raw CMakeLists.txt) -replace "(?ms)ADD_CUSTOM_COMMAND.*Release\r\n\)", "" | Set-Content -Encoding ASCII CMakeLists.txt
+(Get-Content -raw CMakeLists.txt) -replace "(?ms)install\(.*`"udev`"`r`n    \)", "" | Set-Content -Encoding ASCII CMakeLists.txt
+
+$null = mkdir build
+cd build
+cmake $build_args -DLIBUSB_INCLUDE_DIRS="$($standard_include)" -DLIBUSB_LIBRARIES="$($(Get-Item $libusb_lib).Directory.FullName)" -DCMAKE_INSTALL_LIBDIR="$($standard_lib)" ..
+cmake --build . --config Release
+cmake --install .
+cd ..\..
+rm -recurse -force libfobos
+
 Write-Output "Building libiio..."
 git clone https://github.com/analogdevicesinc/libiio --depth 1 -b v0.26
 cd libiio
@@ -207,7 +237,7 @@ if($platform -eq "x64-windows" -or $platform -eq "x86-windows")
     Invoke-WebRequest -Uri "https://www.satdump.org/FX3-SDK.zip" -OutFile FX3-SDK.zip
     Expand-Archive FX3-SDK.zip .
     $fx3_arg = "-DFX3_SDK_PATH=$($(Get-Item .\FX3-SDK).FullName)"
-    git clone https://github.com/myriadrf/LimeSuite --depth 1 -b v23.11.0
+    git clone https://github.com/myriadrf/LimeSuite # v23.11.0 (latest as of this writing) is not compatible with the latest MSVC
     cd LimeSuite
     $null = mkdir build-dir
     cd build-dir
@@ -239,7 +269,7 @@ if($platform -eq "x64-windows" -or $platform -eq "x86-windows")
 }
 
 Write-Output "Building UHD..."
-git clone https://github.com/EttusResearch/uhd --depth 1 -b v4.8.0.0
+git clone https://github.com/EttusResearch/uhd # v4.8 (latest as of this writing) is not compatible with the latest MSVC
 cd uhd\host
 $null = mkdir build
 cd build

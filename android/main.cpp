@@ -26,6 +26,8 @@ void bindImageTextureFunctions();
 
 void init(struct android_app *app)
 {
+    setenv("LIBUSB_ANDROID_JVM_PTR", std::to_string((size_t)app).c_str(), true);
+
     if (g_Initialized)
         return;
 

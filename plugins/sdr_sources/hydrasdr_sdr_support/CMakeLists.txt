@@ -1,0 +1,26 @@
+cmake_minimum_required(VERSION 3.12)
+project(hydrasdr_sdr_support)
+
+
+find_library(HYDRASDR_LIBRARY hydrasdr)
+
+if(HYDRASDR_LIBRARY OR MSVC) # OR ANDROID)
+    message("Building with HydraSDR support")
+    file(GLOB_RECURSE hydrasdr_sdr_support_CPPS *.cpp)
+    add_library(hydrasdr_sdr_support SHARED ${hydrasdr_sdr_support_CPPS})
+    target_include_directories(hydrasdr_sdr_support PUBLIC src)
+
+    if(MSVC)
+        target_link_libraries(hydrasdr_sdr_support PUBLIC satdump_core hydrasdr.dll)
+        install(TARGETS hydrasdr_sdr_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins RUNTIME_DEPENDENCY_SET satdump_deps)
+    elseif(ANDROID)
+        target_link_libraries(hydrasdr_sdr_support PUBLIC satdump_core hydrasdr usb)
+        target_include_directories(hydrasdr_sdr_support PUBLIC ../../../android/deps/libhydrasdr)
+        install(TARGETS hydrasdr_sdr_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+    else()
+        target_link_libraries(hydrasdr_sdr_support PUBLIC satdump_core ${HYDRASDR_LIBRARY})
+        install(TARGETS hydrasdr_sdr_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+    endif()
+else()
+    message("HydraSDR Library could not be found! Not building.")
+endif()
