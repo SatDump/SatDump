@@ -103,7 +103,8 @@ namespace transit
         fsk_lpf = std::make_shared<dsp::FIRBlock<complex_t>>(fsk_fsb->output_stream, dsp::firdes::low_pass(1.0, d_symbolrate, 1200, 1000));
         fsk_qua = std::make_shared<dsp::QuadratureDemodBlock>(fsk_lpf->output_stream, dsp::hz_to_rad(600*2, d_symbolrate));
         fsk_rrc = std::make_shared<dsp::FIRBlock<float>>(fsk_qua->output_stream, dsp::firdes::root_raised_cosine(1/(2*M_PI*630/d_symbolrate), d_symbolrate, fsk_sym_rate, 0.35, 401));
-        fsk_rec = std::make_shared<dsp::GardnerClockRecoveryBlock<float>>(fsk_rrc->output_stream, fsk_sps, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
+        // fsk_rec = std::make_shared<dsp::GardnerClockRecoveryBlock<float>>(fsk_rrc->output_stream, fsk_sps, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
+        fsk_rec = std::make_shared<dsp::MMClockRecoveryBlock<float>>(fsk_rrc->output_stream, fsk_sps, d_clock_gain_omega, d_clock_mu, d_clock_gain_mu, d_clock_omega_relative_limit);
 
         // USB demod to play the "music" to the user
         // values picked to make PAM sound best

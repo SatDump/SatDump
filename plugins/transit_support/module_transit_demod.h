@@ -29,7 +29,8 @@ namespace transit
         std::shared_ptr<dsp::FIRBlock<complex_t>> fsk_lpf;
         std::shared_ptr<dsp::QuadratureDemodBlock> fsk_qua;
         std::shared_ptr<dsp::FIRBlock<float>> fsk_rrc;
-        std::shared_ptr<dsp::GardnerClockRecoveryBlock<float>> fsk_rec;
+        // std::shared_ptr<dsp::GardnerClockRecoveryBlock<float>> fsk_rec;
+        std::shared_ptr<dsp::MMClockRecoveryBlock<float>> fsk_rec;
 
         std::shared_ptr<dsp::stream<complex_t>> usb_stream;
         std::shared_ptr<dsp::FreqShiftBlock> usb_fsb;
