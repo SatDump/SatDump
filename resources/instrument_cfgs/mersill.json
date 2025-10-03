@@ -11,10 +11,19 @@
             "description": "descriptions/221.md"
         },
         {
+            "name": "MERSI-LL EView",
+            "expression": "8, ch8, 1-ch1",
+            "image": {
+                "individual_equalize": true,
+                "geo_correct": true
+            },
+            "description": "descriptions/124.md"
+        },
+        {
             "name": "AVHRR 124 False Color",
             "expression": "ch3, ch8, 1-ch1",
             "image": {
-                "equalize": true,
+                "individual_equalize": true,
                 "geo_correct": true
             },
             "description": "descriptions/124.md"
