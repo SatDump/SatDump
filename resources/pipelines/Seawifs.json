@@ -1,0 +1,13 @@
+{
+    "seawifs_processing": {
+        "name": "SeaWIFs level 0 data",
+        "work": {
+            // Figure out how to only have one step?
+            "dat": {},
+            "products": {
+                "module": "module_seawifs_decoder",
+                "parameters": {}
+            }
+        }
+    }
+}
