@@ -148,6 +148,7 @@
         "goesn_imager",
         "iasi_img",
         "msu_gs",
-        "ami"
+        "ami",
+        "fy2-svissr"
     ]
 }

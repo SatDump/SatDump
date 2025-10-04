@@ -3,6 +3,12 @@
 #include <cstdint>
 #include "image/image.h"
 
+/**
+ * @file svissr_reader.h
+ * @brief Contains functions to read image data from SVISSR frames
+ * 
+ */
+
 namespace fengyun_svissr
 {
     class SVISSRReader
@@ -20,7 +26,6 @@ namespace fengyun_svissr
         ~SVISSRReader();
         void pushFrame(uint8_t *data);
         void reset();
-        image::Image getImage();
         image::Image getImageIR1();
         image::Image getImageIR2();
         image::Image getImageIR3();

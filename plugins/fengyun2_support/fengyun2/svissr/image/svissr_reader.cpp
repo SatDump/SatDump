@@ -29,6 +29,10 @@ namespace fengyun_svissr
         delete[] goodLines;
     }
 
+    /**
+     * @brief Resets all buffers
+     * 
+     */
     void SVISSRReader::reset()
     {
         std::fill(&imageBufferIR1[0], &imageBufferIR1[MAX_HEIGHT * WIDTH_IR], 0);
@@ -39,6 +43,11 @@ namespace fengyun_svissr
         std::fill(&goodLines[0], &goodLines[MAX_HEIGHT], false);
     }
 
+    /**
+     * @brief Processes a frame of S-VISSR data, pushes all images to their respective buffers
+     * 
+     * @param data S-VISSR frame
+     */
     void SVISSRReader::pushFrame(uint8_t *data)
     {
         int counter = (data[67]) << 8 | (data[68]); // Decode line counter
@@ -141,6 +150,11 @@ namespace fengyun_svissr
         goodLines[counter] = true;
     }
 
+    /**
+     * @brief Gets the IR1 channel
+     * 
+     * @return image::Image Long-wave IR 10.8 μm image
+     */
     image::Image SVISSRReader::getImageIR1()
     {
         // Fill missing lines by averaging above and below line
@@ -161,6 +175,11 @@ namespace fengyun_svissr
         return image::Image(&imageBufferIR1[0], 16, WIDTH_IR, MAX_HEIGHT, 1);
     }
 
+    /**
+     * @brief Gets the IR2 channel
+     * 
+     * @return image::Image Split Window 12 μm image
+     */
     image::Image SVISSRReader::getImageIR2()
     {
         // Fill missing lines by averaging above and below line
@@ -181,6 +200,12 @@ namespace fengyun_svissr
         return image::Image(&imageBufferIR2[0], 16, WIDTH_IR, MAX_HEIGHT, 1);
     }
 
+
+    /**
+     * @brief Gets the IR3 channel from its image buffer
+     * 
+     * @return image::Image Water Vapour IR 6.75 μm image
+     */
     image::Image SVISSRReader::getImageIR3()
     {
         // Fill missing lines by averaging above and below line
@@ -201,6 +226,11 @@ namespace fengyun_svissr
         return image::Image(&imageBufferIR3[0], 16, WIDTH_IR, MAX_HEIGHT, 1);
     }
 
+    /**
+     * @brief Gets the IR4 channel from its image buffer
+     * 
+     * @return image::Image Mid-wave IR 3.75 μm image
+     */
     image::Image SVISSRReader::getImageIR4()
     {
         // Fill missing lines by averaging above and below line
@@ -221,6 +251,11 @@ namespace fengyun_svissr
         return image::Image(&imageBufferIR4[0], 16, WIDTH_IR, MAX_HEIGHT, 1);
     }
 
+    /**
+     * @brief Gets the VIS channel from its image buffer
+     * 
+     * @return image::Image Visible channel 0.725 μm image
+     */
     image::Image SVISSRReader::getImageVIS()
     {
         // Fill missing lines by averaging above and below line

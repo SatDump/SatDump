@@ -1,15 +1,45 @@
 #pragma once
 
-#include "image/svissr_reader.h"
-#include <string>
+/**
+ * @file module_svissr_image_decoder.h
+ * @brief Fengyun-2 S-VISSR decoding module
+ */
+
 #include "image/svissr_reader.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
 #include <thread>
 
 namespace fengyun_svissr
 {
+    enum SVISSRSubCommunicaitonBlockType
+    {
+        Simplified_mapping,
+        Orbit_and_attitude,
+        MANAM,
+        Calibration_1,
+        Calibration_2,
+        Spare
+    };
+
+    struct SVISSRSubcommunicationBlock
+    {
+        int start_offset;
+        int end_offset;
+    };
+
+    // Abstracts the stupid idiot subcommunication groups away
+    typedef std::vector<uint8_t> Group;
+    typedef std::vector<uint8_t> MinorFrame;
+
     class SVISSRImageDecoderModule : public satdump::pipeline::base::FileStreamToFileStreamModule
     {
+        struct SVISSRSubcommunicationBlock
+        {
+            std::string name;
+            int start_offset;
+            int end_offset;
+        };
+
     protected:
         // Settings
         std::string sat_name;
@@ -30,13 +60,11 @@ namespace fengyun_svissr
         {
             int scid;
 
-            double timestamp;
-
-            image::Image image1;
-            image::Image image2;
-            image::Image image3;
-            image::Image image4;
-            image::Image image5;
+            image::Image image1; /* VIS Visible 500-900 nm */
+            image::Image image2; /* IR4 Medium wave 3.5-4.0 μm */
+            image::Image image3; /* IR3 Water vapour 6.5-7.0 μm */
+            image::Image image4; /* IR1 Long wave IR 10.3-11.3 μm */
+            image::Image image5; /* IR2 Split window 11.5-12.5 μm */
 
             std::string directory;
         };
@@ -77,7 +105,12 @@ namespace fengyun_svissr
 
         // Stats
         std::vector<int> scid_stats;
-        std::vector<int> timestamp_stats;
+
+        // Subcommunication block handling
+        void save_subcom_frame();
+        std::vector<MinorFrame> subcommunication_frames; /* 25 2097 byte groups forming a full subcommunication frame */
+        MinorFrame current_subcom_frame;                 /* A full subcommunication frame */
+        std::vector<Group> group_retransmissions;        /* Retransmissions of a given group */
 
         // UI Stuff
         float corr_history_ca[200];
