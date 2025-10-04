@@ -9,6 +9,7 @@
 
 #include "common/tracking/tle.h"
 #include "core/resources.h"
+#include "init.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
 #include "products/dataset.h"
@@ -185,7 +186,7 @@ namespace seawifs
         seawifs_product.instrument_name = "seawifs";
 
         // Projection configuration
-        std::optional<satdump::TLE> satellite_tle = satdump::general_tle_registry->get_from_norad_time(24883, dataset.timestamp);
+        std::optional<satdump::TLE> satellite_tle = satdump::db_tle->get_from_norad_time(24883, dataset.timestamp);
         seawifs_product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/seastar_seawifs.json")), satellite_tle, timestamps);
 
         seawifs_product.images.push_back({0, "SeaWiFS-1", "1", channel1, 16, satdump::ChannelTransform().init_none()});
