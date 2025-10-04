@@ -464,7 +464,7 @@ namespace fengyun_svissr
         svissr_product.images.push_back({3, getSvissrFilename(&timeReadable, "4"), "4", buffer.image4, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
         svissr_product.images.push_back({4, getSvissrFilename(&timeReadable, "5"), "5", buffer.image5, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
 
-        svissr_product.set_channel_wavenumber(0, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 0.7e-6));
+        svissr_product.set_channel_wavenumber(0, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 0.725e-6));
         svissr_product.set_channel_wavenumber(1, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 3.75e-6));
         svissr_product.set_channel_wavenumber(2, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 6.75e-6));
         svissr_product.set_channel_wavenumber(3, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 10.8e-6));
