@@ -270,7 +270,7 @@ namespace fengyun_svissr
             OrbitAndAttitudeData *orbit_attitude_block = reinterpret_cast<OrbitAndAttitudeData *>(orbit_attitude_data_unstructured.data());
 
             // TODOREWORK: Implement when J2000 is supported.
-            
+
             // - J2000 projection data handling -
             /*
             AttitudePredictionSubBlock attitude_prediction_data;
@@ -694,7 +694,11 @@ namespace fengyun_svissr
 
                 std::shared_ptr<SVISSRBuffer> buffer = std::make_shared<SVISSRBuffer>();
 
-                // Offload the images
+                // Offload images
+
+                // Chanenls are transmitted in order: VIS -> IR1 -> IR2 -> IR3 -> IR4
+                // Ergo Visible (0.7 μm) -> LWIR (10.8 μm) -> Split window (12 μm) -> Water vapour (6.75 μm) -> MWIR (3.75 μm)
+                // We order them based on the wavelength so VIS - IR4 - IR3 - IR1 - IR2
                 buffer->image1 = vissrImageReader.getImageVIS();
                 buffer->image2 = vissrImageReader.getImageIR4();
                 buffer->image3 = vissrImageReader.getImageIR3();
@@ -743,12 +747,16 @@ namespace fengyun_svissr
 
                 std::shared_ptr<SVISSRBuffer> buffer = std::make_shared<SVISSRBuffer>();
 
-                // Backup images
-                buffer->image1 = vissrImageReader.getImageIR1();
-                buffer->image2 = vissrImageReader.getImageIR2();
+                // Offload images
+
+                // Chanenls are transmitted in order: VIS -> IR1 -> IR2 -> IR3 -> IR4
+                // Ergo Visible (0.7 μm) -> LWIR (10.8 μm) -> Split window (12 μm) -> Water vapour (6.75 μm) -> MWIR (3.75 μm)
+                // We order them based on the wavelength so VIS - IR4 - IR3 - IR1 - IR2
+                buffer->image1 = vissrImageReader.getImageVIS();
+                buffer->image2 = vissrImageReader.getImageIR4();
                 buffer->image3 = vissrImageReader.getImageIR3();
-                buffer->image4 = vissrImageReader.getImageIR4();
-                buffer->image5 = vissrImageReader.getImageVIS();
+                buffer->image4 = vissrImageReader.getImageIR1();
+                buffer->image5 = vissrImageReader.getImageIR2();
 
                 buffer->scid = satdump::most_common(scid_stats.begin(), scid_stats.end(), 0);
                 scid_stats.clear();
@@ -769,12 +777,16 @@ namespace fengyun_svissr
 
                 std::shared_ptr<SVISSRBuffer> buffer = std::make_shared<SVISSRBuffer>();
 
-                // Backup images
-                buffer->image1 = vissrImageReader.getImageIR1();
-                buffer->image2 = vissrImageReader.getImageIR2();
+                // Offload images
+
+                // Chanenls are transmitted in order: VIS -> IR1 -> IR2 -> IR3 -> IR4
+                // Ergo Visible (0.7 μm) -> LWIR (10.8 μm) -> Split window (12 μm) -> Water vapour (6.75 μm) -> MWIR (3.75 μm)
+                // We order them based on the wavelength so VIS - IR4 - IR3 - IR1 - IR2
+                buffer->image1 = vissrImageReader.getImageVIS();
+                buffer->image2 = vissrImageReader.getImageIR4();
                 buffer->image3 = vissrImageReader.getImageIR3();
-                buffer->image4 = vissrImageReader.getImageIR4();
-                buffer->image5 = vissrImageReader.getImageVIS();
+                buffer->image4 = vissrImageReader.getImageIR1();
+                buffer->image5 = vissrImageReader.getImageIR2();
 
                 buffer->scid = satdump::most_common(scid_stats.begin(), scid_stats.end(), 0);
                 scid_stats.clear();
