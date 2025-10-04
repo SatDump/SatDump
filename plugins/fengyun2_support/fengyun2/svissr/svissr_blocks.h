@@ -53,20 +53,20 @@ struct svissr_r4_t
 {
     uint8_t bytes[4];
 
-    int64_t value() const
+    int32_t value() const
     {
-        uint64_t raw = ((uint64_t)bytes[0] << 40) | ((uint64_t)bytes[1] << 32) | ((uint64_t)bytes[2] << 24) | ((uint64_t)bytes[3] << 16);
+        uint32_t raw = ((uint32_t)bytes[0] << 24) | ((uint64_t)bytes[1] << 16) | ((uint64_t)bytes[2] << 8) | ((uint64_t)bytes[3]);
 
         // sign bit is set to zero
         if (bytes[0] & 128)
         {
             raw &= 0x7fffffff;
-            return -((int64_t)raw);
+            return -((int32_t)raw);
         }
 
-        return (int64_t)raw;
+        return (int32_t)raw;
     }
-    operator int64_t() const { return value(); }
+    operator int32_t() const { return value(); }
 }
 
 #ifdef _WIN32
