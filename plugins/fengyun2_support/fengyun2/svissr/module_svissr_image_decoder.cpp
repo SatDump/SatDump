@@ -696,7 +696,7 @@ namespace fengyun_svissr
 
                 // Offload images
 
-                // Chanenls are transmitted in order: VIS -> IR1 -> IR2 -> IR3 -> IR4
+                // Channels are transmitted in order: VIS -> IR1 -> IR2 -> IR3 -> IR4
                 // Ergo Visible (0.725 μm) -> LWIR (10.8 μm) -> Split window (12 μm) -> Water vapour (6.75 μm) -> MWIR (3.75 μm)
                 // We order them based on the wavelength so VIS - IR4 - IR3 - IR1 - IR2
                 buffer->image1 = vissrImageReader.getImageVIS();
@@ -749,7 +749,7 @@ namespace fengyun_svissr
 
                 // Offload images
 
-                // Chanenls are transmitted in order: VIS -> IR1 -> IR2 -> IR3 -> IR4
+                // Channels are transmitted in order: VIS -> IR1 -> IR2 -> IR3 -> IR4
                 // Ergo Visible (0.725 μm) -> LWIR (10.8 μm) -> Split window (12 μm) -> Water vapour (6.75 μm) -> MWIR (3.75 μm)
                 // We order them based on the wavelength so VIS - IR4 - IR3 - IR1 - IR2
                 buffer->image1 = vissrImageReader.getImageVIS();
@@ -779,7 +779,7 @@ namespace fengyun_svissr
 
                 // Offload images
 
-                // Chanenls are transmitted in order: VIS -> IR1 -> IR2 -> IR3 -> IR4
+                // Channels are transmitted in order: VIS -> IR1 -> IR2 -> IR3 -> IR4
                 // Ergo Visible (0.725 μm) -> LWIR (10.8 μm) -> Split window (12 μm) -> Water vapour (6.75 μm) -> MWIR (3.75 μm)
                 // We order them based on the wavelength so VIS - IR4 - IR3 - IR1 - IR2
                 buffer->image1 = vissrImageReader.getImageVIS();
