@@ -2,43 +2,56 @@
     "name": "S-VISSR",
     "presets": [
         {
+            "name": "Legacy S-VISSR False Color",
+            "expression": "lut=lut(lut/fy2/svissr/lut.png);ref_channel=1;lut(ch2, 1-ch1, 0),lut(ch2, 1-ch1, 1),lut(ch2, 1-ch1, 2)"
+        },
+        {
             "name": "False Color",
-            "expression":  "lut=lut(lut/fy2/svissr/lut.png);ref_channel=1;lut(ch2, 1-ch1, 0),lut(ch2, 1-ch1, 1),lut(ch2, 1-ch1, 2)",
+            "expression": "lut=lut(lut/fy2/svissr/experimental.png);lut(ch1/3, ch4, 0),lut(ch1/3, ch4, 1),lut(ch1/3, ch4, 2)",
             "autogen": true
         },
         {
-            "name": "EWS-G False Color (WIP)",
-            "expression": "lut=lut(lut/fy2/svissr/experimental.png);lut(ch1/3, ch4, 0),lut(ch1/3, ch4, 1),lut(ch1/3, ch4, 2)",
-            "image": {
-                "white_balance": true
-            }
+            "name": "S-VISSR EView",
+            "expression": "cch4=(4, brightness_temperature, 300.000000, 210.000000);cch1=(1, albedo, 0.000000, 0.5500000);cch1,cch1,cch4"
         },
         {
-        "name": "AVHRR 543b IR False Color",
-        "expression": "ch5,ch4,ch2",
-        "image": {
-            "individual_equalize": true,
-            "white_balance": true
-        },
-        "description": "descriptions/543b.md",
-        "autogen": true
+            "name": "Night Microphysics",
+            "expression": "cch9=(4, brightness_temperature, 200, 400); cch10=(5, brightness_temperature, 200, 400); cch4=(2, brightness_temperature, 200, 400); 1-(0.015+cch9-cch10)*19.047619047619047, 1-(0.035+cch4-cch9)*20.2020202020202, ((cch9*200-43.7)/49.5)",
+            "description": "descriptions/NightMicro.md"
         },
         {
-        "name": "AVHRR 124 False Color (Cloud RGB)",
-        "expression": "ch1, ch1, 1-ch4",
-        "image": {
-            "white_balance": true
-        },
-        "description": "descriptions/124.md"
+            "name": "Day Cloud Convection",
+            "expression": "cch4=(4, brightness_temperature, 203.000000, 323.000000);cch1=(1, albedo, 0.000000, 1.000000);cch1^0.58823529411,cch1^0.58823529411,1-cch4"
         },
         {
-            "name": "7.35 µm Uncalibrated Water Vapor",
-            "expression": "cch12=(3, equalized, 0, 0);lut=lut(lut/cal/purpleorange.png);lut(cch12, 0, 0), lut(cch12,0,1), lut(cch12,0,2)",
-            "image": {
-                "equalize": true,
-                "geo_correct": true
+            // Arbitrarily defined, since no absolute calibration has been done yet
+            "name": "AVHRR 543b IR False Color",
+            "expression": "cch3=(3, brightness_temperature, 280.000000, 180.000000);cch4=(4, brightness_temperature, 310.000000, 210.000000);cch5=(5, brightness_temperature, 310.000000, 210.000000);cch5,cch4,cch3",
+            "description": "descriptions/543b.md"
+        }
+    ],
+    "default": {
+        "calibration_ranges": {
+            "1": {
+                "min": 0,
+                "max": 1
+            },
+            "2": {
+                "min": 210,
+                "max": 350
+            },
+            "3": {
+                "min": 180,
+                "max": 300
+            },
+            "4": {
+                "min": 210,
+                "max": 350
+            },
+            "5": {
+                "min": 210,
+                "max": 350
             }
         }
-    ]
-
+    }
 }

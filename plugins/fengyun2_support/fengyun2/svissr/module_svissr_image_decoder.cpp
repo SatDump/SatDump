@@ -1,19 +1,65 @@
 #include "module_svissr_image_decoder.h"
+#include "svissr_blocks.h"
+
+#include <filesystem>
+#include <vector>
+
 #include "imgui/imgui.h"
 #include "imgui/imgui_image.h"
 #include "logger.h"
+#include "products/image/calibration_units.h"
 #include "products/image_product.h"
+#include "utils/majority_law.h"
 #include "utils/stats.h"
-#include <cstdint>
-#include <filesystem>
 
-#define FRAME_SIZE 44356
+#define FRAME_SIZE 44356 /* Standard S-VISSR frame in bytes */
+
+// Sector ID (2) + S/C & CDAS block (126) + Constants (64) + Subcom ID (4)
+#define SUBCOM_START_OFFSET 196 /* Offset from start of frame to the Subcom section*/
+
+// Simplified mapping (100) + Orbit & attitude (128) + MANAM (410) + Calib (256+1024) + Spare (179)
+#define SUBCOM_GROUP_SIZE 2097 /* Size of the repeated (Subcommunication) section of the documentation sector */
+
+std::map<fengyun_svissr::SVISSRSubCommunicaitonBlockType, fengyun_svissr::SVISSRSubcommunicationBlock> subcom_blocks = {
+    {fengyun_svissr::Simplified_mapping, {0, 99}}, {fengyun_svissr::Orbit_and_attitude, {100, 227}}, {fengyun_svissr::MANAM, {228, 637}},
+    {fengyun_svissr::Calibration_1, {638, 893}},   {fengyun_svissr::Calibration_2, {894, 1917}},     {fengyun_svissr::Spare, {1918, 2096}}};
 
 // Return filesize
 uint64_t getFilesize(std::string filepath);
 
 namespace fengyun_svissr
 {
+    SVISSRImageDecoderModule::SVISSRImageDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
+        : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
+    {
+        frame = new uint8_t[FRAME_SIZE * 2];
+
+        // Counter related vars
+        counter_locked = false;
+        global_counter = 0;
+        apply_correction = parameters.contains("apply_correction") ? parameters["apply_correction"].get<bool>() : false;
+        backwardScan = false;
+
+        fsfsm_enable_output = false;
+
+        vissrImageReader.reset();
+    }
+
+    SVISSRImageDecoderModule::~SVISSRImageDecoderModule()
+    {
+        delete[] frame;
+
+        if (textureID != 0)
+        {
+            delete[] textureBuffer;
+            // deleteImageTexture(textureID);
+        }
+
+        subcommunication_frames.clear();
+        current_subcom_frame.clear();
+        group_retransmissions.clear();
+    }
+
     std::string SVISSRImageDecoderModule::getSvissrFilename(std::tm *timeReadable, std::string channel)
     {
         std::string utc_filename = sat_name + "_" + channel + "_" +                                                                                             // Satellite name and channel
@@ -26,45 +72,114 @@ namespace fengyun_svissr
         return utc_filename;
     }
 
+    /**
+     * @brief Extracts a specific block from the subcommunication minor frame
+     *
+     * @param subcom_frame The minor frame to get the block from
+     * @param block_type The specific subcommunication block to extract
+     * @return std::vector<uint8_t> A vector containing the requested block's data
+     */
+    std::vector<uint8_t> get_subcom_block(MinorFrame subcom_frame, SVISSRSubCommunicaitonBlockType block_type)
+    {
+        // Subcommunication frames are ALWAYS the same size, if we don't have the size, something went very wrong!
+        if (subcom_frame.size() != SUBCOM_GROUP_SIZE * 25)
+        {
+            logger->critical("SUBCOM FRAME SIZE IS NOT CORRECT!!! Was a group missed? ABORTING!");
+            abort();
+        }
+
+        std::vector<uint8_t> output;
+
+        // Data is transmitted in 25 groups, all of which have a piece of every block type
+        for (int group = 0; group < 25; group++)
+        {
+            for (int byte = subcom_blocks[block_type].start_offset; byte <= subcom_blocks[block_type].end_offset; byte++)
+            {
+                output.push_back(subcom_frame[group * SUBCOM_GROUP_SIZE + byte]);
+            }
+        }
+
+        return output;
+    };
+
+    /**
+     * @brief Counts the amount of errors in a subcommunication frame's 4475-byte spare. Used to ensure we are not looking at junk.
+     *
+     * Works because the spare is supposed to be all zeroes, helpful to evade decode attempts on damaged data.
+     * Max errors: 35800 (theory, 179*25*8), 17900 (realistic for BPSK, 50% chance)
+     *
+     * @param subcom_frame
+     * @return int
+     */
+    int get_spare_errors(MinorFrame subcom_frame)
+    {
+        std::vector<uint8_t> spare = get_subcom_block(subcom_frame, Spare);
+        int errors = 0;
+
+        // The spare is 4475 bytes long (179 * 25 groups)
+        for (int byte = 0; byte < 4475; byte++)
+        {
+            uint8_t cur_byte = spare[byte];
+            for (int bit = 0; bit < 8; bit++)
+            {
+                if (((cur_byte >> bit) & 0x1) == 1)
+                {
+                    // All bits should be zero
+                    errors++;
+                }
+            }
+        }
+
+        return errors;
+    }
+
+    /**
+     * @brief Builds the 25 received groups of a minor frame, saves it. Aborts if we didn't get 25 groups.
+     *
+     */
+    void SVISSRImageDecoderModule::save_subcom_frame()
+    {
+        if (!group_retransmissions.empty() && current_subcom_frame.size() / SUBCOM_GROUP_SIZE == 24)
+        {
+
+            // Process the last group
+            Group last_group = majority_law_vec(group_retransmissions);
+            group_retransmissions.clear();
+
+            // Add group to the frame
+            current_subcom_frame.insert(current_subcom_frame.end(), last_group.begin(), last_group.end());
+
+            // Save the frame
+            logger->debug("Saved a subcom frame!");
+            subcommunication_frames.push_back(current_subcom_frame);
+            current_subcom_frame.clear();
+        }
+        // Below are useful for troubleshooting low SNR
+        else if (group_retransmissions.empty())
+        {
+            logger->debug("Failed to get the last group!");
+            current_subcom_frame.clear();
+        }
+        else
+        {
+            logger->debug("Minor frame size is not valid, skipping! %d bytes, %f groups", current_subcom_frame.size(), current_subcom_frame.size() / SUBCOM_GROUP_SIZE);
+            current_subcom_frame.clear();
+        }
+    }
+
+    /**
+     * @brief Processes the received products
+     *
+     * @param buffer
+     */
     void SVISSRImageDecoderModule::writeImages(SVISSRBuffer &buffer)
     {
         writingImage = true;
-
-        logger->info("Found SCID " + std::to_string(buffer.scid));
-
-        if (buffer.timestamp == 0)
-        {
-            logger->warn("No timestamps were pulled! Was the reception too short? Defaulting to system time");
-            buffer.timestamp = time(0);
-        }
-        // Sanity check, if the timestamp isn't between 2000 and 2050, consider it to be incorrect
-        // (I don't think the Fengyun 2 satellites will live for another 25 years)
-        else if (buffer.timestamp < 946681200 || buffer.timestamp > 2524604400)
-        {
-            logger->warn("The pulled timestamp looks erroneous! Was the SNR too low? Defaulting to system time");
-            buffer.timestamp = time(0);
-        }
-
-        const time_t timevalue = buffer.timestamp;
-        // Copies the gmtime result since it gets modified elsewhere
-
-        std::tm timeReadable = *gmtime(&timevalue);
-        std::string timestamp = std::to_string(timeReadable.tm_year + 1900) + "-" +
-                                (timeReadable.tm_mon + 1 > 9 ? std::to_string(timeReadable.tm_mon + 1) : "0" + std::to_string(timeReadable.tm_mon + 1)) + "-" +
-                                (timeReadable.tm_mday > 9 ? std::to_string(timeReadable.tm_mday) : "0" + std::to_string(timeReadable.tm_mday)) + "_" +
-                                (timeReadable.tm_hour > 9 ? std::to_string(timeReadable.tm_hour) : "0" + std::to_string(timeReadable.tm_hour)) + "-" +
-                                (timeReadable.tm_min > 9 ? std::to_string(timeReadable.tm_min) : "0" + std::to_string(timeReadable.tm_min));
-
-        logger->info("Full disk finished, saving at " + timestamp + "...");
-
-        std::filesystem::create_directory(buffer.directory + "/" + timestamp);
-
-        std::string disk_folder = buffer.directory + "/" + timestamp;
-
         // Save products
         satdump::products::ImageProduct svissr_product;
+        svissr_product.instrument_name = "fy2-svissr";
+        double unix_timestamp = 0;
 
-        // Get the sat name
         switch (buffer.scid)
         {
         case (40):
@@ -105,25 +220,281 @@ namespace fengyun_svissr
             svissr_product.set_product_source("Unknown FengYun-2");
         }
 
+        // -> SUBCOMMUNICATION BLOCK HANDLING <-
 
-        svissr_product.instrument_name = "fy2-svissr";
-        svissr_product.set_product_timestamp(buffer.timestamp);
+        MinorFrame final_subcom_frame; /* Result of majority law between all subcommunication frames */
+
+        std::array<std::array<float, 1024>, 5> LUTs; /* Calibration LUTs */
+        bool process_subcom_data = false;
+
+        // Ensures we can and should decode it in the first place
+        logger->debug("Pulled %d subcommunication frames", subcommunication_frames.size());
+        if (!subcommunication_frames.empty())
+        {
+            final_subcom_frame = majority_law_vec(subcommunication_frames);
+
+            // - Integrity check -
+            int errors = get_spare_errors(final_subcom_frame);
+            logger->debug("Final subcom data errors: %d/35800", errors);
+
+            // 32 decided arbitrarily - we are good if less than 32 out of 35800 bits are flipped
+            if (errors < 32)
+            {
+                process_subcom_data = true;
+
+                // This only really happpens at dismal SNRs, worth a notice
+                if (errors != 0)
+                {
+                    logger->warn("Subcommunication data had light damage, timestamps/projections/calibration/MANAM might have some errors!");
+                }
+            }
+            else
+            {
+                logger->warn("Reception was too short or SNR was too low, subcommunication data is too damaged! Timestamps, projections, and calibration will be disabled");
+            }
+        }
+        else
+        {
+            logger->warn("Reception was too short or SNR was too low: Timestamps, projections, and calibration will be disabled!");
+        }
+
+        if (process_subcom_data)
+        {
+            logger->debug("Processing subcom data...");
+
+            // ----> Orbit & Attitude block <----
+
+            std::vector<uint8_t> orbit_attitude_data_unstructured = get_subcom_block(final_subcom_frame, Orbit_and_attitude);
+
+            // get_subcom_block returns a vector, to directly map to memory we need to reinterpret cast
+            OrbitAndAttitudeData *orbit_attitude_block = reinterpret_cast<OrbitAndAttitudeData *>(orbit_attitude_data_unstructured.data());
+
+            // TODOREWORK: Implement when J2000 is supported.
+
+            // - J2000 projection data handling -
+            /*
+            AttitudePredictionSubBlock attitude_prediction_data;
+            majority_law(orbit_attitude_block->ATTITUDE_PREDICTION_SUBBLOCKS, reinterpret_cast<uint8_t*>(&attitude_prediction_data));
+
+            OrbitPredictionSubBlock orbit_prediction_data;
+            majority_law(orbit_attitude_block->ORBIT_PREDICTION_SUBBLOCKS, reinterpret_cast<uint8_t*>(&orbit_prediction_data));
+
+            // Everything is not loaded into orbit_attitude_block, attitude_prediction_data, and orbit_prediction_data
+            */
+            // - Timestamp handling -
+            unix_timestamp = ((orbit_attitude_block->IMAGE_START_TIME * 1e-8) - 40587) * 86400;
+
+            // ----> Simplified mapping (GCP) <----
+
+            // TODOREWORK: Implement when GCPs are patchedback in
+            /*
+            std::vector<uint8_t> simplified_mapping = get_subcom_block(minor_frame, Simplified_mapping);
+            nlohmann::json proj_cfg;
+
+            std::vector<satdump::projection::GCP> raw; // debug
+            nlohmann::json gcps;
+            int gcp_count = 0;
+
+            for (int index = 0, longitude = 45, latitude = 60; index < simplified_mapping.size(); index += 4)
+            {
+                // LONGITUDE 45°E through 165°E
+                // LATITUDE 60°N through 60°S
+
+                uint16_t x_offset = (uint16_t)simplified_mapping[index] << 8 | (uint16_t)simplified_mapping[index + 1];
+                uint16_t y_offset = (uint16_t)simplified_mapping[index + 2] << 8 | (uint16_t)simplified_mapping[index + 3];
+
+                gcps[gcp_count]["x"] = static_cast<double>(x_offset);
+                gcps[gcp_count]["y"] = static_cast<double>(y_offset);
+                gcps[gcp_count]["lat"] = static_cast<double>(latitude);
+                gcps[gcp_count]["lon"] = static_cast<double>(longitude);
+                gcp_count++;
+
+                // just for debugging
+                raw.push_back({static_cast<double>(x_offset), static_cast<double>(y_offset), static_cast<double>(longitude), static_cast<double>(latitude)});
+
+                // End of a line
+                if (longitude == 165)
+                {
+                    latitude -= 5;
+                    longitude = 45;
+                }
+                else
+                {
+                    longitude += 5;
+                }
+            }
+            proj_cfg["type"] = "gcps_timestamps_line";
+            proj_cfg["gcp_cnt"] = gcp_count;
+            proj_cfg["gcps"] = gcps;
+            proj_cfg["gcp_spacing_x"] = 200;
+            proj_cfg["gcp_spacing_y"] = 200;
+
+
+            // SHIM
+
+            std::vector<double> timestamps;
+            timestamps.insert(timestamps.end(), buffer.image1.height(), unix_timestamp);
+            proj_cfg["timestamps"] = timestamps;
+            svissr_product.set_proj_cfg(proj_cfg);
+            */
+
+            // ----> MANAM <----
+
+            std::vector<uint8_t> manam_data = get_subcom_block(final_subcom_frame, MANAM);
+
+            std::string manam_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MANAM";
+
+            if (!std::filesystem::exists(manam_directory))
+                std::filesystem::create_directory(manam_directory);
+
+            const time_t timevalue = unix_timestamp;
+            std::tm timeReadable = *gmtime(&timevalue);
+            std::string timestamp = std::to_string(timeReadable.tm_year + 1900) + "-" +
+                                    (timeReadable.tm_mon + 1 > 9 ? std::to_string(timeReadable.tm_mon + 1) : "0" + std::to_string(timeReadable.tm_mon + 1)) + "-" +
+                                    (timeReadable.tm_mday > 9 ? std::to_string(timeReadable.tm_mday) : "0" + std::to_string(timeReadable.tm_mday)) + "_" +
+                                    (timeReadable.tm_hour > 9 ? std::to_string(timeReadable.tm_hour) : "0" + std::to_string(timeReadable.tm_hour)) + "-" +
+                                    (timeReadable.tm_min > 9 ? std::to_string(timeReadable.tm_min) : "0" + std::to_string(timeReadable.tm_min));
+
+            std::string manam_path = manam_directory + "/MANAM_" + timestamp + ".txt";
+            std::ofstream outfile(manam_path, std::ios::out | std::ios::binary);
+
+            // Writes the rudimentary MANAM schedule
+            outfile.write(reinterpret_cast<const char *>(&manam_data[0]), 10250);
+            outfile.close();
+
+            // ----> Calibration 2 <----
+            // Calibration 1 block has the same data, just a lower resolution for IR - no point in getting it
+
+            std::vector<uint8_t> Calib_2_block = get_subcom_block(final_subcom_frame, Calibration_2);
+
+            // - VIS calibration -
+
+            for (int byte_index = 256; byte_index < 512; byte_index += 4)
+            {
+                // 4 byte big-endian integer, 10^-3 for value
+                float value = (((uint32_t)Calib_2_block[byte_index] << 24) | ((uint32_t)Calib_2_block[byte_index + 1] << 16) | ((uint32_t)Calib_2_block[byte_index + 2] << 8) |
+                               (uint32_t)Calib_2_block[byte_index + 3]) *
+                              1e-8f;
+
+                // 64 values, we interpolate 15 between them to get values for all 1024 counts
+                int lut_index = ((byte_index - 256) / 4) * 16;
+                LUTs[0][lut_index] = value;
+
+                // No interpolation for the first value
+                if (lut_index == 0)
+                    continue;
+
+                float last_value = LUTs[0][lut_index - 16];
+                float diff = value - last_value;
+
+                for (int interpolation_count = 1; interpolation_count < 16; interpolation_count++)
+                {
+                    // Interpolates the previous 15 values
+                    LUTs[0][lut_index - 16 + interpolation_count] = last_value + (diff * interpolation_count / 15.0f);
+                }
+            }
+
+            // Invalidate first 16 counts - They refer to 0 albedo (true white) which is impossible to reach
+            for (int i = 0; i < 16; i++)
+            {
+                LUTs[0][i] = 0;
+            }
+            // Same for the last 16 counts - just with true black
+            for (int i = 63 * 16; i < 64 * 16; i++)
+            {
+                LUTs[0][i] = 0;
+            }
+
+            // - IR calibration -
+
+            // Starts at zero to account for offsets more nicely
+            for (int ir_channel = 0; ir_channel < 4; ir_channel++)
+            {
+                int start_byte = 1280 + 4096 * ir_channel;
+
+                for (int byte_index = start_byte; byte_index < start_byte + 4096; byte_index += 4)
+                {
+                    // 4 byte big-endian integer, 10^-3 for value
+                    float value = (((uint32_t)Calib_2_block[byte_index] << 24) | ((uint32_t)Calib_2_block[byte_index + 1] << 16) | ((uint32_t)Calib_2_block[byte_index + 2] << 8) |
+                                   (uint32_t)Calib_2_block[byte_index + 3]) *
+                                  1e-3f;
+
+                    int lut_index = (byte_index - start_byte) / 4;
+
+                    // Values are inverted for some reason, no idea why - so we just write them from the back
+                    LUTs[ir_channel + 1][1023 - lut_index] = value;
+                }
+            }
+        }
+        // Too damaged or too low SNR, default to system time
+        else
+        {
+            unix_timestamp = time(0);
+        }
+
+        // Sanity check, if the timestamp isn't between the years 2000 and 2050, consider it to be incorrect
+        // (I don't think the Fengyun 2 satellites will live for another 25 years)
+        if (unix_timestamp < 946681200 || unix_timestamp > 2524604400)
+        {
+            logger->warn("The pulled timestamp looks erroneous! Was the SNR too low? Defaulting to system time");
+            unix_timestamp = time(0);
+        }
+
+        svissr_product.set_product_timestamp(unix_timestamp);
+        const time_t timevalue = unix_timestamp;
+
+        // Copies the gmtime result since it gets modified elsewhere
+        std::tm timeReadable = *gmtime(&timevalue);
+        std::string timestamp = std::to_string(timeReadable.tm_year + 1900) + "-" +
+                                (timeReadable.tm_mon + 1 > 9 ? std::to_string(timeReadable.tm_mon + 1) : "0" + std::to_string(timeReadable.tm_mon + 1)) + "-" +
+                                (timeReadable.tm_mday > 9 ? std::to_string(timeReadable.tm_mday) : "0" + std::to_string(timeReadable.tm_mday)) + "_" +
+                                (timeReadable.tm_hour > 9 ? std::to_string(timeReadable.tm_hour) : "0" + std::to_string(timeReadable.tm_hour)) + "-" +
+                                (timeReadable.tm_min > 9 ? std::to_string(timeReadable.tm_min) : "0" + std::to_string(timeReadable.tm_min));
+
+        logger->info("Full disk finished, saving at " + timestamp + "...");
+
+        std::filesystem::create_directory(buffer.directory + "/" + timestamp);
+
+        std::string disk_folder = buffer.directory + "/" + timestamp;
 
         // Raw Images
-        svissr_product.images.push_back({0, getSvissrFilename(&timeReadable, "1"), "1", buffer.image5, 10, satdump::ChannelTransform().init_none()});
-        svissr_product.images.push_back({1, getSvissrFilename(&timeReadable, "2"), "2", buffer.image4, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
+        svissr_product.images.push_back({0, getSvissrFilename(&timeReadable, "1"), "1", buffer.image1, 10, satdump::ChannelTransform().init_none()});
+        svissr_product.images.push_back({1, getSvissrFilename(&timeReadable, "2"), "2", buffer.image2, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
         svissr_product.images.push_back({2, getSvissrFilename(&timeReadable, "3"), "3", buffer.image3, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
-        svissr_product.images.push_back({3, getSvissrFilename(&timeReadable, "4"), "4", buffer.image1, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
-        svissr_product.images.push_back({4, getSvissrFilename(&timeReadable, "5"), "5", buffer.image2, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
+        svissr_product.images.push_back({3, getSvissrFilename(&timeReadable, "4"), "4", buffer.image4, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
+        svissr_product.images.push_back({4, getSvissrFilename(&timeReadable, "5"), "5", buffer.image5, 10, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
 
-        // Set the channel wavelengths
-        svissr_product.set_channel_wavenumber(0, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 0.65e-6));
+        svissr_product.set_channel_wavenumber(0, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 0.725e-6));
         svissr_product.set_channel_wavenumber(1, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 3.75e-6));
-        svissr_product.set_channel_wavenumber(2, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 7.15e-6));
+        svissr_product.set_channel_wavenumber(2, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 6.75e-6));
         svissr_product.set_channel_wavenumber(3, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 10.8e-6));
         svissr_product.set_channel_wavenumber(4, freq_to_wavenumber(SPEED_OF_LIGHT_M_S / 12e-6));
 
         // TODOREWORK: Add back composite autogeneration
+
+        // Calibrate if we got the calibration data
+        if (process_subcom_data)
+        {
+            nlohmann::json calib_cfg;
+
+            // LUTs transmitted in order: VIS -> IR1 -> IR2 -> IR3 -> IR4
+            // Ergo Visible (0.725 μm) -> LWIR (10.8 μm) -> Split window (12 μm) -> Water vapour (6.75 μm) -> MWIR (3.75 μm)
+            // We order them based on the wavelength so 1-5-4-2-3
+
+            calib_cfg["ch1_lut"] = LUTs[0];
+            calib_cfg["ch2_lut"] = LUTs[4];
+            calib_cfg["ch3_lut"] = LUTs[3];
+            calib_cfg["ch4_lut"] = LUTs[1];
+            calib_cfg["ch5_lut"] = LUTs[2];
+
+            svissr_product.set_calibration("fy2_svissr", calib_cfg);
+
+            svissr_product.set_channel_unit(0, CALIBRATION_ID_ALBEDO);
+            svissr_product.set_channel_unit(1, CALIBRATION_ID_BRIGHTNESS_TEMPERATURE);
+            svissr_product.set_channel_unit(2, CALIBRATION_ID_BRIGHTNESS_TEMPERATURE);
+            svissr_product.set_channel_unit(3, CALIBRATION_ID_BRIGHTNESS_TEMPERATURE);
+            svissr_product.set_channel_unit(4, CALIBRATION_ID_BRIGHTNESS_TEMPERATURE);
+        }
 
         svissr_product.save(disk_folder);
 
@@ -133,34 +504,13 @@ namespace fengyun_svissr
         buffer.image4.clear();
         buffer.image5.clear();
 
+        // Ensures we have no leftovers from subcom handling
+        subcommunication_frames.clear();
+        current_subcom_frame.clear();
+        group_retransmissions.clear();
+        final_subcom_frame.clear();
+
         writingImage = false;
-    }
-
-    SVISSRImageDecoderModule::SVISSRImageDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-        : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
-    {
-        frame = new uint8_t[FRAME_SIZE * 2];
-
-        // Counter related vars
-        counter_locked = false;
-        global_counter = 0;
-        apply_correction = parameters.contains("apply_correction") ? parameters["apply_correction"].get<bool>() : false;
-        backwardScan = false;
-
-        fsfsm_enable_output = false;
-
-        vissrImageReader.reset();
-    }
-
-    SVISSRImageDecoderModule::~SVISSRImageDecoderModule()
-    {
-        delete[] frame;
-
-        if (textureID != 0)
-        {
-            delete[] textureBuffer;
-            // deleteImageTexture(textureID);
-        }
     }
 
     void SVISSRImageDecoderModule::process()
@@ -175,6 +525,8 @@ namespace fengyun_svissr
 
         uint8_t last_status[20];
         memset(last_status, 0, 20);
+
+        int last_group_id = 0;
 
         valid_lines = 0;
 
@@ -191,224 +543,258 @@ namespace fengyun_svissr
             // Read a buffer
             read_data((uint8_t *)frame, FRAME_SIZE);
 
-            // Do the actual work
+            // Parse counter, masked since first four bits should NEVER be 0
+            int counter = (frame[67] << 8 | frame[68]) & 0x0fff;
+
+            // Does correction logic if specified by the user
+            if (apply_correction)
             {
-                // Parse counter
-                int counter = frame[67] << 8 | frame[68];
-
-                // Does correction logic if specified by the user
-                if (apply_correction)
+                if (!counter_locked)
                 {
-                    // Unlocks if we are starting a new series
-                    if (counter_locked && (counter == 1 || counter == 2))
+                    // Can we lock?
+                    if (counter == global_counter + 1 && !backwardScan)
                     {
-                        counter_locked = false;
-                    }
-                    else if (!counter_locked)
-                    {
-                        // Can we lock?
-                        if (counter == global_counter + 1)
-                        {
-                            // LOCKED!
-                            logger->debug("Counter correction LOCKED! Counter: " + std::to_string(counter));
-                            counter_locked = true;
-                        }
-                        else
-                        {
-                            // We can't lock, save this counter for a check on the next one
-                            global_counter = counter;
-                        }
-                    }
-
-                    // We are locked, assume this frame's counter is the previous one plus one.
-                    if (counter_locked)
-                    {
-                        counter = global_counter + 1;
-                        global_counter = counter;
-
-                        // The counter used in the decoding process is pulled from the frame,
-                        // so we rewrite it here.
-                        frame[67] = (counter >> 8) & 0xFF;
-                        frame[68] = counter & 0xFF;
-                    }
-                }
-
-                // ID of the block group: Simplified mapping, Orbit and attitude data, MANAM,
-                // Calibration block 1 and 2 are all sent in 25 separate groups because of their
-                // size. The group ID defines which group is sent. Every group gets transmitted
-                // 8 times every 200 lines, the retransmission counter is at the 195th byte
-                int group_id = frame[193];
-
-                // First 6 bytes from the Orbit and Attitude header, which is sent in 25 100-byte pieces
-                // We need the first piece -> GID = 0
-                if (group_id == 0)
-                {
-
-                    // R6*8 -> Big endian 6 byte integer, needs 10^-8 to read the value
-                    uint64_t raw =
-                        ((uint64_t)frame[296] << 40 | (uint64_t)frame[297] << 32 | (uint64_t)frame[298] << 24 | (uint64_t)frame[299] << 16 | (uint64_t)frame[300] << 8 | (uint64_t)frame[301]);
-
-                    // note for future developers that will save you 6 hours of your life debugging
-                    // 10x10^-8 != 10^-8
-                    // i hate myself
-                    double timestamp = raw * 1e-8;
-
-                    // Converts the MJD timestamp to a unix timestamp
-                    timestamp_stats.push_back(((timestamp - 40587) * 86400));
-                }
-
-                // Parse SCID
-                int scid = frame[91];
-
-                scid_stats.push_back(scid);
-
-                // Safeguard
-                if (counter > 2500)
-                    continue;
-
-                // Parse scan status
-                int status = frame[3] & 0b11; // Decoder scan status
-
-                // We only want forward scan data
-                backwardScan = status == 0;
-
-                memmove(last_status, &last_status[1], 19);
-                last_status[19] = backwardScan;
-
-                // std::cout << counter << std::endl;
-
-                // Try to detect a new scan
-                uint8_t is_back = satdump::most_common(&last_status[0], &last_status[20], 0);
-
-                // Ensures the counter doesn't lock during rollback
-                // Situation:
-                //   Image ends -> Rollback starts -> Corrector erroneously locks during rollback
-                //   -> Corrector shows "LOCKED" until 40 rollback lines are scanned
-                if (is_back && valid_lines < 5)
-                {
-                    counter_locked = false;
-                }
-
-                if (is_back && valid_lines > 40)
-                {
-                    logger->info("Full disk end detected!");
-
-                    // Image has ended, unlock the corrector (if it was enabled)
-                    counter_locked = false;
-
-                    std::shared_ptr<SVISSRBuffer> buffer = std::make_shared<SVISSRBuffer>();
-
-                    // Backup images
-                    buffer->image1 = vissrImageReader.getImageIR1();
-                    buffer->image2 = vissrImageReader.getImageIR2();
-                    buffer->image3 = vissrImageReader.getImageIR3();
-                    buffer->image4 = vissrImageReader.getImageIR4();
-                    buffer->image5 = vissrImageReader.getImageVIS();
-
-                    buffer->scid = satdump::most_common(scid_stats.begin(), scid_stats.end(), 0);
-                    scid_stats.clear();
-
-                    // TODOREWORK majority law would be incredibly useful here, but needs N-element
-                    // implementation because we might sync less frames than intended
-                    // Please note that the timestamps are already converted to unix timestamps,
-                    // this would have to happen on the raw JD one (see where the the stats are pushed to)
-
-                    buffer->timestamp = satdump::most_common(timestamp_stats.begin(), timestamp_stats.end(), 0);
-                    timestamp_stats.clear();
-
-                    buffer->directory = directory;
-
-                    // Write those
-                    if (is_live)
-                    {
-                        images_queue_mtx.lock();
-                        images_queue.push_back(buffer);
-                        images_queue_mtx.unlock();
+                        logger->debug("Counter correction LOCKED! Counter: " + std::to_string(counter));
+                        counter_locked = true;
                     }
                     else
                     {
-                        writeImages(*buffer);
+                        // We can't lock, save this counter for a check on the next one
+                        global_counter = counter;
                     }
-
-                    // Reset readers
-                    vissrImageReader.reset();
-                    valid_lines = 0;
                 }
 
-                if (backwardScan)
-                    continue;
+                // We are locked, assume this frame's counter is the previous one plus one.
+                if (counter_locked)
+                {
+                    counter = global_counter + 1;
+                    global_counter = counter;
 
-                // Process it
-                vissrImageReader.pushFrame(frame);
-                valid_lines++;
-
-                approx_progess = round(((float)counter / 2500.0f) * 1000.0f) / 10.0f;
+                    // The counter used in the decoding process is pulled from the frame,
+                    // so we rewrite it here.
+                    frame[67] = (counter >> 8) & 0xFF;
+                    frame[68] = counter & 0xFF;
+                }
             }
+
+            // - Subcommunication handling -
+
+            // Masked since max GID is 25. Increases reliability
+            int group_id = frame[193] & 0x1f;
+
+            // Each group is transmitted 8 subsequent times - max number is 8, masked for reliability
+            // Currently unused. Helpful for a potential logic rewrite to increase performance @ low SNRs
+            // int repeat_id = frame[195] & 0xf;
+
+            if (group_id != last_group_id)
+            {
+
+                // Subcom frame finished, we should have 24 saved (1 still in buffer)
+                if ((group_id == 0 && last_group_id == 24) || (current_subcom_frame.size() / SUBCOM_GROUP_SIZE) == 24)
+                {
+                    save_subcom_frame();
+                }
+                // We have finished this group, save it. If we didn't get the previous groups, do NOT Proceed!!!
+                else if (group_retransmissions.size() < 9 && (current_subcom_frame.size() / SUBCOM_GROUP_SIZE) == group_id - 1)
+                {
+                    if (!group_retransmissions.empty())
+                    {
+                        // The group is finished, push back the result of majority law to the minor frame set
+                        Group group = majority_law_vec(group_retransmissions);
+                        current_subcom_frame.insert(current_subcom_frame.end(), group.begin(), group.end());
+
+                        group_retransmissions.clear();
+
+                        // Push the current one
+                        Group current_retransmission(frame + SUBCOM_START_OFFSET, frame + SUBCOM_START_OFFSET + SUBCOM_GROUP_SIZE);
+                        group_retransmissions.push_back(current_retransmission);
+                    }
+                    else
+                    {
+                        // Can happen if we sync 1/8 frames
+                        logger->debug("Tried to save empty retransmission group!");
+                    }
+                }
+            }
+            else
+            {
+                // We are in the middle of a group repetition, save it
+
+                // If we have a group saved, we are in a new frame!!! Save it too
+                // ONLY save it if we got the previous ones already
+
+                if ((current_subcom_frame.size() / SUBCOM_GROUP_SIZE) == group_id)
+                {
+                    // Discarded if GID seems invalid
+                    if (group_id < 25)
+                    {
+                        Group current_retransmission(frame + SUBCOM_START_OFFSET, frame + SUBCOM_START_OFFSET + SUBCOM_GROUP_SIZE);
+                        group_retransmissions.push_back(current_retransmission);
+                    }
+                }
+                else
+                {
+                    // We missed the beginning of the frame, discard the rest as it is useless
+                    group_retransmissions.clear();
+                }
+            }
+
+            // Sanity checks
+            if (current_subcom_frame.size() > SUBCOM_GROUP_SIZE * 24)
+            {
+                logger->debug("Subcommunication frame overflow, clearing buffer!");
+                current_subcom_frame.clear();
+            }
+            if (group_retransmissions.size() > 8)
+            {
+                logger->debug("Group retransmissions overflowed, clearing buffer!");
+                group_retransmissions.clear();
+            }
+
+            // Store the last GID to make sure we can parse the retransmission groups
+            last_group_id = group_id;
+
+            // Parse Spacecraft ID (SC/ID)
+            int scid = frame[91];
+
+            scid_stats.push_back(scid);
+
+            // Safeguard
+            if (counter > 2500)
+            {
+                // Unlocks since we are locked at an impossible value.. somehow
+                counter_locked = false;
+                continue;
+            }
+
+            // We only want forward scan data
+            backwardScan = (frame[3] & 0b11) == 0;
+
+            memmove(last_status, &last_status[1], 19);
+            last_status[19] = backwardScan;
+
+            // Try to detect a new scan
+            uint8_t backward_scanning = satdump::most_common(&last_status[0], &last_status[20], 0);
+
+            // Ensures the counter doesn't lock during rollback
+            // Situation:
+            //   Image ends -> Rollback starts -> Corrector erroneously locks during rollback
+            //   -> Corrector shows "LOCKED" until 40 rollback lines are scanned
+            if (backward_scanning && valid_lines < 3)
+            {
+                counter_locked = false;
+            }
+
+            if (backward_scanning && valid_lines > 40)
+            {
+                logger->info("Full disk end detected!");
+
+                // Image has ended, unlock the corrector (if it was enabled)
+                counter_locked = false;
+
+                std::shared_ptr<SVISSRBuffer> buffer = std::make_shared<SVISSRBuffer>();
+
+                // Offload images
+
+                // Channels are transmitted in order: VIS -> IR1 -> IR2 -> IR3 -> IR4
+                // Ergo Visible (0.725 μm) -> LWIR (10.8 μm) -> Split window (12 μm) -> Water vapour (6.75 μm) -> MWIR (3.75 μm)
+                // We order them based on the wavelength so VIS - IR4 - IR3 - IR1 - IR2
+                buffer->image1 = vissrImageReader.getImageVIS();
+                buffer->image2 = vissrImageReader.getImageIR4();
+                buffer->image3 = vissrImageReader.getImageIR3();
+                buffer->image4 = vissrImageReader.getImageIR1();
+                buffer->image5 = vissrImageReader.getImageIR2();
+
+                buffer->scid = satdump::most_common(scid_stats.begin(), scid_stats.end(), 0);
+                scid_stats.clear();
+
+                buffer->directory = directory;
+
+                // Write those
+                if (is_live)
+                {
+                    images_queue_mtx.lock();
+                    images_queue.push_back(buffer);
+                    images_queue_mtx.unlock();
+                }
+                else
+                {
+                    writeImages(*buffer);
+                }
+
+                // Reset readers
+                vissrImageReader.reset();
+                valid_lines = 0;
+            }
+
+            if (backwardScan)
+                continue;
+
+            // Process it
+            vissrImageReader.pushFrame(frame);
+            valid_lines++;
+            approx_progess = round(((float)counter / 2500.0f) * 1000.0f) / 10.0f;
         }
 
         cleanup();
 
-        if (is_live)
+        // Save if we got any data
+        if (valid_lines > 2)
         {
-            logger->info("Full disk end detected!");
+            if (is_live)
+            {
+                logger->info("Full disk end detected!");
 
-            std::shared_ptr<SVISSRBuffer> buffer = std::make_shared<SVISSRBuffer>();
+                std::shared_ptr<SVISSRBuffer> buffer = std::make_shared<SVISSRBuffer>();
 
-            // Backup images
-            buffer->image1 = vissrImageReader.getImageIR1();
-            buffer->image2 = vissrImageReader.getImageIR2();
-            buffer->image3 = vissrImageReader.getImageIR3();
-            buffer->image4 = vissrImageReader.getImageIR4();
-            buffer->image5 = vissrImageReader.getImageVIS();
+                // Offload images
 
-            buffer->scid = satdump::most_common(scid_stats.begin(), scid_stats.end(), 0);
-            scid_stats.clear();
+                // Channels are transmitted in order: VIS -> IR1 -> IR2 -> IR3 -> IR4
+                // Ergo Visible (0.725 μm) -> LWIR (10.8 μm) -> Split window (12 μm) -> Water vapour (6.75 μm) -> MWIR (3.75 μm)
+                // We order them based on the wavelength so VIS - IR4 - IR3 - IR1 - IR2
+                buffer->image1 = vissrImageReader.getImageVIS();
+                buffer->image2 = vissrImageReader.getImageIR4();
+                buffer->image3 = vissrImageReader.getImageIR3();
+                buffer->image4 = vissrImageReader.getImageIR1();
+                buffer->image5 = vissrImageReader.getImageIR2();
 
-            // TODOREWORK majority law would be incredibly useful here, but needs N-element
-            // implementation because we might sync less frames than intended
-            // Please note that the timestamps are already converted to unix timestamps,
-            // this would have to happen on the raw JD one (see where the the stats are pushed to)
+                buffer->scid = satdump::most_common(scid_stats.begin(), scid_stats.end(), 0);
+                scid_stats.clear();
 
-            buffer->timestamp = satdump::most_common(timestamp_stats.begin(), timestamp_stats.end(), 0);
-            timestamp_stats.clear();
+                buffer->directory = directory;
 
-            buffer->directory = directory;
+                images_queue_mtx.lock();
+                images_queue.push_back(buffer);
+                images_queue_mtx.unlock();
 
-            images_queue_mtx.lock();
-            images_queue.push_back(buffer);
-            images_queue_mtx.unlock();
+                images_thread_should_run = false;
+                if (images_queue_thread.joinable())
+                    images_queue_thread.join();
+            }
+            else
+            {
+                logger->info("Full disk end detected!");
 
-            images_thread_should_run = false;
-            if (images_queue_thread.joinable())
-                images_queue_thread.join();
-        }
-        else if (valid_lines > 40)
-        {
-            logger->info("Full disk end detected!");
+                std::shared_ptr<SVISSRBuffer> buffer = std::make_shared<SVISSRBuffer>();
 
-            std::shared_ptr<SVISSRBuffer> buffer = std::make_shared<SVISSRBuffer>();
+                // Offload images
 
-            // Backup images
-            buffer->image1 = vissrImageReader.getImageIR1();
-            buffer->image2 = vissrImageReader.getImageIR2();
-            buffer->image3 = vissrImageReader.getImageIR3();
-            buffer->image4 = vissrImageReader.getImageIR4();
-            buffer->image5 = vissrImageReader.getImageVIS();
+                // Channels are transmitted in order: VIS -> IR1 -> IR2 -> IR3 -> IR4
+                // Ergo Visible (0.725 μm) -> LWIR (10.8 μm) -> Split window (12 μm) -> Water vapour (6.75 μm) -> MWIR (3.75 μm)
+                // We order them based on the wavelength so VIS - IR4 - IR3 - IR1 - IR2
+                buffer->image1 = vissrImageReader.getImageVIS();
+                buffer->image2 = vissrImageReader.getImageIR4();
+                buffer->image3 = vissrImageReader.getImageIR3();
+                buffer->image4 = vissrImageReader.getImageIR1();
+                buffer->image5 = vissrImageReader.getImageIR2();
 
-            buffer->scid = satdump::most_common(scid_stats.begin(), scid_stats.end(), 0);
-            scid_stats.clear();
+                buffer->scid = satdump::most_common(scid_stats.begin(), scid_stats.end(), 0);
+                scid_stats.clear();
 
-            // TODOREWORK majority law would be incredibly useful here, but needs N-element
-            // implementation because we might sync less frames than intended
-            // Please note that the timestamps are already converted to unix timestamps,
-            // this would have to happen on the raw JD one (see where the the stats are pushed to)
+                buffer->directory = directory;
 
-            buffer->timestamp = satdump::most_common(timestamp_stats.begin(), timestamp_stats.end(), 0);
-            timestamp_stats.clear();
-
-            buffer->directory = directory;
-
-            writeImages(*buffer);
+                writeImages(*buffer);
+            }
         }
     }
 
