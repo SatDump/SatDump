@@ -478,7 +478,7 @@ namespace fengyun_svissr
             nlohmann::json calib_cfg;
 
             // LUTs transmitted in order: VIS -> IR1 -> IR2 -> IR3 -> IR4
-            // Ergo Visible (0.7 μm) -> LWIR (10.8 μm) -> Split window (12 μm) -> Water vapour (6.75 μm) -> MWIR (3.75 μm)
+            // Ergo Visible (0.725 μm) -> LWIR (10.8 μm) -> Split window (12 μm) -> Water vapour (6.75 μm) -> MWIR (3.75 μm)
             // We order them based on the wavelength so 1-5-4-2-3
 
             calib_cfg["ch1_lut"] = LUTs[0];
@@ -697,7 +697,7 @@ namespace fengyun_svissr
                 // Offload images
 
                 // Chanenls are transmitted in order: VIS -> IR1 -> IR2 -> IR3 -> IR4
-                // Ergo Visible (0.7 μm) -> LWIR (10.8 μm) -> Split window (12 μm) -> Water vapour (6.75 μm) -> MWIR (3.75 μm)
+                // Ergo Visible (0.725 μm) -> LWIR (10.8 μm) -> Split window (12 μm) -> Water vapour (6.75 μm) -> MWIR (3.75 μm)
                 // We order them based on the wavelength so VIS - IR4 - IR3 - IR1 - IR2
                 buffer->image1 = vissrImageReader.getImageVIS();
                 buffer->image2 = vissrImageReader.getImageIR4();
@@ -750,7 +750,7 @@ namespace fengyun_svissr
                 // Offload images
 
                 // Chanenls are transmitted in order: VIS -> IR1 -> IR2 -> IR3 -> IR4
-                // Ergo Visible (0.7 μm) -> LWIR (10.8 μm) -> Split window (12 μm) -> Water vapour (6.75 μm) -> MWIR (3.75 μm)
+                // Ergo Visible (0.725 μm) -> LWIR (10.8 μm) -> Split window (12 μm) -> Water vapour (6.75 μm) -> MWIR (3.75 μm)
                 // We order them based on the wavelength so VIS - IR4 - IR3 - IR1 - IR2
                 buffer->image1 = vissrImageReader.getImageVIS();
                 buffer->image2 = vissrImageReader.getImageIR4();
@@ -780,7 +780,7 @@ namespace fengyun_svissr
                 // Offload images
 
                 // Chanenls are transmitted in order: VIS -> IR1 -> IR2 -> IR3 -> IR4
-                // Ergo Visible (0.7 μm) -> LWIR (10.8 μm) -> Split window (12 μm) -> Water vapour (6.75 μm) -> MWIR (3.75 μm)
+                // Ergo Visible (0.725 μm) -> LWIR (10.8 μm) -> Split window (12 μm) -> Water vapour (6.75 μm) -> MWIR (3.75 μm)
                 // We order them based on the wavelength so VIS - IR4 - IR3 - IR1 - IR2
                 buffer->image1 = vissrImageReader.getImageVIS();
                 buffer->image2 = vissrImageReader.getImageIR4();
