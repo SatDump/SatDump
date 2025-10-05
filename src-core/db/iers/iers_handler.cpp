@@ -24,6 +24,7 @@ namespace satdump
         bool honor_setting = true;
         time_t update_interval = 3600 * 60; // TODOREWORK
 
+#if 0
         // Update now, if needed
         time_t now = time(NULL);
         if (/*(honor_setting && now > last_update + update_interval) ||*/ h->get_table_size("iers") <= 0)
@@ -31,6 +32,7 @@ namespace satdump
             updateIERS();
             last_update = now;
         }
+#endif
 
         // Schedule updates while running
         if (honor_setting)

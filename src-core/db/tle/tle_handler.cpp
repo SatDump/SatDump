@@ -52,6 +52,7 @@ namespace satdump
             honor_setting = false;
         }
 
+#if 0
         // Update now, if needed
         time_t now = time(NULL);
         if (/*(honor_setting && now > last_update + update_interval) ||*/ h->get_table_size("tle") <= 0)
@@ -59,6 +60,7 @@ namespace satdump
             updateTLEDatabase();
             last_update = now;
         }
+#endif
 
         // Schedule updates while running
         if (honor_setting)
