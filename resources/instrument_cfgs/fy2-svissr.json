@@ -28,6 +28,14 @@
             "name": "AVHRR 543b IR False Color",
             "expression": "cch3=(3, brightness_temperature, 280.000000, 180.000000);cch4=(4, brightness_temperature, 310.000000, 210.000000);cch5=(5, brightness_temperature, 310.000000, 210.000000);cch5,cch4,cch3",
             "description": "descriptions/543b.md"
+        },
+        {
+            "name": "AVHRR 543b IR False Color (Uncalibrated)",
+            "expression": "1-ch5,1-ch4,1-ch3",
+            "description": "descriptions/543b.md",
+            "image": {
+                "individual_equalize": true
+            }
         }
     ],
     "default": {
