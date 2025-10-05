@@ -1,19 +1,23 @@
-#include <random>
+#include "loader.h"
+#include "const.h"
+#include "core/backend.h"
+#include "core/resources.h"
+#include "core/style.h"
+#include "image/image.h"
+#include "image/io.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_flags.h"
 #include "imgui/imgui_image.h"
-#include "image/image.h"
-#include "image/io.h"
-#include "core/resources.h"
-#include "core/style.h"
-#include "core/backend.h"
-#include "loader.h"
-#include "const.h"
+#include <random>
+#include <thread>
 
 namespace satdump
 {
     LoadingScreenSink::LoadingScreenSink()
     {
+        // TODOREWORK This can only work if the logger provides data from the MAIN thread!
+        thread_id = std::this_thread::get_id();
+
         const time_t timevalue = time(0);
         std::tm *timeConstant = gmtime(&timevalue);
         image::Image image;
@@ -63,7 +67,8 @@ namespace satdump
 
     void LoadingScreenSink::receive(slog::LogMsg log)
     {
-        if (log.lvl == slog::LOG_INFO)
+        // TODOREWORK This can only work if the logger provides data from the MAIN thread!
+        if (thread_id == std::this_thread::get_id() && log.lvl == slog::LOG_INFO)
             push_frame(log.str);
     }
 
@@ -86,8 +91,8 @@ namespace satdump
             ImGui::PopFont();
             ImGui::SetCursorPos({reference_pos.x + (230 * scale), reference_pos.y + (87 * scale)});
             ImGui::TextUnformatted(slogan.c_str());
-            ImGui::GetWindowDrawList()->AddLine({reference_pos.x + (230 * scale), reference_pos.y + (112 * scale)},
-                                                {reference_pos.x + (490 * scale), reference_pos.y + (112 * scale)}, IM_COL32(155, 155, 155, 255));
+            ImGui::GetWindowDrawList()->AddLine({reference_pos.x + (230 * scale), reference_pos.y + (112 * scale)}, {reference_pos.x + (490 * scale), reference_pos.y + (112 * scale)},
+                                                IM_COL32(155, 155, 155, 255));
             ImGui::SetCursorPos({reference_pos.x + (230 * scale), reference_pos.y + (120 * scale)});
         }
         else
@@ -111,4 +116,4 @@ namespace satdump
         ImGui::End();
         backend::endFrame();
     }
-}
+} // namespace satdump

@@ -54,7 +54,9 @@ namespace satdump
         }
     }
 
-    TaskScheduler::TaskScheduler() { task_thread = std::thread(&TaskScheduler::thread_func, this); }
+    TaskScheduler::TaskScheduler() {}
+
+    void TaskScheduler::start_thread() { task_thread = std::thread(&TaskScheduler::thread_func, this); }
 
     TaskScheduler::~TaskScheduler()
     {

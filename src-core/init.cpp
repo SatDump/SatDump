@@ -155,5 +155,8 @@ namespace satdump
         logger->error("you probably do not want this. If so, make sure to");
         logger->error("specify -DCMAKE_BUILD_TYPE=Release in CMake.");
 #endif
+
+        // Start task scheduler
+        taskScheduler->start_thread();
     }
 } // namespace satdump

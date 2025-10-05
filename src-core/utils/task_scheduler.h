@@ -109,5 +109,7 @@ namespace satdump
             // Notify thread
             cv.notify_one();
         }
+
+        void start_thread();
     };
 } // namespace satdump
