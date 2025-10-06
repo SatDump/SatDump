@@ -78,10 +78,10 @@ end
 
 -- Params
 function init()
-    ch4_gamma    = lua_vars["ch4_gamma"]                        or 0.4
-    red_gamma    = lua_vars["red_gamma"]                        or 0.8
-    blur_size    = math.max(0, math.floor(lua_vars["blur_size"] or 800))
-    hist_stretch = lua_vars["hist_stretch"]                     or 0.01
+    ch4_gamma    = lua_vars["ch4_gamma"]    or 0.4
+    red_gamma    = lua_vars["red_gamma"]    or 0.8
+    blur_size    = lua_vars["blur_size"]    or 780
+    hist_stretch = lua_vars["hist_stretch"] or 0.01
     hist_bins    = 256
     hist_scale   = 255
     hist_thres   = 1.0 / 255.0
@@ -93,10 +93,7 @@ end
 function process()
     local W = rgb_output:width()
     local H = rgb_output:height()
-
-    local max_r = math.floor(math.min(W, H) / 2)
     local r = blur_size
-    if r > max_r then r = max_r end
 
     -- 1) ch4 gamma
     local inv_c4_gamma = 1.0 / ch4_gamma

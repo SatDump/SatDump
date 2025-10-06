@@ -1867,7 +1867,7 @@
                         "vars": {
                             "ch4_gamma": 0.4,    // Pre-compose
                             "red_gamma": 0.8,    // Post-compose
-                            "blur_size": 800,    // Pixels; blur on ch4 before GE/GM
+                            "blur_size": 780,    // Pixels; blur on ch4 before GE/GM
                             "hist_stretch": 0.01 // Per-tail percentile for stretch
                         },
                         "geo_correct": true,
