@@ -4,6 +4,7 @@
 #include "logger.h"
 #include "nlohmann/json.hpp"
 #include "utils/http.h"
+#include <exception>
 
 namespace satdump
 {
@@ -19,6 +20,13 @@ namespace satdump
                                       "ut1_utc FLOAT NOT NULL);";
         if (h->run_sql(sql_create_iers))
             throw satdump_exception("Failed creating IERS database!");
+
+        // Create Leap Seconds Table
+        std::string sql_create_leap_seconds = "CREATE TABLE IF NOT EXISTS leap_seconds("
+                                              "time INT PRIMARY KEY NOT NULL,"
+                                              "leap_seconds INT NOT NULL);";
+        if (h->run_sql(sql_create_leap_seconds))
+            throw satdump_exception("Failed creating leap seconds database!");
 
         time_t last_update = std::stoull(h->get_meta("iers_last_updated", "0"));
         bool honor_setting = true;
@@ -47,6 +55,7 @@ namespace satdump
     {
         std::string url_str = "https://datacenter.iers.org/products/eop/rapid/standard/json/finals2000A.all.json"; // TODOREWORK
 
+        // IERS Bulletin A/B
         logger->info("Downloading IERS Bulletins from " + url_str + "...");
         std::string res;
         if (perform_http_request(url_str, res))
@@ -93,6 +102,63 @@ namespace satdump
 
         h->tr_end();
 
+        // Leap seconds (bulletin C)
+        url_str = "https://hpiers.obspm.fr/iers/bul/bulc/ntp/leap-seconds.list";
+        logger->info("Downloading Leap Seconds Bulletins from " + url_str + "...");
+        if (perform_http_request(url_str, res))
+        {
+            logger->error("Error fetching Leap Seconds Bulletins!");
+            return;
+        }
+
+        try
+        {
+            std::istringstream ls_stream(res);
+            std::string l;
+            while (std::getline(ls_stream, l))
+            {
+                if (l.size() > 0 && l[0] == '#')
+                    continue;
+
+                std::vector<std::string> parts;
+                std::string p;
+                char lastc = ' ';
+                for (auto &c : l)
+                {
+                    if (c == ' ' && lastc != ' ')
+                    {
+                        parts.push_back(p);
+                        p.clear();
+                    }
+
+                    p.push_back(c);
+                    lastc = c;
+                }
+                parts.push_back(p);
+
+                if (parts.size() == 6)
+                {
+                    uint64_t time = std::stoull(parts[0]) - 2208988800;
+                    int leaps = std::stod(parts[1]);
+
+                    std::string sql = "INSERT INTO leap_seconds (time, leap_seconds) VALUES (" + std::to_string(time) + ", '" + std::to_string(leaps) +
+                                      "') ON CONFLICT(time) DO UPDATE SET leap_seconds='" + std::to_string(leaps) + "';";
+
+                    char *err = NULL;
+                    if (sqlite3_exec(h->db, sql.c_str(), NULL, 0, &err))
+                    {
+                        logger->error(err);
+                        sqlite3_free(err);
+                    }
+                }
+            }
+        }
+        catch (std::exception &e)
+        {
+            logger->error("Leap second parsing error!");
+            return;
+        }
+
         // Update last update timestamp & other stuff
         h->set_meta("iers_last_updated", std::to_string(time(0)));
         logger->info("%d IERS Records in database!", h->get_table_size("iers"));
@@ -113,6 +179,16 @@ namespace satdump
         }
 
         sqlite3_finalize(res);
+
+        if (sqlite3_prepare_v2(h->db, ("select leap_seconds from leap_seconds where " + std::to_string(time) + " >= time order by time desc limit 1").c_str(), -1, &res, 0))
+            logger->error("Couldn't fetch Leap Seconds data from DB! " + std::string(sqlite3_errmsg(h->db)));
+        else if (sqlite3_step(res) == SQLITE_ROW)
+        {
+            r.leap_seconds = sqlite3_column_int(res, 0);
+        }
+
+        sqlite3_finalize(res);
+
         return r;
     }
 } // namespace satdump

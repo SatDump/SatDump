@@ -1,18 +1,7 @@
 PROJECT_NAME           = SatDump
 OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@/documentation/
 PROJECT_NUMBER         = @SATDUMP_VERSION@
-INPUT                  = src-core/common/ccsds \
-                         src-core/products \
-                         src-core/handlers \
-                         src-interface/explorer \
-                         src-core/projection \
-                         src-core/dsp \
-                         src-core/image \
-                         src-core/utils \
-                         docs/pages \
-                         docs/res \
-                         plugins/xrit_support/xrit \
-                         plugins/fengyun2_support/fengyun2/svissr
+INPUT                  = @DOXYGEN_FILES@
 EXCLUDE                = src-core/image/font_lib src-core/image/font 
 RECURSIVE              = YES
 

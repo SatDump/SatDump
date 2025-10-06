@@ -19,8 +19,6 @@ extern "C"
 #include "logger.h"
 #include "utils/time.h"
 
-#define LEAP_SECONDS 37
-
 // TODOREWORKDB
 
 namespace aws
@@ -111,7 +109,7 @@ namespace aws
 
                 auto iers = satdump::db_iers->getBestIERSInfo(ephem_timestamp);
 
-                if (novas_set_unix_time(unix_time.tv_sec, unix_time.tv_nsec, LEAP_SECONDS, iers.ut1_utc, &obs_time) != 0)
+                if (novas_set_unix_time(unix_time.tv_sec, unix_time.tv_nsec, iers.leap_seconds, iers.ut1_utc, &obs_time) != 0)
                     fprintf(stderr, "ERROR! failed to set time of observation.\n");
 
                 // char timestamp1[40];

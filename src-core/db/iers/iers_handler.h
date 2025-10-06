@@ -12,6 +12,7 @@ namespace satdump
         double polar_dx;
         double polar_dy;
         double ut1_utc;
+        int leap_seconds;
     };
 
     class IersDBHandler : public DBHandlerBase

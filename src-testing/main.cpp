@@ -19,6 +19,7 @@
 #include "utils/file/file_iterators.h"
 #include "utils/file/folder_file_iterators.h"
 #include "utils/file/zip_file_iterators.h"
+#include "utils/http.h"
 #include "utils/time.h"
 #include <cmath>
 #include <cstdint>
@@ -26,11 +27,52 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <vector>
 
 int main(int argc, char *argv[])
 {
     initLogger();
 
+    std::string f;
+    satdump::perform_http_request("https://hpiers.obspm.fr/iers/bul/bulc/ntp/leap-seconds.list", f);
+
+    std::istringstream ls_stream(f);
+    std::string l;
+    while (std::getline(ls_stream, l))
+    {
+        if (l.size() > 0 && l[0] == '#')
+            continue;
+        logger->trace(l);
+
+        std::vector<std::string> parts;
+        std::string p;
+        char lastc = ' ';
+        for (auto &c : l)
+        {
+            if (c == ' ' && lastc != ' ')
+            {
+                parts.push_back(p);
+                p.clear();
+            }
+
+            p.push_back(c);
+            lastc = c;
+        }
+        parts.push_back(p);
+
+        // for (auto &p : parts)
+        //     logger->info(p);
+
+        if (parts.size() == 6)
+        {
+            uint64_t tim = std::stoull(parts[0]) - 2208988800;
+            int leaps = std::stod(parts[1]);
+
+            logger->info("%s : %d", satdump::timestamp_to_string(tim).c_str(), leaps);
+        }
+    }
+
+#if 0
     logger->set_level(slog::LOG_OFF);
     satdump::initSatdump();
     completeLoggerInit();
@@ -141,5 +183,6 @@ int main(int argc, char *argv[])
 #endif
         }
     }
+#endif
 #endif
 }

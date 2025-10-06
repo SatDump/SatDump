@@ -360,6 +360,19 @@ if((CMAKE_BUILD_TYPE MATCHES "^[Rr]elease") AND BUILD_DOCS)
     if(DOXYGEN_FOUND)
         set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
         set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+        set(DOXYGEN_FILES  "src-core/common/ccsds \
+                            src-core/products \
+                            src-core/handlers \
+                            src-interface/explorer \
+                            src-core/projection \
+                            src-core/dsp \
+                            src-core/image \
+                            src-core/utils \
+                            docs/pages \
+                            docs/res \
+                            plugins/xrit_support/xrit")
+        set(DOXYGEN_FILES  "${DOXYGEN_FILES} \
+                            plugins/fengyun2_support/fengyun2/svissr")
 
         configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
         message("-- Doxygen build enabled!")
