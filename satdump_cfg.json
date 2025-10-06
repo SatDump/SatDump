@@ -1861,6 +1861,18 @@
                         "white_balance": true,
                         "individual_equalize": true
                     },
+                    "MSU-MR 421 Natural (IR Grain-Merge)": {
+                        "channels": "ch4, ch2, ch1",
+                        "lua": "scripted_compos/msu-mr_421_natural.lua",
+                        "vars": {
+                            "ch4_gamma": 0.4,    // Pre-compose
+                            "red_gamma": 0.8,    // Post-compose
+                            "blur_size": 800,    // Pixels; blur on ch4 before GE/GM
+                            "hist_stretch": 0.01 // Per-tail percentile for stretch
+                        },
+                        "geo_correct": true,
+                        "autogen": false
+                    },
                     "AVHRR 124 False Color": {
                         "equation": "ch1, ch2, 1-ch5",
                         "description": "descriptions/124.md",
