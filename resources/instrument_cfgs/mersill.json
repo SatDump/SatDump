@@ -12,7 +12,7 @@
         },
         {
             "name": "MERSI-LL EView",
-            "expression": "8, ch8, 1-ch1",
+            "expression": "ch8, ch8, 1-ch1",
             "image": {
                 "individual_equalize": true,
                 "geo_correct": true
