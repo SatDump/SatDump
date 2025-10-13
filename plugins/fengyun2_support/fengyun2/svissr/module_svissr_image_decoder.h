@@ -11,7 +11,7 @@
 
 namespace fengyun_svissr
 {
-    enum SVISSRSubCommunicaitonBlockType
+    enum SVISSRSubCommunicationBlockType
     {
         Simplified_mapping,
         Orbit_and_attitude,
