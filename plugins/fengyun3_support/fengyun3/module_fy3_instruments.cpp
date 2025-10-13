@@ -20,6 +20,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <string>
 
 namespace fengyun3
 {
@@ -42,6 +43,8 @@ namespace fengyun3
                 d_satellite = FY_3F;
             else if (parameters["satellite"] == "fy3g")
                 d_satellite = FY_3G;
+            else if (parameters["satellite"] == "fy3h")
+                d_satellite = FY_3H;
             else
                 throw satdump_exception("FY3 Instruments Decoder : FY3 satellite \"" + parameters["satellite"].get<std::string>() + "\" is not valid!");
 
@@ -158,7 +161,7 @@ namespace fengyun3
                 ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
                 if (vcdu.spacecraft_id == FY3_A_SCID || vcdu.spacecraft_id == FY3_B_SCID || vcdu.spacecraft_id == FY3_C_SCID || vcdu.spacecraft_id == FY3_D_SCID || vcdu.spacecraft_id == FY3_E_SCID ||
-                    vcdu.spacecraft_id == FY3_F_SCID || vcdu.spacecraft_id == FY3_G_SCID)
+                    vcdu.spacecraft_id == FY3_F_SCID || vcdu.spacecraft_id == FY3_G_SCID || vcdu.spacecraft_id == FY3_H_SCID)
                     fy_scids.push_back(vcdu.spacecraft_id);
 
                 if (d_satellite == FY_AB)
@@ -315,7 +318,7 @@ namespace fengyun3
                                 mwts3_reader.work(pkt);
                     }
                 }
-                else if (d_satellite == FY_3F)
+                else if (d_satellite == FY_3F || d_satellite == FY_3H)
                 {
                     // printf("VCID %d\n", vcdu.vcid);
                     // if (vcdu.vcid == 3) //
@@ -423,7 +426,7 @@ namespace fengyun3
             int scid = satdump::most_common(fy_scids.begin(), fy_scids.end(), 0);
             fy_scids.clear();
 
-            std::string sat_name = "Unknown FengYun-3";
+            std::string sat_name = "Unknown FengYun-3 (SCID " + std::to_string(scid) + ")";
             if (scid == FY3_A_SCID)
                 sat_name = "FengYun-3A";
             else if (scid == FY3_B_SCID)
@@ -438,6 +441,8 @@ namespace fengyun3
                 sat_name = "FengYun-3F";
             else if (scid == FY3_G_SCID)
                 sat_name = "FengYun-3G";
+            else if (scid == FY3_H_SCID)
+                sat_name = "FengYun-3H";
 
             int norad = 0;
             if (scid == FY3_A_SCID)
@@ -454,6 +459,8 @@ namespace fengyun3
                 norad = FY3_F_NORAD;
             else if (scid == FY3_G_SCID)
                 norad = FY3_G_NORAD;
+            else if (scid == FY3_H_SCID)
+                norad = FY3_H_NORAD;
 
             // Products dataset
             satdump::products::DataSet dataset;
@@ -466,7 +473,7 @@ namespace fengyun3
                 dataset.timestamp = satdump::get_median(mersi2_reader.timestamps);
             else if (d_satellite == FY_3E)
                 dataset.timestamp = satdump::get_median(mersill_reader.timestamps);
-            else if (d_satellite == FY_3F)
+            else if (d_satellite == FY_3F || d_satellite == FY_3H)
                 dataset.timestamp = satdump::get_median(mersi3_reader.timestamps);
             else if (d_satellite == FY_3G)
                 dataset.timestamp = satdump::get_median(mersirm_reader.timestamps);
@@ -528,7 +535,7 @@ namespace fengyun3
                 mwhs1_status = DONE;
             }
 
-            if (d_satellite == FY_3F || d_satellite == FY_3E || d_satellite == FY_3D || d_satellite == FY_3C) // MWHS-2
+            if (d_satellite == FY_3F || d_satellite == FY_3H || d_satellite == FY_3E || d_satellite == FY_3D || d_satellite == FY_3C) // MWHS-2
             {
                 mwhs2_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MWHS-2";
@@ -698,7 +705,7 @@ namespace fengyun3
                 mersi2_status = DONE;
             }
 
-            if (d_satellite == FY_3F) // MERSI-3
+            if (d_satellite == FY_3F || d_satellite == FY_3H) // MERSI-3
             {
                 mersi3_status = PROCESSING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MERSI-3";
@@ -894,7 +901,7 @@ namespace fengyun3
                 mwri_status = DONE;
             }
 
-            if (d_satellite == FY_3F) // MWRI-2
+            if (d_satellite == FY_3F || d_satellite == FY_3H) // MWRI-2
             {
                 mwri2_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MWRI-2";
@@ -1046,7 +1053,7 @@ namespace fengyun3
                 mwts2_status = DONE;
             }
 
-            if (d_satellite == FY_3E || d_satellite == FY_3F) // MWTS-3
+            if (d_satellite == FY_3E || d_satellite == FY_3F || d_satellite == FY_3H) // MWTS-3
             {
                 mwts3_status = SAVING;
                 std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MWTS-3";
@@ -1123,7 +1130,7 @@ namespace fengyun3
                     drawStatus(mersill_status);
                 }
 
-                if (d_satellite == FY_3F)
+                if (d_satellite == FY_3F || d_satellite == FY_3H)
                 {
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
@@ -1262,7 +1269,7 @@ namespace fengyun3
                     drawStatus(gas_status);
                 }
 
-                if (d_satellite == FY_3E || d_satellite == FY_3F)
+                if (d_satellite == FY_3E || d_satellite == FY_3F || d_satellite == FY_3H)
                 {
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
@@ -1273,7 +1280,7 @@ namespace fengyun3
                     drawStatus(mwts3_status);
                 }
 
-                if (d_satellite == FY_3F || d_satellite == FY_3E || d_satellite == FY_3D || d_satellite == FY_3C)
+                if (d_satellite == FY_3F || d_satellite == FY_3H || d_satellite == FY_3E || d_satellite == FY_3D || d_satellite == FY_3C)
                 {
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);

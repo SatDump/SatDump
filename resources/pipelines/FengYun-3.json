@@ -364,6 +364,58 @@
             }
         }
     },
+    "fengyun3_h_ahrpt": {
+        "name": "FengYun-3 H AHRPT",
+        "frequencies": [
+            [
+                "Main",
+                7860e6
+            ]
+        ],
+        "parameters": {
+            "dump_mersi": {
+                "type": "bool",
+                "value": false,
+                "name": "Dump MERSI(.bin)",
+                "description": "Dump raw MERSI frames for processing with\nother software, such as Fred's WeatherSat!"
+            },
+            "mersi_histmatch": {
+                "type": "bool",
+                "value": true,
+                "name": "MERSI Line-based histogram equalization",
+                "description": "Toggle line-based histogram equalization for MERSI, to make the image smoother. However, this causes problems with thunderstorm clouds appearing too white."
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "psk_demod",
+                "parameters": {
+                    "constellation": "qpsk",
+                    "symbolrate": 38.4e6,
+                    "rrc_alpha": 0.35,
+                    "pll_bw": 0.008,
+                    "costas_max_offset": 1e6
+                }
+            },
+            "cadu": {
+                "module": "fengyun_ahrpt_decoder",
+                "parameters": {
+                    "viterbi_outsync_after": 20,
+                    "viterbi_ber_thresold": 0.26,
+                    "invert_second_viterbi": true
+                }
+            },
+            "products": {
+                "module": "fy3_instruments",
+                "parameters": {
+                    "satellite": "fy3h",
+                    "mersi_bowtie": true,
+                    "mersi_histmatch": false
+                }
+            }
+        }
+    },
     "fengyun3_abc_dpt": {
         "name": "FengYun-3 A/B/C DPT",
         "frequencies": [
