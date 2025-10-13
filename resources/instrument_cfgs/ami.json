@@ -9,6 +9,45 @@
             }
         },
         {
+            "name": "AMI True Color",
+            "expression": "cchVI005=(VI005, albedo, 0.000000, 1);cchVI004=(VI004, albedo, 0.000000, 1);cchVI006=(VI006, albedo, 0.000000, 1);lut=lut(lut/1d/ami.png);lut(cchVI006, 0 , 0), lut(cchVI005, 0 , 1), lut(cchVI004, 0 , 2)",
+            "description": "descriptions/TrueColor.md",
+            "image": {
+                "remove_background": true,
+                "hue_saturation": true,
+                "hue_saturation_cfg": {
+                    "hue": [
+                        0.1111111111111111,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "lightness": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "overlap": 0,
+                    "saturation": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            }
+        },
+        {
             "name": "MCIR",
             "expression": "cch=(IR105, emissive_radiance, 120.000000, 10.000000); bm=equp(maps/nasa_hd.jpg); cch * (cch) + (1-cch) * bm(0), cch * (cch) + (1-cch) * bm(1), cch * (cch) + (1-cch) * bm(2)",
             "image": {
