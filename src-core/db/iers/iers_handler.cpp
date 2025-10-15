@@ -5,6 +5,7 @@
 #include "nlohmann/json.hpp"
 #include "utils/http.h"
 #include <exception>
+#include <sstream>
 
 namespace satdump
 {

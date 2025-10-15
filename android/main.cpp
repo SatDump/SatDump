@@ -110,9 +110,6 @@ void init(struct android_app *app)
         // Set font again to adjust for DPI
         eglSwapInterval(g_EglDisplay, 1);
 
-        // TLE
-        satdump::ui_thread_pool.push([&](int) { satdump::autoUpdateTLE(satdump::user_path + "/satdump_tles.txt"); });
-
         was_init = true;
     }
     else

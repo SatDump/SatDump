@@ -61,6 +61,11 @@ add_library(nng STATIC IMPORTED)
 set_target_properties(nng PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libnng.a)
 # include_directories(deps/nng/jni/)
 
+# SQLite
+add_library(sqlite3 STATIC IMPORTED)
+set_target_properties(sqlite3 PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libsqlite3.a)
+# include_directories(deps/nng/jni/)
+
 # cURL
 add_library(curl STATIC IMPORTED)
 set_target_properties(curl PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libcurl.a)
