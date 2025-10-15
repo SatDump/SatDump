@@ -8,6 +8,14 @@
                 7500e6
             ]
         ],
+        "parameters": {
+            "apply_correction": {
+                "type": "bool",
+                "value": false,
+                "name": "Apply rudimentary correction",
+                "description": "This applies correction on the basis of a sequential order check.\nWhile making imagery more visually presentable at low SNRs, it leads to several issues:\n- Earth might deformed (because of dropped frames)\n- Projections are no longer possible because lines are not in the correct spots"
+            }
+        },
         "work": {
             "baseband": {},
             "soft": {
@@ -31,9 +39,7 @@
             },
             "products": {
                 "module": "elektro_arktika_msugs",
-                "parameters": {
-                    "msugs_offset": 400
-                }
+                "parameters": {}
             }
         }
     },
@@ -70,7 +76,12 @@
             "products": {
                 "module": "elektro_arktika_msugs",
                 "parameters": {
-                    "msugs_offset": 0
+                    "apply_correction": {
+                        "type": "bool",
+                        "value": false,
+                        "name": "Apply rudimentary correction",
+                        "description": "This applies correction on the basis of a sequential order check.\nWhile making imagery more visually presentable at low SNRs, it leads to several issues:\n- Earth might deformed (because of dropped frames)\n- Projections are no longer possible because lines are not in the correct spots"
+                    }
                 }
             }
         }
