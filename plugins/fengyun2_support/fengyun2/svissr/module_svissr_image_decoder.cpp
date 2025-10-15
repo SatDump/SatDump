@@ -20,7 +20,7 @@
 // Simplified mapping (100) + Orbit & attitude (128) + MANAM (410) + Calib (256+1024) + Spare (179)
 #define SUBCOM_GROUP_SIZE 2097 /* Size of the repeated (Subcommunication) section of the documentation sector */
 
-std::map<fengyun_svissr::SVISSRSubCommunicaitonBlockType, fengyun_svissr::SVISSRSubcommunicationBlock> subcom_blocks = {
+std::map<fengyun_svissr::SVISSRSubCommunicationBlockType, fengyun_svissr::SVISSRSubcommunicationBlock> subcom_blocks = {
     {fengyun_svissr::Simplified_mapping, {0, 99}}, {fengyun_svissr::Orbit_and_attitude, {100, 227}}, {fengyun_svissr::MANAM, {228, 637}},
     {fengyun_svissr::Calibration_1, {638, 893}},   {fengyun_svissr::Calibration_2, {894, 1917}},     {fengyun_svissr::Spare, {1918, 2096}}};
 
@@ -79,7 +79,7 @@ namespace fengyun_svissr
      * @param block_type The specific subcommunication block to extract
      * @return std::vector<uint8_t> A vector containing the requested block's data
      */
-    std::vector<uint8_t> get_subcom_block(MinorFrame subcom_frame, SVISSRSubCommunicaitonBlockType block_type)
+    std::vector<uint8_t> get_subcom_block(MinorFrame subcom_frame, SVISSRSubCommunicationBlockType block_type)
     {
         // Subcommunication frames are ALWAYS the same size, if we don't have the size, something went very wrong!
         if (subcom_frame.size() != SUBCOM_GROUP_SIZE * 25)

@@ -36,6 +36,7 @@ namespace fengyun3
                 FY_3E,
                 FY_3F,
                 FY_3G,
+                FY_3H,
             };
 
             enum fy3_downlink_t
