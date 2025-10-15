@@ -75,6 +75,7 @@ namespace aws
             //     return;
 
             {
+                // Init time
                 struct timespec unix_time;
                 double x = ephem_timestamp;
                 unix_time.tv_sec = (long)x;
@@ -94,6 +95,7 @@ namespace aws
                 // novas_iso_timestamp(&obs_time, timestamp1, sizeof(timestamp1));
                 // logger->critical(timestamp1);
 
+                // Create observer : Earth's center (reference in the intended ITRS frame)
                 observer obs;
                 if (make_observer_at_geocenter(&obs))
                 {
@@ -101,6 +103,7 @@ namespace aws
                     return;
                 }
 
+                // Create our observing frame
                 novas_frame obs_frame;
                 if (novas_make_frame(NOVAS_FULL_ACCURACY, &obs, &obs_time, iers.polar_dx, iers.polar_dy, &obs_frame) != 0)
                 {
@@ -108,6 +111,7 @@ namespace aws
                     return;
                 }
 
+                // Convert both vectors from J2000 => ITRS
                 {
                     double s = (1. / NOVAS_AU);
                     // printf("AU %f\n", s);
