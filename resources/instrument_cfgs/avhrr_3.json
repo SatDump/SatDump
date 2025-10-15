@@ -21,7 +21,7 @@
         },
         {
             "name": "AVHRR 3a21 False Color (uncompensated, NOAA-15)",
-            "expression": "cch3a=(3a, reflective_radiance, 0,  2.5); cch2=(2, reflective_radiance, 0, 50); cch1=(1, reflective_radiance, 0, 23); resources/instrument_cfgs/avhrr_3.json",
+            "expression": "cch3a=(3a, reflective_radiance, 0,  2.5); cch2=(2, reflective_radiance, 0, 50); cch1=(1, reflective_radiance, 0, 23); lut=lut(lut/1d/stretchcon_avhrr.png);lut(cch3a, 0, 0), lut(cch2, 0, 1),lut(cch1, 0, 2)",
             "image": {
                 "geo_correct": true
             },
