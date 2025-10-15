@@ -22,6 +22,8 @@ namespace metopsg
 
             if (pkt.header.apid == 1105 || pkt.header.apid == 1106)
             {
+                if (pkt.payload.size() < 3388)
+                    return;
                 int ch = pkt.header.apid - 1105;
                 for (int i = 0; i < 1680; i++)
                     channels[ch].push_back(uint16_t(pkt.payload[28 + i * 2 + 0] << 8 | pkt.payload[28 + i * 2 + 1]) - 32768);
@@ -30,6 +32,8 @@ namespace metopsg
             }
             else if (pkt.header.apid == 1107)
             {
+                if (pkt.payload.size() < 2968)
+                    return;
                 for (int c = 0; c < 14; c++)
                 {
                     for (int i = 0; i < 105; i++)
@@ -40,6 +44,8 @@ namespace metopsg
             }
             else if (pkt.header.apid == 1108)
             {
+                if (pkt.payload.size() < 238)
+                    return;
                 for (int i = 0; i < 105; i++)
                     channels[16].push_back(uint16_t(pkt.payload[28 + i * 2 + 0] << 8 | pkt.payload[28 + i * 2 + 1]) - 32768);
                 timestamps[16].push_back(timestamp);
@@ -47,6 +53,8 @@ namespace metopsg
             }
             else if (pkt.header.apid == 1109)
             {
+                if (pkt.payload.size() < 238)
+                    return;
                 for (int i = 0; i < 105; i++)
                     channels[17].push_back(uint16_t(pkt.payload[28 + i * 2 + 0] << 8 | pkt.payload[28 + i * 2 + 1]) - 32768);
                 timestamps[17].push_back(timestamp);
@@ -54,6 +62,8 @@ namespace metopsg
             }
             else if (pkt.header.apid == 1110)
             {
+                if (pkt.payload.size() < 1078)
+                    return;
                 for (int c = 0; c < 5; c++)
                 {
                     for (int i = 0; i < 105; i++)
@@ -64,6 +74,8 @@ namespace metopsg
             }
             else if (pkt.header.apid == 1111)
             {
+                if (pkt.payload.size() < 238)
+                    return;
                 for (int i = 0; i < 105; i++)
                     channels[23].push_back(uint16_t(pkt.payload[28 + i * 2 + 0] << 8 | pkt.payload[28 + i * 2 + 1]) - 32768);
                 timestamps[23].push_back(timestamp);

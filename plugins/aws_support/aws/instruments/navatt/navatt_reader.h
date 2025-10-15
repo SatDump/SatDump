@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common/ccsds/ccsds.h"
-#include <cmath>
 #include "nlohmann/json.hpp"
 
 namespace aws
@@ -22,5 +21,5 @@ namespace aws
 
             nlohmann::json getEphem();
         };
-    }
-}
+    } // namespace navatt
+} // namespace aws

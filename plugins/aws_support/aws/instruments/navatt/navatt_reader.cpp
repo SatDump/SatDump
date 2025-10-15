@@ -1,25 +1,14 @@
 #include "navatt_reader.h"
-#include "common/ccsds/ccsds_time.h"
 #include "common/geodetic/ecef_to_eci.h"
 
-#include "common/tracking/tle.h"
-#include "common/tracking/tracking.h"
-#include "common/utils.h"
-#include "core/resources.h"
 #include "init.h"
+#include "logger.h"
+#include "nlohmann/json.hpp"
 
 extern "C"
 {
 #include "libs/supernovas/novas.h"
-
-#include "libs/calceph/calceph.h"
-#include "libs/supernovas/novas-calceph.h"
 }
-
-#include "logger.h"
-#include "utils/time.h"
-
-// TODOREWORKDB
 
 namespace aws
 {
@@ -53,6 +42,7 @@ namespace aws
             return v;
         }
 
+        // TODOREWORK Cleanup into a proper function!
         void NavAttReader::work(ccsds::CCSDSPacket &packet)
         {
             // Filter out bad packets
@@ -61,7 +51,7 @@ namespace aws
 
             uint8_t *dat = &packet.payload[21 - 6 + 2];
 
-            double ephem_timestamp = get_double(&dat[0]) + 3657 * 24 * 3600 - 16;
+            double ephem_timestamp = get_double(&dat[0]) + 3657 * 24 * 3600 - 16; // TODOREWORK. All timestamps on the OHB Satellites seem offset by exactly 16s?
             double ephem_x = get_float(&dat[16]);
             double ephem_y = get_float(&dat[20]);
             double ephem_z = get_float(&dat[24]);
@@ -71,12 +61,12 @@ namespace aws
 
             // logger->info("NAVATT! %s", timestamp_to_string(ephem_timestamp).c_str());
 
-#if 0
+#if 1
             // double atti_timestamp = get_timestamp(&dat[33]);
-            // float atti_q1 = get_float(&dat[41]);
-            // float atti_q2 = get_float(&dat[45]);
-            // float atti_q3 = get_float(&dat[49]);
-            // float atti_q4 = get_float(&dat[53]);
+            float atti_q1 = get_double(&dat[49]);
+            float atti_q2 = get_double(&dat[57]);
+            float atti_q3 = get_double(&dat[65]);
+            float atti_q4 = get_double(&dat[73]);
 #endif
 
             // if (fabs(ephem_x) > 8000000 || fabs(ephem_y) > 8000000 || fabs(ephem_z) > 8000000)
@@ -84,22 +74,7 @@ namespace aws
             // if (fabs(ephem_vx) > 8000000 || fabs(ephem_vy) > 8000000 || fabs(ephem_vz) > 8000000)
             //     return;
 
-            satdump::SatelliteTracker track(satdump::db_tle->get_from_norad(60543).value());
-            auto p = track.get_sat_position_at_raw(ephem_timestamp);
-
-            // printf("%f - %f %f %f - %f %f %f\n", ephem_timestamp, ephem_x, ephem_y, ephem_z, ephem_vx, ephem_vy, ephem_vz);
-
             {
-                if (ephems_n == 0)
-                {
-                    std::string de440_f = resources::getResourcePath("spice/de440s.bsp");
-                    const char *arrr[] = {de440_f.c_str()};
-                    t_calcephbin *de440 = calceph_open_array(1, arrr); //// calceph_open("/home/alan/Downloads/de440s.bsp");
-                    if (!de440)
-                        fprintf(stderr, "ERROR! could not open ephemeris data\n");
-                    novas_use_calceph(de440);
-                }
-
                 struct timespec unix_time;
                 double x = ephem_timestamp;
                 unix_time.tv_sec = (long)x;
@@ -110,7 +85,10 @@ namespace aws
                 auto iers = satdump::db_iers->getBestIERSInfo(ephem_timestamp);
 
                 if (novas_set_unix_time(unix_time.tv_sec, unix_time.tv_nsec, iers.leap_seconds, iers.ut1_utc, &obs_time) != 0)
-                    fprintf(stderr, "ERROR! failed to set time of observation.\n");
+                {
+                    logger->error("ERROR! failed to set time of observation.\n");
+                    return;
+                }
 
                 // char timestamp1[40];
                 // novas_iso_timestamp(&obs_time, timestamp1, sizeof(timestamp1));
@@ -118,11 +96,17 @@ namespace aws
 
                 observer obs;
                 if (make_observer_at_geocenter(&obs))
-                    fprintf(stderr, "ERROR! defining Earth-based observer location.\n");
+                {
+                    logger->error("ERROR! defining Earth-based observer location.\n");
+                    return;
+                }
 
                 novas_frame obs_frame;
                 if (novas_make_frame(NOVAS_FULL_ACCURACY, &obs, &obs_time, iers.polar_dx, iers.polar_dy, &obs_frame) != 0)
+                {
                     fprintf(stderr, "ERROR! failed to define observing frame.\n");
+                    return;
+                }
 
                 {
                     double s = (1. / NOVAS_AU);
@@ -155,9 +139,12 @@ namespace aws
 
             ecef_epehem_to_eci(ephem_timestamp, ephem_x, ephem_y, ephem_z, ephem_vx, ephem_vy, ephem_vz);
 
-            printf("%f  - CALC %f %f %f - %f %f %f ///////////// RAW %f %f %f - %f %f %f\n", ephem_timestamp, //
-                   p.position[0], p.position[1], p.position[2], p.velocity[0], p.velocity[1], p.velocity[2],  //
-                   ephem_x, ephem_y, ephem_z, ephem_vx, ephem_vy, ephem_vz);
+            //  printf("%f  - CALC %f %f %f - %f %f %f ///////////// RAW %f %f %f - %f %f %f\n", ephem_timestamp, //
+            //         p.position[0], p.position[1], p.position[2], p.velocity[0], p.velocity[1], p.velocity[2],  //
+            //         ephem_x, ephem_y, ephem_z, ephem_vx, ephem_vy, ephem_vz);
+
+            // printf("%f  -  RAW %f %f %f - %f %f %f\n", ephem_timestamp, //
+            //        ephem_x, ephem_y, ephem_z, ephem_vx, ephem_vy, ephem_vz);
 
             // Convert to km from meters
             ephems[ephems_n]["timestamp"] = ephem_timestamp;

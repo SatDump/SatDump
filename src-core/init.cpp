@@ -23,6 +23,15 @@
 
 #include "products/product.h"
 
+// TODOREWORK?
+extern "C"
+{
+#include "libs/supernovas/novas.h"
+
+#include "libs/calceph/calceph.h"
+#include "libs/supernovas/novas-calceph.h"
+}
+
 namespace satdump
 {
     SATDUMP_DLL std::string user_path;
@@ -138,6 +147,14 @@ namespace satdump
                 logger->warn("DSP Buffer size was changed to %d", new_sz);
             }
         }
+
+        // Init SuperNOVAS/CalCEPH. TODOREWORK, as we need to be able to dynamically load them!
+        std::string de440_f = resources::getResourcePath("spice/de440s.bsp");
+        const char *spice_kernels[] = {de440_f.c_str()};
+        t_calcephbin *de440 = calceph_open_array(1, spice_kernels); //// calceph_open("/home/alan/Downloads/de440s.bsp");
+        if (!de440)
+            logger->error("Could not open ephemeris data! NOVAS will not work!");
+        novas_use_calceph(de440);
 
         // Let plugins know we started
         eventBus->fire_event<SatDumpStartedEvent>({});

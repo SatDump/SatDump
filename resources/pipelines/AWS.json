@@ -17,7 +17,7 @@
             },
             "use_ephemeris": {
                 "type": "bool",
-                "value": false, //TODO: Appears to return incorrect results
+                "value": true,
                 "name": "Use Ephemeris",
                 "description": "Use ephemeris data from the satellite for projection"
             }
