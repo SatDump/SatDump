@@ -38,6 +38,7 @@ namespace satdump
                     {
                         rtlsdr_set_center_freq(rtlsdr_dev_obj, p_frequency - 1e6);
                         rtlsdr_set_center_freq(rtlsdr_dev_obj, p_frequency);
+                        logger->debug("Frequency was above 1 GHz, retuning to lock the PLL");
                     }
                 }
                 else

@@ -244,6 +244,7 @@ void RtlSdrSource::set_frequency(uint64_t frequency)
             {
                 rtlsdr_set_center_freq(rtlsdr_dev_obj, frequency - 1e6);
                 rtlsdr_set_center_freq(rtlsdr_dev_obj, frequency);
+                logger->debug("Frequency was above 1 GHz, retuning to lock the PLL");
             }
         }
         else
