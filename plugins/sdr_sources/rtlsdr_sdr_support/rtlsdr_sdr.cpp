@@ -222,10 +222,7 @@ void RtlSdrSource::stop()
     is_started = false;
 }
 
-void RtlSdrSource::close()
-{
-    is_open = false;
-}
+void RtlSdrSource::close() { is_open = false; }
 
 void RtlSdrSource::set_frequency(uint64_t frequency)
 {
@@ -237,7 +234,18 @@ void RtlSdrSource::set_frequency(uint64_t frequency)
         if (attempts == 20)
             logger->warn("Unable to set RTL-SDR frequency!");
         else if (attempts == 0)
+        {
             logger->debug("Set RTL-SDR frequency to %d", frequency);
+
+            // This is a dirty patch! PLL might not lock on the first attempt if the frequency
+            // is above ~1 GHz, tuning down then back up locks it! This is a librtlsdr bug,
+            // because the return code should show that it wasn't successful, but it doesn't.
+            if (frequency > 1e6)
+            {
+                rtlsdr_set_center_freq(rtlsdr_dev_obj, frequency - 1e6);
+                rtlsdr_set_center_freq(rtlsdr_dev_obj, frequency);
+            }
+        }
         else
             logger->debug("Set RTL-SDR frequency to %d (%d attempts!)", frequency, attempts + 1);
     }
@@ -259,10 +267,9 @@ void RtlSdrSource::drawControlUI()
 
     if (tuner_agc_enabled)
         RImGui::beginDisabled();
-    if (RImGui::SteppedSliderFloat("Tuner Gain", &display_gain, (float)available_gains[0] / 10.0f,
-        (float)available_gains.back() / 10.0f, gain_step, "%.1f"))
-            set_gains();
-    if(is_started && RImGui::IsItemDeactivatedAfterEdit())
+    if (RImGui::SteppedSliderFloat("Tuner Gain", &display_gain, (float)available_gains[0] / 10.0f, (float)available_gains.back() / 10.0f, gain_step, "%.1f"))
+        set_gains();
+    if (is_started && RImGui::IsItemDeactivatedAfterEdit())
         display_gain = (float)gain / 10.0f;
     if (tuner_agc_enabled)
         RImGui::endDisabled();
@@ -289,10 +296,7 @@ void RtlSdrSource::set_samplerate(uint64_t samplerate)
         throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
-uint64_t RtlSdrSource::get_samplerate()
-{
-    return samplerate_widget.get_value();
-}
+uint64_t RtlSdrSource::get_samplerate() { return samplerate_widget.get_value(); }
 
 std::vector<dsp::SourceDescriptor> RtlSdrSource::getAvailableSources()
 {
