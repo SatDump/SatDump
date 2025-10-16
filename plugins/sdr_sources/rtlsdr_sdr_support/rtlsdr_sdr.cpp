@@ -240,9 +240,9 @@ void RtlSdrSource::set_frequency(uint64_t frequency)
             // This is a dirty patch! PLL might not lock on the first attempt if the frequency
             // is above ~1 GHz, tuning down then back up locks it! This is a librtlsdr bug,
             // because the return code should show that it wasn't successful, but it doesn't.
-            if (frequency > 1e6)
+            if (frequency > 1e9)
             {
-                rtlsdr_set_center_freq(rtlsdr_dev_obj, frequency - 1e6);
+                rtlsdr_set_center_freq(rtlsdr_dev_obj, frequency - 1e9);
                 rtlsdr_set_center_freq(rtlsdr_dev_obj, frequency);
                 logger->debug("Frequency was above 1 GHz, retuning to lock the PLL");
             }
