@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 27
     buildToolsVersion "30.0.3"
     ndkVersion "25.2.9519653"
 
@@ -14,7 +14,7 @@ android {
         applicationId "org.satdump.SatDump"
         namespace "org.satdump.SatDump"
         minSdkVersion 26
-        targetSdkVersion 28
+        targetSdkVersion 27
         versionCode 9
         versionName "1.2.3"
     }
@@ -85,7 +85,7 @@ repositories {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
 }
 
 copyResources.dependsOn deleteTempAssets
