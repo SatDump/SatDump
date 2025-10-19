@@ -58,13 +58,13 @@ namespace elektro_arktika
                     for (std::vector<uint8_t> &frame : frames)
                         vis1_reader.pushFrame(&frame[0], apply_correction);
                 }
-                else if ((vcid == 3) || (vcid_2 == 3))
+                else if ((vcid == 5) || (vcid_2 == 5))
                 {
                     std::vector<std::vector<uint8_t>> frames = deframerVIS2.work(&cadu[24], 1024 - 24);
                     for (std::vector<uint8_t> &frame : frames)
                         vis2_reader.pushFrame(&frame[0], apply_correction);
                 }
-                else if ((vcid == 5) || (vcid_2 == 5))
+                else if ((vcid == 3) || (vcid_2 == 3))
                 {
                     std::vector<std::vector<uint8_t>> frames = deframerVIS3.work(&cadu[24], 1024 - 24);
                     for (std::vector<uint8_t> &frame : frames)
@@ -162,8 +162,8 @@ namespace elektro_arktika
                 //                                            satdump::general_tle_registry->get_from_norad(44903), vis1_reader.timestamps);
 
                 msuvis_product.images.push_back({0, "MSUGS-VIS-1", "1", vis1_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});
-                msuvis_product.images.push_back({1, "MSUGS-VIS-2", "2", vis2_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});
-                msuvis_product.images.push_back({2, "MSUGS-VIS-3", "3", vis3_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});
+                msuvis_product.images.push_back({1, "MSUGS-VIS-2", "2", vis3_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});
+                msuvis_product.images.push_back({2, "MSUGS-VIS-3", "3", vis2_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});
 
                 msuvis_product.save(directory);
                 dataset.products_list.push_back("MSUGS_VIS2");
