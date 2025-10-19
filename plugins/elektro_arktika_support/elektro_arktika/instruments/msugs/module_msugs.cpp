@@ -162,8 +162,8 @@ namespace elektro_arktika
                 //                                            satdump::general_tle_registry->get_from_norad(44903), vis1_reader.timestamps);
 
                 msuvis_product.images.push_back({0, "MSUGS-VIS-1", "1", vis1_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});
-                msuvis_product.images.push_back({1, "MSUGS-VIS-2", "2", vis3_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});
-                msuvis_product.images.push_back({2, "MSUGS-VIS-3", "3", vis2_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});
+                msuvis_product.images.push_back({1, "MSUGS-VIS-2", "2", vis2_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});
+                msuvis_product.images.push_back({2, "MSUGS-VIS-3", "3", vis3_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});
 
                 msuvis_product.save(directory);
                 dataset.products_list.push_back("MSUGS_VIS2");
