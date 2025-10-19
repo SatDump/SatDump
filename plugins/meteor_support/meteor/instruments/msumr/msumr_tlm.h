@@ -19,7 +19,7 @@ inline void parseMSUMRTelemetry(nlohmann::json &msu_mr_telemetry, nlohmann::json
     int mid = msumr_frame[12] >> 4;
     msu_mr_telemetry[linecnt]["msu_mr_id"] = mid;
 
-    if (msumr_frame[13] == 0b00001111) // Analog TLM
+    if ((msumr_frame[13] & 0x0F) == 0x0F) // Analog TLM
     {
         const char *names[16 + 5] = {
             "Detector Temperature Channel 5", //"AF temperature of the 5th channel",
