@@ -3,16 +3,17 @@
     "presets": [
         {
             "name": "Natural color",
-            "expression": "ch3^0.7, ch2 > 0.055 ? ch2^0.7 : ch2*3,  ch1^0.7",
+            "expression": "lut=lut(lut/1d/kmss.png);lut(ch3, 0 , 0), lut(ch2, 0 , 0), lut(ch1, 0 , 0)",
             "image": {
+                "white_balance": true,
                 "hue_saturation": true,
                 "hue_saturation_cfg": {
-                    "overlap": 1.0,
+                    "overlap": 10.0,
                     "hue": [
                         0.0,
                         0.3333333333333334,
                         0.0,
-                        0.1666666666666667,
+                        0.3888888888888885,
                         0.0,
                         0.0,
                         0.0
@@ -41,7 +42,7 @@
         {
             "name": "CIR (Color Infrared)",
             "expression": "ch3, ch2, ch1",
-            "image": { 
+            "image": {
                 "individual_equalize": true,
                 "geo_correct": true
             },
@@ -50,7 +51,7 @@
         {
             "name": "NDVI (Uncalibrated)",
             "expression": "(ch3-ch2)/(ch3+ch2)",
-            "image": { 
+            "image": {
                 "equalize": true,
                 "geo_correct": true
             },
@@ -59,7 +60,7 @@
         {
             "name": "OSAVI (Uncalibrated)",
             "expression": "(ch3-ch2)/(ch3+ch2+0.16)",
-            "image": { 
+            "image": {
                 "equalize": true,
                 "geo_correct": true
             },
@@ -68,7 +69,7 @@
         {
             "name": "Vegetation classification",
             "expression": "ch2/ch1",
-            "image": { 
+            "image": {
                 "equalize": true,
                 "geo_correct": true
             },
