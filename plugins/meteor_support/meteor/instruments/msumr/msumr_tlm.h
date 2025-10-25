@@ -61,7 +61,7 @@ inline void parseMSUMRTelemetry(nlohmann::json &msu_mr_telemetry, nlohmann::json
         for (int i = 14; i < 16 /*+ 5*/; i++)
             msu_mr_telemetry[linecnt]["analog_tlm"][names[15 - i]] = ((uint8_t *)msumr_frame)[14 + i];
     }
-    else if (msumr_frame[13] == 0b00000000) // Digital TLM
+    else if ((msumr_frame[13] & 0x0F) == 0x00) // Digital TLM
     {
         uint8_t *ptr = &msumr_frame[14];
 
