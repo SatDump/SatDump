@@ -17,6 +17,7 @@ namespace stereo
         image::Image decompress_icer_tool(uint8_t *data, int dsize, int size);
 
         secchi::SECCHIReader *secchi_reader;
+        std::string icer_path;
 
     public:
         StereoInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
