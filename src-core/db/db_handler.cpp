@@ -7,6 +7,9 @@ namespace satdump
 {
     DBHandler::DBHandler(std::string path)
     {
+        if (!std::filesystem::exists(std::filesystem::path(path).parent_path()) && std::filesystem::path(path).has_parent_path())
+            std::filesystem::create_directories(std::filesystem::path(path).parent_path());
+
         // Open
         if (sqlite3_open(path.c_str(), &db))
             throw satdump_exception("Couldn't open SQLite database! " + std::string(sqlite3_errmsg(db)));
