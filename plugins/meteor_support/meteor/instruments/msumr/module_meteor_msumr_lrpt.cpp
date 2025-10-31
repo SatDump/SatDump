@@ -163,7 +163,7 @@ namespace meteor
 
                             if (pkt.payload.size() >= 62)
                             {
-                                parseMSUMRTelemetry(msu_mr_telemetry, msu_mr_telemetry_calib, msumr_ids.size() - 1, &pkt.payload[8]);
+                                parseMSUMRTelemetry(msu_mr_telemetry, msu_mr_telemetry_calib, msumr_ids.size() - 1, &pkt.payload[8], LRPT);
 
                                 // Convert calibration data
                                 uint16_t words10_bits[12];
