@@ -23,6 +23,8 @@
 
 #include "products/product.h"
 
+#include "utils/webhook.h"
+
 // TODOREWORK?
 extern "C"
 {
@@ -158,6 +160,11 @@ namespace satdump
         if (!de440)
             logger->error("Could not open ephemeris data! NOVAS will not work!");
         novas_use_calceph(de440);
+
+        // Init webhook event handler if URL set in config
+        std::string webhook_url = satdump_cfg.getValueFromSatDumpGeneral<std::string>("webhook_url");
+        if (webhook_url != "")
+            satdump::Webhook webhook;
 
         // Let plugins know we started
         eventBus->fire_event<SatDumpStartedEvent>({});
