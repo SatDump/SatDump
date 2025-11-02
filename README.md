@@ -133,7 +133,7 @@ On Linux, building from source is recommended, but builds are provided for x64-b
 
 ```bash
 sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libpng-dev \
-                 libtiff-dev libjemalloc-dev libcurl4-openssl-dev
+                 libtiff-dev libjemalloc-dev libcurl4-openssl-dev libsqlite3-dev
 sudo apt install libvolk-dev                                                      # If this package is not found, use libvolk2-dev or libvolk1-dev
 sudo apt install libnng-dev                                                       # If this package is not found, follow build instructions below for NNG
 
@@ -153,11 +153,11 @@ sudo apt install libarmadillo-dev
 
 # One-liner to install all dependencies:
 sudo apt install git build-essential cmake g++ pkgconf libfftw3-dev libpng-dev \
-                 libtiff-dev libjemalloc-dev libcurl4-openssl-dev libvolk-dev libnng-dev \
-                 libglfw3-dev zenity portaudio19-dev libzstd-dev libhdf5-dev librtlsdr-dev \
-                 libhackrf-dev libairspy-dev libairspyhf-dev libad9361-dev libiio-dev \
-                 libbladerf-dev libomp-dev ocl-icd-opencl-dev intel-opencl-icd mesa-opencl-icd \
-                 libdbus-1-dev libarmadillo-dev
+                 libtiff-dev libjemalloc-dev libcurl4-openssl-dev libsqlite3-dev \
+                 libvolk-dev libnng-dev libglfw3-dev zenity portaudio19-dev libzstd-dev \
+                 libhdf5-dev librtlsdr-dev libhackrf-dev libairspy-dev libairspyhf-dev \
+                 libad9361-dev libiio-dev libbladerf-dev libomp-dev ocl-icd-opencl-dev \
+                 intel-opencl-icd mesa-opencl-icd libdbus-1-dev libarmadillo-dev
 ```
 
 </details>
