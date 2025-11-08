@@ -188,6 +188,8 @@ namespace demod
             // Estimate SNR
             snr_estimator.update(rec->output_stream->readBuf, dat_size);
             snr = snr_estimator.snr();
+            signal = snr_estimator.signal();
+            noise = snr_estimator.noise();
 
             if (snr > peak_snr)
                 peak_snr = snr;
@@ -222,6 +224,8 @@ namespace demod
             module_stats["snr"] = snr;
             module_stats["peak_snr"] = peak_snr;
             module_stats["freq"] = display_freq;
+            module_stats["signal"] = signal;
+            module_stats["noise"] = noise;
 
             if (input_data_type == DATA_FILE)
                 progress = file_source->getPosition();
