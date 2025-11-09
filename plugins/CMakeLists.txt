@@ -314,6 +314,12 @@ if(PLUGIN_LIMESDR_SDR_SUPPORT)
   add_subdirectory(sdr_sources/limesdr_sdr_support)
 endif()
 
+option(PLUGIN_LIME_XTRX_SDR_SUPPORT "Enable Lime XTRX SDR SDR Support plugin" ON)
+
+if(PLUGIN_LIME_XTRX_SDR_SUPPORT)
+  add_subdirectory(sdr_sources/lime_xtrx_sdr_support)
+endif()
+
 option(PLUGIN_SDRPLAY_SDR_SUPPORT "Enable SDRPlay SDR Support plugin" ON)
 
 if(PLUGIN_SDRPLAY_SDR_SUPPORT)
