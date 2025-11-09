@@ -100,7 +100,7 @@ namespace meteor
                     }
 
                     msumr_ids.push_back(msumr_frame[12] >> 4);
-                    parseMSUMRTelemetry(msu_mr_telemetry, msu_mr_telemetry_calib, msumr_timestamps.size() - 1, msumr_frame.data());
+                    parseMSUMRTelemetry(msu_mr_telemetry, msu_mr_telemetry_calib, msumr_timestamps.size() - 1, msumr_frame.data(), HRPT);
                 }
 
                 // MTVZA Deframing

@@ -3,11 +3,17 @@
 #include <cstdint>
 #include "nlohmann/json.hpp"
 
+enum DownlinkMode : int
+{
+    LRPT,
+    HRPT
+};
+
 // This is most likely temporary to some extent until
 // more of this is figured out for calibration.
 // Translations from Russians are definitely very imperfect,
 // and this will need to be more data-oriented later!
-inline void parseMSUMRTelemetry(nlohmann::json &msu_mr_telemetry, nlohmann::json &msu_mr_telemetry_calib, int linecnt, uint8_t *msumr_frame)
+inline void parseMSUMRTelemetry(nlohmann::json &msu_mr_telemetry, nlohmann::json &msu_mr_telemetry_calib, int linecnt, uint8_t *msumr_frame, DownlinkMode mode)
 {
     if ((msumr_frame[12] & 0xF) == 0b0000)
         msu_mr_telemetry[linecnt]["msu_mr_set"] = "primary";
@@ -19,7 +25,7 @@ inline void parseMSUMRTelemetry(nlohmann::json &msu_mr_telemetry, nlohmann::json
     int mid = msumr_frame[12] >> 4;
     msu_mr_telemetry[linecnt]["msu_mr_id"] = mid;
 
-    if ((msumr_frame[13] & 0x0F) == 0x0F) // Analog TLM
+    if ((mode == LRPT && (msumr_frame[13] & 0x0F) == 0x0F) || (mode == HRPT && msumr_frame[13] == 0b00001111)) // Analog TLM
     {
         const char *names[16 + 5] = {
             "Detector Temperature Channel 5", //"AF temperature of the 5th channel",
@@ -61,7 +67,7 @@ inline void parseMSUMRTelemetry(nlohmann::json &msu_mr_telemetry, nlohmann::json
         for (int i = 14; i < 16 /*+ 5*/; i++)
             msu_mr_telemetry[linecnt]["analog_tlm"][names[15 - i]] = ((uint8_t *)msumr_frame)[14 + i];
     }
-    else if (msumr_frame[13] == 0b00000000) // Digital TLM
+    else if ((mode == LRPT && (msumr_frame[13] & 0x0F) == 0x00) || (mode == HRPT && msumr_frame[13] == 0b00000000)) // Digital TLM
     {
         uint8_t *ptr = &msumr_frame[14];
 
