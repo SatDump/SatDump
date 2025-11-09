@@ -38,7 +38,7 @@
         },
         {
             "name": "AVHRR 3a21 False Color ",
-            "expression": "cch3=(3,reflective_radiance, 0, 4.95); cch2=(2, reflective_radiance, 0, 27.5); cch1=(1, reflective_radiance, 0, 16.5); cch3, cch2, cch1",
+            "expression": "cch3=(3,reflective_radiance, 0, 3.465); cch2=(2, reflective_radiance, 0, 19.25); cch1=(1, reflective_radiance, 0, 11.55);lut=lut(lut/1d/stretchcon_avhrr.png);lut(cch3, 0, 0), lut(cch2, 0, 1),lut(cch1, 0, 2)",
             "image": {
                 "geo_correct": true
             },
