@@ -11,6 +11,38 @@ void RtlSdrSource::_rx_callback(unsigned char *buf, uint32_t len, void *ctx)
     stream->swap(len / 2);
 };
 
+void RtlSdrSource::set_gain(std::vector<int> available_gain, float setgain, bool changed_agc, bool tuner_agc_enabled, bool e4000, int e4000_stage)
+{
+    // Get nearest supported tuner gain
+    auto gain_iterator = std::lower_bound(available_gain.begin(), available_gain.end(), int(setgain * 10.0f));
+    if (gain_iterator == available_gain.end())
+        gain_iterator--;
+
+    if (!e4000) {
+        bool force_gain = changed_agc && !tuner_agc_enabled;
+        if (tuner_agc_enabled || (!force_gain && *gain_iterator == setgain))
+            return;
+
+        if (gain_iterator == available_gain.begin())
+            gain_step = 1.0f;
+        else
+            gain_step = (float)(*gain_iterator - *std::prev(gain_iterator)) / 10.0f;
+    }
+
+    // Set gain
+    int attempts = 0;
+    gain[e4000_stage] = *gain_iterator;
+    while (attempts < 20 && (e4000 ? rtlsdr_set_tuner_if_gain(rtlsdr_dev_obj, e4000_stage, gain[e4000_stage]) :
+                                     rtlsdr_set_tuner_gain(rtlsdr_dev_obj, gain[e4000_stage])) < 0)
+        attempts++;
+    if (attempts == 20)
+        logger->warn("Unable to set RTL-SDR Gain [E4000=%d stage=%d]!", e4000, e4000_stage);
+    else if (attempts == 0)
+        logger->debug("Set RTL-SDR Gain [E4000=%d stage=%d] to %.1f", e4000, e4000_stage, (float)gain[e4000_stage] / 10.0f);
+    else
+        logger->debug("Set RTL-SDR Gain [E4000=%d stage=%d] to %f (%d attempts!)", e4000, e4000_stage, (float)gain[e4000_stage] / 10.0f, attempts + 1);
+}
+
 void RtlSdrSource::set_gains()
 {
     if (!is_started)
@@ -43,34 +75,27 @@ void RtlSdrSource::set_gains()
             logger->debug("Set RTL-SDR Tuner gain mode to %d (%d attempts!)", tuner_gain_mode, attempts + 1);
     }
 
-    // Get nearest supported tuner gain
-    auto gain_iterator = std::lower_bound(available_gains.begin(), available_gains.end(), int(display_gain * 10.0f));
-    if (gain_iterator == available_gains.end())
-        gain_iterator--;
+    if (changed_offset_tuning) {
+        // Offset Tuning eliminates DC spike on E4000
+        attempts = 0;
+        while (attempts < 20 && rtlsdr_set_offset_tuning(rtlsdr_dev_obj, offset_tuning_enabled) < 0)
+            attempts++;
+        if (attempts == 20)
+            logger->warn("Unable to set RTL-SDR Offset Tuning mode!");
+        else if (attempts == 0)
+            logger->debug("Set RTL-SDR Offset Tuning to %d", (int)offset_tuning_enabled);
+        else
+            logger->debug("Set RTL-SDR Offset Tuning to %d (%d attempts!)", (int)offset_tuning_enabled, attempts + 1);
+    }
 
-    bool force_gain = changed_agc && !tuner_agc_enabled;
+    set_gain(available_gains, display_gain, changed_agc, tuner_agc_enabled, false, 0);
+    if (tuner_is_e4000) {
+        for (int i = 0; i < 6; i++)
+            set_gain(available_gains_e4000[i], display_gain_e4000[i], false, false, true, i + 1);
+    }
+
     if (changed_agc)
         changed_agc = false;
-
-    if (tuner_agc_enabled || (!force_gain && *gain_iterator == gain))
-        return;
-
-    if (gain_iterator == available_gains.begin())
-        gain_step = 1.0f;
-    else
-        gain_step = (float)(*gain_iterator - *std::prev(gain_iterator)) / 10.0f;
-
-    // Set tuner gain
-    attempts = 0;
-    gain = *gain_iterator;
-    while (attempts < 20 && rtlsdr_set_tuner_gain(rtlsdr_dev_obj, gain) < 0)
-        attempts++;
-    if (attempts == 20)
-        logger->warn("Unable to set RTL-SDR Gain!");
-    else if (attempts == 0)
-        logger->debug("Set RTL-SDR Gain to %.1f", (float)gain / 10.0f);
-    else
-        logger->debug("Set RTL-SDR Gain to %f (%d attempts!)", (float)gain / 10.0f, attempts + 1);
 }
 
 void RtlSdrSource::set_bias()
@@ -119,11 +144,19 @@ void RtlSdrSource::set_settings(nlohmann::json settings)
     }
 
     display_gain = getValueOrDefault(d_settings["gain"], display_gain);
+    display_gain_e4000[0] = getValueOrDefault(d_settings["gain_e4000_s1"], display_gain_e4000[0]);
+    display_gain_e4000[1] = getValueOrDefault(d_settings["gain_e4000_s2"], display_gain_e4000[1]);
+    display_gain_e4000[2] = getValueOrDefault(d_settings["gain_e4000_s3"], display_gain_e4000[2]);
+    display_gain_e4000[3] = getValueOrDefault(d_settings["gain_e4000_s4"], display_gain_e4000[3]);
+    display_gain_e4000[4] = getValueOrDefault(d_settings["gain_e4000_s5"], display_gain_e4000[4]);
+    display_gain_e4000[5] = getValueOrDefault(d_settings["gain_e4000_s6"], display_gain_e4000[5]);
     lna_agc_enabled = getValueOrDefault(d_settings["lna_agc"], lna_agc_enabled);
     tuner_agc_enabled = getValueOrDefault(d_settings["tuner_agc"], tuner_agc_enabled);
     bias_enabled = getValueOrDefault(d_settings["bias"], bias_enabled);
     ppm_widget.set(getValueOrDefault(d_settings["ppm_correction"], ppm_widget.get()));
+    offset_tuning_enabled = getValueOrDefault(d_settings["offset_tuning"], offset_tuning_enabled);
     changed_agc = true;
+    changed_offset_tuning = true;
 
     if (is_started)
     {
@@ -136,10 +169,17 @@ void RtlSdrSource::set_settings(nlohmann::json settings)
 nlohmann::json RtlSdrSource::get_settings()
 {
     d_settings["gain"] = display_gain;
+    d_settings["gain_e4000_s1"] = display_gain_e4000[0];
+    d_settings["gain_e4000_s2"] = display_gain_e4000[1];
+    d_settings["gain_e4000_s3"] = display_gain_e4000[2];
+    d_settings["gain_e4000_s4"] = display_gain_e4000[3];
+    d_settings["gain_e4000_s5"] = display_gain_e4000[4];
+    d_settings["gain_e4000_s6"] = display_gain_e4000[5];
     d_settings["lna_agc"] = lna_agc_enabled;
     d_settings["tuner_agc"] = tuner_agc_enabled;
     d_settings["bias"] = bias_enabled;
     d_settings["ppm_correction"] = ppm_widget.get();
+    d_settings["offset_tuning"] = offset_tuning_enabled;
 
     return d_settings;
 }
@@ -173,6 +213,8 @@ void RtlSdrSource::start()
     if (index != -1 && rtlsdr_open(&rtlsdr_dev_obj, index) != 0)
         throw satdump_exception("Could not open RTL-SDR device!");
 
+    tuner_is_e4000 = (rtlsdr_get_tuner_type(rtlsdr_dev_obj) == RTLSDR_TUNER_E4000);
+
     // Set available gains
     int gains[256];
     int num_gains = rtlsdr_get_tuner_gains(rtlsdr_dev_obj, gains);
@@ -199,7 +241,9 @@ void RtlSdrSource::start()
     set_ppm();
 
     rtlsdr_reset_buffer(rtlsdr_dev_obj);
-    display_gain = (float)gain / 10.0f;
+    display_gain = (float)gain[0] / 10.0f;
+    for (int i = 0; i < 6; i++)
+        display_gain_e4000[i] = (float)gain[i + 1] / 10.0f;
     thread_should_run = true;
     work_thread = std::thread(&RtlSdrSource::mainThread, this);
 }
@@ -246,6 +290,9 @@ void RtlSdrSource::set_frequency(uint64_t frequency)
 
 void RtlSdrSource::drawControlUI()
 {
+    bool update_gains = false;
+    bool refresh_display_gain[7] = { false, false, false, false, false, false, false };
+
     if (is_started)
         RImGui::beginDisabled();
 
@@ -261,26 +308,86 @@ void RtlSdrSource::drawControlUI()
         RImGui::beginDisabled();
     if (RImGui::SteppedSliderFloat("Tuner Gain", &display_gain, (float)available_gains[0] / 10.0f,
         (float)available_gains.back() / 10.0f, gain_step, "%.1f"))
-            set_gains();
-    if(is_started && RImGui::IsItemDeactivatedAfterEdit())
-        display_gain = (float)gain / 10.0f;
+            update_gains = true;
+    refresh_display_gain[0] = is_started && RImGui::IsItemDeactivatedAfterEdit();
+
+    if (tuner_is_e4000) {
+        /* See e.g. https://k3xec.com/e4k/ for E4000 gain setting details */
+        if (RImGui::SteppedSliderFloat("E4000 IF S1 Gain", &(display_gain_e4000[0]),
+                                       (float)available_gains_e4000[0][0] / 10.0f,
+                                       (float)available_gains_e4000[0].back() / 10.0f,
+                                       9.0, "%.1f"))
+                update_gains = true;
+        refresh_display_gain[1] = is_started && RImGui::IsItemDeactivatedAfterEdit();
+
+        if (RImGui::SteppedSliderFloat("E4000 IF S2 Gain", &(display_gain_e4000[1]),
+                                       (float)available_gains_e4000[1][0] / 10.0f,
+                                       (float)available_gains_e4000[1].back() / 10.0f,
+                                       3.0, "%.1f"))
+                update_gains = true;
+        refresh_display_gain[2] = is_started && RImGui::IsItemDeactivatedAfterEdit();
+
+        if (RImGui::SteppedSliderFloat("E4000 IF S3 Gain", &(display_gain_e4000[2]),
+                                       (float)available_gains_e4000[2][0] / 10.0f,
+                                       (float)available_gains_e4000[2].back() / 10.0f,
+                                       3.0, "%.1f"))
+                update_gains = true;
+        refresh_display_gain[3] = is_started && RImGui::IsItemDeactivatedAfterEdit();
+
+        if (RImGui::SteppedSliderFloat("E4000 IF S4 Gain", &(display_gain_e4000[3]),
+                                       (float)available_gains_e4000[3][0] / 10.0f,
+                                       (float)available_gains_e4000[3].back() / 10.0f,
+                                       1.0, "%.1f"))
+                update_gains = true;
+        refresh_display_gain[4] = is_started && RImGui::IsItemDeactivatedAfterEdit();
+
+        if (RImGui::SteppedSliderFloat("E4000 IF S5 Gain", &(display_gain_e4000[4]),
+                                       (float)available_gains_e4000[4][0] / 10.0f,
+                                       (float)available_gains_e4000[4].back() / 10.0f,
+                                       3.0, "%.1f"))
+                update_gains = true;
+        refresh_display_gain[5] = is_started && RImGui::IsItemDeactivatedAfterEdit();
+
+        if (RImGui::SteppedSliderFloat("E4000 IF S6 Gain", &(display_gain_e4000[5]),
+                                       (float)available_gains_e4000[5][0] / 10.0f,
+                                       (float)available_gains_e4000[5].back() / 10.0f,
+                                       3.0, "%.1f"))
+                update_gains = true;
+        refresh_display_gain[6] = is_started && RImGui::IsItemDeactivatedAfterEdit();
+    }
+
     if (tuner_agc_enabled)
         RImGui::endDisabled();
 
     if (RImGui::Checkbox("LNA AGC", &lna_agc_enabled))
     {
         changed_agc = true;
-        set_gains();
+        update_gains = true;
     }
 
     if (RImGui::Checkbox("Tuner AGC", &tuner_agc_enabled))
     {
         changed_agc = true;
-        set_gains();
+        update_gains = true;
     }
+
+    if (RImGui::Checkbox("Offset Tuning", &offset_tuning_enabled))
+    {
+        changed_offset_tuning = true;
+        update_gains = true;
+    }
+
+    if (update_gains)
+        set_gains();
 
     if (RImGui::Checkbox("Bias-Tee", &bias_enabled))
         set_bias();
+
+    if (refresh_display_gain[0])
+        display_gain = (float)gain[0] / 10.0f;
+    for (int i = 0; i < 6; i++)
+        if (refresh_display_gain[i + 1])
+            display_gain_e4000[i] = (float)gain[i + 1] / 10.0f;
 }
 
 void RtlSdrSource::set_samplerate(uint64_t samplerate)
