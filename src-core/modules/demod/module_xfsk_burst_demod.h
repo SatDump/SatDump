@@ -23,6 +23,8 @@ namespace demod
 
         const float d_deviation;
 
+        bool d_resample_after_quad = false;
+
         int8_t *sym_buffer;
 
     public:

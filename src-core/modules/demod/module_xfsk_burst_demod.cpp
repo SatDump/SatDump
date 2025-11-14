@@ -1,7 +1,7 @@
 #include "module_xfsk_burst_demod.h"
 #include "common/dsp/filter/firdes.h"
-#include "logger.h"
 #include "imgui/imgui.h"
+#include "logger.h"
 #include <volk/volk.h>
 
 // #include "common/audio/audio_sink.h"
@@ -9,8 +9,7 @@
 namespace demod
 {
     XFSKBurstDemodModule::XFSKBurstDemodModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-        : BaseDemodModule(input_file, output_file_hint, parameters),
-          d_deviation(parameters.contains("fsk_deviation") ? parameters["fsk_deviation"].get<float>() : 5e3)
+        : BaseDemodModule(input_file, output_file_hint, parameters), d_deviation(parameters.contains("fsk_deviation") ? parameters["fsk_deviation"].get<float>() : 5e3)
     {
         name = "xFSK Burst Demodulator";
         show_freq = false;
@@ -23,6 +22,10 @@ namespace demod
 
         // Buffers
         sym_buffer = new int8_t[d_buffer_size * 4];
+
+        // Parse params
+        if (parameters.count("resample_after_quad") > 0)
+            d_resample_after_quad = parameters["resample_after_quad"].get<bool>();
     }
 
     /*
@@ -31,33 +34,33 @@ namespace demod
     */
     void XFSKBurstDemodModule::init()
     {
-        BaseDemodModule::initb(false);
+        BaseDemodModule::initb(!d_resample_after_quad);
 
         // LPF1
         float carson_cuttoff = d_deviation + d_symbolrate / 2.0;
-        lpf1 = std::make_shared<dsp::FIRBlock<complex_t>>(agc->output_stream, dsp::firdes::low_pass(1.0, d_samplerate, carson_cuttoff, 2000));
+        lpf1 = std::make_shared<dsp::FIRBlock<complex_t>>(agc->output_stream, dsp::firdes::low_pass(1.0, d_resample_after_quad ? d_samplerate : final_samplerate, carson_cuttoff, 2000));
 
         // Quadrature demod
-        qua = std::make_shared<dsp::QuadratureDemodBlock>(lpf1->output_stream, d_samplerate / (2.0 * M_PI * d_deviation));
+        qua = std::make_shared<dsp::QuadratureDemodBlock>(lpf1->output_stream, d_resample_after_quad ? d_samplerate : final_samplerate / (2.0 * M_PI * d_deviation));
 
         // Resampling
-        resamplerf = std::make_shared<dsp::SmartResamplerBlock<float>>(qua->output_stream, final_samplerate, d_samplerate);
+        if (d_resample_after_quad)
+        {
+            resamplerf = std::make_shared<dsp::SmartResamplerBlock<float>>(qua->output_stream, final_samplerate, d_samplerate);
 
-        // AGC2
-        agc2 = std::make_shared<dsp::AGC2Block<float>>(resamplerf->output_stream, 5.0, 0.01, 0.001);
+            // AGC2
+            agc2 = std::make_shared<dsp::AGC2Block<float>>(resamplerf->output_stream, 5.0, 0.01, 0.001);
+        }
 
         // LPF2
-        lpf2 = std::make_shared<dsp::FIRBlock<float>>(agc2->output_stream, dsp::firdes::low_pass(1.0, final_samplerate, d_symbolrate / 2, 2000));
+        lpf2 = std::make_shared<dsp::FIRBlock<float>>(d_resample_after_quad ? agc2->output_stream : qua->output_stream, dsp::firdes::low_pass(1.0, final_samplerate, d_symbolrate / 2, 2000));
 
         // rec = std::make_shared<dsp::GardnerClockRecovery2Block>(agc2->output_stream, final_samplerate, d_symbolrate, 0.707, 24);
         rec = std::make_shared<dsp::GardnerClockRecoveryBlock<float>>(lpf2->output_stream, final_sps, (final_sps * M_PI) / 100.0, 0.5, 0.5 / 8.0, 0.01);
         //  rec = std::make_shared<dsp::MMClockRecoveryBlock<float>>(agc2->output_stream, final_sps, 0.0689062, 0.5, 0.525, 0.01);
     }
 
-    XFSKBurstDemodModule::~XFSKBurstDemodModule()
-    {
-        delete[] sym_buffer;
-    }
+    XFSKBurstDemodModule::~XFSKBurstDemodModule() { delete[] sym_buffer; }
 
     void XFSKBurstDemodModule::process()
     {
@@ -79,9 +82,12 @@ namespace demod
         BaseDemodModule::start();
         lpf1->start();
         qua->start();
-        agc2->start();
+        if (d_resample_after_quad)
+        {
+            resamplerf->start();
+            agc2->start();
+        }
         lpf2->start();
-        resamplerf->start();
         rec->start();
 
         ////////////////////////////////////////////////////////////////
@@ -144,7 +150,7 @@ namespace demod
                 continue;
             }
 
-            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)agc2->output_stream->readBuf, 65535 * 0.2, dat_size); //TODO - 65535 is incorrect; use 32767 and fix percent appropriately
+            volk_32f_s32f_convert_16i(output_wav_buffer, (float *)agc2->output_stream->readBuf, 65535 * 0.2, dat_size); // TODO - 65535 is incorrect; use 32767 and fix percent appropriately
 
             audio_sink->push_samples(output_wav_buffer, dat_size);
 
@@ -154,7 +160,8 @@ namespace demod
             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
             {
                 lastTime = time(NULL);
-                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, SNR : " + std::to_string(snr) + "dB," + " Peak SNR: " + std::to_string(peak_snr) + "dB");
+                logger->info("Progress " + std::to_string(round(((double)progress / (double)filesize) * 1000.0) / 10.0) + "%%, SNR : " + std::to_string(snr) + "dB," +
+                             " Peak SNR: " + std::to_string(peak_snr) + "dB");
             }
         }
 
@@ -170,9 +177,12 @@ namespace demod
         BaseDemodModule::stop();
         lpf1->stop();
         qua->stop();
-        agc2->stop();
+        if (d_resample_after_quad)
+        {
+            resamplerf->stop();
+            agc2->stop();
+        }
         lpf2->stop();
-        resamplerf->stop();
         rec->stop();
         rec->output_stream->stopReader();
         // agc2->output_stream->stopReader();
@@ -181,10 +191,7 @@ namespace demod
             data_out.close();
     }
 
-    std::string XFSKBurstDemodModule::getID()
-    {
-        return "xfsk_burst_demod";
-    }
+    std::string XFSKBurstDemodModule::getID() { return "xfsk_burst_demod"; }
 
     std::vector<std::string> XFSKBurstDemodModule::getParameters()
     {
@@ -197,4 +204,4 @@ namespace demod
     {
         return std::make_shared<XFSKBurstDemodModule>(input_file, output_file_hint, parameters);
     }
-}
+} // namespace demod
