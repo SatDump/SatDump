@@ -32,6 +32,28 @@
             }
         }
     },
+    "xfsk_test": {
+        "name": "xFSK Test",
+        "live": [
+            1,
+            2
+        ],
+        "frequencies": [],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "xfsk_burst_demod",
+                "parameters": {
+                    "resample_after_quad": true,
+                    "symbolrate": 200e3
+                }
+            },
+            "frm": {
+                "module": "soft2hard"
+            }
+        }
+    },
     "test_custom": {
         "name": "test_custom",
         "live": [

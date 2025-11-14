@@ -26,6 +26,10 @@ namespace satdump
 
                 // Buffers
                 sym_buffer = new int8_t[d_buffer_size * 4];
+
+                // Parse params
+                if (parameters.count("resample_after_quad") > 0)
+                    d_resample_after_quad = parameters["resample_after_quad"].get<bool>();
             }
 
             /*
@@ -34,23 +38,25 @@ namespace satdump
             */
             void XFSKBurstDemodModule::init()
             {
-                BaseDemodModule::initb(false);
+                BaseDemodModule::initb(!d_resample_after_quad);
 
                 // LPF1
                 float carson_cuttoff = d_deviation + d_symbolrate / 2.0;
-                lpf1 = std::make_shared<dsp::FIRBlock<complex_t>>(agc->output_stream, dsp::firdes::low_pass(1.0, d_samplerate, carson_cuttoff, 2000));
+                lpf1 = std::make_shared<dsp::FIRBlock<complex_t>>(agc->output_stream, dsp::firdes::low_pass(1.0, d_resample_after_quad ? d_samplerate : final_samplerate, carson_cuttoff, 2000));
 
                 // Quadrature demod
-                qua = std::make_shared<dsp::QuadratureDemodBlock>(lpf1->output_stream, d_samplerate / (2.0 * M_PI * d_deviation));
+                qua = std::make_shared<dsp::QuadratureDemodBlock>(lpf1->output_stream, d_resample_after_quad ? d_samplerate : final_samplerate / (2.0 * M_PI * d_deviation));
 
                 // Resampling
-                resamplerf = std::make_shared<dsp::SmartResamplerBlock<float>>(qua->output_stream, final_samplerate, d_samplerate);
+                if (d_resample_after_quad)
+                {
+                    resamplerf = std::make_shared<dsp::SmartResamplerBlock<float>>(qua->output_stream, final_samplerate, d_samplerate);
 
-                // AGC2
-                agc2 = std::make_shared<dsp::AGC2Block<float>>(resamplerf->output_stream, 5.0, 0.01, 0.001);
-
+                    // AGC2
+                    agc2 = std::make_shared<dsp::AGC2Block<float>>(resamplerf->output_stream, 5.0, 0.01, 0.001);
+                }
                 // LPF2
-                lpf2 = std::make_shared<dsp::FIRBlock<float>>(agc2->output_stream, dsp::firdes::low_pass(1.0, final_samplerate, d_symbolrate / 2, 2000));
+                lpf2 = std::make_shared<dsp::FIRBlock<float>>(d_resample_after_quad ? agc2->output_stream : qua->output_stream, dsp::firdes::low_pass(1.0, final_samplerate, d_symbolrate / 2, 2000));
 
                 // rec = std::make_shared<dsp::GardnerClockRecovery2Block>(agc2->output_stream, final_samplerate, d_symbolrate, 0.707, 24);
                 rec = std::make_shared<dsp::GardnerClockRecoveryBlock<float>>(lpf2->output_stream, final_sps, (final_sps * M_PI) / 100.0, 0.5, 0.5 / 8.0, 0.01);
@@ -79,9 +85,12 @@ namespace satdump
                 BaseDemodModule::start();
                 lpf1->start();
                 qua->start();
-                agc2->start();
+                if (d_resample_after_quad)
+                {
+                    resamplerf->start();
+                    agc2->start();
+                }
                 lpf2->start();
-                resamplerf->start();
                 rec->start();
 
                 ////////////////////////////////////////////////////////////////
@@ -177,9 +186,12 @@ namespace satdump
                 BaseDemodModule::stop();
                 lpf1->stop();
                 qua->stop();
-                agc2->stop();
+                if (d_resample_after_quad)
+                {
+                    resamplerf->stop();
+                    agc2->stop();
+                }
                 lpf2->stop();
-                resamplerf->stop();
                 rec->stop();
                 rec->output_stream->stopReader();
                 // agc2->output_stream->stopReader();
