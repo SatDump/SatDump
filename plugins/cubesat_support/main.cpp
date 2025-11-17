@@ -12,6 +12,8 @@
 #include "geoscan/module_geoscan_decoder.h"
 #include "geoscan/module_geoscan_data_decoder.h"
 
+#include "szesat/module_szesat_decoder.h"
+
 class CubeSatSupport : public satdump::Plugin
 {
 public:
@@ -36,6 +38,8 @@ public:
 
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, geoscan::GEOSCANDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, geoscan::GEOSCANDataDecoderModule);
+
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, szesat::SZESATDecoderModule);
     }
 };
 
