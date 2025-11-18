@@ -6,7 +6,6 @@ F5OEO FixMe :
 */
 
 #include "plutosdr_sdr.h"
-#include "imgui/imgui_stdlib.h"
 
 // Adapted from https://github.com/altillimity/SatDump/pull/111 and SDR++
 
@@ -42,6 +41,14 @@ void PlutoSDRSource::set_gains()
     }
 }
 
+void PlutoSDRSource::set_bandwidth()
+{
+    int set_to = manual_bandwidth ? bandwidth_widget.get_value() : samplerate_widget.get_value();
+    iio_channel_attr_write_longlong(iio_device_find_channel(phy, "voltage0", false), "rf_bandwidth", set_to);
+
+    logger->debug("Set PlutoSDR filter bandwidth to %d", set_to);
+}
+
 void PlutoSDRSource::set_settings(nlohmann::json settings)
 {
     d_settings = settings;
@@ -50,12 +57,15 @@ void PlutoSDRSource::set_settings(nlohmann::json settings)
     gain_mode = getValueOrDefault(d_settings["gain_mode"], gain_mode);
     ip_address = getValueOrDefault(d_settings["ip_address"], ip_address);
     auto_reconnect = getValueOrDefault(d_settings["auto_reconnect"], auto_reconnect);
+    manual_bandwidth = getValueOrDefault(d_settings["manual_bw"], manual_bandwidth);
+    bandwidth_widget.set_value(getValueOrDefault(d_settings["manual_bw_value"], samplerate_widget.get_value()));
     iq_mode = getValueOrDefault(d_settings["iq_mode"], iq_mode);
     rf_input = getValueOrDefault(d_settings["rf_input"], rf_input);
     if (is_open && is_started)
     {
         set_rfinput();
         set_gains();
+        set_bandwidth();
     }
 }
 
@@ -65,6 +75,7 @@ nlohmann::json PlutoSDRSource::get_settings()
     d_settings["gain_mode"] = gain_mode;
     d_settings["ip_address"] = ip_address;
     d_settings["auto_reconnect"] = auto_reconnect;
+    d_settings["manual_bw_value"] = bandwidth_widget.get_value();
     d_settings["iq_mode"] = iq_mode;
     d_settings["rf_input"] = rf_input;
     return d_settings;
@@ -84,6 +95,14 @@ void PlutoSDRSource::open()
         available_samplerates.push_back(sr);
 
     samplerate_widget.set_list(available_samplerates, true);
+
+    std::vector<double> available_bandwidths;
+    for (int bw = 1000000; bw <= 52000000; bw += 500000)
+    {
+        available_bandwidths.push_back(bw);
+    }
+
+    bandwidth_widget.set_list(available_bandwidths, true, "Hz");
 }
 
 void PlutoSDRSource::start()
@@ -101,9 +120,7 @@ void PlutoSDRSource::stop()
     is_started = false;
 }
 
-void PlutoSDRSource::close()
-{
-}
+void PlutoSDRSource::close() {}
 
 void PlutoSDRSource::set_frequency(uint64_t frequency)
 {
@@ -127,9 +144,7 @@ void PlutoSDRSource::drawControlUI()
         RImGui::InputText("Address", &ip_address);
         RImGui::Checkbox("Auto-Reconnect", &auto_reconnect);
     }
-    if (RImGui::Combo("IQ Mode", &iq_mode, "CS16\0CS8\0"))
-    {
-    };
+    if (RImGui::Combo("IQ Mode", &iq_mode, "CS16\0CS8\0")) {};
 
     if (is_started)
         RImGui::endDisabled();
@@ -148,6 +163,14 @@ void PlutoSDRSource::drawControlUI()
 
     if (RImGui::Combo("Gain Mode", &gain_mode, "Manual\0Fast Attack\0Slow Attack\0Hybrid\0"))
         set_gains();
+
+    // Bandwidth Filter
+    bool bw_update = RImGui::Checkbox("Manual Bandwidth", &manual_bandwidth);
+    if (manual_bandwidth)
+        bw_update = bw_update || bandwidth_widget.render();
+
+    if (bw_update && is_started)
+        set_bandwidth();
 }
 
 void PlutoSDRSource::set_samplerate(uint64_t samplerate)
@@ -156,10 +179,7 @@ void PlutoSDRSource::set_samplerate(uint64_t samplerate)
         throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
-uint64_t PlutoSDRSource::get_samplerate()
-{
-    return samplerate_widget.get_value();
-}
+uint64_t PlutoSDRSource::get_samplerate() { return samplerate_widget.get_value(); }
 
 std::vector<dsp::SourceDescriptor> PlutoSDRSource::getAvailableSources()
 {
@@ -236,4 +256,5 @@ void PlutoSDRSource::sdr_startup()
     set_frequency(d_frequency);
     set_rfinput();
     set_gains();
+    set_bandwidth();
 }
