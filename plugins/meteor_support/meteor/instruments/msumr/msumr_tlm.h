@@ -9,8 +9,6 @@ enum DownlinkMode : int
     HRPT
 };
 
-
-
 // This is most likely temporary to some extent until
 // more of this is figured out for calibration.
 // Translations from Russians are definitely very imperfect,

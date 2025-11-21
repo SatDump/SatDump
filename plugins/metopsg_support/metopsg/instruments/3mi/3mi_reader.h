@@ -15,8 +15,7 @@ namespace metopsg
 
         public:
             int img_n = 0;
-            std::string directory_1;
-            std::string directory_2;
+            std::string directory;
 
         public:
             ThreeMIReader();

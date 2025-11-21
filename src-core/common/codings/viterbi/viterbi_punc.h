@@ -1,7 +1,9 @@
 #pragma once
 
+
 #define TEST_BITS_LENGTH 2048 // 1024 QPSK symbols
 
+#include "common/codings/viterbi/viterbi_buffer.h"
 #include "common/codings/rotation.h"
 #include "common/codings/viterbi/cc_decoder.h"
 #include "common/codings/viterbi/cc_encoder.h"
@@ -61,6 +63,10 @@ namespace viterbi
         uint8_t *soft_buffer;
         uint8_t *depunc_buffer;
         uint8_t *output_buffer;
+
+        // Decoding buffers, as some codes are more problematic
+        int vit_bufsize;
+        viterbi::ViterbiSlidingBuffer vit_buffer;
 
         // Calculate BER between 2 buffers
         float get_ber(uint8_t *raw, uint8_t *rencoded, int len, float ratio);

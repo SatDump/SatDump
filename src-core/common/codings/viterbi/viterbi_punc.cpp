@@ -1,27 +1,22 @@
 #include "viterbi_punc.h"
-#include <cstring>
 #include "utils.h"
+#include <cstring>
 
 #define ST_IDLE 0
 #define ST_SYNCED 1
 
 namespace viterbi
 {
-    Viterbi_Depunc::Viterbi_Depunc(std::shared_ptr<puncturing::GenericDepunc> depunc,
-                                   float ber_threshold, int max_outsync, int buffer_size, std::vector<phase_t> phases, bool check_iq_swap)
+    Viterbi_Depunc::Viterbi_Depunc(std::shared_ptr<puncturing::GenericDepunc> depunc, float ber_threshold, int max_outsync, int buffer_size, std::vector<phase_t> phases, bool check_iq_swap)
         : depunc(depunc),
 
-          d_ber_thresold(ber_threshold),
-          d_max_outsync(max_outsync),
-          d_check_iq_swap(check_iq_swap),
-          d_buffer_size(buffer_size),
-          d_phases_to_check(phases),
-          d_state(ST_IDLE),
+          d_ber_thresold(ber_threshold), d_max_outsync(max_outsync), d_check_iq_swap(check_iq_swap), d_buffer_size(buffer_size), d_phases_to_check(phases), d_state(ST_IDLE),
 
-          cc_decoder_ber(TEST_BITS_LENGTH, 7, 2, {79, 109}),
-          cc_encoder_ber(TEST_BITS_LENGTH, 7, 2, {79, 109}),
+          cc_decoder_ber(TEST_BITS_LENGTH, 7, 2, {79, 109}), cc_encoder_ber(TEST_BITS_LENGTH, 7, 2, {79, 109}),
 
-          cc_decoder(buffer_size, 7, 2, {79, 109})
+          cc_decoder(buffer_size / 2, 7, 2, {79, 109}),
+
+          vit_bufsize(buffer_size), vit_buffer(vit_bufsize * 4)
     {
         soft_buffer = new uint8_t[d_buffer_size * 8];
         depunc_buffer = new uint8_t[d_buffer_size * 8];
@@ -84,8 +79,7 @@ namespace viterbi
 
                         d_bers[s][phase][shift] = get_ber(ber_depunc_buffer, ber_encoded_buffer, lenp, depunc->get_berscale()); // Compute BER between initial buffer and re-encoded
 
-                        if (d_bers[s][phase][shift] < d_ber_thresold &&
-                            d_bers[s][phase][shift] < d_ber) // Check for a lock
+                        if (d_bers[s][phase][shift] < d_ber_thresold && d_bers[s][phase][shift] < d_ber) // Check for a lock
                         {
                             d_ber = d_bers[s][phase][shift]; // Set current BER
                             d_iq_swap = s;                   // Set IQ swap
@@ -113,11 +107,27 @@ namespace viterbi
 
             int sz = depunc->depunc_cont(soft_buffer, depunc_buffer, size); // Depuncturing
 
+#if 0
             cc_decoder.work(depunc_buffer, output, sz); // Decode entire buffer
             out_n = sz / 2;
 
             cc_encoder_ber.work(output, ber_encoded_buffer);                     // Re-encoded for a BER check
             d_ber = get_ber(depunc_buffer, ber_encoded_buffer, test_bit_len, 5); // Compute BER
+#else
+            vit_buffer.add(depunc_buffer, sz);
+
+            out_n = 0;
+            while (vit_buffer.in_buffer > vit_bufsize)
+            {
+                cc_decoder.work(vit_buffer.buffer_ptr, output + out_n); // Decode entire buffer
+
+                cc_encoder_ber.work(output + out_n, ber_encoded_buffer);                     // Re-encoded for a BER check
+                d_ber = get_ber(vit_buffer.buffer_ptr, ber_encoded_buffer, test_bit_len, 5); // Compute BER
+
+                out_n += vit_bufsize / 2;
+                vit_buffer.del(vit_bufsize);
+            }
+#endif
 
             if (d_ber > d_ber_thresold) // Check current BER
             {
@@ -152,8 +162,5 @@ namespace viterbi
         }
     }
 
-    int Viterbi_Depunc::getState()
-    {
-        return d_state;
-    }
-}
+    int Viterbi_Depunc::getState() { return d_state; }
+} // namespace viterbi

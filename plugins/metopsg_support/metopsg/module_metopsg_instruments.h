@@ -4,6 +4,7 @@
 #include "metopsg/instruments/3mi/3mi_reader.h"
 #include "metopsg/instruments/admin_msg/admin_msg_reader.h"
 #include "metopsg/instruments/metimage/metimage_reader.h"
+#include "metopsg/instruments/sentinel5/s5_reader.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
 #include "pipeline/modules/instrument_utils.h"
 
@@ -22,12 +23,14 @@ namespace metopsg
             threemi::ThreeMIReader threemi_reader;
             admin_msg::AdminMsgReader admin_msg_reader;
             metimage::METimageReader metimage_reader;
+            sentinel5::Sentinel5Reader sentinel5_reader;
 
             // Statuses
             instrument_status_t mws_status = DECODING;
             instrument_status_t threemi_status = DECODING;
             instrument_status_t admin_msg_status = DECODING;
             instrument_status_t metimage_status = DECODING;
+            instrument_status_t sentinel5_status = DECODING;
 
         public:
             MetOpSGInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
