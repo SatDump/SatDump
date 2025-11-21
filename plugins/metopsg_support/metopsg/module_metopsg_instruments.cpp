@@ -58,6 +58,7 @@ namespace metopsg
             ccsds::ccsds_aos::Demuxer demuxer_vcid10(884, false);
             ccsds::ccsds_aos::Demuxer demuxer_vcid13(884, false);
             ccsds::ccsds_aos::Demuxer demuxer_vcid14(884, false);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid15(884, false);
             ccsds::ccsds_aos::Demuxer demuxer_vcid16(884, false);
 
             // Setup Admin Message
@@ -99,6 +100,12 @@ namespace metopsg
                     std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid14.work(cadu);
                     for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
                         threemi_reader.work(pkt);
+                }
+                else if (vcdu.vcid == 15) // Sentinel-5
+                {
+                    std::vector<ccsds::CCSDSPacket> ccsdsFrames = demuxer_vcid15.work(cadu);
+                    for (ccsds::CCSDSPacket &pkt : ccsdsFrames)
+                        sentinel5_reader.work(pkt);
                 }
                 else if (vcdu.vcid == 16) // METimage
                 {
@@ -162,6 +169,28 @@ namespace metopsg
                 logger->info("----------- Satellite");
                 logger->info("NORAD : " + std::to_string(norad));
                 logger->info("Name  : " + sat_name);
+            }
+
+            // Sentinel-5
+            {
+                sentinel5_status = SAVING;
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/Sentinel-5";
+
+                if (!std::filesystem::exists(directory))
+                    std::filesystem::create_directory(directory);
+
+                logger->info("----------- Sentinel-5");
+
+                for (int i = 0; i < sentinel5_reader.nchannels; i++)
+                {
+                    std::string name = "num_" + std::to_string(i + 1);
+                    auto img = sentinel5_reader.getChannel(i, name);
+                    image::save_png(img, directory + "/" + name + ".png");
+                }
+
+                dataset.products_list.push_back("Sentinel-5");
+
+                sentinel5_status = DONE;
             }
 
             // MWS
@@ -305,6 +334,14 @@ namespace metopsg
                 ImGui::TextColored(style::theme.green, "%d", threemi_reader.img_n);
                 ImGui::TableSetColumnIndex(2);
                 drawStatus(threemi_status);
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Sentinel-5");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextColored(style::theme.green, "%d", sentinel5_reader.total_packets);
+                ImGui::TableSetColumnIndex(2);
+                drawStatus(sentinel5_status);
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
