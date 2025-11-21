@@ -43,14 +43,10 @@ namespace metopsg
 
             // 3-MI TODOREWORK
             {
-                std::string directory1 = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/3MI/1";
-                std::string directory2 = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/3MI/2";
-                if (!std::filesystem::exists(directory1))
-                    std::filesystem::create_directories(directory1);
-                if (!std::filesystem::exists(directory2))
-                    std::filesystem::create_directories(directory2);
-                threemi_reader.directory_1 = directory1;
-                threemi_reader.directory_2 = directory2;
+                std::string directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/3MI";
+                if (!std::filesystem::exists(directory))
+                    std::filesystem::create_directories(directory);
+                threemi_reader.directory = directory;
             }
 
             // Demuxers

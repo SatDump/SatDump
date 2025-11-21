@@ -44,8 +44,12 @@ namespace metopsg
                     }
 
                     img_n++;
-                    image::save_png(img1, directory_1 + "/3MI-" + std::to_string(img_n) + ".png");
-                    image::save_png(img2, directory_2 + "/3MI-_" + std::to_string(img_n) + ".png");
+
+                    image::Image imgf(16, 520, 520, 1);
+                    imgf.draw_image(0, img1, 0);
+                    img2.mirror(true, false);
+                    imgf.draw_image(0, img2, 260);
+                    image::save_png(imgf, directory + "/3MI-" + std::to_string(img_n) + ".png");
 
                     // data_ou.write((char *)img_vec.data() + 4320, img_vec.size());
 
