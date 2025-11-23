@@ -11,6 +11,7 @@
 
 #include "logger.h"
 
+#include "tools/ccsds_apid_demux.h"
 #include "tools/ccsds_vcid_splitter.h"
 #include "tools/deframer.h"
 #include "tools/diff_decode.h"
@@ -27,6 +28,7 @@ namespace satdump
         all_tools.push_back(std::make_shared<DifferentialTool>());
         all_tools.push_back(std::make_shared<Soft2HardTool>());
         all_tools.push_back(std::make_shared<CCSDSVcidSplitterTool>());
+        all_tools.push_back(std::make_shared<CCSDSAPIDDemuxTool>());
     }
 
     BitViewHandler::BitViewHandler()
@@ -37,6 +39,7 @@ namespace satdump
         all_tools.push_back(std::make_shared<DifferentialTool>());
         all_tools.push_back(std::make_shared<Soft2HardTool>());
         all_tools.push_back(std::make_shared<CCSDSVcidSplitterTool>());
+        all_tools.push_back(std::make_shared<CCSDSAPIDDemuxTool>());
     }
 
     BitViewHandler::~BitViewHandler() {}

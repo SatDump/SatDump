@@ -1,11 +1,11 @@
 #include "bit_container.h"
 #include "common/utils.h"
+#include "core/exception.h"
 #include "imgui/imgui_image.h"
 #include "logger.h"
-#include "core/exception.h"
 
-#include <filesystem>
 #include <fcntl.h>
+#include <filesystem>
 #include <random>
 
 #ifdef _WIN32
@@ -18,8 +18,7 @@
 
 namespace satdump
 {
-    BitContainer::BitContainer(std::string name, std::string file_path)
-        : d_name(name), d_filepath(file_path)
+    BitContainer::BitContainer(std::string name, std::string file_path, std::vector<FrameDef> frms) : d_name(name), d_filepath(file_path), frames(frms)
     {
         // Generate unique ID
         std::random_device dev;
@@ -42,6 +41,9 @@ namespace satdump
             close(fd);
             throw satdump_exception("mmap failed!");
         }
+
+        d_frame_mode = frames.size();
+        logger->critical("Frame mode? %d", d_frame_mode);
 
         // Default period
         init_bitperiod();
@@ -71,20 +73,34 @@ namespace satdump
 
     void BitContainer::init_bitperiod()
     {
-        size_t final_size = 0;
-        img_parts_y = 0;
-        while (final_size < d_file_memory_size * 8)
+        if (d_frame_mode)
         {
-            final_size += d_bitperiod * d_chunk_size;
-            img_parts_y++;
-        }
+            img_parts_y = (frames.size() / d_chunk_size) + 1;
 
-        final_size = 0;
-        img_parts_x = 0;
-        while (final_size < d_bitperiod)
+            size_t max_size = 0;
+            for (auto &f : frames)
+                if (f.size > max_size)
+                    max_size = f.size;
+
+            img_parts_x = (max_size / d_chunk_size) + 1;
+        }
+        else
         {
-            final_size += d_chunk_size;
-            img_parts_x++;
+            size_t final_size = 0;
+            img_parts_y = 0;
+            while (final_size < d_file_memory_size * 8)
+            {
+                final_size += d_bitperiod * d_chunk_size;
+                img_parts_y++;
+            }
+
+            final_size = 0;
+            img_parts_x = 0;
+            while (final_size < d_bitperiod)
+            {
+                final_size += d_chunk_size;
+                img_parts_x++;
+            }
         }
 
         image_parts.resize(img_parts_y * img_parts_x);
@@ -128,29 +144,63 @@ namespace satdump
 
                         if (d_display_mode == 0) // Bit display
                         {
-#pragma omp parallel for
-                            for (int64_t line = 0; (size_t)line < d_chunk_size; line++)
+                            if (d_frame_mode)
                             {
-                                for (size_t i = 0; i < d_chunk_size; i++)
+                                for (int64_t line = 0; (size_t)line < d_chunk_size; line++)
                                 {
-                                    size_t bitstream_pos = offset + line * d_bitperiod + xoffset + i;
-                                    size_t raster_pos = line * d_chunk_size + i;
-
-                                    if (bitstream_pos < d_file_memory_size * 8)
+                                    for (size_t i = 0; i < d_chunk_size; i++)
                                     {
-                                        if (xoffset + i < d_bitperiod)
+                                        size_t frame_i = ii * d_chunk_size + line;
+                                        auto &frm = frames[frame_i];
+
+                                        size_t bitstream_pos = frm.ptr + xoffset + i;
+                                        size_t raster_pos = line * d_chunk_size + i;
+
+                                        if (bitstream_pos < d_file_memory_size * 8)
                                         {
-                                            uint8_t v = ((d_file_memory_ptr[bitstream_pos / 8] >> (7 - (bitstream_pos % 8))) & 1) ? 0 : 255;
-                                            wip_texture_buffer[raster_pos] = 255 << 24 | v << 16 | v << 8 | v;
+                                            if (xoffset + i < frm.size)
+                                            {
+                                                uint8_t v = ((d_file_memory_ptr[bitstream_pos / 8] >> (7 - (bitstream_pos % 8))) & 1) ? 0 : 255;
+                                                wip_texture_buffer[raster_pos] = 255 << 24 | v << 16 | v << 8 | v;
+                                            }
+                                            else
+                                            {
+                                                wip_texture_buffer[raster_pos] = 0 << 24;
+                                            }
                                         }
                                         else
                                         {
                                             wip_texture_buffer[raster_pos] = 0 << 24;
                                         }
                                     }
-                                    else
+                                }
+                            }
+                            else
+                            {
+#pragma omp parallel for
+                                for (int64_t line = 0; (size_t)line < d_chunk_size; line++)
+                                {
+                                    for (size_t i = 0; i < d_chunk_size; i++)
                                     {
-                                        wip_texture_buffer[raster_pos] = 0 << 24;
+                                        size_t bitstream_pos = offset + line * d_bitperiod + xoffset + i;
+                                        size_t raster_pos = line * d_chunk_size + i;
+
+                                        if (bitstream_pos < d_file_memory_size * 8)
+                                        {
+                                            if (xoffset + i < d_bitperiod)
+                                            {
+                                                uint8_t v = ((d_file_memory_ptr[bitstream_pos / 8] >> (7 - (bitstream_pos % 8))) & 1) ? 0 : 255;
+                                                wip_texture_buffer[raster_pos] = 255 << 24 | v << 16 | v << 8 | v;
+                                            }
+                                            else
+                                            {
+                                                wip_texture_buffer[raster_pos] = 0 << 24;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            wip_texture_buffer[raster_pos] = 0 << 24;
+                                        }
                                     }
                                 }
                             }
@@ -228,12 +278,8 @@ namespace satdump
 
             bool status_before = part.visible;
             part.visible = false;
-            if (c.Min().x > part.pos2_x || c.Max().y < part.pos2_y)
-            {
-            }
-            else if (c.Max().x < part.pos1_x || c.Min().y > part.pos1_y)
-            {
-            }
+            if (c.Min().x > part.pos2_x || c.Max().y < part.pos2_y) {}
+            else if (c.Max().x < part.pos1_x || c.Min().y > part.pos1_y) {}
             else
             {
                 // printf("%f %f - %f %f  ----  %f %f - %f %f ---- %d\n",
@@ -249,4 +295,4 @@ namespace satdump
                 update = true;
         }
     }
-}
+} // namespace satdump

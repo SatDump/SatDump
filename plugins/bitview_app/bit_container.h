@@ -1,10 +1,10 @@
 #pragma once
 
-#include <string>
-#include <vector>
+#include "imgui/implot/implot.h"
 #include <cstdint>
 #include <memory>
-#include "imgui/implot/implot.h"
+#include <string>
+#include <vector>
 
 namespace satdump
 {
@@ -61,7 +61,7 @@ namespace satdump
         bool d_is_temporary = false;
 
     public:
-        BitContainer(std::string name, std::string file);
+        BitContainer(std::string name, std::string file, std::vector<FrameDef> frms = {});
         ~BitContainer();
 
         std::string getName() { return d_name; }
@@ -76,4 +76,4 @@ namespace satdump
     public:
         void *bitview = nullptr;
     };
-}
+} // namespace satdump
