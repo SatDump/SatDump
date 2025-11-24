@@ -4,6 +4,7 @@
 #include "imgui/imgui_image.h"
 #include "logger.h"
 
+#include <cstdint>
 #include <fcntl.h>
 #include <filesystem>
 #include <random>
@@ -125,6 +126,9 @@ namespace satdump
             update = true;
         }
 
+        int max_update_num = 2;
+        int updated_num = 0;
+
         if (update)
         {
             size_t offset = 0;
@@ -134,6 +138,11 @@ namespace satdump
                 for (size_t iii = 0; iii < img_parts_x; iii++)
                 {
                     auto &part = image_parts[ii * img_parts_x + iii];
+
+                    if (!part.need_update)
+                        continue;
+                    part.need_update = false;
+                    updated_num++;
 
                     size_t xoffset = iii * d_chunk_size;
 
@@ -146,6 +155,7 @@ namespace satdump
                         {
                             if (d_frame_mode)
                             {
+#pragma omp parallel for
                                 for (int64_t line = 0; (size_t)line < d_chunk_size; line++)
                                 {
                                     for (size_t i = 0; i < d_chunk_size; i++)
@@ -161,7 +171,17 @@ namespace satdump
                                             if (xoffset + i < frm.size)
                                             {
                                                 uint8_t v = ((d_file_memory_ptr[bitstream_pos / 8] >> (7 - (bitstream_pos % 8))) & 1) ? 0 : 255;
+
+                                                /*for (auto &h : highlights)
+                                                {
+                                                    if (h.ptr <= bitstream_pos && bitstream_pos < (h.ptr + h.size))
+                                                    {
+                                                        wip_texture_buffer[raster_pos] =
+                                                            255 << 24 | uint8_t(v * 0.75 + h.b * 0.25) << 16 | uint8_t(v * 0.75 + h.g * 0.25) << 8 | uint8_t(v * 0.75 + h.r * 0.25);
+                                                        break;
+                                                    }*/
                                                 wip_texture_buffer[raster_pos] = 255 << 24 | v << 16 | v << 8 | v;
+                                                //}
                                             }
                                             else
                                             {
@@ -190,7 +210,17 @@ namespace satdump
                                             if (xoffset + i < d_bitperiod)
                                             {
                                                 uint8_t v = ((d_file_memory_ptr[bitstream_pos / 8] >> (7 - (bitstream_pos % 8))) & 1) ? 0 : 255;
+
+                                                /*for (auto &h : highlights)
+                                                {
+                                                    if (h.ptr <= bitstream_pos && bitstream_pos < (h.ptr + h.size))
+                                                    {
+                                                        wip_texture_buffer[raster_pos] =
+                                                            255 << 24 | uint8_t(v * 0.75 + h.b * 0.25) << 16 | uint8_t(v * 0.75 + h.g * 0.25) << 8 | uint8_t(v * 0.75 + h.r * 0.25);
+                                                        break;
+                                                    }*/
                                                 wip_texture_buffer[raster_pos] = 255 << 24 | v << 16 | v << 8 | v;
+                                                //}
                                             }
                                             else
                                             {
@@ -211,34 +241,69 @@ namespace satdump
                         }
                         else if (d_display_mode == 1) // Byte display
                         {
-#pragma omp parallel for
-                            for (int64_t line = 0; (size_t)line < d_chunk_size; line++)
+                            if (d_frame_mode)
                             {
-                                for (size_t i = 0; i < d_chunk_size / 8; i++)
+#pragma omp parallel for
+                                for (int64_t line = 0; (size_t)line < d_chunk_size; line++)
                                 {
-                                    size_t bitstream_pos = offset + line * d_bitperiod + xoffset + i * 8;
-                                    size_t raster_pos = line * (d_chunk_size / 8) + i;
-
-                                    if (bitstream_pos < d_file_memory_size * 8)
+                                    for (size_t i = 0; i < d_chunk_size / 8; i++)
                                     {
-                                        if (xoffset + i * 8 < d_bitperiod)
+                                        size_t frame_i = ii * d_chunk_size + line;
+                                        auto &frm = frames[frame_i];
+
+                                        size_t bitstream_pos = frm.ptr + xoffset + i * 8;
+                                        size_t raster_pos = line * (d_chunk_size / 8) + i;
+
+                                        if (bitstream_pos < d_file_memory_size * 8)
                                         {
-                                            uint8_t v = d_file_memory_ptr[bitstream_pos / 8];
-                                            wip_texture_buffer[raster_pos] = 255 << 24 | 0 << 16 | v << 8 | 0;
+                                            if (xoffset + i * 8 < frm.size)
+                                            {
+                                                uint8_t v = d_file_memory_ptr[bitstream_pos / 8];
+                                                wip_texture_buffer[raster_pos] = 255 << 24 | 0 << 16 | v << 8 | 0;
+                                            }
+                                            else
+                                            {
+                                                wip_texture_buffer[raster_pos] = 0 << 24;
+                                            }
                                         }
                                         else
                                         {
                                             wip_texture_buffer[raster_pos] = 0 << 24;
                                         }
                                     }
-                                    else
+                                }
+                            }
+                            else
+                            {
+#pragma omp parallel for
+                                for (int64_t line = 0; (size_t)line < d_chunk_size; line++)
+                                {
+                                    for (size_t i = 0; i < d_chunk_size / 8; i++)
                                     {
-                                        wip_texture_buffer[raster_pos] = 0 << 24;
+                                        size_t bitstream_pos = offset + line * d_bitperiod + xoffset + i * 8;
+                                        size_t raster_pos = line * (d_chunk_size / 8) + i;
+
+                                        if (bitstream_pos < d_file_memory_size * 8)
+                                        {
+                                            if (xoffset + i * 8 < d_bitperiod)
+                                            {
+                                                uint8_t v = d_file_memory_ptr[bitstream_pos / 8];
+                                                wip_texture_buffer[raster_pos] = 255 << 24 | 0 << 16 | v << 8 | 0;
+                                            }
+                                            else
+                                            {
+                                                wip_texture_buffer[raster_pos] = 0 << 24;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            wip_texture_buffer[raster_pos] = 0 << 24;
+                                        }
                                     }
                                 }
                             }
 
-                            printf("CREATE TEXT %d\n", int(ii * img_parts_x + iii));
+                            // printf("CREATE TEXT %d\n", int(ii * img_parts_x + iii));
 
                             updateImageTexture(part.image_id, wip_texture_buffer, d_chunk_size / 8, d_chunk_size);
                         }
@@ -255,6 +320,9 @@ namespace satdump
                     part.pos2_x = d_chunk_size * (iii + 1);
                     part.pos2_y = d_chunk_size * (ii + 0);
                     part.i = ii * img_parts_x + iii;
+
+                    if (updated_num >= max_update_num)
+                        return; // TODOREWORK?
                 }
 
                 offset += d_bitperiod * d_chunk_size;
@@ -274,13 +342,16 @@ namespace satdump
             //     continue;
 
             if (part.i == -1)
+            {
+                part.need_update = true;
                 continue;
+            }
 
             bool status_before = part.visible;
             part.visible = false;
             if (c.Min().x > part.pos2_x || c.Max().y < part.pos2_y) {}
             else if (c.Max().x < part.pos1_x || c.Min().y > part.pos1_y) {}
-            else
+            else if (!part.need_update)
             {
                 // printf("%f %f - %f %f  ----  %f %f - %f %f ---- %d\n",
                 //        c.Min().x, c.Min().y, c.Max().x, c.Max().y,
@@ -292,7 +363,10 @@ namespace satdump
             }
 
             if (part.visible != status_before)
+            {
+                part.need_update = true;
                 update = true;
+            }
         }
     }
 } // namespace satdump

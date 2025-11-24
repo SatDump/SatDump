@@ -20,6 +20,8 @@ namespace satdump
     private:
         bool should_process = false;
 
+        int mpdu_data_size = 884;
+        int insert_zone_size = 0;
         int apid = 1;
 
     public:
@@ -30,6 +32,8 @@ namespace satdump
             if (is_busy)
                 style::beginDisabled();
 
+            ImGui::InputInt("MPDU Data Size", &mpdu_data_size);
+            ImGui::InputInt("MPDU Insert Zone Size", &insert_zone_size);
             ImGui::InputInt("APID", &apid);
 
             if (ImGui::Button("Perform###2"))
@@ -56,7 +60,7 @@ namespace satdump
             std::ofstream fileout = std::ofstream(tmpfile, std::ios::binary);
             std::vector<BitContainer::FrameDef> frms;
 
-            ccsds::ccsds_aos::Demuxer demuxer_vcid(884, false);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid(mpdu_data_size, insert_zone_size, insert_zone_size);
 
             size_t pos = 0;
             for (int i = 0; i < size; i += 1024)

@@ -1,15 +1,8 @@
 #include "bitview.h"
 #include "core/style.h"
-#include "imgui/imgui_image.h"
-#include "imgui/imgui_stdlib.h"
+#include "imgui/imgui.h"
 #include "imgui/implot/implot.h"
-#include <fstream>
-
-#include "common/utils.h"
 #include <fcntl.h>
-#include <filesystem>
-
-#include "logger.h"
 
 #include "tools/ccsds_apid_demux.h"
 #include "tools/ccsds_vcid_splitter.h"
@@ -19,20 +12,9 @@
 
 namespace satdump
 {
-    BitViewHandler::BitViewHandler(std::shared_ptr<BitContainer> c) : current_bit_container(c)
+    BitViewHandler::BitViewHandler(std::shared_ptr<BitContainer> c) : bc(c)
     {
         c->bitview = this;
-        handler_tree_icon = u8"\uf471";
-
-        all_tools.push_back(std::make_shared<DeframerTool>());
-        all_tools.push_back(std::make_shared<DifferentialTool>());
-        all_tools.push_back(std::make_shared<Soft2HardTool>());
-        all_tools.push_back(std::make_shared<CCSDSVcidSplitterTool>());
-        all_tools.push_back(std::make_shared<CCSDSAPIDDemuxTool>());
-    }
-
-    BitViewHandler::BitViewHandler()
-    {
         handler_tree_icon = u8"\uf471";
 
         all_tools.push_back(std::make_shared<DeframerTool>());
@@ -48,80 +30,86 @@ namespace satdump
     {
         if (is_busy)
             style::beginDisabled();
-        if (ImGui::CollapsingHeader("Files##bitview", ImGuiTreeNodeFlags_DefaultOpen))
+
+        if (ImGui::CollapsingHeader("Display", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            ImGui::Text("Load File :");
-            if (select_bitfile_dialog.draw() && select_bitfile_dialog.isValid())
+            if (!bc->d_frame_mode)
             {
-                try
+                double vv = bc->d_bitperiod;
+                if (ImGui::InputDouble("Period (Bits)", &vv))
                 {
-                    current_bit_container = std::make_shared<BitContainer>(std::filesystem::path(select_bitfile_dialog.getPath()).stem().string() +
-                                                                               std::filesystem::path(select_bitfile_dialog.getPath()).stem().extension().string(),
-                                                                           select_bitfile_dialog.getPath());
-                    current_bit_container->bitview = this;
-                }
-                catch (std::exception &e)
-                {
-                    logger->error("Could not load file: %s", e.what());
+                    bc->d_bitperiod = vv;
+                    bc->init_bitperiod();
+                    bc->forceUpdateAll();
                 }
             }
 
-            ImGui::Separator();
-        }
-        if (ImGui::CollapsingHeader("Control"))
-        {
-            if (current_bit_container)
+            if (ImGui::RadioButton("Bits", bc->d_display_mode == 0))
             {
-                double vv = current_bit_container->d_bitperiod;
-                if (ImGui::InputDouble("Period", &vv))
-                {
-                    current_bit_container->d_bitperiod = vv;
-                    current_bit_container->init_bitperiod();
-                    current_bit_container->forceUpdateAll();
-                }
+                bc->d_display_mode = 0;
+                bc->forceUpdateAll();
+            }
 
-                if (ImGui::RadioButton("Bits", current_bit_container->d_display_mode == 0))
-                {
-                    current_bit_container->d_display_mode = 0;
-                    current_bit_container->forceUpdateAll();
-                }
-                if (ImGui::RadioButton("Bytes", current_bit_container->d_display_mode == 1))
-                {
-                    current_bit_container->d_display_mode = 1;
-                    current_bit_container->forceUpdateAll();
-                }
+            ImGui::SameLine();
+
+            if (ImGui::RadioButton("Bytes", bc->d_display_mode == 1))
+            {
+                bc->d_display_mode = 1;
+                bc->forceUpdateAll();
             }
         }
+
         if (is_busy)
             style::endDisabled();
-        if (ImGui::CollapsingHeader("Tools"))
+
+        if (ImGui::CollapsingHeader("Tools", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            if (current_bit_container)
+            for (auto &tool : all_tools)
             {
-                for (auto &tool : all_tools)
+                ImGui::Separator();
+                ImGui::Text("%s", tool->getName().c_str());
+                ImGui::Separator();
+
+                tool->renderMenu(bc, is_busy);
+
+                if (tool->needToProcess())
                 {
-                    ImGui::Separator();
-                    ImGui::Text("%s", tool->getName().c_str());
-                    ImGui::Separator();
-
-                    tool->renderMenu(current_bit_container, is_busy);
-
-                    if (tool->needToProcess())
+                    tool->setProcessed();
+                    auto func = [this, tool](int)
                     {
-                        tool->setProcessed();
-                        auto func = [this, tool](int)
-                        {
-                            tool->process(current_bit_container, process_progress);
-                            is_busy = false;
-                        };
-                        is_busy = true;
-                        process_threadp.push(func);
-                    }
+                        tool->process(bc, process_progress);
+                        is_busy = false;
+                    };
+                    is_busy = true;
+                    process_threadp.push(func);
                 }
+            }
 
-                ImGui::Spacing();
+            ImGui::Spacing();
 
-                ImGui::ProgressBar(process_progress);
+            ImGui::ProgressBar(process_progress);
+
+            ImGui::Separator();
+
+            if (ImGui::Button("Find Sync"))
+            {
+                auto func = [this](int)
+                {
+                    auto ptr = bc->get_ptr();
+                    auto sz = bc->get_ptr_size();
+
+                    bc->highlights.clear();
+
+                    for (int i = 0; i < (sz / 8) - 4; i++)
+                    {
+                        if (ptr[i + 0] == 0x1a && ptr[i + 1] == 0xcf && ptr[i + 2] == 0xfc && ptr[i + 3] == 0x1d)
+                            bc->highlights.push_back({(size_t)i * 8, 64, 0, 0, 255});
+                    }
+
+                    is_busy = false;
+                };
+                is_busy = true;
+                process_threadp.push(func);
             }
         }
     }
@@ -132,15 +120,13 @@ namespace satdump
     {
         ImVec2 window_size = win_size;
 
-        if (current_bit_container)
-            current_bit_container->doUpdateTextures();
+        bc->doUpdateTextures();
 
         ImPlot::BeginPlot("MainPlot", window_size, ImPlotFlags_Equal | ImPlotFlags_NoLegend);
         ImPlot::SetupAxes(nullptr, nullptr, 0, ImPlotAxisFlags_Invert);
 
         ImPlotRect c = ImPlot::GetPlotLimits();
-        if (current_bit_container)
-            current_bit_container->doDrawPlotTextures(c);
+        bc->doDrawPlotTextures(c);
 
         // ImPlot::GetPlotDrawList()->AddRectFilled(ImPlot::PlotToPixels({0, 0}), ImPlot::PlotToPixels({1, 1}), ImColor(255, 0, 0, 255 * 0.5));
 

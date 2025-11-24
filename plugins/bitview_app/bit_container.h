@@ -29,6 +29,8 @@ namespace satdump
             double pos2_y = 0;
             int i = -1;
             bool visible = false;
+
+            bool need_update = true;
         };
 
         size_t img_parts_y = 0;
@@ -52,6 +54,16 @@ namespace satdump
         std::vector<FrameDef> frames;
 
     public:
+        struct HighlightDef
+        {
+            size_t ptr;
+            size_t size;
+            uint8_t r, g, b;
+        };
+
+        std::vector<HighlightDef> highlights;
+
+    public:
         size_t d_bitperiod = 481280; // 256; // 481280
         int d_display_mode = 0;
 
@@ -68,7 +80,12 @@ namespace satdump
         std::string getID() { return std::string(unique_id); }
 
         void init_bitperiod();
-        void forceUpdateAll() { force_update_all = true; }
+        void forceUpdateAll()
+        {
+            for (auto &p : image_parts)
+                p.need_update = true;
+            force_update_all = true;
+        }
 
         void doUpdateTextures();
         void doDrawPlotTextures(ImPlotRect c);
