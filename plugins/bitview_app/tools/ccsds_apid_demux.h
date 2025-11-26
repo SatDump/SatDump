@@ -23,6 +23,7 @@ namespace satdump
         int mpdu_data_size = 884;
         int insert_zone_size = 0;
         int apid = 1;
+        bool filter_apid = false;
 
     public:
         std::string getName() { return "CCSDS APID Demux"; }
@@ -34,7 +35,9 @@ namespace satdump
 
             ImGui::InputInt("MPDU Data Size", &mpdu_data_size);
             ImGui::InputInt("MPDU Insert Zone Size", &insert_zone_size);
-            ImGui::InputInt("APID", &apid);
+            ImGui::Checkbox("Filter APID", &filter_apid);
+            if (filter_apid)
+                ImGui::InputInt("APID", &apid);
 
             if (ImGui::Button("Perform###2"))
                 should_process = true;
@@ -69,7 +72,7 @@ namespace satdump
 
                 for (auto &f : frm)
                 {
-                    if (f.header.apid == apid)
+                    if (!filter_apid || f.header.apid == apid)
                     {
                         fileout.write((char *)f.header.raw, 6);
                         fileout.write((char *)f.payload.data(), f.payload.size());
@@ -82,15 +85,18 @@ namespace satdump
                 process_progress = double(i) / double(size);
             }
 
-            std::shared_ptr<satdump::BitContainer> newbitc = std::make_shared<satdump::BitContainer>(container->getName() + " APID " + std::to_string(apid), tmpfile, frms);
-            newbitc->d_bitperiod = 8192;
-            newbitc->init_bitperiod();
-            newbitc->d_is_temporary = true;
+            if (frms.size())
+            {
+                std::shared_ptr<satdump::BitContainer> newbitc = std::make_shared<satdump::BitContainer>(container->getName() + " APID " + std::to_string(apid), tmpfile, frms);
+                newbitc->d_bitperiod = 8192;
+                newbitc->init_bitperiod();
+                newbitc->d_is_temporary = true;
 
-            if (container->bitview != nullptr)
-                ((BitViewHandler *)container->bitview)->addSubHandler(std::make_shared<BitViewHandler>(newbitc));
-            else
-                logger->error("Can't add container!");
+                if (container->bitview != nullptr)
+                    ((BitViewHandler *)container->bitview)->addSubHandler(std::make_shared<BitViewHandler>(newbitc));
+                else
+                    logger->error("Can't add container!");
+            }
 
 #if 0
             std::map<int, int> vcid_counts;

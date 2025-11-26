@@ -142,12 +142,14 @@ namespace satdump
                     if (!part.need_update)
                         continue;
                     part.need_update = false;
-                    updated_num++;
 
                     size_t xoffset = iii * d_chunk_size;
 
                     if (part.visible)
                     {
+                        // Only generation is slow, deleting a texture is fast
+                        updated_num++;
+
                         if (part.image_id == 0)
                             part.image_id = makeImageTexture();
 
