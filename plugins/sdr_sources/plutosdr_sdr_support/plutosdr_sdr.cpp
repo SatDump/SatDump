@@ -36,7 +36,8 @@ void PlutoSDRSource::set_gains()
     if (is_open && is_started)
     {
         iio_channel_attr_write(iio_device_find_channel(phy, "voltage0", false), "gain_control_mode", pluto_gain_mode[gain_mode]);
-        iio_channel_attr_write_longlong(iio_device_find_channel(phy, "voltage0", false), "hardwaregain", round(gain));
+        // AD936x accepts -3 through 71
+        iio_channel_attr_write_longlong(iio_device_find_channel(phy, "voltage0", false), "hardwaregain", round(gain - 2));
         logger->debug("Set PlutoSDR gain to %d, mode %s", gain, pluto_gain_mode[gain_mode]);
     }
 }
@@ -157,7 +158,7 @@ void PlutoSDRSource::drawControlUI()
     if (gain_mode == 0)
     {
         // Gain settings
-        if (RImGui::SteppedSliderInt("Gain", &gain, -3, 71))
+        if (RImGui::SteppedSliderInt("Gain", &gain, -1, 73))
             set_gains();
     }
 
