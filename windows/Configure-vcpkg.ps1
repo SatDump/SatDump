@@ -86,7 +86,6 @@ if($env:PROCESSOR_ARCHITECTURE -ne $arch)
 {
     $build_args += "-DCMAKE_SYSTEM_NAME=Windows", "-DCMAKE_SYSTEM_PROCESSOR=$arch", "-DCMAKE_CROSSCOMPILING=ON", "-DVCPKG_USE_HOST_TOOLS=ON", "-DVCPKG_HOST_TRIPLET=$host_triplet"
 }
-
 #TEMPORARY: Use an unmerged PR of LibUSB to allow setting RAW_IO on USB transferrs. This is needed to
 #           prevent sample drops on some Windows machines with USB SDRs
 #           Update Jan. 30, 2025: There's nothing more permanent than a temporary measure :-)
@@ -273,7 +272,7 @@ git clone https://github.com/EttusResearch/uhd # v4.8 (latest as of this writing
 cd uhd\host
 $null = mkdir build
 cd build
-cmake $build_args -DENABLE_MAN_PAGES=OFF -DENABLE_MANUAL=OFF -DENABLE_PYTHON_API=OFF -DENABLE_EXAMPLES=OFF -DENABLE_UTILS=OFF -DENABLE_TESTS=OFF ..
+cmake $build_args -DENABLE_MAN_PAGES=OFF -DENABLE_MANUAL=OFF -DENABLE_PYTHON_API=OFF -DENABLE_EXAMPLES=OFF -DENABLE_UTILS=OFF -DENABLE_TESTS=OFF -DPYTHON_EXECUTABLE="$((Get-Command python3).Source)" ..
 cmake --build . --config Release
 cmake --install .
 cd ..\..\..
