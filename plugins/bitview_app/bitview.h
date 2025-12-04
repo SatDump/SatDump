@@ -26,9 +26,7 @@ namespace satdump
         void drawMenuBar();
 
     private:
-        FileSelectWidget select_bitfile_dialog = FileSelectWidget("File", "Select File", false, true);
-
-        std::shared_ptr<BitContainer> current_bit_container;
+        std::shared_ptr<BitContainer> bc;
 
     private:
         float process_progress = 0;
@@ -37,18 +35,11 @@ namespace satdump
         std::vector<std::shared_ptr<BitViewTool>> all_tools;
 
     public:
-        BitViewHandler();
         BitViewHandler(std::shared_ptr<BitContainer> c);
         ~BitViewHandler();
 
     public:
         std::string getID() { return "bitview_handler"; }
-        std::string getName()
-        {
-            if (current_bit_container)
-                return current_bit_container->getName();
-            else
-                return "BitView";
-        }
+        std::string getName() { return bc->getName(); }
     };
 }; // namespace satdump

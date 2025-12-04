@@ -2,16 +2,16 @@
 
 #include "common/dsp_source_sink/dsp_sample_source.h"
 #ifdef __ANDROID__
-#include "iio.h"
 #include "ad9361.h"
+#include "iio.h"
 #else
-#include <iio.h>
 #include <ad9361.h>
+#include <iio.h>
 #endif
-#include "logger.h"
 #include "common/rimgui.h"
-#include <thread>
 #include "common/widgets/double_list.h"
+#include "logger.h"
+#include <thread>
 
 class PlutoSDRSource : public dsp::DSPSampleSource
 {
@@ -23,8 +23,10 @@ protected:
     iio_device *dev = NULL;
 
     widgets::DoubleList samplerate_widget;
+    widgets::DoubleList bandwidth_widget;
 
     bool is_usb = false;
+    bool manual_bandwidth = false;
 
     int gain = 0;
     int gain_mode = 0;
@@ -34,6 +36,7 @@ protected:
 
     void set_gains();
     void set_rfinput();
+    void set_bandwidth();
     std::thread work_thread;
     bool thread_should_run = false;
     std::mutex work_thread_mtx;
@@ -46,10 +49,10 @@ protected:
 
     restart:
         int blockSize = dsp::STREAM_BUFFER_SIZE;
-        if(iq_mode==0) //CS16
+        if (iq_mode == 0) // CS16
             blockSize = std::min<int>(samplerate_widget.get_value() / 20.0, dsp::STREAM_BUFFER_SIZE);
-        else    
-            blockSize = std::min<int>(samplerate_widget.get_value() / (20.0*2), dsp::STREAM_BUFFER_SIZE);
+        else
+            blockSize = std::min<int>(samplerate_widget.get_value() / (20.0 * 2), dsp::STREAM_BUFFER_SIZE);
         int kernel_buffer_cnt = 4;
         struct iio_channel *rx0_i, *rx0_q;
         struct iio_buffer *rxbuf;
@@ -61,7 +64,7 @@ protected:
 
         logger->trace("PlutoSDR stream with %d buffers of size %d", kernel_buffer_cnt, blockSize);
         iio_channel_enable(rx0_i);
-        if(iq_mode==0) //CS16
+        if (iq_mode == 0) // CS16
         {
             iio_channel_enable(rx0_q);
             logger->trace("PlutoSDR stream in CS16");
@@ -79,7 +82,7 @@ protected:
         }
 
         uint32_t val = 0;
-        //Reset underflow to avoid false flag
+        // Reset underflow to avoid false flag
         iio_device_reg_write(dev, 0x80000088, val);
         while (thread_should_run)
         {
@@ -92,7 +95,7 @@ protected:
                 logger->warn("PlutoSDR underflow!");
                 iio_device_reg_write(dev, 0x80000088, val);
             }
-            if(iq_mode==0)
+            if (iq_mode == 0)
             {
                 int16_t *buf = (int16_t *)iio_buffer_first(rxbuf, rx0_i);
                 volk_16i_s32f_convert_32f((float *)output_stream->writeBuf, buf, 2048.0f, blockSize * 2);
@@ -155,10 +158,7 @@ protected:
     void sdr_startup();
 
 public:
-    PlutoSDRSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate")
-    {
-        thread_should_run = false;
-    }
+    PlutoSDRSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate"), bandwidth_widget("Bandwidth") { thread_should_run = false; }
 
     ~PlutoSDRSource()
     {
