@@ -1,9 +1,10 @@
 #include "processing.h"
+#include "../../../src-interface/main_ui.h"
 #include "core/config.h"
+#include "core/plugin.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
 #include "logger.h"
-#include "main_ui.h"
 #include <filesystem>
 #include <thread>
 
@@ -81,12 +82,12 @@ namespace satdump
                 if (std::filesystem::exists(output_file + "/dataset.json"))
                 {
                     logger->info("Opening explorer!");
-                    explorer_app->tryOpenFileInExplorer(output_file + "/dataset.json"); // TODOREWORK Maybe just try to open the final file produced?
+                    eventBus->fire_event<TryOpenFileInMainExplorerEvent>({output_file + "/dataset.json"}); // TODOREWORK Maybe just try to open the final file produced?
                 }
                 else if (std::filesystem::exists(final_file))
                 {
                     logger->info("Opening explorer!");
-                    explorer_app->tryOpenFileInExplorer(final_file); // TODOREWORK Maybe just try to open the final file produced?
+                    eventBus->fire_event<TryOpenFileInMainExplorerEvent>({final_file}); // TODOREWORK Maybe just try to open the final file produced?
                 }
             }
 

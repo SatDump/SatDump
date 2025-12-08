@@ -77,6 +77,7 @@ namespace satdump
         ~BitContainer();
 
         std::string getName() { return d_name; }
+        std::string getFilePath() { return d_filepath; }
         std::string getID() { return std::string(unique_id); }
 
         void init_bitperiod();
@@ -89,6 +90,8 @@ namespace satdump
 
         void doUpdateTextures();
         void doDrawPlotTextures(ImPlotRect c);
+
+        void renderSegment(PartImage &part, size_t &ii, size_t &iii, size_t &xoffset, size_t &offset);
 
     public:
         void *bitview = nullptr;

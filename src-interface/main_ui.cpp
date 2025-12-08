@@ -36,6 +36,8 @@ namespace satdump
     std::shared_ptr<NotifyLoggerSink> notify_logger_sink;
     std::shared_ptr<StatusLoggerSink> status_logger_sink;
 
+    void showProcessing(); // TODOREWORK
+
     void initMainUI()
     {
         ImPlot::CreateContext();
@@ -44,6 +46,20 @@ namespace satdump
         audio::registerSinks();
         offline::setup();
         settings::setup();
+
+        // Register events
+        eventBus->register_handler<ShowProcesingEvent>([](ShowProcesingEvent) { showProcessing(); });
+        eventBus->register_handler<AddRecorderEvent>(
+            [](AddRecorderEvent)
+            {
+                explorer_app->tryOpenSomethingInExplorer(
+                    [](explorer::ExplorerApplication *)
+                    {
+                        logger->warn("Adding Recorder!");
+                        eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({std::make_shared<RecorderApplication>()}); // TODOREWORK do not bind this directly.
+                    });
+            });
+        eventBus->register_handler<TryOpenFileInMainExplorerEvent>([](TryOpenFileInMainExplorerEvent e) { explorer_app->tryOpenFileInExplorer(e.path); });
 
         // Load credits MD
         std::ifstream ifs(resources::getResourcePath("credits.md"));

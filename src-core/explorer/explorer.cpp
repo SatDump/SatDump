@@ -25,9 +25,9 @@
 
 #include "image/io.h"
 
+#include "../../src-interface/main_ui.h"
 #include "imgui/imgui_filedrop.h"
 #include "imgui/imgui_image.h"
-#include "main_ui.h"
 #include <cstddef>
 #include <cstdint>
 #include <fstream>
@@ -363,19 +363,14 @@ namespace satdump
                         ImVec2 line_size = ImGui::CalcTextSize("Start Processing");
                         ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), last_pos + (26 * 1) * scale});
                         if (ImGui::Button("Start Processing"))
-                            showProcessing(); // TODOREWORK do not bind this directly.
+                            eventBus->fire_event<ShowProcesingEvent>({}); // TODOREWORK do not bind this directly.
                     }
 
                     {
                         ImVec2 line_size = ImGui::CalcTextSize("Add Recorder");
                         ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), last_pos + (26 * 2) * scale});
                         if (ImGui::Button("Add Recorder"))
-                            tryOpenSomethingInExplorer(
-                                [](ExplorerApplication *)
-                                {
-                                    logger->warn("Adding Recorder!");
-                                    eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({std::make_shared<RecorderApplication>()}); // TODOREWORK do not bind this directly.
-                                });
+                            eventBus->fire_event<AddRecorderEvent>({}); // TODOREWORK do not bind this directly.
                     }
                 }
 #endif

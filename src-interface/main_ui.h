@@ -18,9 +18,6 @@ namespace satdump
     void exitMainUI();
     void renderMainUI();
 
-    // TODOREWORK
-    void showProcessing();
-
     // TODOREWORK move into another namespace?
     struct SetIsProcessingEvent
     {
@@ -28,5 +25,18 @@ namespace satdump
 
     struct SetIsDoneProcessingEvent
     {
+    };
+
+    struct ShowProcesingEvent
+    {
+    };
+
+    struct AddRecorderEvent // TODOREWORK Temporary!?
+    {
+    };
+
+    struct TryOpenFileInMainExplorerEvent
+    {
+        std::string path;
     };
 } // namespace satdump

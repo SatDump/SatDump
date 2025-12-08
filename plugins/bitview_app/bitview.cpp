@@ -1,8 +1,10 @@
 #include "bitview.h"
+#include "bit_container.h"
 #include "core/style.h"
 #include "imgui/imgui.h"
 #include "imgui/implot/implot.h"
 #include <fcntl.h>
+#include <memory>
 
 #include "tools/ccsds_apid_demux.h"
 #include "tools/ccsds_vcid_splitter.h"
@@ -56,6 +58,17 @@ namespace satdump
             {
                 bc->d_display_mode = 1;
                 bc->forceUpdateAll();
+            }
+
+            if (!bc->d_is_temporary)
+            {
+                if (ImGui::Button("Reload"))
+                {
+                    auto bbc = bc;
+                    bc = std::make_shared<BitContainer>(bbc->getName(), bbc->getFilePath(), bbc->frames);
+                    bc->d_bitperiod = bbc->d_bitperiod;
+                    bc->init_bitperiod();
+                }
             }
         }
 

@@ -1,5 +1,7 @@
 #include "bit_container.h"
+#include "cli/cmd.h"
 #include "common/widgets/menuitem_fileopen.h"
+#include "core/cli/cli.h"
 #include "core/plugin.h"
 #include "explorer/explorer.h"
 #include "logger.h"
@@ -18,7 +20,11 @@ public:
     {
         // TODOREWORK maybe a way to call up/init a handler?
         satdump::eventBus->register_handler<satdump::explorer::RenderLoadMenuElementsEvent>(renderExplorerLoaderButton);
+
+        satdump::eventBus->register_handler<satdump::cli::RegisterSubcommandEvent>(registerCliCommands);
     }
+
+    static void registerCliCommands(const satdump::cli::RegisterSubcommandEvent &evt) { evt.cmd_handlers.push_back(std::make_shared<satdump::BitViewCmdHandler>()); }
 
     static satdump::widget::MenuItemFileOpen fopen_menu;
 
