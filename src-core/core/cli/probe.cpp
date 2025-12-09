@@ -14,7 +14,7 @@ namespace satdump
         sub_probe->add_flag("--params", "Dump full device parameters");
     }
 
-    void ProbeCmdHandler::run(CLI::App *app, CLI::App *subcom)
+    void ProbeCmdHandler::run(CLI::App *app, CLI::App *subcom, bool is_gui)
     {
         bool tx = subcom->count("--tx");
         bool rx = subcom->count("--rx");

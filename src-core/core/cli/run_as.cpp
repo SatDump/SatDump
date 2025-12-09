@@ -94,7 +94,7 @@ namespace satdump
         sub_run->require_option(1, 3);
     }
 
-    void ScriptCmdHandler::run(CLI::App *app, CLI::App *subcom)
+    void ScriptCmdHandler::run(CLI::App *app, CLI::App *subcom, bool is_gui)
     {
         std::string script = subcom->get_option("script")->as<std::string>();
         runAngelScript(script, subcom->count("--lint"), subcom->count("--predef"));

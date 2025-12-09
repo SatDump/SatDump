@@ -13,6 +13,6 @@ namespace satdump
         PipelineCmdHandler() : CmdHandler("pipeline") {}
 
         void reg(CLI::App *app);
-        void run(CLI::App *app, CLI::App *subcom);
+        void run(CLI::App *app, CLI::App *subcom, bool is_gui);
     };
 } // namespace satdump

@@ -10,7 +10,7 @@ namespace satdump
         ProcessCmdHandler() : CmdHandler("process") {}
 
         void reg(CLI::App *app);
-        void run(CLI::App *app, CLI::App *subcom);
+        void run(CLI::App *app, CLI::App *subcom, bool is_gui);
 
         void processProductsOrDataset(std::string product, std::string directory);
     };

@@ -5,7 +5,9 @@
 #include "dsp/fft/fft_pan.h"
 #include "dsp/filter/rrc.h"
 #include "dsp/io/file_source.h"
+#include "dsp/io/nng_iq_sink.h"
 #include "dsp/path/splitter.h"
+#include "dsp/utils/throttle.h"
 #include "imgui/imnodes/imnodes.h"
 #include "logger.h"
 
@@ -150,6 +152,12 @@ namespace satdump
 
             flowgraph.node_internal_registry.insert(
                 {"splitter_cc", {"Utils/Splitter CC", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::SplitterBlock<complex_t>>()); }}});
+
+            flowgraph.node_internal_registry.insert(
+                {"throttle_cc", {"Utils/Throttle CC", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::ThrottleBlock<complex_t>>()); }}});
+
+            flowgraph.node_internal_registry.insert(
+                {"nng_iq_sink_cc", {"IQ/NNG IQ Sink", [](const ndsp::Flowgraph *f) { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::NNGIQSinkBlock>()); }}});
 
             //   flowgraph.node_internal_registry.insert({"airspy_dev_cc", {"Airspy Dev", [=](const ndsp::Flowgraph *f)
             //                                                              { return std::make_shared<ndsp::NodeInternal>(f, std::make_shared<ndsp::AirspyDevBlock>()); }}});

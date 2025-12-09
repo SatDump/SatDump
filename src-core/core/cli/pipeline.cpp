@@ -1,6 +1,9 @@
 #include "pipeline.h"
+#include "explorer/explorer.h"
 #include "common/detect_header.h"
 #include "core/config.h"
+#include "core/plugin.h"
+#include "handlers/processing/processing.h"
 #include "pipeline/pipeline.h"
 
 namespace satdump
@@ -44,7 +47,7 @@ namespace satdump
         }
     }
 
-    void PipelineCmdHandler::run(CLI::App *app, CLI::App *subcom)
+    void PipelineCmdHandler::run(CLI::App *app, CLI::App *subcom, bool is_gui)
     {
         for (auto *s2 : subcom->get_subcommands())
         {
@@ -84,7 +87,14 @@ namespace satdump
             if (!std::filesystem::exists(output))
                 std::filesystem::create_directories(output);
 
-            pipeline.run(input, output, params, level);
+            if (is_gui)
+            {
+                eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({std::make_shared<handlers::OffProcessingHandler>(pipeline, level, input, output, params), true, true});
+            }
+            else
+            {
+                pipeline.run(input, output, params, level);
+            }
         }
     }
 } // namespace satdump

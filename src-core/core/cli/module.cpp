@@ -25,7 +25,7 @@ namespace satdump
         }
     }
 
-    void ModuleCmdHandler::run(CLI::App *app, CLI::App *subcom)
+    void ModuleCmdHandler::run(CLI::App *app, CLI::App *subcom, bool is_gui)
     {
         for (auto *s2 : subcom->get_subcommands())
         {

@@ -10,7 +10,7 @@ namespace satdump
         ScriptCmdHandler() : CmdHandler("run") {}
 
         void reg(CLI::App *app);
-        void run(CLI::App *app, CLI::App *subcom);
+        void run(CLI::App *app, CLI::App *subcom, bool is_gui);
 
         int runAngelScript(std::string file, bool lint, bool predef);
     };

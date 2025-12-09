@@ -10,7 +10,7 @@ namespace satdump
         ProbeCmdHandler() : CmdHandler("probe") {}
 
         void reg(CLI::App *app);
-        void run(CLI::App *app, CLI::App *subcom);
+        void run(CLI::App *app, CLI::App *subcom, bool is_gui);
 
         void probeDevices(bool tx, bool rx, bool params);
     };

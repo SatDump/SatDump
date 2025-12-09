@@ -1,7 +1,7 @@
 #include "archive_loader.h"
 
 #include "common/utils.h"
-#include "explorer/processing/processing.h"
+#include "handlers/processing/processing.h"
 #include "libs/base64/base64.h"
 #include "logger.h"
 #include "main_ui.h"

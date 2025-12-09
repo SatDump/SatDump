@@ -12,7 +12,7 @@ namespace satdump
         sub_process->add_option("directory", "Output folder")->required();
     }
 
-    void ProcessCmdHandler::run(CLI::App *app, CLI::App *subcom)
+    void ProcessCmdHandler::run(CLI::App *app, CLI::App *subcom, bool is_gui)
     {
         std::string pro = subcom->get_option("product")->as<std::string>();
         std::string dir = subcom->get_option("directory")->as<std::string>();

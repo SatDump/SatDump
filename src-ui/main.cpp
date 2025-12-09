@@ -1,6 +1,7 @@
 #include "backend.h"
 #include "common/cli_utils.h"
 #include "common/detect_header.h"
+#include "core/cli/cli.h"
 #include "core/plugin.h"
 #include "core/resources.h"
 #include "core/style.h"
@@ -217,9 +218,16 @@ int main(int argc, char *argv[])
     std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>();
     logger->add_sink(loading_screen_sink);
 
-    // Init SatDump
+    // Basic flags
+    bool verbose = satdump::cli::checkVerbose(argc, argv);
+
+    // Init SatDump, silent or verbose as requested
+    if (!verbose)
+        logger->set_level(slog::LOG_WARN);
     satdump::tle_do_update_on_init = false;
     satdump::initSatdump(true);
+    if (!verbose)
+        logger->set_level(slog::LOG_TRACE);
 
     // Init UI
     satdump::initMainUI();
@@ -228,6 +236,9 @@ int main(int argc, char *argv[])
     logger->del_sink(loading_screen_sink);
     loading_screen_sink.reset();
     glfwSwapInterval(1); // Enable vsync for the rest of the program
+
+    // Attempt to parse command
+    satdump::cli::handleCommand(argc, argv, true);
 
     // Set window position
     int x, y, xs, ys;
