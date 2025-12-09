@@ -6,9 +6,6 @@ namespace satdump
 {
     class LegacyCmdHandler : public CmdHandler
     {
-    private:
-        std::vector<std::string> args;
-
     public:
         LegacyCmdHandler() : CmdHandler("legacy") {}
 
