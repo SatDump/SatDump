@@ -24,7 +24,11 @@ public:
         satdump::eventBus->register_handler<satdump::cli::RegisterSubcommandEvent>(registerCliCommands);
     }
 
-    static void registerCliCommands(const satdump::cli::RegisterSubcommandEvent &evt) { evt.cmd_handlers.push_back(std::make_shared<satdump::BitViewCmdHandler>()); }
+    static void registerCliCommands(const satdump::cli::RegisterSubcommandEvent &evt)
+    {
+        if (evt.is_gui)
+            evt.cmd_handlers.push_back(std::make_shared<satdump::BitViewCmdHandler>());
+    }
 
     static satdump::widget::MenuItemFileOpen fopen_menu;
 

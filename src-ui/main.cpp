@@ -229,6 +229,15 @@ int main(int argc, char *argv[])
     if (!verbose)
         logger->set_level(slog::LOG_TRACE);
 
+    // Parse commands, if present
+    satdump::cli::CommandHandler cli_handler(true);
+    if (argc > 1)
+    {
+        int v = cli_handler.parse(argc, argv);
+        if (v != 0)
+            exit(v);
+    }
+
     // Init UI
     satdump::initMainUI();
 
@@ -237,8 +246,9 @@ int main(int argc, char *argv[])
     loading_screen_sink.reset();
     glfwSwapInterval(1); // Enable vsync for the rest of the program
 
-    // Attempt to parse command
-    satdump::cli::handleCommand(argc, argv, true);
+    // Attempt to run command, if present
+    if (cli_handler.run())
+        exit(1);
 
     // Set window position
     int x, y, xs, ys;

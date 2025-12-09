@@ -1,82 +1,33 @@
+#include "core/cli/cli.h"
+#include "core/plugin.h"
+#include "init.h"
 #include "logger.h"
-
-#include "live.h"
-#include "offline.h"
-#include "record.h"
-#include "autotrack/autotrack.h"
-
-#include "sdr_probe.h"
-#include "help_general.h"
-
-// TODOREWORK #include "project/project.h"
-#include "satdump_vars.h"
+#include "old.h"
+#include <memory>
 
 int main(int argc, char *argv[])
 {
     // Init logger
     initLogger();
 
-    if (argc < 2)
-    {
-        logger->error("Please specify either live/record or pipeline name!");
-        logger->error("Use -h or help for information");
-        return 1;
-    }
+    // Basic flags
+    bool verbose = satdump::cli::checkVerbose(argc, argv);
 
-    if (std::string(argv[1]) == "live")
-    {
-        int ret = main_live(argc, argv);
-        if (ret != 0)
-            return ret;
-    }
-    else if (std::string(argv[1]) == "record")
-    {
-        int ret = main_record(argc, argv);
-        if (ret != 0)
-            return ret;
-    }
-    else if (std::string(argv[1]) == "autotrack")
-    {
-        int ret = main_autotrack(argc, argv);
-        if (ret != 0)
-            return ret;
-    }
-    /*else if (std::string(argv[1]) == "project")
-    {
-        try
-        {
-            int ret = main_project(argc - 2, argv + 2);
-            if (ret != 0)
-                return ret;
-        }
-        catch (std::exception &e)
-        {
-            logger->error("Error running project! %s", e.what());
-        }
-    }TODOREWORK*/
-    else if (std::string(argv[1]) == "version" || std::string(argv[1]) == "--v")
-    {
-        logger->info("This is SatDump v" + (std::string)satdump::SATDUMP_VERSION);
-        return 0;
-    }
-    //////////////
-    else if (std::string(argv[1]) == "sdr_probe")
-    {
-        sdr_probe();
-    }
-    //////////////
-    //////////////
-    else if ((std::string(argv[1]) == "-h") || (std::string(argv[1]) == "help"))
-    {
-        help_general();
-    }
-    //////////////
-    else
-    {
-        int ret = main_offline(argc, argv);
-        if (ret != 0)
-            return ret;
-    }
+    // Init SatDump, silent or verbose as requested
+    if (!verbose)
+        logger->set_level(slog::LOG_WARN);
+    satdump::initSatdump();
+    completeLoggerInit();
+    if (!verbose)
+        logger->set_level(slog::LOG_TRACE);
 
-    logger->info("Done! Goodbye");
+    satdump::eventBus->register_handler<satdump::cli::RegisterSubcommandEvent>([](const satdump::cli::RegisterSubcommandEvent &evt)
+                                                                               { evt.cmd_handlers.push_back(std::make_shared<satdump::OldCmdHandler>()); });
+
+    satdump::cli::CommandHandler h;
+    int v = h.parse(argc, argv);
+    if (v != 0)
+        return v;
+    h.run();
+    return 0;
 }

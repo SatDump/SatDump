@@ -40,7 +40,7 @@ namespace satdump
         if (d_file_memory_ptr == MAP_FAILED)
         {
             close(fd);
-            throw satdump_exception("mmap failed!");
+            throw satdump_exception("mmap failed! (" + file_path + ")");
         }
 
         d_frame_mode = frames.size();
