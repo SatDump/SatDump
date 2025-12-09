@@ -68,6 +68,7 @@ namespace satdump
                     bc = std::make_shared<BitContainer>(bbc->getName(), bbc->getFilePath(), bbc->frames);
                     bc->d_bitperiod = bbc->d_bitperiod;
                     bc->init_bitperiod();
+                    bc->bitview = this;
                 }
             }
         }
