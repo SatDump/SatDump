@@ -1,8 +1,8 @@
 #include "core/cli/cli.h"
 #include "core/plugin.h"
 #include "init.h"
+#include "legacy.h"
 #include "logger.h"
-#include "old.h"
 #include <memory>
 
 int main(int argc, char *argv[])
@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
         logger->set_level(slog::LOG_TRACE);
 
     satdump::eventBus->register_handler<satdump::cli::RegisterSubcommandEvent>([](const satdump::cli::RegisterSubcommandEvent &evt)
-                                                                               { evt.cmd_handlers.push_back(std::make_shared<satdump::OldCmdHandler>()); });
+                                                                               { evt.cmd_handlers.push_back(std::make_shared<satdump::LegacyCmdHandler>()); });
 
     satdump::cli::CommandHandler h;
     int v = h.parse(argc, argv);

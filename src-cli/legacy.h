@@ -4,13 +4,13 @@
 
 namespace satdump
 {
-    class OldCmdHandler : public CmdHandler
+    class LegacyCmdHandler : public CmdHandler
     {
     private:
         std::vector<std::string> args;
 
     public:
-        OldCmdHandler() : CmdHandler("old") {}
+        LegacyCmdHandler() : CmdHandler("legacy") {}
 
         void reg(CLI::App *app);
         void run(CLI::App *app, CLI::App *subcom, bool is_gui);
