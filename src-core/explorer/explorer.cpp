@@ -12,7 +12,6 @@
 #include "handlers/dummy_handler.h"
 #include "handlers/product/image_product_handler.h" // TODOREWORK CLEAN
 #include "handlers/projection/projection_handler.h"
-#include "handlers/trash/trash_handler.h"
 #include "handlers/vector/shapefile_handler.h"
 // TODOREWORK
 #include "core/resources.h"
