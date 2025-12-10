@@ -1,10 +1,11 @@
 #pragma once
 
-#include "tool.h"
-#include "imgui/imgui_stdlib.h"
-#include <fstream>
 #include "common/simple_deframer.h"
 #include "core/style.h"
+#include "imgui/imgui_stdlib.h"
+#include "tool.h"
+#include <fstream>
+#include <string>
 
 namespace satdump
 {
@@ -45,15 +46,9 @@ namespace satdump
                 style::endDisabled();
         }
 
-        bool needToProcess()
-        {
-            return should_process;
-        }
+        bool needToProcess() { return should_process; }
 
-        void setProcessed()
-        {
-            should_process = false;
-        }
+        void setProcessed() { should_process = false; }
 
         void process(std::shared_ptr<BitContainer> &container, float &process_progress)
         {
@@ -73,8 +68,7 @@ namespace satdump
                 return;
             }
 
-            def::SimpleDeframer def_test(syncword, deframer_syncword_size, deframer_syncword_framesize,
-                                         deframer_threshold, deframer_byte_aligned, deframer_soft_bits_in);
+            def::SimpleDeframer def_test(syncword, deframer_syncword_size, deframer_syncword_framesize, deframer_threshold, deframer_byte_aligned, deframer_soft_bits_in);
             deframer_current_frames = 0;
             size_t current_ptr = 0;
 
@@ -96,7 +90,7 @@ namespace satdump
 
             try
             {
-                newbitc = std::make_shared<satdump::BitContainer>(container->getName() + " Deframed", tmpfile);
+                newbitc = std::make_shared<satdump::BitContainer>("Deframed (" + deframer_syncword + " , " + std::to_string(deframer_syncword_framesize) + ")", tmpfile);
             }
             catch (std::exception &e)
             {
@@ -114,4 +108,4 @@ namespace satdump
                 logger->error("Can't add container!");
         }
     };
-}
+} // namespace satdump

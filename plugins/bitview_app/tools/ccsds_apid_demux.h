@@ -87,7 +87,7 @@ namespace satdump
 
             if (frms.size())
             {
-                std::shared_ptr<satdump::BitContainer> newbitc = std::make_shared<satdump::BitContainer>(container->getName() + " APID " + std::to_string(apid), tmpfile, frms);
+                std::shared_ptr<satdump::BitContainer> newbitc = std::make_shared<satdump::BitContainer>("APID " + std::to_string(apid), tmpfile, frms);
                 newbitc->d_bitperiod = 8192;
                 newbitc->init_bitperiod();
                 newbitc->d_is_temporary = true;

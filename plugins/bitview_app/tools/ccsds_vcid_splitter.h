@@ -96,7 +96,7 @@ namespace satdump
             for (auto &f : output_files)
             {
                 f.second.second.close();
-                std::shared_ptr<satdump::BitContainer> newbitc = std::make_shared<satdump::BitContainer>(container->getName() + " VCID " + std::to_string(f.first) + " (" + std::to_string(vcid_counts[f.first]) + ")", f.second.first);
+                std::shared_ptr<satdump::BitContainer> newbitc = std::make_shared<satdump::BitContainer>("VCID " + std::to_string(f.first) + " (" + std::to_string(vcid_counts[f.first]) + ")", f.second.first);
                 newbitc->d_bitperiod = cadu_size;
                 newbitc->init_bitperiod();
                 newbitc->d_is_temporary = true;
