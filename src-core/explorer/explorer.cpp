@@ -41,13 +41,6 @@ namespace satdump
         {
             master_handler = std::make_shared<handlers::DummyHandler>("MasterHandlerExplorer");
 
-            // Add trashcan
-            trash_handler = std::make_shared<handlers::DummyHandler>("TrashHandlerExplorer");
-            auto trash_h = std::make_shared<handlers::TrashHandler>();
-            trash_h->setCanBeDragged(false);
-            trash_handler->addSubHandler(trash_h);
-            trash_handler->setCanBeDraggedTo(false);
-
             // Add processing handler "spot"
             processing_handler = std::make_shared<handlers::DummyHandler>("ProcessingHandlerExplorer");
             processing_handler->setCanBeDraggedTo(false);
@@ -169,7 +162,6 @@ namespace satdump
                     }
 
                     handler_present |= master_handler->drawTreeMenu(curr_handler);
-                    handler_present |= trash_handler->drawTreeMenu(curr_handler);
 
                     ImGui::EndTable();
                 }

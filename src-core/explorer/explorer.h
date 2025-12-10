@@ -68,7 +68,6 @@ namespace satdump
             std::shared_ptr<handlers::Handler> processing_handler;
             std::map<std::string, std::shared_ptr<handlers::Handler>> groups_handlers;
             std::shared_ptr<handlers::Handler> master_handler;
-            std::shared_ptr<handlers::Handler> trash_handler;
 
             // File open
             widget::MenuItemFileOpen file_open_dialog;

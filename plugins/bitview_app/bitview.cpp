@@ -76,13 +76,10 @@ namespace satdump
         if (is_busy)
             style::endDisabled();
 
-        if (ImGui::CollapsingHeader("Tools", ImGuiTreeNodeFlags_DefaultOpen))
+        for (auto &tool : all_tools)
         {
-            for (auto &tool : all_tools)
+            if (ImGui::CollapsingHeader((tool->getName()).c_str()))
             {
-                ImGui::Separator();
-                ImGui::Text("%s", tool->getName().c_str());
-                ImGui::Separator();
 
                 tool->renderMenu(bc, is_busy);
 
@@ -98,33 +95,33 @@ namespace satdump
                     process_threadp.push(func);
                 }
             }
+        }
 
-            ImGui::Spacing();
+        ImGui::Spacing();
 
-            ImGui::ProgressBar(process_progress);
+        ImGui::ProgressBar(process_progress);
 
-            ImGui::Separator();
+        ImGui::Separator();
 
-            if (ImGui::Button("Find Sync"))
+        if (ImGui::Button("Find Sync"))
+        {
+            auto func = [this](int)
             {
-                auto func = [this](int)
+                auto ptr = bc->get_ptr();
+                auto sz = bc->get_ptr_size();
+
+                bc->highlights.clear();
+
+                for (int i = 0; i < (sz / 8) - 4; i++)
                 {
-                    auto ptr = bc->get_ptr();
-                    auto sz = bc->get_ptr_size();
+                    if (ptr[i + 0] == 0x1a && ptr[i + 1] == 0xcf && ptr[i + 2] == 0xfc && ptr[i + 3] == 0x1d)
+                        bc->highlights.push_back({(size_t)i * 8, 64, 0, 0, 255});
+                }
 
-                    bc->highlights.clear();
-
-                    for (int i = 0; i < (sz / 8) - 4; i++)
-                    {
-                        if (ptr[i + 0] == 0x1a && ptr[i + 1] == 0xcf && ptr[i + 2] == 0xfc && ptr[i + 3] == 0x1d)
-                            bc->highlights.push_back({(size_t)i * 8, 64, 0, 0, 255});
-                    }
-
-                    is_busy = false;
-                };
-                is_busy = true;
-                process_threadp.push(func);
-            }
+                is_busy = false;
+            };
+            is_busy = true;
+            process_threadp.push(func);
         }
     }
 
