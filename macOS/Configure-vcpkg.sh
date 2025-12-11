@@ -191,7 +191,7 @@ git clone https://github.com/analogdevicesinc/libad9361-iio
 cd libad9361-iio
 git checkout 2264074
 sed -i '' 's/<iio\/iio.h>/<iio.h>/g' test/*.c    #Patch tests for macOS
-sed -i '' 's/FRAMEWORK TRUE//' CMakeLists.txt    #Just a dylib, please!
+sed -i '' 's/option(OSX_FRAMEWORK "Create a OSX_FRAMEWORK" ON)/option(OSX_FRAMEWORK "Create a OSX_FRAMEWORK" OFF)/' CMakeLists.txt    #Just a dylib, please!
 sed -i '' 's|/Library/Frameworks|'"$PWD/../installed/osx-satdump"'|g' CMakeLists.txt  #No, don't build into /Library
 mkdir build && cd build
 cmake $build_args -DOSX_PACKAGE=OFF -DWITH_DOC=OFF -DENABLE_PACKAGING=OFF ..
