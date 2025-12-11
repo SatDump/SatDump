@@ -1,12 +1,3 @@
-// TODOREWORK?
-extern "C"
-{
-#include "libs/supernovas/novas.h"
-
-#include "libs/calceph/calceph.h"
-#include "libs/supernovas/novas-calceph.h"
-}
-
 #include "db/db_handler.h"
 #include "db/iers/iers_handler.h"
 #include "db/tle/tle_handler.h"
@@ -31,6 +22,15 @@ extern "C"
 #include "common/dsp/buffer.h"
 
 #include "products/product.h"
+
+// TODOREWORK?
+extern "C"
+{
+#include "libs/supernovas/novas.h"
+
+#include "libs/calceph/calceph.h"
+#include "libs/supernovas/novas-calceph.h"
+}
 
 namespace satdump
 {
