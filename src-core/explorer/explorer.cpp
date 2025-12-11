@@ -162,7 +162,7 @@ namespace satdump
 
                     handler_present |= master_handler->drawTreeMenu(curr_handler);
 
-                    if (!master_handler->hasSubhandlers())
+                    if ((!master_handler->hasSubhandlers()) && (!groups_handlers.size()))
                     {
                         ImGui::TableNextRow();
                         ImGui::TableSetColumnIndex(0);
