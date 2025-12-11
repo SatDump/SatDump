@@ -7,11 +7,12 @@
 #include <fcntl.h>
 #include <memory>
 
-#include "tools/ccsds_apid_demux.h"
-#include "tools/ccsds_vcid_splitter.h"
-#include "tools/deframer.h"
-#include "tools/diff_decode.h"
-#include "tools/soft2hard.h"
+#include "logger.h"
+#include "tools/ccsds_apid_demux/ccsds_apid_demux.h"
+#include "tools/ccsds_vcid_splitter/ccsds_vcid_splitter.h"
+#include "tools/deframer/deframer.h"
+#include "tools/diff_decode/diff_decode.h"
+#include "tools/soft2hard/soft2hard.h"
 
 namespace satdump
 {
@@ -81,13 +82,12 @@ namespace satdump
         {
             if (ImGui::CollapsingHeader((tool->getName()).c_str()))
             {
-
                 tool->renderMenu(bc, is_busy);
 
                 if (tool->needToProcess())
                 {
                     tool->setProcessed();
-                    auto func = [this, tool](int)
+                    auto func = [this, tool]()
                     {
                         try
                         {
@@ -100,7 +100,7 @@ namespace satdump
                         is_busy = false;
                     };
                     is_busy = true;
-                    process_threadp.push(func);
+                    process_task.push(func);
                 }
             }
         }
@@ -113,7 +113,7 @@ namespace satdump
 
         if (ImGui::Button("Find Sync"))
         {
-            auto func = [this](int)
+            auto func = [this]()
             {
                 auto ptr = bc->get_ptr();
                 auto sz = bc->get_ptr_size();
@@ -129,7 +129,7 @@ namespace satdump
                 is_busy = false;
             };
             is_busy = true;
-            process_threadp.push(func);
+            process_task.push(func);
         }
     }
 

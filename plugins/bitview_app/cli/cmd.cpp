@@ -13,7 +13,7 @@ namespace satdump
         sub_module->add_flag("--period", period, "Bit period to use")->default_val(256);
     }
 
-    void BitViewCmdHandler::run(CLI::App *app, CLI::App *subcom, bool is_gui)
+    void BitViewCmdHandler::run(CLI::App *, CLI::App *subcom, bool)
     {
         std::string file = subcom->get_option("file")->as<std::string>();
 

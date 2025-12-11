@@ -1,16 +1,30 @@
 #pragma once
 
+/**
+ * @file unit_parser.h
+ * @brief Utilities to help parse physical units
+ */
+
 #include <string>
 #include <vector>
 
 namespace satdump
 {
+    /**
+     * @brief Unit information struct, that must be provided
+     * in a vector with all possible options and their corresponding
+     * power.
+     */
     struct UnitInfo
     {
         std::string name;
         double scale;
     };
 
+    /**
+     * @brief Unit declaration (to be used in parseUnitFromString) for
+     * Meters
+     */
     const std::vector<UnitInfo> UNIT_METER = {
         {"Tm", 1e12},  //
         {"Gm", 1e9},   //
@@ -27,6 +41,10 @@ namespace satdump
         {"pm", 1e-12}, //
     };
 
+    /**
+     * @brief Unit declaration (to be used in parseUnitFromString) for
+     * Hertz
+     */
     const std::vector<UnitInfo> UNIT_HERTZ = {
         {"THz", 1e12},  //
         {"GHz", 1e9},   //
@@ -43,5 +61,14 @@ namespace satdump
         {"pHz", 1e-12}, //
     };
 
+    /**
+     * @brief Parse an unit down to its SI base (eg, Hz)
+     * from a string, for user-friendly input
+     *
+     * @param str input string
+     * @param out output value
+     * @param unit unit to parse (must contain all expected representations)
+     * @return true if parsing was sucessful
+     */
     bool parseUnitFromString(std::string str, double &out, std::vector<UnitInfo> unit);
 } // namespace satdump

@@ -13,7 +13,7 @@
 #include "common/widgets/waterfall_plot.h"
 #include <memory>
 
-#include "task_queue.h"
+#include "utils/task_queue.h"
 
 // TODOREWORK, move into plugin? Or Core?
 namespace satdump

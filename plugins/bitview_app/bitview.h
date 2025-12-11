@@ -2,20 +2,16 @@
 
 #include "handlers/handler.h"
 #include "imgui/imgui.h"
-#include "imgui/imgui_internal.h"
-#include <thread>
 #include <vector>
-
-#include "imgui/dialogs/widget.h"
 
 #include "bit_container.h"
 
-#include "libs/ctpl/ctpl_stl.h"
-
-#include "tool.h"
+#include "utils/task_queue.h"
 
 namespace satdump
 {
+    class BitViewTool;
+
     class BitViewHandler : public handlers::Handler
     {
     protected:
@@ -31,7 +27,7 @@ namespace satdump
 
     private:
         float process_progress = 0;
-        ctpl::thread_pool process_threadp = ctpl::thread_pool(4);
+        TaskQueue process_task;
 
         std::vector<std::shared_ptr<BitViewTool>> all_tools;
 
