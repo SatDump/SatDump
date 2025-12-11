@@ -1,7 +1,7 @@
 PROJECT_NAME           = SatDump
 OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@/documentation/
 PROJECT_NUMBER         = @SATDUMP_VERSION@
-INPUT                  = @DOXYGEN_FILES@
+INPUT                  = README.md @DOXYGEN_FILES@
 EXCLUDE                = src-core/image/font_lib src-core/image/font 
 RECURSIVE              = YES
 
