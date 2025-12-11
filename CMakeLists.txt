@@ -65,14 +65,6 @@ if(APPLE)
     find_package(Jemalloc REQUIRED)
     include_directories(${JEMALLOC_INCLUDE_DIR})
     link_libraries(${JEMALLOC_LIBRARY})
-
-    # Required for modern OpenGL
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -framework OpenGL")
-    set(CMAKE_MACOSX_RPATH ON)
-    add_compile_options(-DGL_SILENCE_DEPRECATION)
-
-    set(MACOSX_BUNDLE_EXECUTABLE_NAME "${PROJECT_NAME}")
-    set(MACOSX_BUNDLE_GUI_IDENTIFIER "${PROJECT_NAME}")
 endif()
 
 if(UNIX)
