@@ -3,6 +3,7 @@
 #include "core/style.h"
 #include "imgui/imgui.h"
 #include "imgui/implot/implot.h"
+#include <exception>
 #include <fcntl.h>
 #include <memory>
 
@@ -88,7 +89,14 @@ namespace satdump
                     tool->setProcessed();
                     auto func = [this, tool](int)
                     {
-                        tool->process(bc, process_progress);
+                        try
+                        {
+                            tool->process(bc, process_progress);
+                        }
+                        catch (std::exception &e)
+                        {
+                            logger->error("Error running tool! %s", e.what());
+                        }
                         is_busy = false;
                     };
                     is_busy = true;
@@ -126,6 +134,16 @@ namespace satdump
     }
 
     void BitViewHandler::drawMenuBar() {}
+
+    void BitViewHandler::drawContextMenu()
+    {
+        // Delete all subhandlers quickly
+        if (subhandlers.size() && ImGui::MenuItem("Clear Subhandlers"))
+        {
+            for (auto &h : subhandlers)
+                delSubHandler(h);
+        }
+    }
 
     void BitViewHandler::drawContents(ImVec2 win_size)
     {

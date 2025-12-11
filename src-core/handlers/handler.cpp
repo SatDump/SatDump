@@ -55,6 +55,7 @@ namespace satdump
                 // Node-specific menu
                 if (handler->handler_can_be_dragged && ImGui::BeginPopupContextItem())
                 {
+                    handler->drawContextMenu();
                     if (ImGui::MenuItem("Delete"))
                         subhandlers_marked_for_del.push_back(handler);
                     ImGui::EndPopup();

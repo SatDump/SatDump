@@ -24,6 +24,7 @@ namespace satdump
         void drawMenu();
         void drawContents(ImVec2 win_size);
         void drawMenuBar();
+        void drawContextMenu();
 
     private:
         std::shared_ptr<BitContainer> bc;

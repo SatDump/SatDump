@@ -22,8 +22,7 @@ namespace satdump
 
         int mpdu_data_size = 884;
         int insert_zone_size = 0;
-        int apid = 1;
-        bool filter_apid = false;
+        bool split_apid = true;
 
     public:
         std::string getName() { return "CCSDS APID Demux"; }
@@ -35,9 +34,7 @@ namespace satdump
 
             ImGui::InputInt("MPDU Data Size", &mpdu_data_size);
             ImGui::InputInt("MPDU Insert Zone Size", &insert_zone_size);
-            ImGui::Checkbox("Filter APID", &filter_apid);
-            if (filter_apid)
-                ImGui::InputInt("APID", &apid);
+            ImGui::Checkbox("Split APIDs", &split_apid);
 
             if (ImGui::Button("Perform###2"))
                 should_process = true;
@@ -57,22 +54,79 @@ namespace satdump
             uint8_t *ptr = container->get_ptr();
             size_t size = container->get_ptr_size();
 
-            char name[1000];
-            tmpnam(name);
-            std::string tmpfile = name;
-            std::ofstream fileout = std::ofstream(tmpfile, std::ios::binary);
-            std::vector<BitContainer::FrameDef> frms;
-
-            ccsds::ccsds_aos::Demuxer demuxer_vcid(mpdu_data_size, insert_zone_size, insert_zone_size);
-
-            size_t pos = 0;
-            for (int i = 0; i < size; i += 1024)
+            if (split_apid)
             {
-                auto frm = demuxer_vcid.work(ptr + i);
-
-                for (auto &f : frm)
+                struct APIDOut
                 {
-                    if (!filter_apid || f.header.apid == apid)
+                    APIDOut(std::string f) : tmpfile(f), fileout(f, std::ios::binary) {}
+
+                    std::string tmpfile;
+                    std::ofstream fileout;
+                    std::vector<BitContainer::FrameDef> frms;
+                    size_t pos = 0;
+                };
+                std::map<int, std::shared_ptr<APIDOut>> apids_outs;
+
+                ccsds::ccsds_aos::Demuxer demuxer_vcid(mpdu_data_size, insert_zone_size, insert_zone_size);
+
+                for (int i = 0; i < size; i += 1024)
+                {
+                    auto frm = demuxer_vcid.work(ptr + i);
+
+                    for (auto &f : frm)
+                    {
+                        if (apids_outs.count(f.header.apid) == 0)
+                        {
+                            char name[1000];
+                            tmpnam(name);
+                            std::string tmpfile = name;
+                            apids_outs.emplace(f.header.apid, std::make_shared<APIDOut>(tmpfile));
+                        }
+
+                        auto &v = apids_outs[f.header.apid];
+
+                        v->fileout.write((char *)f.header.raw, 6);
+                        v->fileout.write((char *)f.payload.data(), f.payload.size());
+
+                        v->frms.push_back({v->pos * 8, (f.payload.size() + 6) * 8});
+                        v->pos += f.payload.size() + 6;
+                    }
+
+                    process_progress = double(i) / double(size);
+                }
+
+                for (auto &v : apids_outs)
+                {
+                    if (v.second->frms.size())
+                    {
+                        std::shared_ptr<satdump::BitContainer> newbitc = std::make_shared<satdump::BitContainer>("APID " + std::to_string(v.first), v.second->tmpfile, v.second->frms);
+                        newbitc->d_bitperiod = 8192;
+                        newbitc->init_bitperiod();
+                        newbitc->d_is_temporary = true;
+
+                        if (container->bitview != nullptr)
+                            ((BitViewHandler *)container->bitview)->addSubHandler(std::make_shared<BitViewHandler>(newbitc));
+                        else
+                            logger->error("Can't add container!");
+                    }
+                }
+            }
+            else
+            {
+                char name[1000];
+                tmpnam(name);
+                std::string tmpfile = name;
+                std::ofstream fileout = std::ofstream(tmpfile, std::ios::binary);
+                std::vector<BitContainer::FrameDef> frms;
+
+                ccsds::ccsds_aos::Demuxer demuxer_vcid(mpdu_data_size, insert_zone_size, insert_zone_size);
+
+                size_t pos = 0;
+                for (int i = 0; i < size; i += 1024)
+                {
+                    auto frm = demuxer_vcid.work(ptr + i);
+
+                    for (auto &f : frm)
                     {
                         fileout.write((char *)f.header.raw, 6);
                         fileout.write((char *)f.payload.data(), f.payload.size());
@@ -80,22 +134,22 @@ namespace satdump
                         frms.push_back({pos * 8, (f.payload.size() + 6) * 8});
                         pos += f.payload.size() + 6;
                     }
+
+                    process_progress = double(i) / double(size);
                 }
 
-                process_progress = double(i) / double(size);
-            }
+                if (frms.size())
+                {
+                    std::shared_ptr<satdump::BitContainer> newbitc = std::make_shared<satdump::BitContainer>("APIDs", tmpfile, frms);
+                    newbitc->d_bitperiod = 8192;
+                    newbitc->init_bitperiod();
+                    newbitc->d_is_temporary = true;
 
-            if (frms.size())
-            {
-                std::shared_ptr<satdump::BitContainer> newbitc = std::make_shared<satdump::BitContainer>("APID " + std::to_string(apid), tmpfile, frms);
-                newbitc->d_bitperiod = 8192;
-                newbitc->init_bitperiod();
-                newbitc->d_is_temporary = true;
-
-                if (container->bitview != nullptr)
-                    ((BitViewHandler *)container->bitview)->addSubHandler(std::make_shared<BitViewHandler>(newbitc));
-                else
-                    logger->error("Can't add container!");
+                    if (container->bitview != nullptr)
+                        ((BitViewHandler *)container->bitview)->addSubHandler(std::make_shared<BitViewHandler>(newbitc));
+                    else
+                        logger->error("Can't add container!");
+                }
             }
 
 #if 0
