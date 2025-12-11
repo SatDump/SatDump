@@ -84,7 +84,7 @@ namespace satdump
         }
 
         newbitc->d_bitperiod = deframer_syncword_framesize;
-        newbitc->init_bitperiod();
+        newbitc->init_display();
         newbitc->d_is_temporary = true;
 
         if (container->bitview != nullptr)

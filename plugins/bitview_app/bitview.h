@@ -23,6 +23,7 @@ namespace satdump
         void drawContextMenu();
 
     private:
+        bool custom_bit_depth = false;
         std::shared_ptr<BitContainer> bc;
 
     private:

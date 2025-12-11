@@ -10,6 +10,8 @@ namespace satdump
         int cadu_mode = 0;
         int cadu_size = 8192;
 
+        int min_frames = 0;
+
         bool should_process = false;
 
     public:

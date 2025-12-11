@@ -64,7 +64,7 @@ namespace satdump
 
         std::shared_ptr<satdump::BitContainer> newbitc = std::make_shared<satdump::BitContainer>(container->getName() + " Hard", tmpfile);
         newbitc->d_bitperiod = container->d_bitperiod / 8;
-        newbitc->init_bitperiod();
+        newbitc->init_display();
         newbitc->d_is_temporary = true;
 
         if (container->bitview != nullptr)

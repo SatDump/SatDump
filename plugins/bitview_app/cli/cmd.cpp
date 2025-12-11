@@ -25,7 +25,7 @@ namespace satdump
         container->d_bitperiod = period;
 
         // Init
-        container->init_bitperiod();
+        container->init_display();
         eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({std::make_shared<satdump::BitViewHandler>(container), true});
     }
 } // namespace satdump

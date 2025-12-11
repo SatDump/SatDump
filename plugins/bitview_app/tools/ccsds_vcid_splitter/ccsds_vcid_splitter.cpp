@@ -2,7 +2,9 @@
 #include "common/ccsds/ccsds_aos/vcdu.h"
 #include "common/ccsds/ccsds_tm/vcdu.h"
 #include "core/style.h"
+#include "imgui/imgui.h"
 #include "logger.h"
+#include <filesystem>
 #include <fstream>
 #include <map>
 
@@ -21,6 +23,7 @@ namespace satdump
             cadu_mode = 1;
 
         ImGui::InputInt("CADU Width (bits)", &cadu_size);
+        ImGui::InputInt("Min Frames", &min_frames);
 
         if (ImGui::Button("Perform"))
             should_process = true;
@@ -79,16 +82,24 @@ namespace satdump
         for (auto &f : output_files)
         {
             f.second.second.close();
-            std::shared_ptr<satdump::BitContainer> newbitc =
-                std::make_shared<satdump::BitContainer>("VCID " + std::to_string(f.first) + " (" + std::to_string(vcid_counts[f.first]) + ")", f.second.first);
-            newbitc->d_bitperiod = cadu_size;
-            newbitc->init_bitperiod();
-            newbitc->d_is_temporary = true;
 
-            if (container->bitview != nullptr)
-                ((BitViewHandler *)container->bitview)->addSubHandler(std::make_shared<BitViewHandler>(newbitc));
+            if (vcid_counts[f.first] >= min_frames)
+            {
+                std::shared_ptr<satdump::BitContainer> newbitc =
+                    std::make_shared<satdump::BitContainer>("VCID " + std::to_string(f.first) + " (" + std::to_string(vcid_counts[f.first]) + ")", f.second.first);
+                newbitc->d_bitperiod = cadu_size;
+                newbitc->init_display();
+                newbitc->d_is_temporary = true;
+
+                if (container->bitview != nullptr)
+                    ((BitViewHandler *)container->bitview)->addSubHandler(std::make_shared<BitViewHandler>(newbitc));
+                else
+                    logger->error("Can't add container!");
+            }
             else
-                logger->error("Can't add container!");
+            {
+                std::filesystem::remove(f.second.first);
+            }
         }
     }
 } // namespace satdump

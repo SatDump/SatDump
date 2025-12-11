@@ -40,26 +40,48 @@ namespace satdump
             if (!bc->d_frame_mode)
             {
                 double vv = bc->d_bitperiod;
-                if (ImGui::InputDouble("Period (Bits)", &vv))
+                if (ImGui::InputDouble("Period (Bits)", &vv, 0, 0, "%.0f"))
                 {
                     bc->d_bitperiod = vv;
-                    bc->init_bitperiod();
-                    bc->forceUpdateAll();
+                    bc->init_display();
                 }
             }
 
-            if (ImGui::RadioButton("Bits", bc->d_display_mode == 0))
+            if (ImGui::RadioButton("Bits", !custom_bit_depth && bc->d_display_bits == 1))
             {
-                bc->d_display_mode = 0;
-                bc->forceUpdateAll();
+                custom_bit_depth = false;
+                bc->d_display_bits = 1;
+                bc->init_display();
             }
 
             ImGui::SameLine();
 
-            if (ImGui::RadioButton("Bytes", bc->d_display_mode == 1))
+            if (ImGui::RadioButton("Bytes", !custom_bit_depth && bc->d_display_bits == 8))
             {
-                bc->d_display_mode = 1;
-                bc->forceUpdateAll();
+                custom_bit_depth = false;
+                bc->d_display_bits = 8;
+                bc->init_display();
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::RadioButton("Custom", custom_bit_depth))
+            {
+                custom_bit_depth = true;
+                bc->d_display_bits = 10;
+                bc->init_display();
+            }
+
+            if (custom_bit_depth)
+            {
+                if (ImGui::InputInt("Bit Depth", &bc->d_display_bits))
+                {
+                    if (bc->d_display_bits > 32)
+                        bc->d_display_bits = 32;
+                    if (bc->d_display_bits < 1)
+                        bc->d_display_bits = 1;
+                    bc->init_display();
+                }
             }
 
             if (!bc->d_is_temporary)
@@ -69,7 +91,7 @@ namespace satdump
                     auto bbc = bc;
                     bc = std::make_shared<BitContainer>(bbc->getName(), bbc->getFilePath(), bbc->frames);
                     bc->d_bitperiod = bbc->d_bitperiod;
-                    bc->init_bitperiod();
+                    bc->init_display();
                     bc->bitview = this;
                 }
             }
@@ -82,7 +104,9 @@ namespace satdump
         {
             if (ImGui::CollapsingHeader((tool->getName()).c_str()))
             {
+                ImGui::PushID((tool->getName()).c_str());
                 tool->renderMenu(bc, is_busy);
+                ImGui::PopID();
 
                 if (tool->needToProcess())
                 {

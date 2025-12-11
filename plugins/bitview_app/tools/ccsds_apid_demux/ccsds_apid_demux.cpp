@@ -17,6 +17,12 @@ namespace satdump
         if (is_busy)
             style::beginDisabled();
 
+        if (ImGui::RadioButton("AOS", aos_mode == 1))
+            aos_mode = 1;
+        if (ImGui::RadioButton("TM", aos_mode == 0))
+            aos_mode = 0;
+
+        ImGui::InputInt("CADU Width (bytes)", &cadu_size_bytes);
         ImGui::InputInt("MPDU Data Size", &mpdu_data_size);
         ImGui::InputInt("MPDU Insert Zone Size", &insert_zone_size);
         ImGui::Checkbox("Split APIDs", &split_apid);
@@ -52,11 +58,12 @@ namespace satdump
             };
             std::map<int, std::shared_ptr<APIDOut>> apids_outs;
 
-            ccsds::ccsds_aos::Demuxer demuxer_vcid(mpdu_data_size, insert_zone_size, insert_zone_size);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid_aos(mpdu_data_size, insert_zone_size, insert_zone_size);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid_tm(mpdu_data_size, insert_zone_size, insert_zone_size);
 
-            for (int i = 0; i < size; i += 1024)
+            for (int i = 0; i < size; i += cadu_size_bytes)
             {
-                auto frm = demuxer_vcid.work(ptr + i);
+                auto frm = aos_mode ? demuxer_vcid_aos.work(ptr + i) : demuxer_vcid_tm.work(ptr + i);
 
                 for (auto &f : frm)
                 {
@@ -82,11 +89,13 @@ namespace satdump
 
             for (auto &v : apids_outs)
             {
+                v.second->fileout.close();
+
                 if (v.second->frms.size())
                 {
                     std::shared_ptr<satdump::BitContainer> newbitc = std::make_shared<satdump::BitContainer>("APID " + std::to_string(v.first), v.second->tmpfile, v.second->frms);
                     newbitc->d_bitperiod = 8192;
-                    newbitc->init_bitperiod();
+                    newbitc->init_display();
                     newbitc->d_is_temporary = true;
 
                     if (container->bitview != nullptr)
@@ -104,12 +113,13 @@ namespace satdump
             std::ofstream fileout = std::ofstream(tmpfile, std::ios::binary);
             std::vector<BitContainer::FrameDef> frms;
 
-            ccsds::ccsds_aos::Demuxer demuxer_vcid(mpdu_data_size, insert_zone_size, insert_zone_size);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid_aos(mpdu_data_size, insert_zone_size, insert_zone_size);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid_tm(mpdu_data_size, insert_zone_size, insert_zone_size);
 
             size_t pos = 0;
-            for (int i = 0; i < size; i += 1024)
+            for (int i = 0; i < size; i += cadu_size_bytes)
             {
-                auto frm = demuxer_vcid.work(ptr + i);
+                auto frm = aos_mode ? demuxer_vcid_aos.work(ptr + i) : demuxer_vcid_tm.work(ptr + i);
 
                 for (auto &f : frm)
                 {
@@ -123,11 +133,13 @@ namespace satdump
                 process_progress = double(i) / double(size);
             }
 
+            fileout.close();
+
             if (frms.size())
             {
                 std::shared_ptr<satdump::BitContainer> newbitc = std::make_shared<satdump::BitContainer>("APIDs", tmpfile, frms);
                 newbitc->d_bitperiod = 8192;
-                newbitc->init_bitperiod();
+                newbitc->init_display();
                 newbitc->d_is_temporary = true;
 
                 if (container->bitview != nullptr)

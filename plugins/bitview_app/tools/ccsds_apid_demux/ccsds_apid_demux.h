@@ -9,9 +9,11 @@ namespace satdump
     private:
         bool should_process = false;
 
+        bool aos_mode = true;
         int mpdu_data_size = 884;
         int insert_zone_size = 0;
         bool split_apid = true;
+        int cadu_size_bytes = 1024;
 
     public:
         std::string getName();
