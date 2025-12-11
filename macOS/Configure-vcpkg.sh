@@ -8,7 +8,7 @@ fi
 
 if [[ -d vcpkg ]]
 then
-	rm -rf vcpkg
+    rm -rf vcpkg
 fi
 git clone https://github.com/microsoft/vcpkg
 cd vcpkg
@@ -27,7 +27,7 @@ fi
 echo "Installing vcpkg packages..."
 
 # Core packages. libxml2 is for libiio
-./vcpkg install --triplet osx-satdump libjpeg-turbo tiff libpng  libusb fftw3 libxml2 portaudio jemalloc nng zstd armadillo hdf5[cpp] sqlite3
+./vcpkg install --triplet osx-satdump libjpeg-turbo tiff libpng glfw3 libusb fftw3 libxml2 portaudio jemalloc nng zstd armadillo hdf5[cpp] sqlite3
 
 # Entirely for UHD...
 ./vcpkg install --triplet osx-satdump boost-chrono boost-date-time boost-filesystem boost-program-options boost-system boost-serialization boost-thread \
