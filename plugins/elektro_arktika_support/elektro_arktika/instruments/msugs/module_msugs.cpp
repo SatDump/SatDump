@@ -24,6 +24,7 @@ namespace elektro_arktika
             : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
         {
             fsfsm_enable_output = false;
+            apply_correction = parameters.contains("apply_correction") ? parameters["apply_correction"].get<bool>() : false;
         }
 
         void MSUGSDecoderModule::process()
@@ -55,19 +56,19 @@ namespace elektro_arktika
                 {
                     std::vector<std::vector<uint8_t>> frames = deframerVIS1.work(&cadu[24], 1024 - 24);
                     for (std::vector<uint8_t> &frame : frames)
-                        vis1_reader.pushFrame(&frame[0]);
-                }
-                else if ((vcid == 3) || (vcid_2 == 3))
-                {
-                    std::vector<std::vector<uint8_t>> frames = deframerVIS2.work(&cadu[24], 1024 - 24);
-                    for (std::vector<uint8_t> &frame : frames)
-                        vis2_reader.pushFrame(&frame[0]);
+                        vis1_reader.pushFrame(&frame[0], apply_correction);
                 }
                 else if ((vcid == 5) || (vcid_2 == 5))
                 {
+                    std::vector<std::vector<uint8_t>> frames = deframerVIS2.work(&cadu[24], 1024 - 24);
+                    for (std::vector<uint8_t> &frame : frames)
+                        vis2_reader.pushFrame(&frame[0], apply_correction);
+                }
+                else if ((vcid == 3) || (vcid_2 == 3))
+                {
                     std::vector<std::vector<uint8_t>> frames = deframerVIS3.work(&cadu[24], 1024 - 24);
                     for (std::vector<uint8_t> &frame : frames)
-                        vis3_reader.pushFrame(&frame[0]);
+                        vis3_reader.pushFrame(&frame[0], apply_correction);
                 }
                 else if ((vcid == 4) || (vcid_2 == 4))
                 {
