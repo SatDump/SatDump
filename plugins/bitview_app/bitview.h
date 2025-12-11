@@ -16,6 +16,7 @@ namespace satdump
     {
     protected:
         bool is_busy = false;
+        bool reset_view = true;
 
         void drawMenu();
         void drawContents(ImVec2 win_size);
