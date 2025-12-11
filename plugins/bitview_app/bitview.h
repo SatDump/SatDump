@@ -25,6 +25,8 @@ namespace satdump
 
     private:
         bool custom_bit_depth = false;
+        std::string frame_width_exp;
+
         std::shared_ptr<BitContainer> bc;
 
     private:

@@ -2,12 +2,16 @@
 #include "bit_container.h"
 #include "core/style.h"
 #include "imgui/imgui.h"
+#include "imgui/imgui_stdlib.h"
 #include "imgui/implot/implot.h"
 #include "imgui/implot/implot_internal.h"
 #include <exception>
 #include <fcntl.h>
 #include <memory>
+#include <string>
 
+#include "libs/muparser/muParser.h"
+#include "libs/muparser/muParserError.h"
 #include "logger.h"
 #include "tools/ccsds_apid_demux/ccsds_apid_demux.h"
 #include "tools/ccsds_vcid_splitter/ccsds_vcid_splitter.h"
@@ -27,6 +31,8 @@ namespace satdump
         all_tools.push_back(std::make_shared<Soft2HardTool>());
         all_tools.push_back(std::make_shared<CCSDSVcidSplitterTool>());
         all_tools.push_back(std::make_shared<CCSDSAPIDDemuxTool>());
+
+        frame_width_exp = std::to_string(bc->d_bitperiod);
     }
 
     BitViewHandler::~BitViewHandler() {}
@@ -40,11 +46,29 @@ namespace satdump
         {
             if (!bc->d_frame_mode)
             {
-                double vv = bc->d_bitperiod;
-                if (ImGui::InputDouble("Period (Bits)", &vv, 0, 0, "%.0f"))
+
+                if (ImGui::InputText("Period (Bits)", &frame_width_exp))
                 {
-                    bc->d_bitperiod = vv;
-                    bc->init_display();
+                    try
+                    {
+                        mu::Parser equParser;
+                        equParser.SetExpr(frame_width_exp);
+                        int nout = 0;
+                        double *out = equParser.Eval(nout);
+
+                        if (nout == 1)
+                        {
+                            bc->d_bitperiod = *out;
+                            bc->init_display();
+                        }
+                        else
+                        {
+                            logger->error("Error parsing bit period! Expression must have 1 output");
+                        }
+                    }
+                    catch (mu::ParserError &)
+                    {
+                    }
                 }
             }
 
