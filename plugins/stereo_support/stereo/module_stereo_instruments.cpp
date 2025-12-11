@@ -17,50 +17,7 @@ namespace stereo
         : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
     {
         fsfsm_enable_output = false;
-    }
-
-    image::Image StereoInstrumentsDecoderModule::decompress_icer_tool(uint8_t *data, int dsize, int size)
-    {
-        std::ofstream("./stereo_secchi_raw.tmp").write((char *)data, dsize);
-
-        if (std::filesystem::exists("./stereo_secchi_out.tmp"))
-            std::filesystem::remove("./stereo_secchi_out.tmp");
-
-        std::string icer_path = d_parameters["icer_path"];
-        std::string cmd = icer_path + " -vv -i ./stereo_secchi_raw.tmp -o ./stereo_secchi_out.tmp";
-
-        if (!std::filesystem::exists(icer_path))
-        {
-            logger->error("No ICER Decompressor provided. Can't decompress SECCHI!");
-            return image::Image();
-        }
-
-        int ret = system(cmd.data());
-
-        if (ret == 0 && std::filesystem::exists("./stereo_secchi_out.tmp"))
-        {
-            logger->trace("SECCHI Decompression OK!");
-
-            std::ifstream data_in("./stereo_secchi_out.tmp", std::ios::binary);
-            uint16_t *buffer = new uint16_t[size * size];
-            data_in.read((char *)buffer, sizeof(uint16_t) * size * size);
-            image::Image img(buffer, 16, size, size, 1);
-            delete[] buffer;
-
-            if (std::filesystem::exists("./stereo_secchi_out.tmp"))
-                std::filesystem::remove("./stereo_secchi_out.tmp");
-
-            return img;
-        }
-        else
-        {
-            logger->error("Failed decompressing SECCHI!");
-
-            if (std::filesystem::exists("./stereo_secchi_out.tmp"))
-                std::filesystem::remove("./stereo_secchi_out.tmp");
-
-            return image::Image();
-        }
+        icer_path = parameters.contains("icer_path") ? parameters["icer_path"].get<std::string>() : "";
     }
 
     void StereoInstrumentsDecoderModule::process()
@@ -76,8 +33,7 @@ namespace stereo
 
         std::filesystem::create_directories(directory + "/SECCHI/");
 
-        secchi_reader = new secchi::SECCHIReader(d_parameters["icer_path"], directory + "/SECCHI");
-
+        secchi_reader = new secchi::SECCHIReader(icer_path, directory + "/SECCHI");
         while (should_run())
         {
             // Read buffer
