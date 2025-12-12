@@ -18,6 +18,7 @@
 #include "tools/deframer/deframer.h"
 #include "tools/diff_decode/diff_decode.h"
 #include "tools/soft2hard/soft2hard.h"
+#include "tools/take_skip/take_skip.h"
 
 namespace satdump
 {
@@ -26,6 +27,7 @@ namespace satdump
         c->bitview = this;
         handler_tree_icon = u8"\uf471";
 
+        all_tools.push_back(std::make_shared<TakeSkipTool>());
         all_tools.push_back(std::make_shared<DeframerTool>());
         all_tools.push_back(std::make_shared<DifferentialTool>());
         all_tools.push_back(std::make_shared<Soft2HardTool>());
