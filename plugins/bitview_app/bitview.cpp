@@ -74,8 +74,9 @@ namespace satdump
                 }
             }
 
-            if (ImGui::RadioButton("Bits", !custom_bit_depth && bc->d_display_bits == 1))
+            if (ImGui::RadioButton("Bits", bc->d_display_mode == 0 && !custom_bit_depth && bc->d_display_bits == 1))
             {
+                bc->d_display_mode = 0;
                 custom_bit_depth = false;
                 bc->d_display_bits = 1;
                 bc->init_display();
@@ -83,8 +84,9 @@ namespace satdump
 
             ImGui::SameLine();
 
-            if (ImGui::RadioButton("Bytes", !custom_bit_depth && bc->d_display_bits == 8))
+            if (ImGui::RadioButton("Bytes", bc->d_display_mode == 0 && !custom_bit_depth && bc->d_display_bits == 8))
             {
+                bc->d_display_mode = 0;
                 custom_bit_depth = false;
                 bc->d_display_bits = 8;
                 bc->init_display();
@@ -92,10 +94,18 @@ namespace satdump
 
             ImGui::SameLine();
 
-            if (ImGui::RadioButton("Custom", custom_bit_depth))
+            if (ImGui::RadioButton("Custom", bc->d_display_mode == 0 && custom_bit_depth))
             {
+                bc->d_display_mode = 0;
                 custom_bit_depth = true;
                 bc->d_display_bits = 10;
+                bc->init_display();
+            }
+
+            if (ImGui::RadioButton("ASCII", bc->d_display_mode == 1))
+            {
+                custom_bit_depth = false;
+                bc->d_display_mode = 1;
                 bc->init_display();
             }
 

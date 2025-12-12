@@ -74,6 +74,9 @@ namespace satdump
 
     void BitContainer::init_display()
     {
+        if (d_display_mode > 0)
+            d_display_bits = 8;
+
         // Ensure chunk size is a multiple of display depth
         d_chunk_size = 512;
         if (d_display_bits > 1 && (d_chunk_size % d_display_bits != 0))

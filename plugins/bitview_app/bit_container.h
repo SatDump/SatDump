@@ -63,6 +63,7 @@ namespace satdump
         std::vector<HighlightDef> highlights;
 
     public:
+        int d_display_mode = 0;
         size_t d_bitperiod = 256;
         int d_display_bits = 1;
 
@@ -85,6 +86,7 @@ namespace satdump
         void doDrawPlotTextures(ImPlotRect c);
 
         void renderSegment(PartImage &part, size_t &ii, size_t &iii, size_t &xoffset, size_t &offset);
+        void renderSegmentText(PartImage &part, size_t &ii, size_t &iii, size_t &xoffset, size_t &offset);
 
     public:
         void *bitview = nullptr;
