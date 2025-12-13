@@ -1,7 +1,7 @@
 #pragma once
 
-#include <cstdint>
 #include "image/image.h"
+#include <cstdint>
 
 namespace elektro_arktika
 {
@@ -17,10 +17,14 @@ namespace elektro_arktika
             int frames;
             std::vector<double> timestamps;
 
+            // Related to counter correction
+            int global_counter;
+            bool counter_locked = false;
+
         public:
             MSUVISReader();
             ~MSUVISReader();
-            void pushFrame(uint8_t *data);
+            void pushFrame(uint8_t *data, bool apply_correction);
             image::Image getImage1();
             image::Image getImage2();
         };

@@ -79,6 +79,11 @@ namespace satdump
             virtual void drawMenuBar() {}
 
             /**
+             * @brief Render explorer context menu (right click menu)
+             */
+            virtual void drawContextMenu() {};
+
+            /**
              * @brief Render explorer menu bar (in the left sidebar)
              * @param h currently selected handler, to be replaced if
              * another is selected

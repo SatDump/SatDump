@@ -2,7 +2,6 @@
 
 #include "imgui/implot/implot.h"
 #include <cstdint>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -13,7 +12,7 @@ namespace satdump
     private:
         const std::string d_name;
         const std::string d_filepath;
-        const size_t d_chunk_size = 512;
+        size_t d_chunk_size = 512;
         size_t d_file_memory_size;
         uint8_t *d_file_memory_ptr;
         int fd;
@@ -64,8 +63,9 @@ namespace satdump
         std::vector<HighlightDef> highlights;
 
     public:
-        size_t d_bitperiod = 481280; // 256; // 481280
         int d_display_mode = 0;
+        size_t d_bitperiod = 256;
+        int d_display_bits = 1;
 
         uint8_t *get_ptr() { return d_file_memory_ptr; }
         size_t get_ptr_size() { return d_file_memory_size; }
@@ -77,18 +77,16 @@ namespace satdump
         ~BitContainer();
 
         std::string getName() { return d_name; }
+        std::string getFilePath() { return d_filepath; }
         std::string getID() { return std::string(unique_id); }
 
-        void init_bitperiod();
-        void forceUpdateAll()
-        {
-            for (auto &p : image_parts)
-                p.need_update = true;
-            force_update_all = true;
-        }
+        void init_display();
 
         void doUpdateTextures();
         void doDrawPlotTextures(ImPlotRect c);
+
+        void renderSegment(PartImage &part, size_t &ii, size_t &iii, size_t &xoffset, size_t &offset);
+        void renderSegmentText(PartImage &part, size_t &ii, size_t &iii, size_t &xoffset, size_t &offset);
 
     public:
         void *bitview = nullptr;

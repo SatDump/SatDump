@@ -6,6 +6,16 @@ if(MSVC)
     set (WIN32_RESOURCES ../windows/resource.rc)
 endif()
 
+if(APPLE)
+    # Required for modern OpenGL
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -framework OpenGL")
+    set(CMAKE_MACOSX_RPATH ON)
+    add_compile_options(-DGL_SILENCE_DEPRECATION)
+
+    set(MACOSX_BUNDLE_EXECUTABLE_NAME "${PROJECT_NAME}")
+    set(MACOSX_BUNDLE_GUI_IDENTIFIER "${PROJECT_NAME}")
+endif()
+
 file(GLOB_RECURSE SatDump_ui_CPPS *.cpp imgui/gl3w/gl3w.c)
 
 set (EXCLUDE_DIR "/nfd/")

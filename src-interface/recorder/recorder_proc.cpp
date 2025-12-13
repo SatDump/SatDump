@@ -1,4 +1,4 @@
-#include "explorer/processing/processing.h"
+#include "handlers/processing/processing.h"
 #include "init.h"
 #include "recorder.h"
 
@@ -267,10 +267,17 @@ namespace satdump
         recording_path += "/";
 #endif
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
         ULARGE_INTEGER bytes_available;
         if (GetDiskFreeSpaceEx(recording_path.c_str(), &bytes_available, NULL, NULL))
             disk_available = bytes_available.QuadPart;
+
+
+#elif defined( __APPLE__)
+        struct statvfs stat_buffer;
+        if (statvfs(recording_path.c_str(), &stat_buffer) == 0)
+            // MacOS needs different handling because bsize reports a policy-adjusted value which is bogus
+            disk_available = stat_buffer.f_bavail * stat_buffer.f_frsize;
 #else
         struct statvfs stat_buffer;
         if (statvfs(recording_path.c_str(), &stat_buffer) == 0)

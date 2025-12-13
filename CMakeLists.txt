@@ -65,7 +65,6 @@ if(APPLE)
     find_package(Jemalloc REQUIRED)
     include_directories(${JEMALLOC_INCLUDE_DIR})
     link_libraries(${JEMALLOC_LIBRARY})
-
 endif()
 
 if(UNIX)
@@ -237,7 +236,6 @@ endif()
 
 add_subdirectory(src-core)
 add_subdirectory(src-cli)
-add_subdirectory(src-cli2)
 
 if(BUILD_GUI)
     message("Building the GUI")

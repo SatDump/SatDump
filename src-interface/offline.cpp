@@ -4,7 +4,7 @@
 #include "core/plugin.h"
 #include "core/style.h"
 #include "explorer/explorer.h"
-#include "explorer/processing/processing.h"
+#include "handlers/processing/processing.h"
 #include "imgui/imgui.h"
 #include "main_ui.h"
 #include <string>

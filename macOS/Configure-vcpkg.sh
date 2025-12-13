@@ -12,11 +12,12 @@ then
 fi
 git clone https://github.com/microsoft/vcpkg
 cd vcpkg
-git checkout ad3bae5
+git checkout 74e6536
+
 if [[ "$(uname -m)" == "arm64" ]]
 then
     cp ../macOS/arm64-osx-satdump.cmake triplets/osx-satdump.cmake
-    osx_target="11.0"
+    osx_target="15.0"
 else
     cp ../macOS/x64-osx-satdump.cmake triplets/osx-satdump.cmake
     osx_target="10.15"
@@ -52,7 +53,7 @@ python3 -m venv venv
 source venv/bin/activate
 pip3 install mako
 
-build_args="-DCMAKE_TOOLCHAIN_FILE=$(cd ../scripts/buildsystems && pwd)/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=osx-satdump -DCMAKE_INSTALL_PREFIX=$(cd ../installed/osx-satdump && pwd) -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=$osx_target -DCMAKE_MACOSX_RPATH=ON"
+build_args="-DCMAKE_TOOLCHAIN_FILE=$(cd ../scripts/buildsystems && pwd)/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=osx-satdump -DCMAKE_INSTALL_PREFIX=$(cd ../installed/osx-satdump && pwd) -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=$osx_target -DCMAKE_MACOSX_RPATH=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5"
 standard_include="$(cd ../installed/osx-satdump/include && pwd)"
 standard_lib="$(cd ../installed/osx-satdump/lib && pwd)"
 libusb_include="$(cd $standard_include/libusb-1.0 && pwd)"
@@ -133,7 +134,7 @@ cd ../..
 rm -rf rtl-sdr
 
 echo "Building HackRF..."
-git clone https://github.com/greatscottgadgets/hackrf --depth 1 -b v2024.02.1
+git clone https://github.com/greatscottgadgets/hackrf --depth 1
 cd hackrf/host/libhackrf
 mkdir build && cd build
 cmake $build_args -DLIBUSB_INCLUDE_DIR=$libusb_include -DLIBUSB_LIBRARIES=$libusb_lib ..
@@ -165,7 +166,7 @@ cd ../..
 rm -rf libfobos
 
 echo "Building LimeSuite..."
-git clone https://github.com/myriadrf/LimeSuite --depth 1 -b v23.11.0
+git clone https://github.com/myriadrf/LimeSuite --depth 1
 cd LimeSuite
 mkdir build-dir && cd build-dir
 cmake $build_args -DENABLE_GUI=OFF ..
@@ -175,8 +176,9 @@ cd ../..
 rm -rf LimeSuite
 
 echo "Building libiio..."
-git clone https://github.com/analogdevicesinc/libiio --depth 1 -b v0.25
+git clone https://github.com/analogdevicesinc/libiio
 cd libiio
+git checkout a0eca0d
 mkdir build && cd build
 cmake $build_args -DWITH_IIOD=OFF -DOSX_FRAMEWORK=OFF -DWITH_TESTS=OFF -DWITH_ZSTD=ON ..
 make -j$(sysctl -n hw.logicalcpu)
@@ -185,10 +187,12 @@ cd ../..
 rm -rf libiio
 
 echo "Building libad9361-iio..."
-git clone https://github.com/analogdevicesinc/libad9361-iio --depth 1 -b v0.3
+git clone https://github.com/analogdevicesinc/libad9361-iio
 cd libad9361-iio
+git checkout 2264074
 sed -i '' 's/<iio\/iio.h>/<iio.h>/g' test/*.c    #Patch tests for macOS
-sed -i '' 's/FRAMEWORK TRUE//' CMakeLists.txt    #Just a dylib, please!
+sed -i '' 's/option(OSX_FRAMEWORK "Create a OSX_FRAMEWORK" ON)/option(OSX_FRAMEWORK "Create a OSX_FRAMEWORK" OFF)/' CMakeLists.txt    #Just a dylib, please!
+sed -i '' 's|/Library/Frameworks|'"$PWD/../installed/osx-satdump"'|g' CMakeLists.txt  #No, don't build into /Library
 mkdir build && cd build
 cmake $build_args -DOSX_PACKAGE=OFF -DWITH_DOC=OFF -DENABLE_PACKAGING=OFF ..
 make -j$(sysctl -n hw.logicalcpu)
@@ -208,7 +212,7 @@ cd ../../..
 rm -rf bladeRF
 
 echo "Building UHD..."
-git clone https://github.com/EttusResearch/uhd --depth 1 -b v4.7.0.0
+git clone https://github.com/EttusResearch/uhd --depth 1 -b v4.9.0.0
 cd uhd/host
 sed -i '' 's/ appropriately or"/");/g' lib/utils/paths.cpp                          #Disable non-applicable help
 sed -i '' '/follow the below instructions to download/{N;d;}' lib/utils/paths.cpp

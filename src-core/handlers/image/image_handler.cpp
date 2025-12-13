@@ -31,7 +31,7 @@
 #include <utility>
 
 // TODOREWORK
-#include "../../../src-interface/explorer/explorer.h"
+#include "explorer/explorer.h"
 
 namespace satdump
 {

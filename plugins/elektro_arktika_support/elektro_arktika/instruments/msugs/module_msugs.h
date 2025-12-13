@@ -21,6 +21,9 @@ namespace elektro_arktika
             // Statuses
             instrument_status_t channels_statuses[10] = {DECODING, DECODING, DECODING, DECODING, DECODING, DECODING, DECODING, DECODING, DECODING, DECODING};
 
+            // For counter correction
+            bool apply_correction;
+
         public:
             MSUGSDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
             void process();

@@ -1,6 +1,6 @@
 #include "archive_loader.h"
 
-#include "explorer/processing/processing.h"
+#include "handlers/processing/processing.h"
 #include "logger.h"
 #include "main_ui.h"
 #include "nlohmann/json.hpp"
