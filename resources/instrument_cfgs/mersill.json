@@ -39,7 +39,7 @@
         },
         {
             "name": "IR/LL Mix",
-            "expression": "min(((1 - ch4) - 0.9) * 8, ch10 < 0.03 ? 1 : ch10)",
+            "expression": "ll_mask=(10, sun_angle, -6.000000, -9.500000);ir_mask=(10, sun_angle, -10.000000, 0.000000);max(ir_mask*(1.1-ch4*10), ll_mask*(ch18*6)^0.7-0.5)",
             "image": {
                 "geo_correct": true
             }
