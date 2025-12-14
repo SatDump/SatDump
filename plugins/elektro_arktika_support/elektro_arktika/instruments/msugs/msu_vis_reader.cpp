@@ -51,10 +51,16 @@ namespace elektro_arktika
                         global_counter = counter;
                     }
                 }
-                // We are locked, assume this frame's counter is the previous one plus one.
                 if (counter_locked)
                 {
-                    counter = global_counter + 1;
+                    // Makes sure dropped frames don't throw us off, one/two line skips are fine
+                    // Corrector therefore doesn't fix two LSB flips, but this improves reliability
+                    // with projections and such
+                    if (abs(global_counter - counter) > 2)
+                    {
+                        counter = global_counter + 1;
+                    }
+
                     global_counter = counter;
                 }
             }
