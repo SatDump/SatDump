@@ -13,7 +13,7 @@
         {
             "name": "Natural Color",
             "description": "descriptions/NatColor.md",
-            "expression": "ch3*1.3,ch2*1.3,ch1*1.3",
+            "expression": "ch3*1.6,ch2*1.6,ch1*1.6",
             "image": {
                 "hue_saturation": true,
                 "hue_saturation_cfg": {
