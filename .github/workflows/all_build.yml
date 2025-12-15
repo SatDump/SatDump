@@ -373,7 +373,7 @@ jobs:
           path: ${{runner.workspace}}/build/*.deb
 
   build_macos_intel:
-    runs-on: macos-13
+    runs-on: macos-14-intel
 
     steps:
       - uses: actions/checkout@v4
