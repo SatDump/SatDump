@@ -27,6 +27,7 @@
 // TODOREWORK!
 #include "handlers/vector/shapefile_handler.h"
 #include "products/image/channel_transform.h"
+#include <exception>
 #include <memory>
 #include <utility>
 
@@ -119,6 +120,8 @@ namespace satdump
                     needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
                 }
 
+                needs_to_update |= ImGui::Checkbox("Remove Background", &remove_background_img);
+
                 needs_to_update |= ImGui::Checkbox("Hue/Saturation", &huesaturation_img);
                 if (huesaturation_img)
                 {
@@ -144,8 +147,6 @@ namespace satdump
                     needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
                     huesaturation_cfg_img.overlap = overlap;
                 }
-
-                needs_to_update |= ImGui::Checkbox("Remove Background", &remove_background_img);
 
                 if (needs_to_be_disabled)
                     style::endDisabled();
@@ -363,39 +364,46 @@ namespace satdump
             {
                 curr_image = image;
 
-                if (huesaturation_img)
-                    image::hue_saturation(curr_image, huesaturation_cfg_img);
-                if (equalize_img)
-                    image::equalize(curr_image, false);
-                if (equalize_perchannel_img)
-                    image::equalize(curr_image, true);
-                if (white_balance_img)
-                    image::white_balance(curr_image);
-                if (normalize_img)
-                    image::normalize(curr_image);
-                if (invert_img)
-                    image::linear_invert(curr_image);
-                if (median_blur_img)
-                    image::median_blur(curr_image);
-                if (despeckle_img)
-                    image::kuwahara_filter(curr_image);
-                if (brightness_contrast_image)
-                    image::brightness_contrast(curr_image, brightness_contrast_brightness_image, brightness_contrast_contrast_image);
-                if (remove_background_img)
-                    image::remove_background(curr_image, nullptr); // TODOREWORK progress?
-                if (rotate180_image)
-                    curr_image.mirror(true, true);
+                try
+                {
+                    if (huesaturation_img)
+                        image::hue_saturation(curr_image, huesaturation_cfg_img);
+                    if (equalize_img)
+                        image::equalize(curr_image, false);
+                    if (equalize_perchannel_img)
+                        image::equalize(curr_image, true);
+                    if (white_balance_img)
+                        image::white_balance(curr_image);
+                    if (normalize_img)
+                        image::normalize(curr_image);
+                    if (invert_img)
+                        image::linear_invert(curr_image);
+                    if (median_blur_img)
+                        image::median_blur(curr_image);
+                    if (despeckle_img)
+                        image::kuwahara_filter(curr_image);
+                    if (brightness_contrast_image)
+                        image::brightness_contrast(curr_image, brightness_contrast_brightness_image, brightness_contrast_contrast_image);
+                    if (remove_background_img)
+                        image::remove_background(curr_image, nullptr); // TODOREWORK progress?
+                    if (rotate180_image)
+                        curr_image.mirror(true, true);
 
-                if (geocorrect_image)
-                { // TODOREWORK handle disabling projs, etc
-                    bool success = false;
-                    curr_image = image::earth_curvature::perform_geometric_correction(curr_image, success, &correct_rev_lut, &correct_fwd_lut);
-                    if (!success)
-                    {
-                        logger->error("Failed Geo-Correcting image!");
-                        correct_fwd_lut.clear();
-                        correct_rev_lut.clear();
+                    if (geocorrect_image)
+                    { // TODOREWORK handle disabling projs, etc
+                        bool success = false;
+                        curr_image = image::earth_curvature::perform_geometric_correction(curr_image, success, &correct_rev_lut, &correct_fwd_lut);
+                        if (!success)
+                        {
+                            logger->error("Failed Geo-Correcting image!");
+                            correct_fwd_lut.clear();
+                            correct_rev_lut.clear();
+                        }
                     }
+                }
+                catch (std::exception &e)
+                {
+                    logger->error("Error processing image! %s", e.what());
                 }
             }
             else

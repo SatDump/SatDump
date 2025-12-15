@@ -162,6 +162,10 @@ namespace satdump
 
                     handler_present |= master_handler->drawTreeMenu(curr_handler);
 
+                    // If the handler still exist but is not in the tree, we must destroy it
+                    if (!handler_present && curr_handler)
+                        curr_handler.reset();
+
                     if ((!master_handler->hasSubhandlers()) && (!groups_handlers.size()))
                     {
                         ImGui::TableNextRow();
@@ -172,7 +176,7 @@ namespace satdump
                     ImGui::EndTable();
                 }
 
-                if (prev_curr != curr_handler)
+                if (curr_handler && prev_curr != curr_handler)
                     last_selected_handler.insert_or_assign(curr_handler->getID(), curr_handler);
             }
 

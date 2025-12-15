@@ -1,4 +1,5 @@
 #include "hue_saturation.h"
+#include "core/exception.h"
 #include <limits>
 
 namespace satdump
@@ -72,6 +73,9 @@ namespace satdump
 
         void hue_saturation(Image &image, HueSaturation config)
         {
+            if (image.channels() < 3)
+                throw satdump_exception("Hue Saturation requires as least 3 channels!");
+
             float scale = image.maxval() - 1;
 
             double rgb_r, rgb_g, rgb_b;

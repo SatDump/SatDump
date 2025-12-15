@@ -318,16 +318,6 @@ int main(int argc, char *argv[])
 
     logger->info("UI Exit");
 
-#if 0
-    // If we're doing live processing, we want this to kill all threads quickly. Hence don't call destructors
-    if (satdump::processing::is_processing)
-#ifdef __APPLE__
-        exit(0);
-#else
-        quick_exit(0);
-#endif
-#endif // TODOREWORKUI
-
     satdump::ui_thread_pool.stop();
 
     for (int i = 0; i < satdump::ui_thread_pool.size(); i++)
@@ -337,4 +327,10 @@ int main(int argc, char *argv[])
     }
 
     logger->info("Exiting!");
+
+#ifdef __APPLE__
+    exit(0);
+#else
+    quick_exit(0);
+#endif
 }
