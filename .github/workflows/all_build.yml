@@ -373,7 +373,9 @@ jobs:
           path: ${{runner.workspace}}/build/*.deb
 
   build_macos_intel:
-    runs-on: macos-13
+    runs-on: macos-14-intel
+    # MacOS builds are suspended due to significant issues with bundling for the time being
+    if: false
 
     steps:
       - uses: actions/checkout@v4
@@ -438,6 +440,8 @@ jobs:
 
   build_macos_silicon:
     runs-on: macos-14
+    # MacOS builds are suspended due to significant issues with bundling for the time being
+    if: false
 
     steps:
       - uses: actions/checkout@v4
