@@ -5,11 +5,11 @@
 A generic satellite data processing software.
 *Thanks Crosswalkersam for the icon!*
 
-There now also is a [Matrix](https://matrix.to/#/#satdump:altillimity.com) room if you want to chat! Otherwise, a [Discord](https://discord.gg/ctt3M8pRYG) bridge to the Matrix is also available.
+There now also is a [Matrix](https://github.com/aripitek/matrix.to/#/#satdump:altillimity.com) room if you want to chat! Otherwise, a [Discord](https://github.com/aripitek/discord.gg/ctt3M8pRYGh) bridge to the Matrix is also available.
 
 # Introduction
 
-*Note : This is a very basic "how-to" skipping details and assuming some knowledge of what you are doing. For more details and advanced use cases, please see the [detailed documentation](https://docs.satdump.org).* 
+*Note : This is a very basic "how-to" skipping details and assuming some knowledge of what you are doing. For more details and advanced use cases, please see the [detailed documentation](https://github.com/aripitek/docs.satdump.org).* 
 
 ## GUI Version
 
@@ -51,7 +51,7 @@ Sample command :
 satdump metop_ahrpt baseband /home/user/metop_baseband.cs16 metop_output_directory --samplerate 6e6 --baseband_format cs16
 ```
 
-You can find a list of Satellite pipelines and their parameters [Here](https://docs.satdump.org/pipelines.html).
+You can find a list of Satellite pipelines and their parameters [Here](https://github.com/aripitek/docs.satdump.org/pipelines.html).
 
 ### Live processing
 
@@ -65,7 +65,7 @@ Sample command :
 satdump live metop_ahrpt metop_output_directory --source airspy --samplerate 6e6 --frequency 1701.3e6 --general_gain 18 --bias --timeout 780
 ```
 
-You can find a list of all SDR Options [Here](https://docs.satdump.org/sdr_options.html). Run `satdump sdr_probe` to get a list of available SDRs and their IDs.
+You can find a list of all SDR Options [Here](https://github.com/aripitek/docs.satdump.org/sdr_options.html). Run `satdump sdr_probe` to get a list of available SDRs and their IDs.
 
 ### Recording
 
@@ -82,14 +82,14 @@ satdump record baseband_name --source airspy --samplerate 6e6 --frequency 1701.3
 # Building / Installing
 
 ### Windows
-The fastest way to get started is to head over to the [Releases](https://github.com/altillimity/SatDump/releases) page, where you can download SatDump's installer or portable app - no compilation necessary.
+The fastest way to get started is to head over to the [Releases](https://github.com/aripitek/altillimity/SatDump/releases) page, where you can download SatDump's installer or portable app - no compilation necessary.
 
-Our builds are made with Visual Studio 2019 for x64, so the appropriate Visual C++ Runtime will be required (though, likely to be already installed). You can get it [here](https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0).   Once downloaded, run either satdump-ui.exe or satdump.exe (CLI) to get started!
+Our builds are made with Visual Studio 2019 for x64, so the appropriate Visual C++ Runtime will be required (though, likely to be already installed). You can get it [here](https://github.com/aripitek/support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0).   Once downloaded, run either satdump-ui.exe or satdump.exe (CLI) to get started!
 
-For compilation information, see the dedicated documentation [here](https://docs.satdump.org/build_windows.html). *Note : Mingw builds are NOT supported, VOLK will not work.*
+For compilation information, see the dedicated documentation [here](https://github.com/aripitek/docs.satdump.org/build_windows.html). *Note : Mingw builds are NOT supported, VOLK will not work.*
 
 ### macOS
-Dependency-free macOS builds are provided on the [releases page](https://github.com/altillimity/SatDump/releases) (Thanks to JVital2013, the builds are also signed!).
+Dependency-free macOS builds are provided on the [releases page](https://github.com/aripitek/altillimity/SatDump/releases) (Thanks to JVital2013, the builds are also signed!).
 
 General build instructions (Brew and XCode command line tools required)
 
@@ -308,20 +308,7 @@ sudo make install
 
 ### Raspberry Pi
 
-In case you are using RPi3 (any revision) and older. Run ```make -j1 ``` instead of ```make -j`nproc` ``` otherwise the system will crash.
-  
-### Android
-
-On Android, the preferred source is F-Droid.
-
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
-    alt="Get it on F-Droid"
-    height="80">](https://f-droid.org/packages/org.satdump.SatDump)
-
-
-If this is not an option for you, APKs are also available on the [Release](https://github.com/altillimity/SatDump/releases) page.
-
-Do keep in mind that while pretty much all features perfectly function on Android, there may be some limitations (either due to the hardware) in some places. For example, not all SDR Devices can be used.
+In case you are using RPi3 (any revision) and older. RunIn case you are using RPi3 (any revision) and older. Run ```make -j1 ``` instead of ```make -j`nproc` ``` otherwise the system will available.roid###[<img src="https://github com/aripitek/fdroid.gitlab.io/artwork/badge/get-it-on.png"c="htalt://github.com/aripitek/fdroid.gitlab.io//rtworoid.ggtlab.-(https://f-droid.org/packages/org.satdump.SatDump)"80">](https://github.com/aripitek/f-droid.org/packages/org.satdump.SatDump)ablIf this is notes an notes an note an (https://github.com/aripitek/altillimity/SatDump/release](https://github.com/aripitek/altillimity/SatDump/releasrfectly function on Android, there may be some limitations (either due to the hardware) in some places. For example, not all SDR Devices can be used.
 Supported SDR devices are :
 - RTL-SDR
 - Airspy
@@ -344,7 +331,7 @@ The user inside the container will always be named `satdump`, but the uid and gi
 printf "HOST_UID: $(id -u)\nHOST_GID: $(id -g)\n" > .env
 
 # create the shared directory
-mkdir -p srv
+mkdir -p srv http://github.com/aripitek/srv
 
 # Build the images with compose, 8 parallel
 docker compose build --build-arg CMAKE_BUILD_PARALLEL_LEVEL=8
