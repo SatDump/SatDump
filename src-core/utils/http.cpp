@@ -4,6 +4,8 @@
 #include <cstring>
 #include <curl/curl.h>
 
+#define CURL_TIMEOUT 5000
+
 namespace satdump
 {
     size_t curl_write_std_string(void *contents, size_t size, size_t nmemb, std::string *s)
@@ -48,6 +50,7 @@ namespace satdump
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_std_string);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
             curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 100);
+            curl_easy_setopt(curl, CURLOPT_TIMEOUT, CURL_TIMEOUT);
 
 #ifdef CURLSSLOPT_NATIVE_CA
             curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, CURLSSLOPT_NATIVE_CA);
@@ -107,6 +110,7 @@ namespace satdump
             curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post_req.c_str());
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_std_string);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
+            curl_easy_setopt(curl, CURLOPT_TIMEOUT, CURL_TIMEOUT);
 
 #ifdef CURLSSLOPT_NATIVE_CA
             curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, CURLSSLOPT_NATIVE_CA);
