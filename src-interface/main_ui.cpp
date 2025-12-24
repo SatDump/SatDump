@@ -87,7 +87,7 @@ namespace satdump
     {
         // TODOREWORK SAVING AGAIN? explorer_app->save_settings();
         satdump_cfg.saveUser();
-        //explorer_app.reset();
+        // explorer_app.reset();
     }
 
     // TODOREWORKUI
@@ -107,6 +107,16 @@ namespace satdump
         }
 
         std::pair<int, int> dims = backend::beginFrame();
+
+        // On Windows minimizing makes the window dimensions 0,
+        // which of course cause a whole lot of issues...
+        // Simply abort any further rendering of this happens!
+        if (dims.first == 0 && dims.second == 0)
+        {
+            backend::endFrame();
+            return;
+        }
+
         dims.second -= status_logger_sink->draw();
 
         {
