@@ -58,7 +58,7 @@ namespace satdump
             if (is_zip)
                 fit = std::make_shared<satdump::utils::ZipFilesIterator>(path);
             else
-                fit = std::make_shared<satdump::utils::FolderFilesIterator>(std::filesystem::path(path).parent_path());
+                fit = std::make_shared<satdump::utils::FolderFilesIterator>(std::filesystem::path(path).parent_path().string());
 
             std::shared_ptr<satdump::utils::FilesIteratorItem> f;
             while (fit->getNext(f))
