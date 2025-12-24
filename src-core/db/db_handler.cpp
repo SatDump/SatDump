@@ -27,6 +27,13 @@ namespace satdump
         if (run_sql(sql_create_meta))
             throw satdump_exception("Failed creating meta table!");
 
+        // Create meta table used to store random simple fields
+        std::string sql_create_user = "CREATE TABLE IF NOT EXISTS user("
+                                      "id TEXT PRIMARY KEY NOT NULL,"
+                                      "val TEXT NOT NULL);";
+        if (run_sql(sql_create_user))
+            throw satdump_exception("Failed creating user table!");
+
         // Let everything else do the same!
         logger->info("Setting up database...");
         for (auto &s : subhandlers)
@@ -55,6 +62,31 @@ namespace satdump
         sqlite3_stmt *res;
 
         if (sqlite3_prepare_v2(db, ("SELECT val from meta where id=\"" + id + "\"").c_str(), -1, &res, 0))
+            logger->warn(sqlite3_errmsg(db));
+        else if (sqlite3_step(res) == SQLITE_ROW)
+            def = (char *)sqlite3_column_text(res, 0);
+
+        sqlite3_finalize(res);
+
+        return def;
+    }
+
+    void DBHandler::set_user(std::string id, std::string val)
+    {
+        char *err = NULL;
+        std::string sql = "INSERT INTO user (id, val) VALUES ('" + id + "', \"" + val + "\") ON CONFLICT(id) DO UPDATE SET val=\"" + val + "\";";
+        if (sqlite3_exec(db, sql.c_str(), NULL, 0, &err))
+        {
+            logger->error("Error setting value (%s = %s) in user table! %s", id.c_str(), val.c_str(), err);
+            sqlite3_free(err);
+        }
+    }
+
+    std::string DBHandler::get_user(std::string id, std::string def)
+    {
+        sqlite3_stmt *res;
+
+        if (sqlite3_prepare_v2(db, ("SELECT val from user where id=\"" + id + "\"").c_str(), -1, &res, 0))
             logger->warn(sqlite3_errmsg(db));
         else if (sqlite3_step(res) == SQLITE_ROW)
             def = (char *)sqlite3_column_text(res, 0);

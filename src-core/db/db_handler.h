@@ -41,6 +41,10 @@ namespace satdump
         void set_meta(std::string id, std::string val);
         std::string get_meta(std::string id, std::string def = "");
 
+        // TODOREWORK do we split this for plugins?
+        void set_user(std::string id, std::string val);
+        std::string get_user(std::string id, std::string def = "");
+
         int get_table_size(std::string table);
 
         void tr_begin();
