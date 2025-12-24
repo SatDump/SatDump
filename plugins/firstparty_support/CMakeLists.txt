@@ -11,6 +11,7 @@ if(${HDF5_FOUND}) # TODOREWORK Maybe actually yes ANDROID?
     GLOB_RECURSE
     firstparty_support_CPPS
     main.cpp
+    cli/*.cpp
     file_utils/*.cpp
     fcidecomp/*.c
     fcidecomp/*.cpp

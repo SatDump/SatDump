@@ -281,16 +281,42 @@ namespace satdump
                      std::tm timeS;
                      memset(&timeS, 0, sizeof(std::tm));
                      uint32_t test1, test2;
+                     std::string type;
+
                      if (sscanf(f->name.c_str(), "OR_ABI-L1b-RadF-M%*dC%*d_G%d_s%4d%3d%2d%2d%2d%*d_e%14d_c%14d.nc%n", &sat_num, &timeS.tm_year, &day_of_year, &timeS.tm_hour, &timeS.tm_min,
                                 &timeS.tm_sec, &test1, &test2, &len) == 8 &&
                          len == f->name.size())
+                         type = " (Full Disk)";
+                     else if (sscanf(f->name.c_str(), "OR_ABI-L1b-RadC-M%*dC%*d_G%d_s%4d%3d%2d%2d%2d%*d_e%14d_c%14d.nc%n", &sat_num, &timeS.tm_year, &day_of_year, &timeS.tm_hour, &timeS.tm_min,
+                                     &timeS.tm_sec, &test1, &test2, &len) == 8 &&
+                              len == f->name.size())
+                         type = " (CONUS/PACUS)";
+                     else if (sscanf(f->name.c_str(), "OR_ABI-L1b-RadM1-M%*dC%*d_G%d_s%4d%3d%2d%2d%2d%*d_e%14d_c%14d.nc%n", &sat_num, &timeS.tm_year, &day_of_year, &timeS.tm_hour, &timeS.tm_min,
+                                     &timeS.tm_sec, &test1, &test2, &len) == 8 &&
+                              len == f->name.size())
+                         type = " (Mesoscale 1)";
+                     else if (sscanf(f->name.c_str(), "OR_ABI-L1b-RadM2-M%*dC%*d_G%d_s%4d%3d%2d%2d%2d%*d_e%14d_c%14d.nc%n", &sat_num, &timeS.tm_year, &day_of_year, &timeS.tm_hour, &timeS.tm_min,
+                                     &timeS.tm_sec, &test1, &test2, &len) == 8 &&
+                              len == f->name.size())
+                         type = " (Mesoscale 2)";
+
+                     if (type.size())
                      {
                          i.type = NETCDF_GOES_ABI;
+
+                         if (type == "RadP")
+                             type = " (PACUS)";
+                         else if (type == "RadC")
+                             type = " (CONUS)";
+                         else if (type == "RadM1")
+                             type = " (Meso 1)";
+                         else if (type == "RadM2")
+                             type = " (Meso 2)";
 
                          timeS.tm_year -= 1900;
                          i.timestamp = timegm(&timeS) + day_of_year * 3600 * 24;
 
-                         i.name = "GOES-" + std::to_string(sat_num) + " ABI " + timestamp_to_string(i.timestamp);
+                         i.name = "GOES-" + std::to_string(sat_num) + " ABI " + timestamp_to_string(i.timestamp) + type;
 
                          i.group_id = std::to_string(sat_num) + "_" + std::to_string((time_t)i.timestamp);
                      }

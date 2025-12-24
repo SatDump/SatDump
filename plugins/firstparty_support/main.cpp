@@ -1,5 +1,8 @@
+#include "core/cli/cli.h"
 #include "core/plugin.h"
 #include "logger.h"
+
+#include "cli/discover.h"
 
 #include "old/off2pro/module_off2pro.h"
 #include "processors/hdf/gpm/gpm_calibrator.h"
@@ -26,7 +29,10 @@ public:
     {
         satdump::eventBus->register_handler<satdump::pipeline::RegisterModulesEvent>(registerPluginsHandler);
         satdump::eventBus->register_handler<satdump::products::RequestImageCalibratorEvent>(provideImageCalibratorHandler);
+        satdump::eventBus->register_handler<satdump::cli::RegisterSubcommandEvent>(registerCliCommands);
     }
+
+    static void registerCliCommands(const satdump::cli::RegisterSubcommandEvent &evt) { evt.cmd_handlers.push_back(std::make_shared<satdump::DiscoverProductsCmdHandler>()); }
 
     static void registerPluginsHandler(const satdump::pipeline::RegisterModulesEvent &evt) { REGISTER_MODULE_EXTERNAL(evt.modules_registry, off2pro::Off2ProModule); }
 
