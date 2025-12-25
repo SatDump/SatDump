@@ -126,22 +126,24 @@ namespace satdump
             decim_ptr->stop();
         source_ptr->stop();
         is_started = false;
-        satdump_cfg.main_cfg["user"]["recorder_sdr_settings"]["last_used_sdr"] = sources[sdr_select_id].name;
-        satdump_cfg.main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name] = source_ptr->get_settings();
-        satdump_cfg.main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["samplerate"] = source_ptr->get_samplerate();
-        satdump_cfg.main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["frequency"] = frequency_hz;
-        satdump_cfg.main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["xconverter_frequency"] = xconverter_frequency;
-        satdump_cfg.main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name]["decimation"] = current_decimation;
-        satdump_cfg.saveUser();
+        nlohmann::json rec_cfg;
+        rec_cfg["last_used_sdr"] = sources[sdr_select_id].name;
+        rec_cfg[sources[sdr_select_id].name] = source_ptr->get_settings();
+        rec_cfg[sources[sdr_select_id].name]["samplerate"] = source_ptr->get_samplerate();
+        rec_cfg[sources[sdr_select_id].name]["frequency"] = frequency_hz;
+        rec_cfg[sources[sdr_select_id].name]["xconverter_frequency"] = xconverter_frequency;
+        rec_cfg[sources[sdr_select_id].name]["decimation"] = current_decimation;
+        db->set_user_json("recorder_sdr_settings", rec_cfg);
     }
 
     void RecorderApplication::try_load_sdr_settings()
     {
-        if (satdump_cfg.main_cfg["user"].contains("recorder_sdr_settings"))
+        auto dcfg = db->get_user_json("recorder_sdr_settings");
+        if (!dcfg.is_null())
         {
-            if (satdump_cfg.main_cfg["user"]["recorder_sdr_settings"].contains(sources[sdr_select_id].name))
+            if (dcfg.contains(sources[sdr_select_id].name))
             {
-                auto &cfg = satdump_cfg.main_cfg["user"]["recorder_sdr_settings"][sources[sdr_select_id].name];
+                auto &cfg = dcfg[sources[sdr_select_id].name];
                 source_ptr->set_settings(cfg);
                 if (cfg.contains("samplerate"))
                 {
@@ -272,8 +274,7 @@ namespace satdump
         if (GetDiskFreeSpaceEx(recording_path.c_str(), &bytes_available, NULL, NULL))
             disk_available = bytes_available.QuadPart;
 
-
-#elif defined( __APPLE__)
+#elif defined(__APPLE__)
         struct statvfs stat_buffer;
         if (statvfs(recording_path.c_str(), &stat_buffer) == 0)
             // MacOS needs different handling because bsize reports a policy-adjusted value which is bogus

@@ -47,7 +47,7 @@ namespace satdump
         void set_user(std::string id, std::string val);
         std::string get_user(std::string id, std::string def = "");
         void set_user_json(std::string id, nlohmann::json val);
-        nlohmann::json get_user_json(std::string id, nlohmann::json def = {});
+        nlohmann::json get_user_json(std::string id, nlohmann::json def = nlohmann::json::parse("null"));
 
         int get_table_size(std::string table);
 

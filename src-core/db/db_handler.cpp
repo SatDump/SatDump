@@ -106,7 +106,7 @@ namespace satdump
     {
         try
         {
-            return nlohmann::json::parse(get_user(id, "{}"));
+            return nlohmann::json::parse(get_user(id, def.dump()));
         }
         catch (std::exception &e)
         {
