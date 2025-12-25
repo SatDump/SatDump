@@ -2,6 +2,7 @@
 #include "core/exception.h"
 #include "db/tle/tle_handler.h"
 #include "logger.h"
+#include "nlohmann/json.hpp"
 #include "utils/string.h"
 
 namespace satdump
@@ -97,6 +98,21 @@ namespace satdump
         sqlite3_finalize(res);
 
         return def;
+    }
+
+    void DBHandler::set_user_json(std::string id, nlohmann::json val) { set_user(id, val.dump()); }
+
+    nlohmann::json DBHandler::get_user_json(std::string id, nlohmann::json def)
+    {
+        try
+        {
+            return nlohmann::json::parse(get_user(id, "{}"));
+        }
+        catch (std::exception &e)
+        {
+            logger->warn("Error parsing JSON from DB : " + id);
+            return def;
+        }
     }
 
     int DBHandler::get_table_size(std::string table)

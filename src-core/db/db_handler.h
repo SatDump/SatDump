@@ -1,5 +1,7 @@
 #pragma once
 
+#include "nlohmann/json.hpp"
+#include <exception>
 #include <memory>
 #include <sqlite3.h>
 #include <string>
@@ -44,6 +46,8 @@ namespace satdump
         // TODOREWORK do we split this for plugins?
         void set_user(std::string id, std::string val);
         std::string get_user(std::string id, std::string def = "");
+        void set_user_json(std::string id, nlohmann::json val);
+        nlohmann::json get_user_json(std::string id, nlohmann::json def = {});
 
         int get_table_size(std::string table);
 

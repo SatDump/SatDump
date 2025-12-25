@@ -4,12 +4,14 @@
 #include "handlers/vector/addmenu.h"
 #include "image/image.h"
 #include "image/meta.h"
+#include "init.h"
 #include "logger.h"
 
 #include "../image/image_handler.h"
 #include "../vector/shapefile_handler.h"
 
 // TODOREWORK
+#include "nlohmann/json.hpp"
 #include "projection/raytrace/gcp_compute.h"
 #include "projection/reproject_img.h"
 #include "projection/reprojector.h"
@@ -26,15 +28,10 @@ namespace satdump
             handler_tree_icon = u8"\uf6e6";
             setCanSubBeReorgTo(true);
 
-            if (!satdump_cfg.main_cfg["user"]["projection_defaults"].is_null())
-                setConfig(satdump_cfg.main_cfg["user"]["projection_defaults"]);
+            setConfig(satdump::db->get_user_json("projection_defaults"));
         }
 
-        ProjectionHandler::~ProjectionHandler()
-        {
-            satdump_cfg.main_cfg["user"]["projection_defaults"] = getConfig();
-            satdump_cfg.saveUser();
-        }
+        ProjectionHandler::~ProjectionHandler() { satdump::db->set_user_json("projection_defaults", getConfig()); }
 
         void ProjectionHandler::drawMenu()
         {
