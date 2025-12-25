@@ -41,8 +41,8 @@ public:
         {
             _loader = std::make_unique<satdump::ArchiveLoader>();
 
-            std::string eumetsat_user_consumer_credential = satdump::db->get_user("firstparty_products_eumetsat_credentials_key", "");
-            std::string eumetsat_user_consumer_secret = satdump::db->get_user("firstparty_products_eumetsat_credentials_secret", "");
+            std::string eumetsat_user_consumer_credential = satdump::db->get_user("firstparty_products/eumetsat_credentials_key", "");
+            std::string eumetsat_user_consumer_secret = satdump::db->get_user("firstparty_products/eumetsat_credentials_secret", "");
 
             if (eumetsat_user_consumer_credential.size())
                 _loader->eumetsat_user_consumer_credential = eumetsat_user_consumer_credential;
@@ -69,8 +69,8 @@ public:
         if (_loader == nullptr)
             return;
 
-        satdump::db->set_user("firstparty_products_eumetsat_credentials_key", _loader->eumetsat_user_consumer_credential);
-        satdump::db->set_user("firstparty_products_eumetsat_credentials_secret", _loader->eumetsat_user_consumer_secret);
+        satdump::db->set_user("firstparty_products/eumetsat_credentials_key", _loader->eumetsat_user_consumer_credential);
+        satdump::db->set_user("firstparty_products/eumetsat_credentials_secret", _loader->eumetsat_user_consumer_secret);
     }
 
     static void renderExplorerLoaderButton(const satdump::explorer::RenderLoadMenuElementsEvent &evt)
