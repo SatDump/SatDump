@@ -87,7 +87,7 @@ namespace satdump
     {
         // TODOREWORK SAVING AGAIN? explorer_app->save_settings();
         satdump_cfg.saveUser();
-        // explorer_app.reset();
+        explorer_app.reset();
     }
 
     // TODOREWORKUI
