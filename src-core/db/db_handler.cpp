@@ -2,6 +2,7 @@
 #include "core/exception.h"
 #include "db/tle/tle_handler.h"
 #include "logger.h"
+#include "utils/string.h"
 
 namespace satdump
 {
@@ -49,7 +50,8 @@ namespace satdump
     void DBHandler::set_meta(std::string id, std::string val)
     {
         char *err = NULL;
-        std::string sql = "INSERT INTO meta (id, val) VALUES ('" + id + "', \"" + val + "\") ON CONFLICT(id) DO UPDATE SET val=\"" + val + "\";";
+        replaceAllStr(val, "'", "''");
+        std::string sql = "INSERT INTO meta (id, val) VALUES ('" + id + "', '" + val + "') ON CONFLICT(id) DO UPDATE SET val='" + val + "';";
         if (sqlite3_exec(db, sql.c_str(), NULL, 0, &err))
         {
             logger->error("Error setting value (%s = %s) in meta table! %s", id.c_str(), val.c_str(), err);
@@ -74,7 +76,8 @@ namespace satdump
     void DBHandler::set_user(std::string id, std::string val)
     {
         char *err = NULL;
-        std::string sql = "INSERT INTO user (id, val) VALUES ('" + id + "', \"" + val + "\") ON CONFLICT(id) DO UPDATE SET val=\"" + val + "\";";
+        replaceAllStr(val, "'", "''");
+        std::string sql = "INSERT INTO user (id, val) VALUES ('" + id + "', '" + val + "') ON CONFLICT(id) DO UPDATE SET val='" + val + "';";
         if (sqlite3_exec(db, sql.c_str(), NULL, 0, &err))
         {
             logger->error("Error setting value (%s = %s) in user table! %s", id.c_str(), val.c_str(), err);
