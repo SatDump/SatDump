@@ -83,7 +83,6 @@ namespace satdump
 
     void exitMainUI()
     {
-        // TODOREWORK SAVING AGAIN? explorer_app->save_settings();
         satdump_cfg.saveUser();
         explorer_app.reset();
     }

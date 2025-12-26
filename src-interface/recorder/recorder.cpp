@@ -64,9 +64,10 @@ namespace satdump
         }
 
         // If not, or it failed to open, revert to last used SDR
-        if (sdr_select_id == -1 && satdump_cfg.main_cfg["user"]["recorder_sdr_settings"].contains("last_used_sdr"))
+        auto dcfg = db->get_user_json("recorder_sdr_settings");
+        if (sdr_select_id == -1 && dcfg.contains("last_used_sdr"))
         {
-            std::string last_used_sdr = satdump_cfg.main_cfg["user"]["recorder_sdr_settings"]["last_used_sdr"].get<std::string>();
+            std::string last_used_sdr = dcfg["last_used_sdr"].get<std::string>();
             for (int i = 0; i < (int)sources.size(); i++)
             {
                 if (sources[i].name != last_used_sdr)
@@ -143,8 +144,9 @@ namespace satdump
         fft->on_fft = [this](float *v) { waterfall_plot->push_fft(v); };
 
         // Load config
-        if (satdump_cfg.main_cfg["user"].contains("recorder_state"))
-            deserialize_config(satdump_cfg.main_cfg["user"]["recorder_state"]);
+        auto cfg = db->get_user_json("recorder_state");
+        if (!cfg.is_null())
+            deserialize_config(cfg);
 
         file_sink->set_output_sample_type(baseband_format);
         fft_plot->set_size(fft_size);

@@ -32,12 +32,10 @@ namespace satdump
                 has_dbf = true;
             }
 
-            std::string def = satdump::db->get_user("shapefile_defaults/" + std::filesystem::path(shapefile_name).stem().string());
-            if (def != "")
-                setConfig(nlohmann::json::parse(def));
+            setConfig(satdump::db->get_user_json("shapefile_defaults/" + std::filesystem::path(shapefile_name).stem().string()));
         }
 
-        ShapefileHandler::~ShapefileHandler() { satdump::db->set_user("shapefile_defaults/" + std::filesystem::path(shapefile_name).stem().string(), getConfig().dump()); }
+        ShapefileHandler::~ShapefileHandler() { satdump::db->set_user_json("shapefile_defaults/" + std::filesystem::path(shapefile_name).stem().string(), getConfig()); }
 
         void ShapefileHandler::drawMenu()
         {
