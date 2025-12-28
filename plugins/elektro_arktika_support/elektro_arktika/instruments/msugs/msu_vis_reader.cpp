@@ -53,10 +53,10 @@ namespace elektro_arktika
                 }
                 if (counter_locked)
                 {
-                    // Makes sure dropped frames don't throw us off, one/two line skips are fine
-                    // Corrector therefore doesn't fix two LSB flips, but this improves reliability
+                    // Makes sure dropped frames don't throw us off, a few skipped lines are fine
+                    // Corrector therefore doesn't fix three LSB flips, but this improves reliability
                     // with projections and such
-                    if (abs(global_counter - counter) > 2)
+                    if ((counter - global_counter) > 7)
                     {
                         counter = global_counter + 1;
                     }
