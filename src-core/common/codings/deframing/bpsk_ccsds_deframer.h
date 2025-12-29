@@ -37,7 +37,7 @@ namespace deframing
     private:
         int d_state = STATE_NOSYNC; // Default state
         bool in_frame = false;      // Are we currently outpuing a frame?
-        uint32_t shifter = 0;       // Shiter used to find the ASM
+        uint32_t shifter = 0;       // Shifter used to find the ASM
         bool bit_inversion = false; // Do we need to correct for bit inversion
 
         int bit_of_frame = 0;  // Bit of frame we're at
