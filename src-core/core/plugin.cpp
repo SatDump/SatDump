@@ -52,7 +52,8 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
 #else
     if (std::filesystem::exists("plugins")) // Try local plugins directory first
         plugins_paths.push_back("./plugins");
-    if (std::filesystem::exists(satdump::LIBPATH + "plugins")) // Followed by system
+    if (std::filesystem::exists(satdump::LIBPATH + "plugins") && // Followed by system
+        std::filesystem::absolute(satdump::LIBPATH + "plugins") != std::filesystem::absolute("./plugins"))
         plugins_paths.push_back(satdump::LIBPATH + "plugins");
 #endif
 

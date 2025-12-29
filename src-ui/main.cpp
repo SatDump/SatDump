@@ -250,30 +250,6 @@ int main(int argc, char *argv[])
     if (cli_handler.run())
         exit(1);
 
-    // Set window position
-    int x, y, xs, ys;
-    bool maximized;
-    if (satdump::satdump_cfg.main_cfg["user_interface"]["remember_pos"]["value"].get<bool>() && satdump::satdump_cfg.main_cfg["user_interface"].contains("window"))
-    {
-        const bool maximized = getValueOrDefault(satdump::satdump_cfg.main_cfg["user_interface"]["window"]["maximized"], false);
-        if (maximized)
-            glfwMaximizeWindow(window);
-        else
-        {
-            const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-            x = getValueOrDefault(satdump::satdump_cfg.main_cfg["user_interface"]["window"]["x"], -1);
-            y = getValueOrDefault(satdump::satdump_cfg.main_cfg["user_interface"]["window"]["y"], -1);
-            xs = getValueOrDefault(satdump::satdump_cfg.main_cfg["user_interface"]["window"]["xs"], -1);
-            ys = getValueOrDefault(satdump::satdump_cfg.main_cfg["user_interface"]["window"]["ys"], -1);
-
-            if (x >= 0 && y >= 0 && x < mode->width && y < mode->height && xs > 0 && ys > 0)
-            {
-                glfwSetWindowPos(window, x, y);
-                glfwSetWindowSize(window, xs, ys);
-            }
-        }
-    }
-
     // Attach signal
     signal(SIGINT, sig_handler_ui);
     signal(SIGTERM, sig_handler_ui);
@@ -283,23 +259,6 @@ int main(int argc, char *argv[])
     {
         satdump::renderMainUI();
     } while (!glfwWindowShouldClose(window) && !signal_caught);
-
-    // Save window position
-    if (satdump::satdump_cfg.main_cfg["user_interface"]["remember_pos"]["value"].get<bool>())
-    {
-        bool minimized = glfwGetWindowAttrib(window, GLFW_ICONIFIED) == GLFW_TRUE;
-        maximized = glfwGetWindowAttrib(window, GLFW_MAXIMIZED) == GLFW_TRUE;
-        satdump::satdump_cfg.main_cfg["user_interface"]["window"]["maximized"] = maximized;
-        if (!maximized && !minimized)
-        {
-            glfwGetWindowPos(window, &x, &y);
-            glfwGetWindowSize(window, &xs, &ys);
-            satdump::satdump_cfg.main_cfg["user_interface"]["window"]["x"] = x;
-            satdump::satdump_cfg.main_cfg["user_interface"]["window"]["y"] = y;
-            satdump::satdump_cfg.main_cfg["user_interface"]["window"]["xs"] = xs;
-            satdump::satdump_cfg.main_cfg["user_interface"]["window"]["ys"] = ys;
-        }
-    }
 
     satdump::exitMainUI();
 
@@ -318,16 +277,6 @@ int main(int argc, char *argv[])
 
     logger->info("UI Exit");
 
-#if 0
-    // If we're doing live processing, we want this to kill all threads quickly. Hence don't call destructors
-    if (satdump::processing::is_processing)
-#ifdef __APPLE__
-        exit(0);
-#else
-        quick_exit(0);
-#endif
-#endif // TODOREWORKUI
-
     satdump::ui_thread_pool.stop();
 
     for (int i = 0; i < satdump::ui_thread_pool.size(); i++)
@@ -337,4 +286,10 @@ int main(int argc, char *argv[])
     }
 
     logger->info("Exiting!");
+
+#ifdef __APPLE__
+    exit(0);
+#else
+    quick_exit(0);
+#endif
 }

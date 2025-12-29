@@ -91,12 +91,6 @@
             "name": "Show Status Bar",
             "description": "Show status bar with last log at the bottom of the UI"
         },
-        "remember_pos": {
-            "type": "bool",
-            "value": false,
-            "name": "Remember Window Size and Position",
-            "description": "Remeber size and position of the window when closing SatDump. It will open in the same configuration on next launch"
-        },
         "lock_xconverter_input": {
             "type": "bool",
             "value": true,

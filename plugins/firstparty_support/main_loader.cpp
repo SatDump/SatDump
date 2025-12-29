@@ -1,4 +1,5 @@
 #include "core/plugin.h"
+#include "init.h"
 #include "logger.h"
 
 #include "core/config.h"
@@ -40,14 +41,13 @@ public:
         {
             _loader = std::make_unique<satdump::ArchiveLoader>();
 
-            if (satdump::satdump_cfg.main_cfg.contains("plugin_settings") && satdump::satdump_cfg.main_cfg["plugin_settings"].contains("firstparty_products"))
-            {
-                auto &cfg = satdump::satdump_cfg.main_cfg["plugin_settings"]["firstparty_products"];
-                if (cfg.contains("eumetsat_credentials_key"))
-                    _loader->eumetsat_user_consumer_credential = cfg["eumetsat_credentials_key"];
-                if (cfg.contains("eumetsat_credentials_secret"))
-                    _loader->eumetsat_user_consumer_secret = cfg["eumetsat_credentials_secret"];
-            }
+            std::string eumetsat_user_consumer_credential = satdump::db->get_user("firstparty_products/eumetsat_credentials_key", "");
+            std::string eumetsat_user_consumer_secret = satdump::db->get_user("firstparty_products/eumetsat_credentials_secret", "");
+
+            if (eumetsat_user_consumer_credential.size())
+                _loader->eumetsat_user_consumer_credential = eumetsat_user_consumer_credential;
+            if (eumetsat_user_consumer_secret.size())
+                _loader->eumetsat_user_consumer_secret = eumetsat_user_consumer_secret;
         }
     }
 
@@ -68,10 +68,9 @@ public:
     {
         if (_loader == nullptr)
             return;
-        satdump::satdump_cfg.main_cfg["plugin_settings"]["firstparty_products"] = {};
-        auto &cfg = satdump::satdump_cfg.main_cfg["plugin_settings"]["firstparty_products"];
-        cfg["eumetsat_credentials_key"] = _loader->eumetsat_user_consumer_credential;
-        cfg["eumetsat_credentials_secret"] = _loader->eumetsat_user_consumer_secret;
+
+        satdump::db->set_user("firstparty_products/eumetsat_credentials_key", _loader->eumetsat_user_consumer_credential);
+        satdump::db->set_user("firstparty_products/eumetsat_credentials_secret", _loader->eumetsat_user_consumer_secret);
     }
 
     static void renderExplorerLoaderButton(const satdump::explorer::RenderLoadMenuElementsEvent &evt)

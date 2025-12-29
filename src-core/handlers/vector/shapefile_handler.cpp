@@ -1,10 +1,10 @@
 #include "shapefile_handler.h"
 
-#include "core/config.h"
 #include "core/resources.h"
 #include "dbf_file/dbf_file.h"
 #include "image/text.h"
 #include "imgui/imgui.h"
+#include "init.h"
 #include "logger.h"
 
 #include "core/style.h"
@@ -28,19 +28,14 @@ namespace satdump
             if (std::filesystem::exists(db))
             {
                 dbf_file = dbf_file::readDbfFile(db);
-                logger->critical("JSON : \n%s\n", dbf_file.dump(4).c_str());
+                // logger->critical("JSON : \n%s\n", dbf_file.dump(4).c_str());
                 has_dbf = true;
             }
 
-            if (!satdump_cfg.main_cfg["user"]["shapefile_defaults"][std::filesystem::path(shapefile_name).stem().string()].is_null())
-                setConfig(satdump_cfg.main_cfg["user"]["shapefile_defaults"][std::filesystem::path(shapefile_name).stem().string()]);
+            setConfig(satdump::db->get_user_json("shapefile_defaults/" + std::filesystem::path(shapefile_name).stem().string()));
         }
 
-        ShapefileHandler::~ShapefileHandler()
-        {
-            satdump_cfg.main_cfg["user"]["shapefile_defaults"][std::filesystem::path(shapefile_name).stem().string()] = getConfig();
-            satdump_cfg.saveUser();
-        }
+        ShapefileHandler::~ShapefileHandler() { satdump::db->set_user_json("shapefile_defaults/" + std::filesystem::path(shapefile_name).stem().string(), getConfig()); }
 
         void ShapefileHandler::drawMenu()
         {

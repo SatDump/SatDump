@@ -64,8 +64,10 @@ public:
         while (start_pos < (int)xy.size() && xvalue > xy[start_pos].first)
             start_pos++;
 
-        if (start_pos + 1 == (int)xy.size())
+        if (start_pos + 1 == (int)xy.size() )
             start_pos--;
+        if (start_pos >= (int)xy.size() )
+            start_pos = xy.size()-2;
         if (start_pos == 0)
             start_pos++;
 

@@ -69,7 +69,7 @@ namespace satdump
             catch (std::exception &e)
             {
                 logger->error("Fatal error running pipeline : " + std::string(e.what()));
-                return;
+                goto exit_handler;
             }
 
             logger->info("Done! Goodbye");
@@ -91,9 +91,10 @@ namespace satdump
                 }
             }
 
-            pipeline_name = "PROCESSING_DONE"; // TODOREWORK MASSIVE HACK!
-
             eventBus->fire_event<SetIsDoneProcessingEvent>({});
+
+        exit_handler:
+            pipeline_name = "PROCESSING_DONE"; // TODOREWORK MASSIVE HACK!
         }
 
         void OffProcessingHandler::drawMenu() {}

@@ -99,8 +99,14 @@ namespace satdump
                     style::beginDisabled();
 
                 // Main channel selection combo. Setups calibration if available
-                if (ImGui::Combo("##imageproductchannelcombo", &channel_selection_curr_id, channel_selection_box_str.c_str()))
+                if (product->images.size() > 100 ? ImGui::InputInt("##imageproductchannelcombo", &channel_selection_curr_id)
+                                                 : ImGui::Combo("##imageproductchannelcombo", &channel_selection_curr_id, channel_selection_box_str.c_str()))
                 {
+                    if (channel_selection_curr_id >= product->images.size())
+                        channel_selection_curr_id = product->images.size() - 1;
+                    if (channel_selection_curr_id < 0)
+                        channel_selection_curr_id = 0;
+
                     if (channel_selection_curr_id != -1)
                     {
                         if (channels_calibrated_ranges.count(channel_selection_curr_id) && channels_calibrated_ranges[channel_selection_curr_id].size() > 0)

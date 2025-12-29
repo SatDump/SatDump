@@ -1,19 +1,20 @@
+#define SATDUMP_DLL_EXPORT 1
+#include "init.h"
+#include "core/config.h"
+#include "core/plugin.h"
+#include "core/resources.h"
+#include "logger.h"
+#include "satdump_vars.h"
+#include <filesystem>
+
 #include "db/db_handler.h"
 #include "db/iers/iers_handler.h"
 #include "db/tle/tle_handler.h"
 #include <memory>
-#define SATDUMP_DLL_EXPORT 1
 
 #include "pipeline/module.h"
 #include "pipeline/pipeline.h"
 
-#include "core/config.h"
-#include "core/plugin.h"
-#include "core/resources.h"
-#include "init.h"
-#include "logger.h"
-#include "satdump_vars.h"
-#include <filesystem>
 
 #include "common/tracking/tle.h"
 

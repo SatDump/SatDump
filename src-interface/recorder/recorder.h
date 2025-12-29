@@ -16,6 +16,7 @@
 #include "common/widgets/waterfall_plot.h"
 
 #include "common/widgets/pipeline_selector.h"
+#include "init.h"
 #include "pipeline/live_pipeline.h"
 
 #include "tracking/tracking_widget.h"
@@ -221,11 +222,7 @@ namespace satdump
         RecorderApplication();
         ~RecorderApplication();
 
-        void save_settings()
-        {
-            satdump_cfg.main_cfg["user"]["recorder_state"] = serialize_config();
-            satdump_cfg.saveUser();
-        }
+        void save_settings() { db->set_user_json("recorder_state", serialize_config()); }
 
     public:
         std::string getID() { return "recorder"; }
