@@ -19,10 +19,7 @@ namespace satdump
         std::vector<char *> vec;
         args.insert(args.begin(), "satdump legacy");
         for (auto &a : args)
-        {
-            logger->critical(a);
             vec.push_back((char *)a.c_str());
-        }
 
         exit(main_old(vec.size(), vec.data()));
     }
