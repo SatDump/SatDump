@@ -1,4 +1,5 @@
 #include "backend.h"
+#include "cli/recstart.h"
 #include "common/cli_utils.h"
 #include "common/detect_header.h"
 #include "core/cli/cli.h"
@@ -14,6 +15,7 @@
 #include "main_ui.h"
 #include "nfd.h"
 // #include "processing.h"
+#include "recorder/recorder.h"
 #include "satdump_vars.h"
 #include <GLFW/glfw3.h>
 #include <exception>
@@ -228,6 +230,14 @@ int main(int argc, char *argv[])
     satdump::initSatdump(true);
     if (!verbose)
         logger->set_level(slog::LOG_TRACE);
+
+    // Register our own commands
+    satdump::eventBus->register_handler<satdump::cli::RegisterSubcommandEvent>(
+        [](const satdump::cli::RegisterSubcommandEvent &evt)
+        {
+            if (evt.is_gui)
+                evt.cmd_handlers.push_back(std::make_shared<satdump::RecStartCmdHandler>());
+        });
 
     // Parse commands, if present
     satdump::cli::CommandHandler cli_handler(true);
