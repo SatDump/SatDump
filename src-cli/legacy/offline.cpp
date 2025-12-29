@@ -31,8 +31,6 @@ int main_offline(int argc, char *argv[])
 
     // Init SatDump
     satdump::tle_file_override = parameters.contains("tle_override") ? parameters["tle_override"].get<std::string>() : "";
-    satdump::initSatdump();
-    completeLoggerInit();
 
     // logger->warn("\n" + parameters.dump(4));
     // exit(0);

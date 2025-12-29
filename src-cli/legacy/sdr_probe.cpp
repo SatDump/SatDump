@@ -1,17 +1,11 @@
-#include "logger.h"
-#include "init.h"
 #include "sdr_probe.h"
-#include "common/dsp_source_sink/dsp_sample_source.h"
 #include "common/dsp_source_sink/dsp_sample_sink.h"
+#include "common/dsp_source_sink/dsp_sample_source.h"
+#include "init.h"
+#include "logger.h"
 
 void sdr_probe()
 {
-    // We don't wanna spam with init this time around
-    logger->set_level(slog::LOG_ERROR);
-    satdump::initSatdump();
-    completeLoggerInit();
-    logger->set_level(slog::LOG_TRACE);
-
     dsp::registerAllSources();
     dsp::registerAllSinks();
 
