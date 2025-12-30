@@ -36,7 +36,7 @@ namespace satdump
             fftp->set_input(splitter->add_output("main_fft"), 0);
             fftp->avg_num = 1;
 
-            fft_plot = std::make_shared<widgets::FFTPlot>(fftp->output_fft_buff, 65536, -90, -50, 10);
+            fft_plot = std::make_shared<widgets::FFTPlot>(fftp->output_fft_buff, 8192, -90, -50, 10);
             fft_plot->frequency = 431.8e6;
             fft_plot->enable_freq_scale = true;
 
