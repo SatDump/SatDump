@@ -6,14 +6,17 @@
 #include "imgui/imgui.h"
 #include "init.h"
 #include "instruments/msumr/msumr_tlm.h"
+#include "instruments/msumr/offsets.h"
 #include "logger.h"
 #include "meteor.h"
 #include "nlohmann/json_utils.h"
 #include "products/dataset.h"
+#include "products/image/channel_transform.h"
 #include "products/image_product.h"
 #include "utils/stats.h"
 #include <filesystem>
 #include <fstream>
+#include <string>
 
 namespace meteor
 {
@@ -237,7 +240,8 @@ namespace meteor
 
                 for (int i = 0; i < 6; i++)
                 {
-                    msumr_products.images.push_back({i, "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), msumr_reader.getChannel(i), 10});
+                    msumr_products.images.push_back({i, "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), msumr_reader.getChannel(i), 10,
+                                                     satdump::ChannelTransform().init_affine(1, 1, msumr::get_x_offset(msumr_serial_number, i), 0)});
                     msumr_products.set_channel_wavenumber(i, msu_cfg["wavenumbers"][i].get<double>());
                 }
 
