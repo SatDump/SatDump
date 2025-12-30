@@ -91,7 +91,7 @@ namespace satdump
                         }
                         else
                         {
-                            logger->trace("Disabling unavailable preset : " + cfg["name"].get<std::string>());
+                            logger->debug("Disabling unavailable preset : " + cfg["name"].get<std::string>());
                         }
                     }
                     catch (std::exception &e)

@@ -347,7 +347,7 @@ namespace satdump
                 for (auto &t : calib_cfgs)
                 {
                     product->get_channel_image(t.second.channel);
-                    if (!product->has_calibration() && t.second.unit != "equalized")
+                    if (!product->has_calibration() && t.second.unit != "equalized" && t.second.unit != "sun_angle") // TODOREWORK Exclude units from this check somewhere else!
                         *progress = 0;
                 }
 
@@ -529,8 +529,9 @@ namespace satdump
             {
                 satdump::products::generate_expression_product_composite(product, expression, &dummy);
             }
-            catch (std::exception &)
+            catch (std::exception &e)
             {
+                logger->trace("Composite can't be made because : %s", e.what());
                 return false;
             }
             return dummy == 1;
