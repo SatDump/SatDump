@@ -282,6 +282,7 @@ namespace satdump
                 if (show_waterfall)
                 {
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 15 * ui_scale);
+                    ImGui::SetCursorPosX(9 * ui_scale);
                     waterfall_plot->draw({wfft_widht, wf_height}, true);
                 }
             }
