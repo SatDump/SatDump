@@ -1,6 +1,7 @@
 #include "newrec.h"
 #include "common/widgets/stepped_slider.h"
 #include "core/config.h"
+#include "core/resources.h"
 #include "core/style.h"
 #include "dsp/block.h"
 #include "dsp/device/dev.h"
@@ -34,7 +35,7 @@ namespace satdump
 
             fftp = std::make_shared<ndsp::FFTPanBlock>();
             fftp->set_input(splitter->add_output("main_fft"), 0);
-            fftp->avg_num = 1;
+            fftp->avg_num = 30;
 
             fft_plot = std::make_shared<widgets::FFTPlot>(fftp->output_fft_buff, 8192, -90, -50, 10);
             fft_plot->frequency = 431.8e6;
@@ -43,6 +44,7 @@ namespace satdump
             waterfall_plot = std::make_shared<widgets::WaterfallPlot>(8192, 2000);
             waterfall_plot->set_size(8192);
             waterfall_plot->set_rate(30, 20);
+            waterfall_plot->set_palette(colormaps::loadMap(resources::getResourcePath("waterfall/spectravue.json")));
 
             fftp->on_fft = [this](float *p) { waterfall_plot->push_fft(p); };
 
