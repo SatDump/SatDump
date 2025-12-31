@@ -1,0 +1,24 @@
+{
+    "type": "normal_single_line",
+    "scan_angle": 110.07,
+    "roll_offset": -0.02, //-0.2,
+    "pitch_offset": 0,
+    "yaw_offset": 0.05, //2.9,
+    "timestamp_offset": -0.07,
+    "image_width": 8192,
+    "gcp_spacing_x": 200,
+    "gcp_spacing_y": 200,
+    "interpolate_timestamps": 40,
+    "interpolate_timestamps_scantime": 0.0375,
+    ///////////////////////
+    "timefilter": {
+        "type": "simple",
+        "scan_time": 1.5,
+        "max_diff": 10.0
+    },
+    ///////////////////////
+    "corr_width": 8192,
+    "corr_swath": 2900,
+    "corr_resol": 0.25,
+    "corr_altit": 835
+}
