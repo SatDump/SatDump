@@ -22,6 +22,7 @@
             "name": "AVHRR 543b IR False Color",
             "expression": "chm16,chm15,chm12",
             "image": {
+                "invert": true,
                 "individual_equalize": true
             },
             "description": "descriptions/543b.md"
