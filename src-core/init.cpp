@@ -15,7 +15,6 @@
 #include "pipeline/module.h"
 #include "pipeline/pipeline.h"
 
-
 #include "common/tracking/tle.h"
 
 #include "core/opencl.h"
@@ -45,6 +44,8 @@ namespace satdump
 
     void initSatdump(bool is_gui)
     {
+        auto lvl = logger->get_level();
+        logger->set_level(slog::LOG_INFO);
         logger->info("   _____       __  ____                      ");
         logger->info("  / ___/____ _/ /_/ __ \\__  ______ ___  ____ ");
         logger->info("  \\__ \\/ __ `/ __/ / / / / / / __ `__ \\/ __ \\");
@@ -53,6 +54,7 @@ namespace satdump
         logger->info("                                    /_/      ");
         logger->info("Starting " + getSatDumpVersionName());
         logger->info("");
+        logger->set_level(lvl);
 
 #ifdef _WIN32
         if (std::filesystem::exists("satdump_cfg.json"))
