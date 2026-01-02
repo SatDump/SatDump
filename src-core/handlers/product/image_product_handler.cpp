@@ -388,7 +388,7 @@ namespace satdump
             }
         }
 
-        void ImageProductHandler::saveResult(std::string directory) { img_handler->saveResult(directory); }
+        bool ImageProductHandler::saveResult(std::string directory) { return img_handler->saveResult(directory); }
 
         void ImageProductHandler::drawMenuBar()
         {

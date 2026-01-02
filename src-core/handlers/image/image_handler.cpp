@@ -350,7 +350,11 @@ namespace satdump
         }
 
         // TODOREWORK?
-        void ImageHandler::saveResult(std::string directory) { image::save_img_safe(getImage(), directory + "/" + getSaneName()); }
+        bool ImageHandler::saveResult(std::string directory)
+        {
+            image::save_img_safe(getImage(), directory + "/" + getSaneName());
+            return getImage().size();
+        }
 
         void ImageHandler::do_process()
         {

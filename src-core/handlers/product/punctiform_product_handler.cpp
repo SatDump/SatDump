@@ -145,7 +145,7 @@ namespace satdump
             }
         }
 
-        void PunctiformProductHandler::saveResult(std::string directory)
+        bool PunctiformProductHandler::saveResult(std::string directory)
         {
             // TODOREWORK
             if (current_mode == MODE_DOTMAP || current_mode == MODE_FILLMAP)
@@ -156,7 +156,11 @@ namespace satdump
                 while (std::filesystem::exists(directory + "/img_" + std::to_string(autogen_id) + ".png"))
                     autogen_id++;
                 image::save_img_safe(img, directory + "/img_" + std::to_string(autogen_id) + ".png");
+
+                return img.size();
             }
+
+            return false;
         }
 
         void PunctiformProductHandler::drawMenuBar()

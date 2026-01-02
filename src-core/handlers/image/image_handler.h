@@ -135,7 +135,7 @@ namespace satdump
             std::string getSaneName();
 
             // TODOREWORK document?
-            void saveResult(std::string directory);
+            bool saveResult(std::string directory);
 
             /**
              * @brief Draws the same image Menu Item
@@ -167,6 +167,9 @@ namespace satdump
                 brightness_contrast_brightness_image = 0.0;
                 brightness_contrast_contrast_image = 0.0;
                 remove_background_img = false;
+
+                image.clear();
+                curr_image.clear();
             }
 
             std::string getName() { return image_name; }

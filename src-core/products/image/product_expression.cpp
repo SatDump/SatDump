@@ -531,7 +531,7 @@ namespace satdump
             }
             catch (std::exception &e)
             {
-                logger->trace("Composite can't be made because : %s", e.what());
+                logger->trace("Composite can't be made because : %s [%s]", e.what(), expression.c_str());
                 return false;
             }
             return dummy == 1;
