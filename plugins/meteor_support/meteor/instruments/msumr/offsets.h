@@ -14,6 +14,10 @@ namespace meteor
                 {
                     0,
                     {0, 0, 0, 0, 0, 0},
+                    3, //Meteor-M N°2-3 channel 4 offset -1.6, -1.6
+                    {0, 0, 0, -1.6, 0, 0},
+                    4, //Meteor-M N°2-4 channel 4 offset -2, 1
+                    {0, 0, 0, -2, 0, 0},
                 },
             };
 
