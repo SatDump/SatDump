@@ -526,7 +526,7 @@ namespace fengyun_svissr
         uint8_t last_status[20];
         memset(last_status, 0, 20);
 
-        int last_group_id = 0;
+        size_t last_group_id = 0;
 
         valid_lines = 0;
 
@@ -580,11 +580,11 @@ namespace fengyun_svissr
             // - Subcommunication handling -
 
             // Masked since max GID is 25. Increases reliability
-            int group_id = frame[193] & 0x1f;
+            size_t group_id = frame[193] & 0x1f;
 
             // Each group is transmitted 8 subsequent times - max number is 8, masked for reliability
             // Currently unused. Helpful for a potential logic rewrite to increase performance @ low SNRs
-            // int repeat_id = frame[195] & 0xf;
+            // size_t repeat_id = frame[195] & 0xf;
 
             if (group_id != last_group_id)
             {
