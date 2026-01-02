@@ -385,6 +385,11 @@ namespace satdump
                 for (auto &l : lut_cfgs)
                 {
                     logger->trace("Needs LUT " + l.path + " as " + l.token);
+
+                    // LUT does not exist, abort!
+                    if (!std::filesystem::exists(resources::getResourcePath(l.path)))
+                        throw satdump_exception("A specified LUT does not exist");
+
                     std::shared_ptr<image::Image> lutimg = std::make_shared<image::Image>();
                     image::load_img(*lutimg, resources::getResourcePath(l.path));
                     equParser.DefineFunUserData(l.token.c_str(), lutProcess, lutimg.get());
