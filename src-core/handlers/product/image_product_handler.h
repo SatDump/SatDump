@@ -69,7 +69,7 @@ namespace satdump
             nlohmann::json getConfig();
             void resetConfig() { img_handler->resetConfig(); }
 
-            void saveResult(std::string directory);
+            bool saveResult(std::string directory);
 
             void addSubHandler(std::shared_ptr<Handler> handler, bool ontop = false)
             {

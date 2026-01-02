@@ -1,0 +1,134 @@
+{
+    "ominous_tlm": {
+        "name": "Ominous TLM (10k)",
+        "live": [
+            1,
+            2
+        ],
+        "frequencies": [
+            [
+                "VHF",
+                137.5e6
+            ]
+        ],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "pm_demod",
+                "parameters": {
+                    "symbolrate": 10e3,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.5,
+                    "clock_omega_relative_limit": 0.001
+                }
+            },
+            "cadu": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 2072,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 1,
+                    "rs_type": "rs223",
+                    "rs_usecheck": true
+                }
+            },
+            "products": {
+                "module": "ominous_instruments"
+            }
+        }
+    },
+    "ominous_lrpt": {
+        "name": "Ominous LRPT (3/4, 80k)",
+        "live": [
+            1,
+            2
+        ],
+        "frequencies": [
+            [
+                "Primary",
+                137.9e6
+            ],
+            [
+                "Backup",
+                137.1e6
+            ]
+        ],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "psk_demod",
+                "parameters": {
+                    "constellation": "qpsk",
+                    "symbolrate": 80e3,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.002
+                }
+            },
+            "cadu": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
+                    "constellation": "qpsk",
+                    "cadu_size": 2072,
+                    "conv_rate": "3/4",
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 1,
+                    "rs_type": "rs223",
+                    "rs_usecheck": true
+                }
+            },
+            "products": {
+                "module": "ominous_instruments"
+            }
+        }
+    },
+    "ominous_hrpt": {
+        "name": "Ominous HRPT (2.5M)",
+        "live": [
+            1,
+            2
+        ],
+        "frequencies": [
+            [
+                "Primary",
+                137.9e6
+            ],
+            [
+                "Backup",
+                137.1e6
+            ]
+        ],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "psk_demod",
+                "parameters": {
+                    "constellation": "qpsk",
+                    "symbolrate": 2.5e6,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.002
+                }
+            },
+            "cadu": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
+                    "constellation": "qpsk",
+                    "cadu_size": 2072,
+                    "rs_i": 1,
+                    "rs_type": "rs223",
+                    "rs_usecheck": true
+                }
+            },
+            "products": {
+                "module": "ominous_instruments"
+            }
+        }
+    }
+}

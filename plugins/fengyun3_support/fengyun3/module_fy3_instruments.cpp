@@ -725,7 +725,10 @@ namespace fengyun3
 
                 satdump::products::ImageProduct mersi3_products;
                 mersi3_products.instrument_name = "mersi3";
-                mersi3_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_f_mersi3.json")), satellite_tle, mersi3_reader.timestamps);
+                if (d_satellite == FY_3F)
+                    mersi3_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_f_mersi3.json")), satellite_tle, mersi3_reader.timestamps);
+                else if (d_satellite == FY_3H)
+                    mersi3_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/fengyun_h_mersi3.json")), satellite_tle, mersi3_reader.timestamps);
 
                 // Channel offsets relative to Ch1
                 int offset[25] = {

@@ -286,6 +286,12 @@ option(PLUGIN_SEAWIFS "Enable the SeaWIFs support plugin" OFF)
 if(PLUGIN_SEAWIFS OR PLUGINS_ALL)
   add_subdirectory(seawifs_support)
 endif()
+
+option(PLUGIN_OMINOUS "Enable the Ominous support plugin" OFF)
+
+if(PLUGIN_OMINOUS)
+  add_subdirectory(ominous_support)
+endif()
 # ##############################################################################
 option(PLUGIN_SIMD_SSE41 "Enable SIMD SSE41 plugin" ON)
 

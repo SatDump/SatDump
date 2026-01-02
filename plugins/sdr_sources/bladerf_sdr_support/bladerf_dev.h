@@ -66,7 +66,7 @@ namespace satdump
                     while (thread_should_run_rx)
                     {
                         if (bladerf_sync_rx(bladerf_dev_obj, sample_buffer, sample_buffer_size, &meta, 4000) != 0)
-                            std::this_thread::sleep_for(std::chrono::seconds(1)); // TODOREWORK handle errors better?
+                            break;
 
                         if (rx_ch_number == 1)
                         {
@@ -139,7 +139,7 @@ namespace satdump
                             else
                                 volk_32f_s32f_convert_16i(sample_buffer, (float *)iblk.getSamples<complex_t>(), 4096.0f, iblk.size * 2);
                             if (bladerf_sync_tx(bladerf_dev_obj, sample_buffer, iblk.size, &meta, 4000) != 0)
-                                std::this_thread::sleep_for(std::chrono::seconds(1));
+                                break;
 
                             inputs[0].fifo->free(iblk);
                         }

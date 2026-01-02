@@ -240,8 +240,9 @@ namespace meteor
 
                 for (int i = 0; i < 6; i++)
                 {
-                    msumr_products.images.push_back({i, "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), msumr_reader.getChannel(i), 10,
-                                                     satdump::ChannelTransform().init_affine(1, 1, msumr::get_x_offset(msumr_serial_number, i), 0)});
+                    msumr_products.images.push_back(
+                        {i, "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), msumr_reader.getChannel(i), 10,
+                         satdump::ChannelTransform().init_affine(1, 1, msumr::get_x_offset(msumr_serial_number, i).first, msumr::get_x_offset(msumr_serial_number, i).second)});
                     msumr_products.set_channel_wavenumber(i, msu_cfg["wavenumbers"][i].get<double>());
                 }
 

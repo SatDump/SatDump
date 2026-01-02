@@ -14,6 +14,8 @@ namespace satdump
         {
             std::shared_ptr<handlers::ProductHandler> handler = handlers::getProductHandlerForProduct(p);
 
+            bool use_preset_cache = p->d_use_preset_cache;
+
             auto instr_cfg = handler->getInstrumentCfg();
             if (instr_cfg.contains("presets"))
             {
@@ -27,10 +29,26 @@ namespace satdump
 
                     try
                     {
+                        // If using preset cache, don't redo those we did already
+                        if (use_preset_cache)
+                        {
+                            if (p->contents.contains("preset_cache") &&                                 //
+                                p->contents["preset_cache"].contains(cfg["name"].get<std::string>()) && //
+                                p->contents["preset_cache"][cfg["name"].get<std::string>()].get<bool>())
+                            {
+                                // logger->critical("SKIP COMPOSITE " + cfg["name"].get<std::string>());
+                                continue;
+                            }
+                        }
+
                         handler->resetConfig();
                         handler->setConfig(cfg);
                         handler->process();
-                        handler->saveResult(directory);
+                        bool valid = handler->saveResult(directory);
+
+                        // Mark as done if using cache on success
+                        if (use_preset_cache && valid)
+                            p->contents["preset_cache"][cfg["name"].get<std::string>()] = true;
                     }
                     catch (std::exception &e)
                     {

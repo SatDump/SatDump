@@ -1,3 +1,4 @@
+#include "core/config.h"
 #include "core/resources.h"
 #include "image/image.h"
 #include "image/io.h"
@@ -6,6 +7,7 @@
 #include "nlohmann/json.hpp"
 #include "nlohmann/json_utils.h"
 #include "products/image_product.h"
+#include "products/product_process.h"
 #include "utils/string.h"
 #include "xrit/elektro/specific_proc.h"
 #include "xrit/identify.h"
@@ -470,11 +472,29 @@ namespace satdump
                 tryApplyELEKTROCalib(p.pro);
 
             if (!in_memory_mode)
+            {
                 pro->save(directory_path);
+
+                // TODOREWORK Check settings!
+                if (satdump_cfg.shouldAutoprocessProducts())
+                {
+                    process_composites(pro, directory_path);
+                    pro->save(directory_path);
+                }
+            }
 
             // Save the actual img
             if (!in_memory_mode)
                 image::save_img(img, directory_path + filename);
+        }
+
+        void XRITChannelProcessor::process_composites(std::shared_ptr<products::ImageProduct> pro, std::string pro_path)
+        {
+            // Process // TODOREWORK Document how to trigger the cache / lazyload
+            pro->d_use_preset_cache = true;
+            pro->contents["lazyload_path"] = pro_path;
+            products::process_product_with_handler(pro, pro_path);
+            pro->contents.erase("lazyload_path");
         }
     } // namespace xrit
 } // namespace satdump

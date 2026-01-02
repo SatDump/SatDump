@@ -385,6 +385,11 @@ namespace satdump
                 for (auto &l : lut_cfgs)
                 {
                     logger->trace("Needs LUT " + l.path + " as " + l.token);
+
+                    // LUT does not exist, abort!
+                    if (!std::filesystem::exists(resources::getResourcePath(l.path)))
+                        throw satdump_exception("A specified LUT does not exist");
+
                     std::shared_ptr<image::Image> lutimg = std::make_shared<image::Image>();
                     image::load_img(*lutimg, resources::getResourcePath(l.path));
                     equParser.DefineFunUserData(l.token.c_str(), lutProcess, lutimg.get());
@@ -411,6 +416,14 @@ namespace satdump
                         std::string index = tkt.substr(2);
                         logger->trace("Needs channel " + index);
                         auto &h = product->get_channel_image(index);
+
+                        // TODOREWORK?
+                        if (product->contents.contains("lazyload_path"))
+                        {
+                            logger->trace("Load " + h.channel_name);
+                            image::load_img(h.image, product->contents["lazyload_path"].get<std::string>() + "/" + h.filename);
+                        }
+
                         auto nt = new TokenS(h.image, h.ch_transform);
                         nt->ch_idx = h.abs_index;
                         nt->width = h.image.width();
@@ -428,6 +441,14 @@ namespace satdump
                         std::string index = calib_cfgs[tkt].channel;
                         logger->trace("Needs calibrated channel " + index + " as " + c.unit);
                         auto &h = product->get_channel_image(index);
+
+                        // TODOREWORK?
+                        if (product->contents.contains("lazyload_path"))
+                        {
+                            logger->trace("Load " + h.channel_name);
+                            image::load_img(h.image, product->contents["lazyload_path"].get<std::string>() + "/" + h.filename);
+                        }
+
                         if (c.unit == "equalized") // TODOREWORK this is an exception?
                         {
                             other_images[ntkts] = h.image;
@@ -520,6 +541,16 @@ namespace satdump
             {
                 throw satdump_exception(e.GetMsg());
             }
+
+            // TODOREWORK?
+            if (product->contents.contains("lazyload_path"))
+            {
+                for (auto &img : product->images)
+                {
+                    logger->trace("Unload " + img.channel_name);
+                    img.image.clear();
+                }
+            }
         }
 
         bool check_expression_product_composite(satdump::products::ImageProduct *product, std::string expression)
@@ -531,7 +562,7 @@ namespace satdump
             }
             catch (std::exception &e)
             {
-                logger->trace("Composite can't be made because : %s", e.what());
+                logger->trace("Composite can't be made because : %s [%s]", e.what(), expression.c_str());
                 return false;
             }
             return dummy == 1;
