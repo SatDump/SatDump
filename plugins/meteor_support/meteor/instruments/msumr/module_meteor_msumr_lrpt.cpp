@@ -282,8 +282,8 @@ namespace meteor
                 logger->info("MSU-MR Channel %d Lines  : %zu", i + 1, img.height());
                 if (img.size() > 0)
                 {
-                    msumr_images.push_back(
-                        {i, "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, 10, satdump::ChannelTransform().init_affine(1, 1, msumr::get_x_offset(msumr_serial_number, i), 0)});
+                    msumr_images.push_back({i, "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, 10,
+                                            satdump::ChannelTransform().init_affine(1, 1, msumr::get_x_offset(msumr_serial_number, i).first, msumr::get_x_offset(msumr_serial_number, i).second)});
                     lrpt_channels |= 1 << i;
                 }
 
