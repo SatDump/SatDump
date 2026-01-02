@@ -14,7 +14,7 @@ namespace satdump
         {
             std::shared_ptr<handlers::ProductHandler> handler = handlers::getProductHandlerForProduct(p);
 
-            bool use_preset_cache = p->contents.contains("use_preset_cache") ? p->contents["use_preset_cache"].get<bool>() : false;
+            bool use_preset_cache = p->d_use_preset_cache;
 
             auto instr_cfg = handler->getInstrumentCfg();
             if (instr_cfg.contains("presets"))

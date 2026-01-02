@@ -28,6 +28,7 @@ namespace satdump
          * @param contents raw JSON product data and/or description. Usually not accessed directly
          * @param instrument_name name (ID) of the instrument that generated the data, or other ID type if needed
          * @param type type of the product, set by the class using this as a base
+         * @param d_use_preset_cache advanced parameter, to tell the product processor to keep track of the presets that could already be generated as to not redo the work
          */
         class Product
         {
@@ -97,6 +98,9 @@ namespace satdump
              * @return the ID
              */
             std::string get_product_id() { return contents["product_id"].get<std::string>(); }
+
+        public:
+            bool d_use_preset_cache = false;
 
         public:
             /**

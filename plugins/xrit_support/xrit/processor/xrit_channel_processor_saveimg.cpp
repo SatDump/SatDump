@@ -490,24 +490,11 @@ namespace satdump
 
         void XRITChannelProcessor::process_composites(std::shared_ptr<products::ImageProduct> pro, std::string pro_path)
         {
-            // Load images
-            for (auto &img : pro->images)
-            {
-                logger->trace("Load " + img.channel_name);
-                image::load_img(img.image, pro_path + "/" + img.filename);
-            }
-
-            // Process // TODOREWORK Document how to trigger the cache
-            pro->contents["use_preset_cache"] = true;
+            // Process // TODOREWORK Document how to trigger the cache / lazyload
+            pro->d_use_preset_cache = true;
+            pro->contents["lazyload_path"] = pro_path;
             products::process_product_with_handler(pro, pro_path);
-            pro->contents.erase("use_preset_cache");
-
-            // Unload images
-            for (auto &img : pro->images)
-            {
-                logger->trace("Unload " + img.channel_name);
-                img.image.clear();
-            }
+            pro->contents.erase("lazyload_path");
         }
     } // namespace xrit
 } // namespace satdump

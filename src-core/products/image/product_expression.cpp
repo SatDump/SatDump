@@ -411,6 +411,14 @@ namespace satdump
                         std::string index = tkt.substr(2);
                         logger->trace("Needs channel " + index);
                         auto &h = product->get_channel_image(index);
+
+                        // TODOREWORK?
+                        if (product->contents.contains("lazyload_path"))
+                        {
+                            logger->trace("Load " + h.channel_name);
+                            image::load_img(h.image, product->contents["lazyload_path"].get<std::string>() + "/" + h.filename);
+                        }
+
                         auto nt = new TokenS(h.image, h.ch_transform);
                         nt->ch_idx = h.abs_index;
                         nt->width = h.image.width();
@@ -428,6 +436,14 @@ namespace satdump
                         std::string index = calib_cfgs[tkt].channel;
                         logger->trace("Needs calibrated channel " + index + " as " + c.unit);
                         auto &h = product->get_channel_image(index);
+
+                        // TODOREWORK?
+                        if (product->contents.contains("lazyload_path"))
+                        {
+                            logger->trace("Load " + h.channel_name);
+                            image::load_img(h.image, product->contents["lazyload_path"].get<std::string>() + "/" + h.filename);
+                        }
+
                         if (c.unit == "equalized") // TODOREWORK this is an exception?
                         {
                             other_images[ntkts] = h.image;
@@ -519,6 +535,16 @@ namespace satdump
             catch (mu::ParserError &e)
             {
                 throw satdump_exception(e.GetMsg());
+            }
+
+            // TODOREWORK?
+            if (product->contents.contains("lazyload_path"))
+            {
+                for (auto &img : product->images)
+                {
+                    logger->trace("Unload " + img.channel_name);
+                    img.image.clear();
+                }
             }
         }
 
