@@ -203,9 +203,16 @@ namespace satdump
                 ratio = (float)dev->get_outputs()[0].fifo->size_approx() / (float)dev->get_outputs()[0].fifo->max_capacity();
             ImGui::ProgressBar(ratio);
 
-            if (!deviceRunning || recording)
+            bool _recording = recording;
+            if (!deviceRunning || _recording)
                 style::beginDisabled();
             rec_type.draw_combo();
+
+            if (!deviceRunning || _recording)
+                style::endDisabled();
+
+            if (!deviceRunning)
+                style::beginDisabled();
 
             if (!recording)
             {
@@ -243,7 +250,7 @@ namespace satdump
                 }
             }
 
-            if (!deviceRunning || recording)
+            if (!deviceRunning)
                 style::endDisabled();
         }
 
