@@ -222,7 +222,7 @@ namespace bochum
             ui_mtx.unlock();
         }
         
-        if (abs(curr_freq - freq) > 1e6)
+        if (fabs(curr_freq - freq) > 1e6)
         {
             satdump::eventBus->fire_event<satdump::RecorderSetFrequencyEvent>({freq});
             logger->warn("[Bochum] Set frequency to %f", freq);
