@@ -1,0 +1,21 @@
+#pragma once
+
+#include "tool.h"
+
+namespace satdump
+{
+    class DeinterleaveTool : public BitViewTool
+    {
+    private:
+        int idepth = 2;
+        int icnt = 1;
+        bool should_process = false;
+
+    public:
+        std::string getName();
+        void renderMenu(std::shared_ptr<BitContainer> &container, bool is_busy);
+        bool needToProcess();
+        void setProcessed();
+        void process(std::shared_ptr<BitContainer> &container, float &process_progress);
+    };
+} // namespace satdump

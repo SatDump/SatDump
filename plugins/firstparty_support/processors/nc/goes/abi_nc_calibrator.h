@@ -48,8 +48,10 @@ namespace satdump
 
                 if (calibration_kappa[channel] > 0)
                     return rad * calibration_kappa[channel];
-                else
+                else if (is_spectral)
                     return spectral_radiance_to_radiance(rad, wavenm[channel]);
+                else
+                    return rad;
             }
         };
     } // namespace firstparty

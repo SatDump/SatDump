@@ -232,6 +232,7 @@ namespace satdump
                 calib_cfg["vars"]["scale"][channel_id] = all_images[i].calibration_scale;
                 calib_cfg["vars"]["offset"][channel_id] = all_images[i].calibration_offset;
                 calib_cfg["vars"]["kappa"][channel_id] = all_images[i].kappa;
+                calib_cfg["vars"]["is_spectral"] = false;
             }
             abi_products->set_calibration("goes_nc_abi", calib_cfg);
 
