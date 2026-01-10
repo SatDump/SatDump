@@ -166,6 +166,9 @@ namespace satdump
                     final_y += img.imgs[i].height();
                 }
 
+                // Temporary?
+                final_y = final_x;
+
                 final_imgs[i] = image::Image(16, final_x, final_y, 1);
 
                 if (final_x > largest_width)
