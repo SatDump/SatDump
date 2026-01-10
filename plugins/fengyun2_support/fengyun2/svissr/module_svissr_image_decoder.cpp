@@ -141,9 +141,8 @@ namespace fengyun_svissr
     {
         if (!group_retransmissions.empty() && current_subcom_frame.size() / SUBCOM_GROUP_SIZE == 24)
         {
-
             // Process the last group
-            Group last_group = majority_law_vec(group_retransmissions);
+            Group last_group = satdump::majority_law_vec(group_retransmissions);
             group_retransmissions.clear();
 
             // Add group to the frame
@@ -231,7 +230,7 @@ namespace fengyun_svissr
         logger->debug("Pulled %d subcommunication frames", subcommunication_frames.size());
         if (!subcommunication_frames.empty())
         {
-            final_subcom_frame = majority_law_vec(subcommunication_frames);
+            final_subcom_frame = satdump::majority_law_vec(subcommunication_frames);
 
             // - Integrity check -
             int errors = get_spare_errors(final_subcom_frame);
@@ -600,7 +599,7 @@ namespace fengyun_svissr
                     if (!group_retransmissions.empty())
                     {
                         // The group is finished, push back the result of majority law to the minor frame set
-                        Group group = majority_law_vec(group_retransmissions);
+                        Group group = satdump::majority_law_vec(group_retransmissions);
                         current_subcom_frame.insert(current_subcom_frame.end(), group.begin(), group.end());
 
                         group_retransmissions.clear();
