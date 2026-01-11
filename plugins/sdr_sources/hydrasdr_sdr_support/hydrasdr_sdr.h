@@ -2,7 +2,7 @@
 
 #include "common/dsp_source_sink/dsp_sample_source.h"
 #ifdef __ANDROID__
-#include "airspy.h"
+#include "hydrasdr.h"
 #else
 #include <libhydrasdr/hydrasdr.h>
 #endif

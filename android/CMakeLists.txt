@@ -97,6 +97,11 @@ add_library(airspy STATIC deps/libairspy/airspy.c deps/libairspy/iqconverter_flo
 target_include_directories(airspy PRIVATE deps/libairspy/ deps/libusb)
 target_link_libraries(airspy PRIVATE usb)
 
+# LibHydraSDR
+add_library(hydrasdr STATIC deps/libhydrasdr/hydrasdr.c deps/libairspy/iqconverter_float.c deps/libairspy/iqconverter_int16.c)
+target_include_directories(hydrasdr PRIVATE deps/libhydrasdr/ deps/libusb)
+target_link_libraries(hydrasdr PRIVATE usb)
+
 # LibAirspyHF
 add_library(airspyhf STATIC deps/libairspyhf/airspyhf.c deps/libairspyhf/iqbalancer.c)
 target_include_directories(airspyhf PRIVATE deps/libairspyhf/ deps/libusb)
