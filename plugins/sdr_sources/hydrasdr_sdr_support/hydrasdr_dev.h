@@ -57,7 +57,7 @@ namespace satdump
                 p["serial"]["disable"] = is_started;
 
                 if (!p.contains("samplerate"))
-                    add_param_list(p, "samplerate", "samplerate", {2.5e6, 3e6, 6e6, 10e6});
+                    add_param_list(p, "samplerate", "samplerate", {2.5e6, 5e6, 10e6});
                 p["samplerate"]["disable"] = is_started;
 
                 add_param_list(p, "gain_type", "string", {"sensitive", "linear", "manual"}, "Gain Type");

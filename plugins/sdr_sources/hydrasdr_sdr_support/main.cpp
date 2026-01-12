@@ -3,7 +3,6 @@
 #include "dsp/flowgraph/dsp_flowgraph_handler.h"
 #include "hydrasdr_dev.h"
 #include "hydrasdr_sdr.h"
-#include "logger.h"
 
 class HydraDRSupport : public satdump::Plugin
 {

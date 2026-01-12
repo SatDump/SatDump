@@ -1,9 +1,7 @@
+#include "airspy_dev.h"
 #include "airspy_sdr.h"
 #include "core/plugin.h"
 #include "dsp/flowgraph/dsp_flowgraph_handler.h"
-#include "logger.h"
-
-#include "airspy_dev.h"
 
 class AirspySDRSupport : public satdump::Plugin
 {
