@@ -257,6 +257,8 @@ void ImageViewWidget::draw(ImVec2 win_size)
         ImPlot::PopStyleVar();
     }
 
+    ImGui::Dummy(ImVec2(0.0f, 0.0f)); // To avoid triggerring a weird assertion
+
     ImGui::EndChild();
     image_mtx.unlock();
 }
