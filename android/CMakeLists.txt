@@ -144,6 +144,7 @@ add_subdirectory(.. ${CMAKE_BINARY_DIR}/all_libs)
 add_library(android_imgui SHARED
   ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/backend.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/android_dialogs.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/imgui_image.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/imgui_backends/imgui_impl_android.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/imgui_backends/imgui_impl_opengl3.cpp

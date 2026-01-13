@@ -1,5 +1,4 @@
 #include "widget.h"
-#include "android_dialogs.h"
 #include "core/style.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
@@ -69,19 +68,11 @@ bool FileSelectWidget::draw(std::string hint)
     {
         if (!directory)
         {
-#ifdef __ANDROID__
-            show_select_file_dialog();
-#else
             file_select = new fileutils::FileSelTh({{"All Files", "*"}}, default_dir); // TODOREWORK Selection Text?
-#endif
         }
         else
         {
-#ifdef __ANDROID__
-            show_select_directory_dialog();
-#else
             dir_select = new fileutils::DirSelTh(default_dir); // TODOREWORK Selection Text?
-#endif
         }
 
         waiting_for_res = true;
@@ -93,18 +84,7 @@ bool FileSelectWidget::draw(std::string hint)
     if (waiting_for_res)
     {
         std::string get = "";
-#ifdef __ANDROID__
-        if (!directory)
-            get = get_select_file_dialog_result();
-        else
-            get = get_select_directory_dialog_result();
-        if (get != "")
-        {
-            if (get == "NO_PATH_SELECTED")
-                waiting_for_res = false;
-            else
-            {
-#else
+
         bool is_ready = (directory ? dir_select->is_ready() : file_select->is_ready());
         if (is_ready)
         {
@@ -126,8 +106,6 @@ bool FileSelectWidget::draw(std::string hint)
                 waiting_for_res = false;
             else
             {
-
-#endif
                 path = get;
                 changed |= true;
                 waiting_for_res = false;

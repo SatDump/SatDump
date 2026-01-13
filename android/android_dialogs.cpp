@@ -1,12 +1,11 @@
 #include "android_dialogs.h"
 
-#ifdef __ANDROID__
+#include "logger.h"
+#include <android/asset_manager.h>
 #include <android/log.h>
 #include <android_native_app_glue.h>
-#include <android/asset_manager.h>
-#include "logger.h"
 
-struct android_app *g_App = nullptr;
+extern struct android_app *g_App;
 
 void show_select_file_dialog()
 {
@@ -131,4 +130,3 @@ std::string get_select_directory_dialog_result()
 
     return str;
 }
-#endif

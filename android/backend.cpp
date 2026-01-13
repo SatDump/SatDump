@@ -1,5 +1,6 @@
 #include "backend.h"
 #include "core/exception.h"
+#include "logger.h"
 
 extern struct android_app *g_App;
 extern EGLDisplay g_EglDisplay;
@@ -7,10 +8,10 @@ extern EGLSurface g_EglSurface;
 
 float funcDeviceScale()
 {
-    JavaVM* java_vm = g_App->activity->vm;
-    JNIEnv* java_env = NULL;
+    JavaVM *java_vm = g_App->activity->vm;
+    JNIEnv *java_env = NULL;
 
-    jint jni_return = java_vm->GetEnv((void**)&java_env, JNI_VERSION_1_6);
+    jint jni_return = java_vm->GetEnv((void **)&java_env, JNI_VERSION_1_6);
     if (jni_return == JNI_ERR)
         throw satdump_exception("Could not get JNI environement");
 
@@ -58,13 +59,13 @@ std::pair<int, int> funcBeginFrame()
     ImGui_ImplAndroid_NewFrame();
     ImGui::NewFrame();
 
-    return { (int)width, (int)height };
+    return {(int)width, (int)height};
 }
 
 void funcEndFrame()
 {
     ImGui::Render();
-    ImGuiIO& io = ImGui::GetIO();
+    ImGuiIO &io = ImGui::GetIO();
     glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
     glClearColor(style::theme.frame_bg.Value.x, style::theme.frame_bg.Value.y, style::theme.frame_bg.Value.z, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -73,9 +74,35 @@ void funcEndFrame()
     eglSwapBuffers(g_EglDisplay, g_EglSurface);
 }
 
-void funcSetIcon(uint8_t*, int, int)
+void funcSetIcon(uint8_t *, int, int)
 {
     // Not implemented on Android
+}
+
+#include "android_dialogs.h"
+
+std::string selectFolderDialog(std::string default_path)
+{
+    show_select_directory_dialog();
+    std::string out = "";
+    while (out == "")
+        out = get_select_directory_dialog_result();
+    return out == "NO_PATH_SELECTED" ? "" : out;
+}
+
+std::string selectFileDialog(std::vector<std::pair<std::string, std::string>> filters, std::string default_path)
+{
+    show_select_file_dialog();
+    std::string out = "";
+    while (out == "")
+        out = get_select_file_dialog_result();
+    return out == "NO_PATH_SELECTED" ? "" : out;
+}
+
+std::string saveFileDialog(std::vector<std::pair<std::string, std::string>> filters, std::string default_path, std::string default_name)
+{
+    logger->error("TODOREWORK ANDROID FILE SAVE");
+    return "";
 }
 
 void bindBackendFunctions()
@@ -87,4 +114,8 @@ void bindBackendFunctions()
     backend::beginFrame = funcBeginFrame;
     backend::endFrame = funcEndFrame;
     backend::setIcon = funcSetIcon;
+
+    backend::selectFolderDialog = selectFolderDialog;
+    backend::selectFileDialog = selectFileDialog;
+    backend::saveFileDialog = saveFileDialog;
 }
