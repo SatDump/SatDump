@@ -131,7 +131,7 @@ namespace metop
                 std::memmove(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
                 cor_history[200 - 1] = cor;
 
-                widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 40.0f, 64.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                widgets::ThemedPlotLines(style::theme.plot_bg.Value, "##", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 40.0f, 64.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
             }
 
             ImGui::Spacing();

@@ -27,14 +27,14 @@ void funcRebuildFonts()
 #ifndef IMGUI_IMPL_OPENGL_ES2
     if (fallback_gl)
     {
-        ImGui_ImplOpenGL2_DestroyFontsTexture();
-        ImGui_ImplOpenGL2_CreateFontsTexture();
+        // ImGui_ImplOpenGL2_DestroyFontsTexture();
+        // ImGui_ImplOpenGL2_CreateFontsTexture();
     }
     else
 #endif
     {
-        ImGui_ImplOpenGL3_DestroyFontsTexture();
-        ImGui_ImplOpenGL3_CreateFontsTexture();
+        // ImGui_ImplOpenGL3_DestroyFontsTexture();
+        // ImGui_ImplOpenGL3_CreateFontsTexture();
     }
 }
 

@@ -120,7 +120,7 @@ namespace widgets
 		bool num_started = false;
 		std::string this_id;
 		ImVec2 screen_pos;
-		float freq_size = style::bigFont->FontSize;
+		float freq_size = style::bigFont->LegacySize;//FontSize;
 		pos.x += 1 * ui_scale;
 		ImVec2 dot_size = style::bigFont->CalcTextSizeA(freq_size, FLT_MAX, 0.0f, ".");
 		ImVec2 digit_size = style::bigFont->CalcTextSizeA(freq_size, FLT_MAX, 0.0f, "0");
@@ -183,7 +183,7 @@ namespace widgets
 				// Handle "up" events
 				this_id = "topbutton" + std::to_string(i);
 				ImGui::SetCursorPos(pos);
-				if (ImGui::InvisibleButton(this_id.c_str(), ImVec2(digit_size.x, digit_size.y / 2), ImGuiButtonFlags_Repeat | ImGuiButtonFlags_NoNavFocus))
+				if (ImGui::InvisibleButton(this_id.c_str(), ImVec2(digit_size.x, digit_size.y / 2), ImGuiButtonFlags_NoNavFocus))
 				{
 					if (ImGui::GetIO().KeyCtrl)
 					{
@@ -199,7 +199,8 @@ namespace widgets
 				this_id = "bottombutton" + std::to_string(i);
 				ImGui::SetCursorPos(ImVec2(pos.x, pos.y + (digit_size.y / 2)));
 				screen_pos = ImGui::GetCursorScreenPos();
-				if (ImGui::InvisibleButton(this_id.c_str(), ImVec2(digit_size.x, digit_size.y / 2), ImGuiButtonFlags_Repeat | ImGuiButtonFlags_NoNavFocus))
+				ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+				if (ImGui::InvisibleButton(this_id.c_str(), ImVec2(digit_size.x, digit_size.y / 2),  ImGuiButtonFlags_NoNavFocus))
 				{
 					if (ImGui::GetIO().KeyCtrl)
 					{
@@ -209,6 +210,7 @@ namespace widgets
 					else
 						change_by -= pow(10, i);
 				}
+				ImGui::PopItemFlag();
 				digit_helper(i, &wip_val, change_by, digit_size, screen_pos, dot_size.x, style.ChildRounding, false);
 			}
 

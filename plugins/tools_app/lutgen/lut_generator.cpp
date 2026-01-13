@@ -209,7 +209,7 @@ namespace satdump
             ImGui::Text("Preview Image");
             if (lutaction_started && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
                 should_regen_image = true;
-            if (ImGui::IsKeyDown(ImGuiKey_ModCtrl) && ImGui::IsKeyPressed(ImGuiKey_Z))
+            if (ImGui::IsKeyDown(ImGuiKey_ReservedForModCtrl) && ImGui::IsKeyPressed(ImGuiKey_Z))
                 restoreHistory();
 
             preview_img.draw({win_size.x, win_size.y - 200 * ui_scale});

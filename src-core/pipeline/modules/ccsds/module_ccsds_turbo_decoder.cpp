@@ -271,7 +271,7 @@ namespace satdump
                         std::memmove(&cor_history[0], &cor_history[1], (200 - 1) * sizeof(float));
                         cor_history[200 - 1] = cor;
 
-                        widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 0.0f, 100.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                        widgets::ThemedPlotLines(style::theme.plot_bg.Value, "##", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 0.0f, 100.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
                     }
 
                     ImGui::Button("CRC Check", {200 * ui_scale, 20 * ui_scale});

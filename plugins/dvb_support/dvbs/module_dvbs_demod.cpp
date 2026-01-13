@@ -332,7 +332,7 @@ namespace satdump
                         std::memmove(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
                         ber_history[200 - 1] = ber;
 
-                        widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                        widgets::ThemedPlotLines(style::theme.plot_bg.Value, "##", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
                     }
 
                     if (def->d_fast_deframer)

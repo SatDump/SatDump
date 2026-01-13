@@ -33,7 +33,7 @@ namespace widgets
         ImGui::SameLine();
         ImGui::TextColored(avg_snr > 2 ? avg_snr > 10 ? style::theme.green : style::theme.orange : style::theme.red, "%0.3f", avg_snr);
 
-        widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", snr_history, IM_ARRAYSIZE(snr_history), 0, "", 0.0f, 25.0f,
+        widgets::ThemedPlotLines(style::theme.plot_bg.Value, "##snrplot", snr_history, IM_ARRAYSIZE(snr_history), 0, "", 0.0f, 25.0f,
             ImVec2(200 * ui_scale, 50 * ui_scale));
     }
 }

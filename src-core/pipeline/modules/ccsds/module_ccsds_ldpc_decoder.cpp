@@ -350,9 +350,9 @@ namespace satdump
                         cor_history[200 - 1] = correlator_cor;
 
                         if (d_ldpc_asm_size == 32)
-                            widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 15.0f, 35.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                            widgets::ThemedPlotLines(style::theme.plot_bg.Value, "##", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 15.0f, 35.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
                         else
-                            widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 25.0f, 70.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                            widgets::ThemedPlotLines(style::theme.plot_bg.Value, "##", cor_history, IM_ARRAYSIZE(cor_history), 0, "", 25.0f, 70.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
                     }
 
                     ImGui::Button("LDPC", {200 * ui_scale, 20 * ui_scale});
@@ -364,7 +364,7 @@ namespace satdump
                         std::memmove(&ldpc_history[0], &ldpc_history[1], (200 - 1) * sizeof(float));
                         ldpc_history[200 - 1] = ldpc_corr;
 
-                        widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", ldpc_history, IM_ARRAYSIZE(ldpc_history), 0, "", 0.0f, d_ldpc_codeword_size / 20,
+                        widgets::ThemedPlotLines(style::theme.plot_bg.Value, "##", ldpc_history, IM_ARRAYSIZE(ldpc_history), 0, "", 0.0f, d_ldpc_codeword_size / 20,
                                                  ImVec2(200 * ui_scale, 50 * ui_scale));
                     }
 

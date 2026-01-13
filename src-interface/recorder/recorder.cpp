@@ -875,7 +875,7 @@ namespace satdump
         // Keyboard shortcuts
         {
             // FFT
-            if (ImGui::IsKeyDown(ImGuiKey_ModShift) && ImGui::IsKeyDown(ImGuiKey_X))
+            if (ImGui::IsKeyDown(ImGuiKey_ReservedForModShift) && ImGui::IsKeyDown(ImGuiKey_X))
             {
                 if (ImGui::IsKeyDown(ImGuiKey_DownArrow))
                     fft_plot->scale_max -= 0.5;

@@ -15,6 +15,6 @@ namespace widgets
         std::memmove(&history[0], &history[1], (200 - 1) * sizeof(float));
         history[200 - 1] = value;
 
-        widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", history, IM_ARRAYSIZE(history), 0, "", min, max, ImVec2(200 * ui_scale, 50 * ui_scale));
+        widgets::ThemedPlotLines(style::theme.plot_bg.Value, "##", history, IM_ARRAYSIZE(history), 0, "", min, max, ImVec2(200 * ui_scale, 50 * ui_scale));
     }
 }
