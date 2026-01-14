@@ -3,6 +3,7 @@
 #include "common/codings/randomization.h"
 #include "common/widgets/themed_widgets.h"
 #include "core/exception.h"
+#include "imgui/imgui.h"
 #include "logger.h"
 #include <cstdint>
 
@@ -226,6 +227,8 @@ namespace satdump
                 if (viterbi_coderate == PUNCRATE_7_8)
                     ImGui::Begin("CCSDS r=7/8 Concatenated Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
                 float &ber = viterbi_ber;
+
+                ImGui::Dummy({0, 0}); // Stupid ImGui stuff?
 
                 ImGui::BeginGroup();
                 if (!d_is_streaming_input)
