@@ -3,6 +3,7 @@
 #include <chrono>
 #include <limits>
 
+#include "imgui/imgui.h"
 #include "imgui/imnodes/imnodes.h"
 #include "imgui/imnodes/imnodes_internal.h"
 #include "logger.h"
@@ -169,7 +170,7 @@ namespace satdump
                 links.erase(iter);
             }
 
-            if (ImGui::IsKeyPressed(ImGuiKey_Delete))
+            if (!ImGui::IsAnyItemActive() && ImGui::IsKeyPressed(ImGuiKey_Delete))
             {
                 int node_s = ImNodes::NumSelectedNodes();
 
