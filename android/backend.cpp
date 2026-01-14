@@ -101,8 +101,11 @@ std::string selectFileDialog(std::vector<std::pair<std::string, std::string>> fi
 
 std::string saveFileDialog(std::vector<std::pair<std::string, std::string>> filters, std::string default_path, std::string default_name)
 {
-    logger->error("TODOREWORK ANDROID FILE SAVE");
-    return "";
+    show_select_filesave_dialog(default_name);
+    std::string out = "";
+    while (out == "")
+        out = get_select_filesave_dialog_result();
+    return out == "NO_PATH_SELECTED" ? "" : out;
 }
 
 void bindBackendFunctions()

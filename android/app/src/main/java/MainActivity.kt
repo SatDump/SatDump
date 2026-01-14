@@ -283,6 +283,22 @@ class MainActivity : NativeActivity(), TextWatcher {
         return tmp;
     }
 
+    // Handle savinf a file
+    var select_filesave_result : String = "";
+    public fun select_filesave(name: String) {
+        var file_intent = Intent(Intent.ACTION_CREATE_DOCUMENT);
+        file_intent.setType("*/*");
+        file_intent.putExtra(Intent.EXTRA_TITLE, name);
+        val final_intent = Intent.createChooser(file_intent, "Select Destination File");
+        startActivityForResult(final_intent, 3);
+    }
+
+    public fun select_filesave_get() : String {
+        var tmp = select_filesave_result;
+        select_filesave_result = "";
+        return tmp;
+    }
+
     public fun openURL(url: String) {
         val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url));
         startActivity(browserIntent);
@@ -304,6 +320,13 @@ class MainActivity : NativeActivity(), TextWatcher {
                 select_directory_result = data.getFilePathDir(getApplicationContext());
             else if(resultCode == RESULT_CANCELED)
                 select_directory_result = "NO_PATH_SELECTED";
+        }
+
+        if (requestCode == 3) {
+            if(resultCode == RESULT_OK)
+                select_filesave_result = data.getFilePathDir(getApplicationContext());
+            else if(resultCode == RESULT_CANCELED)
+                select_filesave_result = "NO_PATH_SELECTED";
         }
     }
 }
