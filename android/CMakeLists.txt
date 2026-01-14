@@ -81,6 +81,10 @@ add_library(tiff STATIC IMPORTED)
 set_target_properties(tiff PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libtiff.a)
 # include_directories(deps/tiff/jni/)
 
+# HDF5
+link_directories(${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/)
+set(HDF5_FOUND true)
+
 include_directories(android_imgui PRIVATE
   ${ANDROID_NDK}/sources/android/native_app_glue
 )
