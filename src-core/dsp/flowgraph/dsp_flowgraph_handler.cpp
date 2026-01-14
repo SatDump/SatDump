@@ -1,4 +1,5 @@
 #include "dsp_flowgraph_handler.h"
+#include "core/backend.h"
 #include "core/plugin.h"
 #include "dsp/agc/agc.h"
 #include "dsp/device/dev.h"
@@ -8,6 +9,7 @@
 #include "dsp/io/nng_iq_sink.h"
 #include "dsp/path/splitter.h"
 #include "dsp/utils/throttle.h"
+#include "imgui/imgui.h"
 #include "imgui/imnodes/imnodes.h"
 #include "logger.h"
 
@@ -31,6 +33,7 @@
 
 #include "nlohmann/json_utils.h"
 #include <complex.h>
+#include <fstream>
 #include <memory>
 
 // #include "dsp/device/airspy/airspy_dev.h"
@@ -218,18 +221,6 @@ namespace satdump
 
                 //            needs_to_update |= TODO; // TODOREWORK move in top drawMenu?
 
-                if (ImGui::Button("To JSON"))
-                {
-                    std::string json = flowgraph.getJSON().dump(4);
-                    ImGui::SetClipboardText(json.c_str());
-                }
-
-                if (ImGui::Button("From JSON"))
-                {
-                    nlohmann::json v = nlohmann::json::parse(ImGui::GetClipboardText());
-                    flowgraph.setJSON(v);
-                }
-
                 if (running)
                     style::endDisabled();
             }
@@ -243,6 +234,50 @@ namespace satdump
 
                 if (running)
                     style::endDisabled();
+            }
+        }
+
+        void DSPFlowGraphHandler::drawMenuBar()
+        {
+            if (ImGui::MenuItem("Save"))
+            {
+                auto fun = [this]()
+                {
+                    std::string save_at = backend::saveFileDialog({{"JSON Files", "*.json"}}, "", "flowgraph.json");
+
+                    if (save_at == "")
+                        return;
+
+                    std::string json = flowgraph.getJSON().dump(4);
+                    std::ofstream(save_at, std::ios::binary).write(json.c_str(), json.size());
+                };
+                tq.push(fun);
+            }
+
+            if (ImGui::MenuItem("Load"))
+            {
+                auto fun = [this]()
+                {
+                    std::string load_at = backend::selectFileDialog({{"JSON Files", "*.json"}}, "");
+
+                    if (load_at == "")
+                        return;
+
+                    flowgraph.setJSON(loadJsonFile(load_at));
+                };
+                tq.push(fun);
+            }
+
+            if (ImGui::MenuItem("To Clipboard"))
+            {
+                std::string json = flowgraph.getJSON().dump(4);
+                ImGui::SetClipboardText(json.c_str());
+            }
+
+            if (ImGui::MenuItem("From Clipboard"))
+            {
+                nlohmann::json v = nlohmann::json::parse(ImGui::GetClipboardText());
+                flowgraph.setJSON(v);
             }
         }
 

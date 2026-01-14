@@ -95,19 +95,21 @@ namespace satdump
 
     void SatFinder::saveConfig()
     {
-        satdump_cfg.main_cfg["user"]["satellite_finder"]["update_rate"] = update_period;
-        satdump_cfg.main_cfg["user"]["satellite_finder"]["tolerance"] = tolerance;
-        satdump_cfg.saveUser();
+        nlohmann::json cfg;
+        cfg["update_rate"] = update_period;
+        cfg["tolerance"] = tolerance;
+        db->set_user_json("satellite_finder", cfg);
     }
 
     void SatFinder::loadConfig()
     {
-        if (satdump_cfg.main_cfg["user"].contains("satellite_finder"))
+        nlohmann::json cfg = db->get_user_json("satellite_finder");
+        if (!cfg.is_null())
         {
-            if (satdump_cfg.main_cfg["user"]["satellite_finder"].contains("update_rate"))
-                update_period = satdump_cfg.main_cfg["user"]["satellite_finder"]["update_rate"];
-            if (satdump_cfg.main_cfg["user"]["satellite_finder"].contains("tolerance"))
-                tolerance = satdump_cfg.main_cfg["user"]["satellite_finder"]["tolerance"];
+            if (cfg.contains("update_rate"))
+                update_period = cfg["update_rate"];
+            if (cfg.contains("tolerance"))
+                tolerance = cfg["tolerance"];
         }
     }
 

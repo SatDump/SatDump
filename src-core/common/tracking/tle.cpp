@@ -1,3 +1,4 @@
+#include "init.h"
 #include <optional>
 #include <string>
 #include <vector>
@@ -154,7 +155,7 @@ namespace satdump
 
     std::optional<TLE> get_from_spacetrack_time(int norad, time_t timestamp)
     {
-        time_t last_update = getValueOrDefault<time_t>(satdump_cfg.main_cfg["user"]["tles_last_updated"], 0);
+        time_t last_update = std::stoull(db->get_meta("tles_last_updated", "0"));
         std::string sc_login = satdump_cfg.getValueFromSatDumpGeneral<std::string>("tle_space_track_login");
         std::string sc_passw = satdump_cfg.getValueFromSatDumpGeneral<std::string>("tle_space_track_password");
 
@@ -277,7 +278,7 @@ namespace satdump
 
     std::vector<TLE> get_from_spacetrack_latest_list(std::vector<int> norad)
     {
-        time_t last_update = getValueOrDefault<time_t>(satdump_cfg.main_cfg["user"]["tles_last_updated"], 0);
+        time_t last_update = std::stoull(db->get_meta("tles_last_updated", "0"));
         std::string sc_login = satdump_cfg.getValueFromSatDumpGeneral<std::string>("tle_space_track_login");
         std::string sc_passw = satdump_cfg.getValueFromSatDumpGeneral<std::string>("tle_space_track_password");
 
