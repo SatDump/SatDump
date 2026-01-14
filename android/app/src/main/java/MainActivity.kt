@@ -308,25 +308,29 @@ class MainActivity : NativeActivity(), TextWatcher {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == 1) {
-            if(resultCode == RESULT_OK)
-                select_file_result = data.getFilePath(getApplicationContext());
-            else if(resultCode == RESULT_CANCELED)
-                select_file_result = "NO_PATH_SELECTED";
-        }
+        try {
+            if (requestCode == 1) {
+                if(resultCode == RESULT_OK)
+                    select_file_result = data.getFilePath(getApplicationContext());
+                else if(resultCode == RESULT_CANCELED)
+                    select_file_result = "NO_PATH_SELECTED";
+            }
 
-        if (requestCode == 2) {
-            if(resultCode == RESULT_OK)
-                select_directory_result = data.getFilePathDir(getApplicationContext());
-            else if(resultCode == RESULT_CANCELED)
-                select_directory_result = "NO_PATH_SELECTED";
-        }
+            if (requestCode == 2) {
+                if(resultCode == RESULT_OK)
+                    select_directory_result = data.getFilePathDir(getApplicationContext());
+                else if(resultCode == RESULT_CANCELED)
+                    select_directory_result = "NO_PATH_SELECTED";
+            }
 
-        if (requestCode == 3) {
-            if(resultCode == RESULT_OK)
-                select_filesave_result = data.getFilePathDir(getApplicationContext());
-            else if(resultCode == RESULT_CANCELED)
-                select_filesave_result = "NO_PATH_SELECTED";
+            if (requestCode == 3) {
+                if(resultCode == RESULT_OK)
+                    select_filesave_result = data.getFilePath(getApplicationContext());
+                else if(resultCode == RESULT_CANCELED)
+                    select_filesave_result = "NO_PATH_SELECTED";
+            } 
+        } catch (e: java.lang.RuntimeException) {
+            Log.w(TAG, "Error! " + e.message);
         }
     }
 }
