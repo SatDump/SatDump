@@ -47,6 +47,8 @@ void funcSetMousePos(int, int)
     // Not implemented on Android
 }
 
+void procLongPress();
+
 std::pair<int, int> funcBeginFrame()
 {
     // Get display dimensions
@@ -58,6 +60,8 @@ std::pair<int, int> funcBeginFrame()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplAndroid_NewFrame();
     ImGui::NewFrame();
+
+    procLongPress();
 
     return {(int)width, (int)height};
 }

@@ -30,6 +30,7 @@
 //  2021-03-04: Initial version.
 
 #include "imgui/imgui.h"
+#include "utils/time.h"
 #ifndef IMGUI_DISABLE
 #include "imgui_impl_android.h"
 #include <time.h>
@@ -156,6 +157,26 @@ static ImGuiKey ImGui_ImplAndroid_KeyCodeToImGuiKey(int32_t key_code)
     }
 }
 
+// Long press stuff
+double longpress_MouseDownTime = 0; 
+const double LONG_PRESS_THRESHOLD_S = 0.500;  
+
+// If a finger has been down for more than 0.5s, right click,
+// and if over 1s, unset right click.
+void procLongPress() {
+    ImGuiIO& io = ImGui::GetIO();
+    if (longpress_MouseDownTime > 0 && !io.MouseDown[1])
+    {
+        if (satdump::getTime() - longpress_MouseDownTime > LONG_PRESS_THRESHOLD_S)
+            if(satdump::getTime() - longpress_MouseDownTime < LONG_PRESS_THRESHOLD_S * 2)
+                io.AddMouseButtonEvent(1, true); 
+    } 
+    else if (io.MouseDown[1] && satdump::getTime() - longpress_MouseDownTime > LONG_PRESS_THRESHOLD_S * 2) 
+    {
+        io.AddMouseButtonEvent(1, false); 
+    }
+}
+
 int32_t ImGui_ImplAndroid_HandleInputEvent(const AInputEvent* input_event)
 {
     ImGuiIO& io = ImGui::GetIO();
@@ -230,7 +251,15 @@ int32_t ImGui_ImplAndroid_HandleInputEvent(const AInputEvent* input_event)
                 tool_type == AMOTION_EVENT_TOOL_TYPE_STYLUS || tool_type == AMOTION_EVENT_TOOL_TYPE_MOUSE)
             {
                 io.AddMousePosEvent(AMotionEvent_getX(input_event, event_pointer_index), AMotionEvent_getY(input_event, event_pointer_index));
-                io.AddMouseButtonEvent(0, event_action == AMOTION_EVENT_ACTION_DOWN);
+                
+                if (event_action == AMOTION_EVENT_ACTION_DOWN) {
+                    io.AddMouseButtonEvent(0, true);
+                    longpress_MouseDownTime = satdump::getTime();
+                } else {
+                    io.AddMouseButtonEvent(0, false);
+                    io.AddMouseButtonEvent(1, false); 
+                    longpress_MouseDownTime = 0;
+                }
             }
             break;
         }
