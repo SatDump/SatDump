@@ -195,6 +195,7 @@ int main(int argc, char *argv[])
     ImGuiIO &io = ImGui::GetIO();
     (void)io;
     io.IniFilename = NULL;
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // Enable Multi-Viewport / Platform Windows
 
     logger->debug("Starting with OpenGL %s", (char *)glGetString(GL_VERSION));
     logger->debug("Max texture size: %zu", maxTextureSize);
@@ -216,9 +217,9 @@ int main(int argc, char *argv[])
     // Set font
     style::setFonts(backend::device_scale);
 
-    // Init Loading Screen
-    std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>();
-    logger->add_sink(loading_screen_sink);
+    // Init Loading Screen TODOVIEWPORTS
+    // std::shared_ptr<satdump::LoadingScreenSink> loading_screen_sink = std::make_shared<satdump::LoadingScreenSink>();
+    // logger->add_sink(loading_screen_sink);
 
     // Basic flags
     bool verbose = satdump::cli::checkVerbose(argc, argv);
@@ -251,9 +252,9 @@ int main(int argc, char *argv[])
     // Init UI
     satdump::initMainUI();
 
-    // Shut down loading screen
-    logger->del_sink(loading_screen_sink);
-    loading_screen_sink.reset();
+    // Shut down loading screen TODOVIEWPORTS
+    // logger->del_sink(loading_screen_sink);
+    // loading_screen_sink.reset();
     glfwSwapInterval(1); // Enable vsync for the rest of the program
 
     // Attempt to run command, if present

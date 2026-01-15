@@ -1,6 +1,7 @@
 #include "backend.h"
 #include "core/backend.h"
 #include "core/style.h"
+#include "imgui/imgui.h"
 #include <GLFW/glfw3.h>
 #include <mutex>
 #include <vector>
@@ -79,6 +80,17 @@ void funcEndFrame()
     else
 #endif
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    // Update and Render additional Platform Windows
+    // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
+    //  For this specific demo app we could also call glfwMakeContextCurrent(window) directly)
+    if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
+        GLFWwindow *backup_current_context = glfwGetCurrentContext();
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+        glfwMakeContextCurrent(backup_current_context);
+    }
 
     glfwSwapBuffers(window);
     glfwPollEvents();

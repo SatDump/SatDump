@@ -117,7 +117,7 @@ namespace satdump
         dims.second -= status_logger_sink->draw();
 
         {
-            ImGui::SetNextWindowPos({0, 0});
+            ImGui::SetNextWindowPos(ImGui::GetMainViewport()->Pos); //{0, 0}); TODOVIEWPORTS
             ImGui::SetNextWindowSize({(float)dims.first, (float)dims.second});
             ImGui::Begin("SatDump UI", nullptr, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoScrollWithMouse);
 
