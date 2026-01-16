@@ -446,7 +446,7 @@ if(PLUGIN_AAUDIO_SINK)
 endif()
 
 # ##############################################################################
-option(PLUGIN_BOCHUM_SUPPORT "Enable Bochum-specific plugin" OFF)
+option(PLUGIN_BOCHUM_SUPPORT "Enable Bochum-specific plugin" ON)
 
 if(PLUGIN_BOCHUM_SUPPORT)
   add_subdirectory(bochum_support)
