@@ -55,6 +55,8 @@ namespace satdump
                     std::string name;
                     bool is_out;
 
+                    BlockIOType type;
+
                     NLOHMANN_DEFINE_TYPE_INTRUSIVE(InOut, id, name, is_out);
                 };
 
@@ -64,9 +66,9 @@ namespace satdump
                 {
                     node_io.clear();
                     for (auto &io : internal->blk->get_inputs())
-                        node_io.push_back({_f->getNewNodeIOID(&node_io), io.name, false});
+                        node_io.push_back({_f->getNewNodeIOID(&node_io), io.name, false, io.type});
                     for (auto &io : internal->blk->get_outputs())
-                        node_io.push_back({_f->getNewNodeIOID(&node_io), io.name, true});
+                        node_io.push_back({_f->getNewNodeIOID(&node_io), io.name, true, io.type});
                 }
 
             public:

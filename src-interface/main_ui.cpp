@@ -179,8 +179,6 @@ namespace satdump
                 ImGui::EndPopup();
             }
 
-            explorer_app->draw();
-
             if (ImGui::BeginMenuBar())
             {
                 if (ImGui::BeginMenu("Help"))
@@ -194,6 +192,8 @@ namespace satdump
 
                 ImGui::EndMenuBar();
             }
+
+            explorer_app->draw();
 
             ImGuiUtils_SendCurrentWindowToBack();
             ImGui::End();

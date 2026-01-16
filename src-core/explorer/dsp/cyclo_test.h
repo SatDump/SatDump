@@ -7,7 +7,7 @@
 #include "dsp/displays/const_disp.h"
 #include "dsp/fft/fft_pan.h"
 #include "dsp/filter/rrc.h"
-#include "dsp/io/file_source.h"
+#include "dsp/io/iq_source.h"
 #include "dsp/path/splitter.h"
 #include "dsp/pll/costas.h"
 
@@ -28,7 +28,7 @@ namespace satdump
         class CycloHelperHandler : public Handler
         {
         public:
-            std::shared_ptr<ndsp::FileSourceBlock> file_source;
+            std::shared_ptr<ndsp::IQSourceBlock> file_source;
             std::shared_ptr<ndsp::SplitterBlock<complex_t>> splitter;
             std::shared_ptr<ndsp::FFTPanBlock> fft;
             std::shared_ptr<ndsp::AGCBlock<complex_t>> agc;

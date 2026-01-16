@@ -32,10 +32,5 @@ namespace satdump
 
             std::string getID() { return "dsp_flowgraph_handler"; }
         };
-
-        struct RegisterNodesEvent
-        {
-            std::map<std::string, ndsp::Flowgraph::NodeInternalReg> &r;
-        };
     } // namespace handlers
 } // namespace satdump

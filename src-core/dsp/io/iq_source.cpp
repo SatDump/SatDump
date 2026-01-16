@@ -1,14 +1,14 @@
-#include "file_source.h"
+#include "iq_source.h"
 
 namespace satdump
 {
     namespace ndsp
     {
-        FileSourceBlock::FileSourceBlock() : Block("file_source_cc", {}, {{"out", DSP_SAMPLE_TYPE_CF32}}) {}
+        IQSourceBlock::IQSourceBlock() : Block("iq_source_cc", {}, {{"out", DSP_SAMPLE_TYPE_CF32}}) {}
 
-        FileSourceBlock::~FileSourceBlock() {}
+        IQSourceBlock::~IQSourceBlock() {}
 
-        bool FileSourceBlock::work()
+        bool IQSourceBlock::work()
         {
             if (!baseband_reader.is_eof() && !work_should_exit)
             {

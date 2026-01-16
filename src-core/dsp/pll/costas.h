@@ -1,13 +1,13 @@
 #pragma once
 
 #include "common/dsp/complex.h"
-#include "dsp/block.h"
+#include "dsp/block_simple.h"
 
 namespace satdump
 {
     namespace ndsp
     {
-        class CostasBlock : public Block
+        class CostasBlock : public BlockSimple<complex_t, complex_t>
         {
         private:
             int order = 2;
@@ -23,7 +23,8 @@ namespace satdump
 
             complex_t tmp_val;
 
-            bool work();
+        public:
+            uint32_t process(complex_t *input, uint32_t nsamples, complex_t *output);
 
         public:
             CostasBlock();

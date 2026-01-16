@@ -3,6 +3,7 @@
 #include <chrono>
 #include <limits>
 
+#include "dsp/block.h"
 #include "imgui/imgui.h"
 #include "imgui/imnodes/imnodes.h"
 #include "imgui/imnodes/imnodes_internal.h"
@@ -97,6 +98,21 @@ namespace satdump
             }
         }
 
+        // TODOREWORKFLOWGRAPH
+        std::map<BlockIOType, ImColor> iotypes_colors = {
+            {DSP_SAMPLE_TYPE_CF32, ImColor(0, 0, 255)},
+            {DSP_SAMPLE_TYPE_F32, ImColor(252, 116, 0)},
+            {DSP_SAMPLE_TYPE_S8, ImColor(200, 5, 252)},
+        };
+
+        ImColor getColorFromDSPType(BlockIOType t)
+        {
+            if (iotypes_colors.count(t))
+                return iotypes_colors[t];
+            else
+                return ImColor(255, 0, 0);
+        }
+
         void Flowgraph::render()
         {
             ImNodes::PushAttributeFlag(ImNodesAttributeFlags_EnableLinkDetachWithDragClick);
@@ -120,18 +136,22 @@ namespace satdump
                 {
                     if (io.is_out)
                     {
+                        ImNodes::PushColorStyle(ImNodesCol_Pin, getColorFromDSPType(io.type));
                         ImNodes::BeginOutputAttribute(io.id);
                         //                    const float node_width = 200.0 * ui_scale;
                         //                    const float label_width = ImGui::CalcTextSize(io.name.c_str()).x;
                         //                    ImGui::Indent(node_width - label_width);
                         ImGui::Text("%s", io.name.c_str());
                         ImNodes::EndOutputAttribute();
+                        ImNodes::PopColorStyle();
                     }
                     else
                     {
+                        ImNodes::PushColorStyle(ImNodesCol_Pin, getColorFromDSPType(io.type));
                         ImNodes::BeginInputAttribute(io.id);
                         ImGui::Text("%s", io.name.c_str());
                         ImNodes::EndInputAttribute();
+                        ImNodes::PopColorStyle();
                     }
                 }
 
@@ -151,64 +171,78 @@ namespace satdump
             //        ImNodes::PopColorStyle();
 
             for (auto &l : links)
+            {
+                BlockIOType type;
+                for (auto &n : nodes)
+                    for (auto &io : n->node_io)
+                        if (io.id == l.start)
+                            type = io.type;
+
+                ImNodes::PushColorStyle(ImNodesCol_Link, getColorFromDSPType(type));
                 ImNodes::Link(l.id, l.start, l.end);
+                ImNodes::PopColorStyle();
+            }
 
             ImNodes::EndNodeEditor();
 
-            int start_att, end_att;
-            if (ImNodes::IsLinkCreated(&start_att, &end_att))
+            // Lock down edition when running!
+            if (!is_running)
             {
-                links.push_back({getNewLinkID(), start_att, end_att});
-                logger->trace("LINK CREATE %d %d", start_att, end_att);
-            }
-
-            int link_id;
-            if (ImNodes::IsLinkDestroyed(&link_id))
-            {
-                auto iter = std::find_if(links.begin(), links.end(), [link_id](const Link &link) -> bool { return link.id == link_id; });
-                logger->trace("LINK DELETE %d %d", iter->start, iter->end);
-                links.erase(iter);
-            }
-
-            if (!ImGui::IsAnyItemActive() && ImGui::IsKeyPressed(ImGuiKey_Delete))
-            {
-                int node_s = ImNodes::NumSelectedNodes();
-
-                if (node_s > 0)
+                int start_att, end_att;
+                if (ImNodes::IsLinkCreated(&start_att, &end_att))
                 {
-                    std::vector<int> nodes_ids(node_s);
-                    ImNodes::GetSelectedNodes(nodes_ids.data());
+                    links.push_back({getNewLinkID(), start_att, end_att});
+                    logger->trace("LINK CREATE %d %d", start_att, end_att);
+                }
 
-                    for (auto &id : nodes_ids)
+                int link_id;
+                if (ImNodes::IsLinkDestroyed(&link_id))
+                {
+                    auto iter = std::find_if(links.begin(), links.end(), [link_id](const Link &link) -> bool { return link.id == link_id; });
+                    logger->trace("LINK DELETE %d %d", iter->start, iter->end);
+                    links.erase(iter);
+                }
+
+                if (!ImGui::IsAnyItemActive() && ImGui::IsKeyPressed(ImGuiKey_Delete))
+                {
+                    int node_s = ImNodes::NumSelectedNodes();
+
+                    if (node_s > 0)
                     {
-                        auto iter = std::find_if(nodes.begin(), nodes.end(), [id](const std::shared_ptr<Node> &node) -> bool { return node->id == id; });
-                        logger->trace("NODE DELETE %d", id);
-                        for (auto &linkid : iter->get()->node_io)
+                        std::vector<int> nodes_ids(node_s);
+                        ImNodes::GetSelectedNodes(nodes_ids.data());
+
+                        for (auto &id : nodes_ids)
                         {
-                            auto liter = std::find_if(links.begin(), links.end(), [linkid](const Link &link) -> bool { return link.start == linkid.id || link.end == linkid.id; });
-                            if (liter != links.end())
-                                links.erase(liter);
+                            auto iter = std::find_if(nodes.begin(), nodes.end(), [id](const std::shared_ptr<Node> &node) -> bool { return node->id == id; });
+                            logger->trace("NODE DELETE %d", id);
+                            for (auto &linkid : iter->get()->node_io)
+                            {
+                                auto liter = std::find_if(links.begin(), links.end(), [linkid](const Link &link) -> bool { return link.start == linkid.id || link.end == linkid.id; });
+                                if (liter != links.end())
+                                    links.erase(liter);
+                            }
+                            nodes.erase(iter);
                         }
-                        nodes.erase(iter);
                     }
                 }
-            }
 
-            if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-                ImGui::OpenPopup("##popuprightclickflowgraph");
-            if (ImGui::BeginPopup("##popuprightclickflowgraph"))
-            {
-                if (ImGui::BeginMenu("Add Node"))
+                if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+                    ImGui::OpenPopup("##popuprightclickflowgraph");
+                if (ImGui::BeginPopup("##popuprightclickflowgraph"))
                 {
-                    for (auto &opt : node_internal_registry)
+                    if (ImGui::BeginMenu("Add Node"))
                     {
-                        std::vector<std::string> cats = splitString(opt.second.menuname, '/');
-                        renderAddMenu(opt, cats, 0);
+                        for (auto &opt : node_internal_registry)
+                        {
+                            std::vector<std::string> cats = splitString(opt.second.menuname, '/');
+                            renderAddMenu(opt, cats, 0);
+                        }
+                        ImGui::EndMenu();
                     }
-                    ImGui::EndMenu();
-                }
 
-                ImGui::EndPopup();
+                    ImGui::EndPopup();
+                }
             }
         }
 

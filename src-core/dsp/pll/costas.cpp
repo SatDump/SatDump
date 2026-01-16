@@ -7,27 +7,16 @@ namespace satdump
     {
         inline float branchless_clip(float x, float clip) { return 0.5 * (std::abs(x + clip) - std::abs(x - clip)); }
 
-        CostasBlock::CostasBlock() : Block("costas_cc", {{"in", DSP_SAMPLE_TYPE_CF32}}, {{"out", DSP_SAMPLE_TYPE_CF32}}) {}
+        CostasBlock::CostasBlock() : BlockSimple("costas_cc", {{"in", DSP_SAMPLE_TYPE_CF32}}, {{"out", DSP_SAMPLE_TYPE_CF32}}) {}
 
         CostasBlock::~CostasBlock() {}
 
-        bool CostasBlock::work()
+        uint32_t CostasBlock::process(complex_t *input, uint32_t nsamples, complex_t *output)
         {
-            DSPBuffer iblk = inputs[0].fifo->wait_dequeue();
+            complex_t *ibuf = input;
+            complex_t *obuf = output;
 
-            if (iblk.isTerminator())
-            {
-                if (iblk.terminatorShouldPropagate())
-                    outputs[0].fifo->wait_enqueue(outputs[0].fifo->newBufferTerminator());
-                inputs[0].fifo->free(iblk);
-                return true;
-            }
-
-            auto oblk = outputs[0].fifo->newBufferSamples(iblk.max_size, sizeof(complex_t));
-            complex_t *ibuf = iblk.getSamples<complex_t>();
-            complex_t *obuf = oblk.getSamples<complex_t>();
-
-            for (uint32_t i = 0; i < iblk.size; i++)
+            for (uint32_t i = 0; i < nsamples; i++)
             {
                 // Mix input & VCO
                 tmp_val = ibuf[i] * complex_t(cosf(-phase), sinf(-phase));
@@ -71,11 +60,7 @@ namespace satdump
                     freq = freq_limit_min;
             }
 
-            oblk.size = iblk.size;
-            outputs[0].fifo->wait_enqueue(oblk);
-            inputs[0].fifo->free(iblk);
-
-            return false;
+            return nsamples;
         }
     } // namespace ndsp
 } // namespace satdump

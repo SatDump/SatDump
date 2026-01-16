@@ -1,6 +1,6 @@
 #include "airspyhf_sdr.h"
 #include "core/plugin.h"
-#include "dsp/flowgraph/dsp_flowgraph_handler.h"
+#include "dsp/flowgraph/dsp_flowgraph_register.h"
 #include "logger.h"
 
 #include "airspyhf_dev.h"
@@ -17,7 +17,7 @@ public:
         satdump::eventBus->register_handler<satdump::ndsp::RequestDeviceListEvent>(registerDevs);
         satdump::eventBus->register_handler<satdump::ndsp::RequestDeviceInstanceEvent>(provideDeviceInstance);
 
-        satdump::eventBus->register_handler<satdump::handlers::RegisterNodesEvent>(registerNodes);
+        satdump::eventBus->register_handler<satdump::ndsp::RegisterNodesEvent>(registerNodes);
     }
 
     static void registerSources(const dsp::RegisterDSPSampleSourcesEvent &evt)
@@ -40,7 +40,7 @@ public:
             evt.i.push_back(std::make_shared<satdump::ndsp::AirspyHFDevBlock>());
     }
 
-    static void registerNodes(const satdump::handlers::RegisterNodesEvent &evt)
+    static void registerNodes(const satdump::ndsp::RegisterNodesEvent &evt)
     {
         evt.r.insert(
             {"airspyhf_cc",

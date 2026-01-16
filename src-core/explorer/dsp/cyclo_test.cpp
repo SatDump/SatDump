@@ -11,7 +11,7 @@ namespace satdump
     {
         CycloHelperHandler::CycloHelperHandler()
         {
-            file_source = std::make_shared<ndsp::FileSourceBlock>();
+            file_source = std::make_shared<ndsp::IQSourceBlock>();
             splitter = std::make_shared<ndsp::SplitterBlock<complex_t>>();
             fft = std::make_shared<ndsp::FFTPanBlock>();
             agc = std::make_shared<ndsp::AGCBlock<complex_t>>();

@@ -7,7 +7,7 @@ namespace satdump
 {
     namespace ndsp
     {
-        class FileSourceBlock : public Block
+        class IQSourceBlock : public Block
         {
         public:
             std::string p_file = "/tmp/afile";
@@ -32,8 +32,8 @@ namespace satdump
             std::atomic<uint64_t> d_progress;
 
         public:
-            FileSourceBlock();
-            ~FileSourceBlock();
+            IQSourceBlock();
+            ~IQSourceBlock();
 
             void init()
             {

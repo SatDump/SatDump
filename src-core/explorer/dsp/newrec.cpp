@@ -222,12 +222,12 @@ namespace satdump
                         [this]()
                         {
                             std::string recording_path = satdump_cfg.main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>();
-                            iq_sink->set_cfg("filepath", recording_path);
+                            iq_sink->set_cfg("file", recording_path);
                             iq_sink->set_cfg("autogen", true);
                             iq_sink->set_cfg("samplerate", dev->getStreamSamplerate(0, false));
                             iq_sink->set_cfg("frequency", dev->getStreamFrequency(0, false));
                             iq_sink->set_cfg("timestamp", getTime());
-                            iq_sink->set_cfg("format", rec_type);
+                            iq_sink->set_cfg("type", rec_type);
                             iq_sink->set_input(splitter->add_output("tmp_record", false), 0);
                             iq_sink->start();
                         });

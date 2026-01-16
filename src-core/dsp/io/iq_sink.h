@@ -41,13 +41,33 @@ namespace satdump
 
             void init() {}
 
+            nlohmann::ordered_json get_cfg_list()
+            {
+                nlohmann::ordered_json p;
+                add_param_simple(p, "file", "string");
+                p["file"]["disable"] = is_work_running();
+                add_param_simple(p, "type", "string");
+                p["type"]["disable"] = is_work_running();
+                add_param_simple(p, "buffer_size", "int");
+                p["buffer_size"]["disable"] = is_work_running();
+                add_param_simple(p, "autogen", "bool");
+                p["autogen"]["disable"] = is_work_running();
+                add_param_simple(p, "samplerate", "float");
+                p["samplerate"]["disable"] = is_work_running();
+                add_param_simple(p, "frequency", "float");
+                p["frequency"]["disable"] = is_work_running();
+                add_param_simple(p, "timestamp", "float");
+                p["timestamp"]["disable"] = is_work_running();
+                return p;
+            }
+
             nlohmann::json get_cfg(std::string key)
             {
                 if (key == "buffer_size")
+                    return buffer_size;
+                else if (key == "file")
                     return filepath;
-                else if (key == "path")
-                    return filepath;
-                else if (key == "format")
+                else if (key == "type")
                     return format;
                 else if (key == "autogen")
                     return autogen;
@@ -65,9 +85,9 @@ namespace satdump
             {
                 if (key == "buffer_size")
                     buffer_size = v;
-                else if (key == "filepath")
+                else if (key == "file")
                     filepath = v;
-                else if (key == "format")
+                else if (key == "type")
                     format = v.get<std::string>();
                 else if (key == "samplerate")
                     samplerate = v;
