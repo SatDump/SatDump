@@ -100,9 +100,11 @@ namespace satdump
 
         // TODOREWORKFLOWGRAPH
         std::map<BlockIOType, ImColor> iotypes_colors = {
-            {DSP_SAMPLE_TYPE_CF32, ImColor(0, 0, 255)},
-            {DSP_SAMPLE_TYPE_F32, ImColor(252, 116, 0)},
-            {DSP_SAMPLE_TYPE_S8, ImColor(200, 5, 252)},
+            {DSP_SAMPLE_TYPE_CF32, ImColor(5, 150, 255)}, //
+            {DSP_SAMPLE_TYPE_F32, ImColor(252, 116, 0)},  //
+            {DSP_SAMPLE_TYPE_S16, ImColor(244, 240, 5)},  //
+            {DSP_SAMPLE_TYPE_S8, ImColor(200, 5, 252)},   //
+            {DSP_SAMPLE_TYPE_U8, ImColor(5, 252, 87)},    //
         };
 
         ImColor getColorFromDSPType(BlockIOType t)

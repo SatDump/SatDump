@@ -2,11 +2,14 @@
 #include "core/plugin.h"
 
 #include "dsp/agc/agc.h"
+#include "dsp/conv/char_to_float.h"
+#include "dsp/conv/short_to_float.h"
 #include "dsp/device/dev.h"
 #include "dsp/fft/fft_pan.h"
 #include "dsp/filter/rrc.h"
 #include "dsp/flowgraph/dsp_flowgraph_handler.h"
 #include "dsp/flowgraph/flowgraph.h"
+#include "dsp/io/file_source.h"
 #include "dsp/io/iq_sink.h"
 #include "dsp/io/iq_source.h"
 #include "dsp/io/nng_iq_sink.h"
@@ -32,6 +35,7 @@
 #include "dsp/utils/quadrature_demod.h"
 #include "dsp/utils/real_to_complex.h"
 #include "dsp/utils/vco.h"
+#include <cstdint>
 
 namespace satdump
 {
@@ -139,7 +143,16 @@ namespace satdump
             registerNodeSimple<ndsp::ThrottleBlock<complex_t>>(flowgraph, "Utils/Throttle CC");
             registerNodeSimple<ndsp::ThrottleBlock<float>>(flowgraph, "Utils/Throttle FF");
 
-            registerNodeSimple<ndsp::NNGIQSinkBlock>(flowgraph, "IQ/NNG IQ Sink");
+            registerNodeSimple<ndsp::NNGIQSinkBlock>(flowgraph, "IO/NNG IQ Sink");
+
+            registerNodeSimple<ndsp::FileSourceBlock<complex_t>>(flowgraph, "IO/File Source C");
+            registerNodeSimple<ndsp::FileSourceBlock<float>>(flowgraph, "IO/File Source F");
+            registerNodeSimple<ndsp::FileSourceBlock<int16_t>>(flowgraph, "IO/File Source S");
+            registerNodeSimple<ndsp::FileSourceBlock<int8_t>>(flowgraph, "IO/File Source H");
+            registerNodeSimple<ndsp::FileSourceBlock<uint8_t>>(flowgraph, "IO/File Source B");
+
+            registerNodeSimple<ndsp::CharToFloatBlock>(flowgraph, "Conv/Char To Float");
+            registerNodeSimple<ndsp::ShortToFloatBlock>(flowgraph, "Conv/Short To Float");
 
             eventBus->fire_event<RegisterNodesEvent>({flowgraph.node_internal_registry});
 
