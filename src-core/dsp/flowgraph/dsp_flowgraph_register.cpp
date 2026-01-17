@@ -3,12 +3,14 @@
 
 #include "dsp/agc/agc.h"
 #include "dsp/conv/char_to_float.h"
+#include "dsp/conv/ifloat_to_complex.h"
 #include "dsp/conv/short_to_float.h"
 #include "dsp/device/dev.h"
 #include "dsp/fft/fft_pan.h"
 #include "dsp/filter/rrc.h"
 #include "dsp/flowgraph/dsp_flowgraph_handler.h"
 #include "dsp/flowgraph/flowgraph.h"
+#include "dsp/io/file_sink.h"
 #include "dsp/io/file_source.h"
 #include "dsp/io/iq_sink.h"
 #include "dsp/io/iq_source.h"
@@ -151,8 +153,16 @@ namespace satdump
             registerNodeSimple<ndsp::FileSourceBlock<int8_t>>(flowgraph, "IO/File Source H");
             registerNodeSimple<ndsp::FileSourceBlock<uint8_t>>(flowgraph, "IO/File Source B");
 
+            registerNodeSimple<ndsp::FileSinkBlock<complex_t>>(flowgraph, "IO/File Sink C");
+            registerNodeSimple<ndsp::FileSinkBlock<float>>(flowgraph, "IO/File Sink F");
+            registerNodeSimple<ndsp::FileSinkBlock<int16_t>>(flowgraph, "IO/File Sink S");
+            registerNodeSimple<ndsp::FileSinkBlock<int8_t>>(flowgraph, "IO/File Sink H");
+            registerNodeSimple<ndsp::FileSinkBlock<uint8_t>>(flowgraph, "IO/File Sink B");
+
             registerNodeSimple<ndsp::CharToFloatBlock>(flowgraph, "Conv/Char To Float");
             registerNodeSimple<ndsp::ShortToFloatBlock>(flowgraph, "Conv/Short To Float");
+
+            registerNodeSimple<ndsp::IFloatToComplexBlock>(flowgraph, "Conv/IFloat To Complex");
 
             eventBus->fire_event<RegisterNodesEvent>({flowgraph.node_internal_registry});
 

@@ -27,7 +27,7 @@ namespace satdump
                 auto oblk = outputs[0].fifo->newBufferSamples(d_buffer_size, sizeof(T));
                 T *obuf = oblk.template getSamples<T>();
 
-                file_reader.read((char *)obuf, d_buffer_size);
+                file_reader.read((char *)obuf, d_buffer_size * sizeof(T));
 
                 oblk.size = d_buffer_size;
                 outputs[0].fifo->wait_enqueue(oblk);

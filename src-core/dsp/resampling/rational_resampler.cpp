@@ -40,7 +40,7 @@ namespace satdump
             // Set size ratio for output buffer
             double v = double(d_interpolation) / double(d_decimation);
             if (v > 1)
-                BlockSimple<T, T>::output_buffer_size_ratio = v * 1.5;
+                BlockSimple<T, T>::output_buffer_size_ratio = v * 2;
         }
 
         template <typename T>
