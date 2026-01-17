@@ -14,6 +14,10 @@ namespace satdump
          * @brief Simplified DSP block implementation, for
          * synchronous blocks that can process one buffer at
          * a time. Takes away the burden of boilerplate code.
+         *
+         * @param output_buffer_size_ratio defines the allocated
+         * output buffer size relative to the input buffer
+         * max_size
          */
         template <typename Ti, typename To>
         class BlockSimple : public Block
