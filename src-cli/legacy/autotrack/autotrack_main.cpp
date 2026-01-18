@@ -1,9 +1,9 @@
 #include "autotrack.h"
 
-#include <signal.h>
-#include <filesystem>
-#include "logger.h"
 #include "init.h"
+#include "logger.h"
+#include <filesystem>
+#include <signal.h>
 
 // Catch CTRL+C to exit live properly!
 bool autotrack_should_exit = false;
@@ -34,10 +34,6 @@ int main_autotrack(int argc, char *argv[])
     nlohmann::json settings = loadJsonFile(argv[2]);
     nlohmann::json parameters = settings["parameters"];
     std::string output_folder = settings["output_folder"];
-
-    // Init SatDump
-    satdump::initSatdump();
-    completeLoggerInit();
 
     // Create output dir
     if (!std::filesystem::exists(output_folder))

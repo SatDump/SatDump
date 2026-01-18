@@ -2,7 +2,7 @@
 #include "bladerf_sdr_sink.h"
 #include "bladerf_sdr_source.h"
 #include "core/plugin.h"
-#include "dsp/flowgraph/dsp_flowgraph_handler.h"
+#include "dsp/flowgraph/dsp_flowgraph_register.h"
 #include "dsp/flowgraph/flowgraph.h"
 #include "logger.h"
 
@@ -19,7 +19,7 @@ public:
         satdump::eventBus->register_handler<satdump::ndsp::RequestDeviceListEvent>(registerDevs);
         satdump::eventBus->register_handler<satdump::ndsp::RequestDeviceInstanceEvent>(provideDeviceInstance);
 
-        satdump::eventBus->register_handler<satdump::handlers::RegisterNodesEvent>(registerNodes);
+        satdump::eventBus->register_handler<satdump::ndsp::RegisterNodesEvent>(registerNodes);
     }
 
     static void registerSources(const dsp::RegisterDSPSampleSourcesEvent &evt)
@@ -41,7 +41,7 @@ public:
             evt.i.push_back(std::make_shared<satdump::ndsp::BladeRFDevBlock>());
     }
 
-    static void registerNodes(const satdump::handlers::RegisterNodesEvent &evt)
+    static void registerNodes(const satdump::ndsp::RegisterNodesEvent &evt)
     {
         evt.r.insert({"bladerf_cc",
                       {"Device/BladeRF Dev", [](const satdump::ndsp::Flowgraph *f) { return std::make_shared<satdump::ndsp::NodeInternal>(f, std::make_shared<satdump::ndsp::BladeRFDevBlock>()); }}});

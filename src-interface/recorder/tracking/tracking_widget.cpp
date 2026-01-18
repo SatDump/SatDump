@@ -35,7 +35,8 @@ namespace satdump
         {
             try
             {
-                rotator_handler->set_settings(satdump_cfg.main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()]);
+                nlohmann::json cfg = db->get_user_json("recorder_tracking");
+                rotator_handler->set_settings(cfg["rotator_config"][rotator_handler->get_id()]);
             }
             catch (std::exception &)
             {
@@ -45,7 +46,7 @@ namespace satdump
         // Init Obj Tracker
         object_tracker.setQTH(qth_lon, qth_lat, qth_alt);
         object_tracker.setRotator(rotator_handler);
-        object_tracker.setObject(object_tracker.TRACKING_SATELLITE, 57166); //Phoenix replaced King for default sat
+        object_tracker.setObject(object_tracker.TRACKING_SATELLITE, 57166); // Phoenix replaced King for default sat
         object_tracker.rotator_target_pos_updated_callback = [this](double az, double el) { sat_finder.setTarget(az, el); };
 
         // Init Sat finder
@@ -114,7 +115,8 @@ namespace satdump
 
                 try
                 {
-                    rotator_handler->set_settings(satdump_cfg.main_cfg["user"]["recorder_tracking"]["rotator_config"][rotator_handler->get_id()]);
+                    nlohmann::json cfg = db->get_user_json("recorder_tracking");
+                    rotator_handler->set_settings(cfg["rotator_config"][rotator_handler->get_id()]);
                 }
                 catch (std::exception &)
                 {

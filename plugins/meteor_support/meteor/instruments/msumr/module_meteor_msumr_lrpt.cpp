@@ -12,6 +12,7 @@
 #include "lrpt_msumr_reader.h"
 #include "msumr_tlm.h"
 #include "nlohmann/json_utils.h"
+#include "offsets.h"
 #include "products/dataset.h"
 #include "products/image_product.h"
 #include "utils/stats.h"
@@ -281,7 +282,8 @@ namespace meteor
                 logger->info("MSU-MR Channel %d Lines  : %zu", i + 1, img.height());
                 if (img.size() > 0)
                 {
-                    msumr_images.push_back({i, "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, 10});
+                    msumr_images.push_back({i, "MSU-MR-" + std::to_string(i + 1), std::to_string(i + 1), img, 10,
+                                            satdump::ChannelTransform().init_affine(1, 1, msumr::get_x_offset(msumr_serial_number, i).first, msumr::get_x_offset(msumr_serial_number, i).second)});
                     lrpt_channels |= 1 << i;
                 }
 

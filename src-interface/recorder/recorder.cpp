@@ -20,7 +20,7 @@
 
 namespace satdump
 {
-    RecorderApplication::RecorderApplication() : handlers::Handler(), pipeline_selector(true)
+    RecorderApplication::RecorderApplication(nlohmann::json cli_set) : handlers::Handler(), pipeline_selector(true)
     {
         automated_live_output_dir = satdump_cfg.main_cfg["satdump_directories"]["live_processing_autogen"]["value"].get<bool>();
         processing_modules_floating_windows = satdump_cfg.main_cfg["user_interface"]["recorder_floating_windows"]["value"].get<bool>();
@@ -154,9 +154,9 @@ namespace satdump
         waterfall_plot->set_rate(fft_rate, waterfall_rate);
 
         // Attempt to apply provided CLI settings
-        if (satdump_cfg.main_cfg.contains("cli"))
+        if (!cli_set.is_null())
         {
-            auto &cli_settings = satdump_cfg.main_cfg["cli"];
+            auto &cli_settings = cli_set;
             if (source_ptr)
             {
                 if (cli_settings.contains("samplerate"))
@@ -875,7 +875,7 @@ namespace satdump
         // Keyboard shortcuts
         {
             // FFT
-            if (ImGui::IsKeyDown(ImGuiKey_ModShift) && ImGui::IsKeyDown(ImGuiKey_X))
+            if (ImGui::IsKeyDown(ImGuiKey_ReservedForModShift) && ImGui::IsKeyDown(ImGuiKey_X))
             {
                 if (ImGui::IsKeyDown(ImGuiKey_DownArrow))
                     fft_plot->scale_max -= 0.5;

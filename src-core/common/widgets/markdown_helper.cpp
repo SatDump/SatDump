@@ -1,17 +1,17 @@
 #include "markdown_helper.h"
-#include "core/style.h"
-#include "logger.h"
-#include "imgui/imgui_image.h"
 #include "core/resources.h"
+#include "core/style.h"
 #include "image/image.h"
 #include "image/io.h"
+#include "imgui/imgui_image.h"
+#include "logger.h"
 #include <filesystem>
 
 #if defined(_WIN32)
 #include <windows.h>
 #elif defined(__ANDROID__)
 #include <android_native_app_glue.h>
-extern struct android_app *g_App;
+struct android_app *g_App;
 #endif
 
 namespace widgets
@@ -23,7 +23,7 @@ namespace widgets
         {
             logger->info("Opening URL " + url);
 
-#if defined(_WIN32)
+#if defined(_WIN32) // TODOREWORK per-platform again!
             ShellExecuteA(0, 0, url.c_str(), 0, 0, SW_SHOW);
 #elif defined(__APPLE__)
             system(std::string("open " + url).c_str());
@@ -130,4 +130,4 @@ namespace widgets
         markdown_ = md;
         texture_buffer.clear();
     }
-}
+} // namespace widgets

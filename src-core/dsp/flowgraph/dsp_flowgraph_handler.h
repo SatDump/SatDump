@@ -4,6 +4,7 @@
 #include "handlers/handler.h"
 
 #include "dsp/device/dev.h"
+#include "utils/task_queue.h"
 
 // TODOREWORK, move into plugin? Or Core?
 namespace satdump
@@ -23,15 +24,13 @@ namespace satdump
             // The Rest
             void drawMenu();
             void drawContents(ImVec2 win_size);
+            void drawMenuBar();
+
+            TaskQueue tq;
 
             std::string getName() { return "Flowgraph"; }
 
             std::string getID() { return "dsp_flowgraph_handler"; }
-        };
-
-        struct RegisterNodesEvent
-        {
-            std::map<std::string, ndsp::Flowgraph::NodeInternalReg> &r;
         };
     } // namespace handlers
 } // namespace satdump

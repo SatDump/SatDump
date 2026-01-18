@@ -19,6 +19,15 @@
             "autogen": true
         },
         {
+            "name": "AVHRR 543b IR False Color",
+            "expression": "chm16,chm15,chm12",
+            "image": {
+                "invert": true,
+                "individual_equalize": true
+            },
+            "description": "descriptions/543b.md"
+        },
+        {
             "name": "VIIRS I321/I221 Mix",
             "expression": "(chi3 * 0.4 + chi2 * 0.6) * 4 - 0.2, chi2 * 4 - 0.2, chi1 * 4 - 0.2"
         },

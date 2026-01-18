@@ -75,7 +75,7 @@ namespace satdump
 
         public:
             nlohmann::json getInstrumentCfg() { return instrument_cfg; }
-            virtual void saveResult(std::string directory);
+            virtual bool saveResult(std::string directory);
 
         public:
             /**

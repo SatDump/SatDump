@@ -111,7 +111,7 @@ void AddTextRotated(ImDrawList* draw_list, ImVec2 pos, float angle, ImU32 col, c
     pos.x = IM_FLOOR(pos.x);
     pos.y = IM_FLOOR(pos.y);
 
-    const float scale = g.FontSize / font->FontSize;
+    const float scale = g.FontSize / font->LegacySize;//FontSize;
 
     // Measure the size of the text in unrotated coordinates
     ImVec2 text_size = font->CalcTextSizeA(g.FontSize, FLT_MAX, 0.0f, text_begin, text_end, nullptr);
@@ -140,7 +140,7 @@ void AddTextRotated(ImDrawList* draw_list, ImVec2 pos, float angle, ImU32 col, c
                 break;
         }
 
-        const ImFontGlyph* glyph = font->FindGlyph((ImWchar)c);
+        const ImFontGlyph* glyph = font->GetFontBaked(font->LegacySize)->FindGlyph((ImWchar)c);
         if (glyph == nullptr) {
             continue;
         }

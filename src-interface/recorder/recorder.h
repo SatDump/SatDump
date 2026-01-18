@@ -219,7 +219,7 @@ namespace satdump
         }
 
     public:
-        RecorderApplication();
+        RecorderApplication(nlohmann::json cli_set = {});
         ~RecorderApplication();
 
         void save_settings() { db->set_user_json("recorder_state", serialize_config()); }

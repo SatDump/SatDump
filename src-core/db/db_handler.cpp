@@ -64,7 +64,7 @@ namespace satdump
     {
         sqlite3_stmt *res;
 
-        if (sqlite3_prepare_v2(db, ("SELECT val from meta where id=\"" + id + "\"").c_str(), -1, &res, 0))
+        if (sqlite3_prepare_v2(db, ("SELECT val from meta where id='" + id + "'").c_str(), -1, &res, 0))
             logger->warn(sqlite3_errmsg(db));
         else if (sqlite3_step(res) == SQLITE_ROW)
             def = (char *)sqlite3_column_text(res, 0);
@@ -90,7 +90,7 @@ namespace satdump
     {
         sqlite3_stmt *res;
 
-        if (sqlite3_prepare_v2(db, ("SELECT val from user where id=\"" + id + "\"").c_str(), -1, &res, 0))
+        if (sqlite3_prepare_v2(db, ("SELECT val from user where id='" + id + "'").c_str(), -1, &res, 0))
             logger->warn(sqlite3_errmsg(db));
         else if (sqlite3_step(res) == SQLITE_ROW)
             def = (char *)sqlite3_column_text(res, 0);

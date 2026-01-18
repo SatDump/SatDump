@@ -216,7 +216,7 @@ namespace satdump
 
         void ImageHandler::drawContents(ImVec2 win_size)
         {
-            ImGui::BeginChild("ContentChild", win_size, false, ImGuiWindowFlags_MenuBar);
+            ImGui::BeginChild("ContentChild", win_size, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_MenuBar);
 
             if (imgview_needs_update)
             {
@@ -287,7 +287,7 @@ namespace satdump
                 ImGui::EndMenuBar();
             }
 
-            image_view.draw(ImGui::GetContentRegionAvail());
+            image_view.draw(ImGui::GetContentRegionMax());
 
             ImGui::EndChild();
         }
@@ -350,7 +350,11 @@ namespace satdump
         }
 
         // TODOREWORK?
-        void ImageHandler::saveResult(std::string directory) { image::save_img_safe(getImage(), directory + "/" + getSaneName()); }
+        bool ImageHandler::saveResult(std::string directory)
+        {
+            image::save_img_safe(getImage(), directory + "/" + getSaneName());
+            return getImage().size();
+        }
 
         void ImageHandler::do_process()
         {

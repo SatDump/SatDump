@@ -79,8 +79,8 @@ namespace satdump
                     double a_pole_y = std::stod(v["dataEOP"]["pole"][0]["Y"].get<std::string>());
                     double ut1_utc = std::stod(v["dataEOP"]["UT"][0]["UT1-UTC"].get<std::string>());
 
-                    std::string sql = "INSERT INTO iers (time, a_pole_x, a_pole_y, ut1_utc) VALUES (" + std::to_string(time) + ", \"" + std::to_string(a_pole_x) + "\", '" + std::to_string(a_pole_y) +
-                                      "', '" + std::to_string(ut1_utc) + "') ON CONFLICT(time) DO UPDATE SET a_pole_x=\"" + std::to_string(a_pole_x) + "\", a_pole_y='" + std::to_string(a_pole_y) +
+                    std::string sql = "INSERT INTO iers (time, a_pole_x, a_pole_y, ut1_utc) VALUES (" + std::to_string(time) + ", '" + std::to_string(a_pole_x) + "', '" + std::to_string(a_pole_y) +
+                                      "', '" + std::to_string(ut1_utc) + "') ON CONFLICT(time) DO UPDATE SET a_pole_x='" + std::to_string(a_pole_x) + "', a_pole_y='" + std::to_string(a_pole_y) +
                                       "', ut1_utc='" + std::to_string(ut1_utc) + "';";
 
                     char *err = NULL;

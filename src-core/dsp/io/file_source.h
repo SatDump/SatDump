@@ -1,28 +1,26 @@
 #pragma once
 
-#include "common/dsp/io/baseband_interface.h"
+#include "common/utils.h"
 #include "dsp/block.h"
+#include <fstream>
 
 namespace satdump
 {
     namespace ndsp
     {
+        template <typename T>
         class FileSourceBlock : public Block
         {
         public:
             std::string p_file = "/tmp/afile";
-            dsp::BasebandType p_type = dsp::CF_32;
             int p_buffer_size = 8192;
-            bool p_iq_swap = false;
 
         private:
-            dsp::BasebandType d_type;
-
             int d_buffer_size;
-            bool d_iq_swap;
+
             std::atomic<bool> d_eof;
 
-            dsp::BasebandReader baseband_reader;
+            std::ifstream file_reader;
 
             bool work();
 
@@ -37,13 +35,11 @@ namespace satdump
 
             void init()
             {
-                d_type = p_type;
                 d_buffer_size = p_buffer_size;
-                d_iq_swap = p_iq_swap;
 
-                baseband_reader.set_file(p_file, p_type);
+                file_reader = std::ifstream(p_file, std::ios::binary);
 
-                d_filesize = baseband_reader.filesize;
+                d_filesize = getFilesize(p_file);
                 d_progress = 0;
                 d_eof = false;
             }
@@ -53,12 +49,8 @@ namespace satdump
                 nlohmann::ordered_json p;
                 add_param_simple(p, "file", "string");
                 p["file"]["disable"] = is_work_running();
-                add_param_simple(p, "type", "string");
-                p["type"]["disable"] = is_work_running();
                 add_param_simple(p, "buffer_size", "int");
                 p["buffer_size"]["disable"] = is_work_running();
-                add_param_simple(p, "iq_swap", "bool");
-                p["iq_swap"]["disable"] = is_work_running();
                 return p;
             }
 
@@ -66,12 +58,8 @@ namespace satdump
             {
                 if (key == "file")
                     return p_file;
-                else if (key == "type")
-                    return (std::string)p_type;
                 else if (key == "buffer_size")
                     return p_buffer_size;
-                else if (key == "iq_swap")
-                    return p_iq_swap;
                 else
                     throw satdump_exception(key);
             }
@@ -80,12 +68,8 @@ namespace satdump
             {
                 if (key == "file")
                     p_file = v;
-                else if (key == "type")
-                    p_type = v.get<std::string>();
                 else if (key == "buffer_size")
                     p_buffer_size = v;
-                else if (key == "iq_swap")
-                    p_iq_swap = v;
                 else
                     throw satdump_exception(key);
                 return RES_OK;

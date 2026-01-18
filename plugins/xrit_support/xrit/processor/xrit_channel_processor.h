@@ -70,6 +70,10 @@ namespace satdump
              */
             void saveImg(xrit::XRITFileInfo &meta, image::Image &img);
 
+        private:
+            // TODOREWORK DOCUMENT
+            void process_composites(std::shared_ptr<products::ImageProduct> pro, std::string pro_path);
+
         public:
             enum xrit_image_status
             {

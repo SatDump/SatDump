@@ -55,6 +55,15 @@ namespace satdump
         return ret;
     }
 
+    inline uint8_t count_ones(uint8_t v)
+    {
+        uint8_t cnt = 0;
+        for (int i = 7; i >= 0; i--)
+            if ((v >> i) & 1)
+                cnt++;
+        return cnt;
+    }
+
     uint8_t reverseBits(uint8_t byte);
 
     uint16_t reverse16Bits(uint16_t v);

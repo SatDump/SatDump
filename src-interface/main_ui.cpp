@@ -29,7 +29,6 @@ namespace satdump
     SATDUMP_DLL2 std::shared_ptr<explorer::ExplorerApplication> explorer_app;
 
     SATDUMP_DLL2 bool update_ui = true;
-    bool open_recorder;
 
     widgets::MarkdownHelper credits_md;
 
@@ -67,7 +66,6 @@ namespace satdump
         credits_md.set_md(credits_markdown);
 
         explorer_app = std::make_shared<explorer::ExplorerApplication>();
-        open_recorder = satdump_cfg.main_cfg.contains("cli") && satdump_cfg.main_cfg["cli"].contains("start_recorder_device");
 
         // Logger status bar sync
         status_logger_sink = std::make_shared<StatusLoggerSink>();
@@ -181,8 +179,6 @@ namespace satdump
                 ImGui::EndPopup();
             }
 
-            explorer_app->draw();
-
             if (ImGui::BeginMenuBar())
             {
                 if (ImGui::BeginMenu("Help"))
@@ -196,6 +192,8 @@ namespace satdump
 
                 ImGui::EndMenuBar();
             }
+
+            explorer_app->draw();
 
             ImGuiUtils_SendCurrentWindowToBack();
             ImGui::End();

@@ -1,30 +1,38 @@
 #include "file_source.h"
+#include "dsp/block.h"
+#include "dsp/block_helpers.h"
+#include <cstdint>
 
 namespace satdump
 {
     namespace ndsp
     {
-        FileSourceBlock::FileSourceBlock() : Block("file_source_cc", {}, {{"out", DSP_SAMPLE_TYPE_CF32}}) {}
-
-        FileSourceBlock::~FileSourceBlock() {}
-
-        bool FileSourceBlock::work()
+        template <typename T>
+        FileSourceBlock<T>::FileSourceBlock()
+            : Block("file_source_" + getShortTypeName<T>(), {}, //
+                    {{"out", getTypeSampleType<T>()}})
         {
-            if (!baseband_reader.is_eof() && !work_should_exit)
+        }
+
+        template <typename T>
+        FileSourceBlock<T>::~FileSourceBlock()
+        {
+        }
+
+        template <typename T>
+        bool FileSourceBlock<T>::work()
+        {
+            if (!file_reader.eof() && !work_should_exit)
             {
-                auto oblk = outputs[0].fifo->newBufferSamples(d_buffer_size, sizeof(complex_t));
-                complex_t *obuf = oblk.getSamples<complex_t>();
+                auto oblk = outputs[0].fifo->newBufferSamples(d_buffer_size, sizeof(T));
+                T *obuf = oblk.template getSamples<T>();
 
-                int read = baseband_reader.read_samples(obuf, d_buffer_size);
+                file_reader.read((char *)obuf, d_buffer_size * sizeof(T));
 
-                if (d_iq_swap)
-                    for (int i = 0; i < read; i++)
-                        obuf[i] = complex_t(obuf[i].imag, obuf[i].real);
-
-                oblk.size = read;
+                oblk.size = d_buffer_size;
                 outputs[0].fifo->wait_enqueue(oblk);
 
-                d_progress = baseband_reader.progress;
+                d_progress = file_reader.tellg();
             }
             else
             {
@@ -35,5 +43,11 @@ namespace satdump
 
             return false;
         }
+
+        template class FileSourceBlock<complex_t>;
+        template class FileSourceBlock<float>;
+        template class FileSourceBlock<int16_t>;
+        template class FileSourceBlock<int8_t>;
+        template class FileSourceBlock<uint8_t>;
     } // namespace ndsp
 } // namespace satdump

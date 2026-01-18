@@ -287,11 +287,8 @@ namespace satdump
                 // TODOREWORK
                 if (curr_handler)
                 {
-                    if (ImGui::BeginMenu("Current"))
-                    {
-                        curr_handler->drawMenuBar();
-                        ImGui::EndMenu();
-                    }
+                    ImGui::MenuItem("|", NULL, false, false);
+                    curr_handler->drawMenuBar();
                 }
 
                 eventBus->fire_event<RenderLoadMenuElementsEvent>({curr_handler, master_handler});

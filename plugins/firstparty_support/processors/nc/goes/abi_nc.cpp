@@ -1,10 +1,5 @@
 #include "abi_nc.h"
 #include "../../../old/nc2pro/hdf5_utils.h"
-#include "common/utils.h"
-#include "core/resources.h"
-#include "logger.h"
-#include "nlohmann/json_utils.h"
-#include "projection/standard/proj_json.h"
 #include <H5LTpublic.h>
 
 extern "C"
@@ -20,7 +15,6 @@ namespace satdump
         {
             ParsedGOESRABI image_out;
 
-            // herr_t status;
             hsize_t image_dims[2];
 
             hid_t file = H5LTopen_file_image(data.data(), data.size(), H5F_ACC_RDONLY);
@@ -28,28 +22,7 @@ namespace satdump
             if (file < 0)
                 return image_out;
 
-            //    bool is_hr_mode = true;
-
-            //    {
-            //       hid_t dataset = H5Dopen1(file, "l1c_channels_present");
-            //       if (dataset < 0)
-            //           return image_out;
-            //       hsize_t l1c_channels[2];
-            //       hid_t dataspace = H5Dget_space(dataset); /* dataspace handle */
-            //       H5Sget_simple_extent_dims(dataspace, l1c_channels, NULL);
-            //       is_hr_mode = l1c_channels[0] == 4;
-            //      H5Dclose(dataset);
-            //  }
-
-            //    image_out.platform_name = "GOES-16"; // hdf5_get_string_attr_FILE(file, "platform");
-            //    image_out.time_coverage_start = "0"; // hdf5_get_string_attr_FILE(file, "time_coverage_start");
-            //    image_out.longitude = 0;             // hdf5_get_float_attr(file, "data/mtg_geos_projection", "longitude_of_projection_origin");
-
             {
-                //  auto test_path = (std::string) "Rad";//"data/" + std::string(is_hr_mode ? channel_map_hr[ch] : channel_map[ch]);
-                //  auto channel_path = (std::string) "data/" + std::string(is_hr_mode ? channel_map_hr[ch] : channel_map[ch]) + "/measured/effective_radiance";
-                //  auto rowoff_path = (std::string) "data/" + std::string(is_hr_mode ? channel_map_hr[ch] : channel_map[ch]) + "/measured/start_position_row";
-
                 image_out.channel = nc2pro::hdf5_get_int(file, "band_id");
                 image_out.x_add_offset = nc2pro::hdf5_get_float_attr(file, "x", "add_offset");
                 image_out.y_add_offset = nc2pro::hdf5_get_float_attr(file, "y", "add_offset");
@@ -69,16 +42,6 @@ namespace satdump
 
                 if (!H5Lexists(file, "Rad", H5P_DEFAULT))
                     goto close;
-
-                //     image_out.calibration_scale[ch] = hdf5_get_float_attr(file, channel_path, "scale_factor");
-                //     image_out.calibration_offset[ch] = hdf5_get_float_attr(file, channel_path, "add_offset");
-
-                //      {
-                //          int start_row = hdf5_get_int(file, rowoff_path);
-                //          if (start_row == -1e6)
-                //              continue;
-                //          image_out.start_row[ch] = start_row;
-                //      }
 
                 hid_t dataset = H5Dopen2(file, "Rad", H5P_DEFAULT);
 
@@ -205,7 +168,6 @@ namespace satdump
                 abi_products->set_proj_cfg(proj_cfg);
             }
 
-#if 1
             const float goes_abi_wavelength_table[16] = {
                 470,   //
                 640,   //
@@ -232,6 +194,7 @@ namespace satdump
                 calib_cfg["vars"]["scale"][channel_id] = all_images[i].calibration_scale;
                 calib_cfg["vars"]["offset"][channel_id] = all_images[i].calibration_offset;
                 calib_cfg["vars"]["kappa"][channel_id] = all_images[i].kappa;
+                calib_cfg["vars"]["is_spectral"] = false;
             }
             abi_products->set_calibration("goes_nc_abi", calib_cfg);
 
@@ -246,11 +209,6 @@ namespace satdump
 
                 abi_products->set_channel_wavenumber(channel_id, 1e7 / goes_abi_wavelength_table[channel_id]);
             }
-#endif
-
-#if 0
-        nlohmann::json fci_config = loadJsonFile(resources::getResourcePath("calibration/FCI_table.json"));
-#endif
 
             return abi_products;
         }

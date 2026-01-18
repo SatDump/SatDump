@@ -52,7 +52,7 @@ namespace satdump
             void setConfig(nlohmann::json p);
             nlohmann::json getConfig();
 
-            void saveResult(std::string directory);
+            bool saveResult(std::string directory);
 
             std::string getID() { return "punctiform_product_handler"; }
         };

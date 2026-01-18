@@ -64,7 +64,6 @@ namespace satdump
 #endif
         std::string save_name = default_name + "." + *default_ext;
 
-#ifndef __ANDROID__
         std::vector<std::pair<std::string, std::string>> final_saveopt;
         for (int i = 0; i < saveopts.size() / 2; i++)
             final_saveopt.push_back({saveopts[i * 2 + 0], saveopts[i * 2 + 1]});
@@ -78,10 +77,7 @@ namespace satdump
             if (extension.size() > 1)
                 *default_ext = extension.substr(1);
         }
-#else
-        std::string path = save_name;
-        image::save_img(*image, save_name);
-#endif
+
         return path;
     }
 } // namespace satdump

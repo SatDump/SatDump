@@ -1,6 +1,5 @@
 #include "module_gvar_image_decoder.h"
 #include "common/physics_constants.h"
-#include "common/utils.h"
 #include "core/config.h"
 #include "core/resources.h"
 #include "crc_table.h"
@@ -465,9 +464,9 @@ namespace goes
             int vis_height = images.vis_height;
 
             // Avoid imagery bugs
-            if (images.image5.width() < vis_width)
+            if (images.image5.width() < static_cast<size_t>(vis_width))
                 vis_width = images.image5.width();
-            if (images.image5.height() < vis_height)
+            if (images.image5.height() < static_cast<size_t>(vis_height))
                 vis_height = images.image5.height();
 
             std::string dir_name = "GOES-" + std::to_string(sat_number) + "/" + timestamp;
@@ -658,7 +657,6 @@ namespace goes
             logger->info("Using input frames " + d_input_file);
             logger->info("Decoding to " + directory);
 
-            time_t last_frame_time = 0;
             time_t image_time = 0;
             // Time when processing started, used as a backup if no other time is decoded
             image_time_fallback = time(0);

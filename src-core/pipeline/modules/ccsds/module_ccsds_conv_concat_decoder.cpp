@@ -3,6 +3,7 @@
 #include "common/codings/randomization.h"
 #include "common/widgets/themed_widgets.h"
 #include "core/exception.h"
+#include "imgui/imgui.h"
 #include "logger.h"
 #include <cstdint>
 
@@ -227,6 +228,8 @@ namespace satdump
                     ImGui::Begin("CCSDS r=7/8 Concatenated Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
                 float &ber = viterbi_ber;
 
+                ImGui::Dummy({0, 0}); // Stupid ImGui stuff?
+
                 ImGui::BeginGroup();
                 if (!d_is_streaming_input)
                 {
@@ -284,7 +287,7 @@ namespace satdump
                         std::memmove(&ber_history[0], &ber_history[1], (200 - 1) * sizeof(float));
                         ber_history[200 - 1] = ber;
 
-                        widgets::ThemedPlotLines(style::theme.plot_bg.Value, "", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                        widgets::ThemedPlotLines(style::theme.plot_bg.Value, "##", ber_history, IM_ARRAYSIZE(ber_history), 0, "", 0.0f, 1.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
                     }
 
                     ImGui::Spacing();

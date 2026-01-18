@@ -1,6 +1,7 @@
 #include "newrec.h"
 #include "common/widgets/stepped_slider.h"
 #include "core/config.h"
+#include "core/resources.h"
 #include "core/style.h"
 #include "dsp/block.h"
 #include "dsp/device/dev.h"
@@ -34,15 +35,16 @@ namespace satdump
 
             fftp = std::make_shared<ndsp::FFTPanBlock>();
             fftp->set_input(splitter->add_output("main_fft"), 0);
-            fftp->avg_num = 1;
+            fftp->avg_num = 30;
 
-            fft_plot = std::make_shared<widgets::FFTPlot>(fftp->output_fft_buff, 65536, -150, 150, 10);
+            fft_plot = std::make_shared<widgets::FFTPlot>(fftp->output_fft_buff, 8192, -90, -50, 10);
             fft_plot->frequency = 431.8e6;
             fft_plot->enable_freq_scale = true;
 
-            waterfall_plot = std::make_shared<widgets::WaterfallPlot>(65536, 500);
-            waterfall_plot->set_size(65536);
+            waterfall_plot = std::make_shared<widgets::WaterfallPlot>(8192, 2000);
+            waterfall_plot->set_size(8192);
             waterfall_plot->set_rate(30, 20);
+            waterfall_plot->set_palette(colormaps::loadMap(resources::getResourcePath("waterfall/spectravue.json")));
 
             fftp->on_fft = [this](float *p) { waterfall_plot->push_fft(p); };
 
@@ -102,12 +104,12 @@ namespace satdump
 
             if (!deviceRunning)
             {
-                if (ImGui::Button("Start"))
+                if (ImGui::Button("Start") && dev)
                 {
                     taskq.push(
                         [this]()
                         {
-                            fftp->set_fft_settings(65536, dev->getStreamSamplerate(0, false), 30);
+                            fftp->set_fft_settings(8192, dev->getStreamSamplerate(0, false), 2000);
                             fftp->avg_num = 1;
 
                             splitter->link(dev.get(), 0, 0, 100); //        fftp->inputs[0] = dev->outputs[0];
@@ -201,11 +203,16 @@ namespace satdump
                 ratio = (float)dev->get_outputs()[0].fifo->size_approx() / (float)dev->get_outputs()[0].fifo->max_capacity();
             ImGui::ProgressBar(ratio);
 
-            if (recording)
+            bool _recording = recording;
+            if (!deviceRunning || _recording)
                 style::beginDisabled();
             rec_type.draw_combo();
-            if (recording)
+
+            if (!deviceRunning || _recording)
                 style::endDisabled();
+
+            if (!deviceRunning)
+                style::beginDisabled();
 
             if (!recording)
             {
@@ -215,12 +222,12 @@ namespace satdump
                         [this]()
                         {
                             std::string recording_path = satdump_cfg.main_cfg["satdump_directories"]["recording_path"]["value"].get<std::string>();
-                            iq_sink->set_cfg("filepath", recording_path);
+                            iq_sink->set_cfg("file", recording_path);
                             iq_sink->set_cfg("autogen", true);
                             iq_sink->set_cfg("samplerate", dev->getStreamSamplerate(0, false));
                             iq_sink->set_cfg("frequency", dev->getStreamFrequency(0, false));
                             iq_sink->set_cfg("timestamp", getTime());
-                            iq_sink->set_cfg("format", rec_type);
+                            iq_sink->set_cfg("type", rec_type);
                             iq_sink->set_input(splitter->add_output("tmp_record", false), 0);
                             iq_sink->start();
                         });
@@ -242,6 +249,9 @@ namespace satdump
                     recording = false;
                 }
             }
+
+            if (!deviceRunning)
+                style::endDisabled();
         }
 
         void NewRecHandler::drawContents(ImVec2 win_size)
@@ -279,6 +289,7 @@ namespace satdump
                 if (show_waterfall)
                 {
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 15 * ui_scale);
+                    ImGui::SetCursorPosX(9 * ui_scale);
                     waterfall_plot->draw({wfft_widht, wf_height}, true);
                 }
             }

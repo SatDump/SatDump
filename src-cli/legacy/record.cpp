@@ -1,14 +1,14 @@
-#include "live.h"
-#include "common/dsp_source_sink/dsp_sample_source.h"
-#include "common/dsp/resamp/smart_resampler.h"
-#include <signal.h>
-#include "logger.h"
 #include "common/cli_utils.h"
-#include "common/dsp/io/file_sink.h"
-#include "init.h"
-#include "common/dsp/path/splitter.h"
 #include "common/dsp/fft/fft_pan.h"
+#include "common/dsp/io/file_sink.h"
+#include "common/dsp/path/splitter.h"
+#include "common/dsp/resamp/smart_resampler.h"
+#include "common/dsp_source_sink/dsp_sample_source.h"
+#include "init.h"
+#include "live.h"
+#include "logger.h"
 #include "webserver.h"
+#include <signal.h>
 
 // Catch CTRL+C to exit live properly!
 bool rec_should_exit = false;
@@ -31,10 +31,6 @@ int main_record(int argc, char *argv[])
         logger->error("./satdump record baseband_name --source airspy --samplerate 6e6 --frequency 1701.3e6 --general_gain 18 --bias --timeout 780");
         return 1;
     }
-
-    // Init SatDump
-    satdump::initSatdump();
-    completeLoggerInit();
 
     std::string output_file = argv[2];
 

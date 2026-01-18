@@ -14,10 +14,17 @@ namespace satdump
          * @brief Simplified DSP block implementation, for
          * synchronous blocks that can process one buffer at
          * a time. Takes away the burden of boilerplate code.
+         *
+         * @param output_buffer_size_ratio defines the allocated
+         * output buffer size relative to the input buffer
+         * max_size
          */
         template <typename Ti, typename To>
         class BlockSimple : public Block
         {
+        protected:
+            float output_buffer_size_ratio = 1;
+
         private:
             bool work()
             {
@@ -31,7 +38,7 @@ namespace satdump
                     return true;
                 }
 
-                DSPBuffer oblk = outputs[0].fifo->newBufferSamples(iblk.max_size, sizeof(To));
+                DSPBuffer oblk = outputs[0].fifo->newBufferSamples(ceil(iblk.max_size * output_buffer_size_ratio), sizeof(To));
 
                 oblk.size = process(iblk.getSamples<Ti>(), iblk.size, oblk.getSamples<To>());
 

@@ -304,6 +304,8 @@ namespace satdump
         public:
             bool d_no_not_save_images = false;
             bool d_no_not_load_images = false;
+
+        public:
             virtual void save(std::string directory);
             virtual void load(std::string file);
 

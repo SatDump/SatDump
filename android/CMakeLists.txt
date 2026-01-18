@@ -81,6 +81,10 @@ add_library(tiff STATIC IMPORTED)
 set_target_properties(tiff PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/libtiff.a)
 # include_directories(deps/tiff/jni/)
 
+# HDF5
+link_directories(${PROJECT_SOURCE_DIR}/deps/output/${ANDROID_ABI}/lib/)
+set(HDF5_FOUND true)
+
 include_directories(android_imgui PRIVATE
   ${ANDROID_NDK}/sources/android/native_app_glue
 )
@@ -96,6 +100,11 @@ target_include_directories(usb PRIVATE deps/libusb/)
 add_library(airspy STATIC deps/libairspy/airspy.c deps/libairspy/iqconverter_float.c deps/libairspy/iqconverter_int16.c)
 target_include_directories(airspy PRIVATE deps/libairspy/ deps/libusb)
 target_link_libraries(airspy PRIVATE usb)
+
+# LibHydraSDR
+add_library(hydrasdr STATIC deps/libhydrasdr/hydrasdr.c deps/libairspy/iqconverter_float.c deps/libairspy/iqconverter_int16.c)
+target_include_directories(hydrasdr PRIVATE deps/libhydrasdr/ deps/libusb)
+target_link_libraries(hydrasdr PRIVATE usb)
 
 # LibAirspyHF
 add_library(airspyhf STATIC deps/libairspyhf/airspyhf.c deps/libairspyhf/iqbalancer.c)
@@ -139,6 +148,7 @@ add_subdirectory(.. ${CMAKE_BINARY_DIR}/all_libs)
 add_library(android_imgui SHARED
   ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/backend.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/android_dialogs.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/imgui_image.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/imgui_backends/imgui_impl_android.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/imgui_backends/imgui_impl_opengl3.cpp

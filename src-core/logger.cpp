@@ -251,6 +251,11 @@ namespace slog
         logger_lvl = lvl;
     }
 
+    LogLevel Logger::get_level()
+    {
+        return logger_lvl;
+    }
+
     void Logger::add_sink(std::shared_ptr<LoggerSink> sink)
     {
         sink_mtx.lock();

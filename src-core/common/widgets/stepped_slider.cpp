@@ -19,7 +19,7 @@ namespace widgets
         ImGui::PushButtonRepeat(true);
         if (ImGui::Button("-", ImVec2(button_size, button_size)))
         {
-            GImGui->ActiveIdPreviousFrameHasBeenEditedBefore = true;
+            GImGui->ActiveIdHasBeenEditedBefore = true;
             retval = true;
             if (*v - v_rate < v_min)
                 *v = v_min;
@@ -29,7 +29,7 @@ namespace widgets
         ImGui::SameLine(0, style.ItemInnerSpacing.x);
         if (ImGui::Button("+", ImVec2(button_size, button_size)))
         {
-            GImGui->ActiveIdPreviousFrameHasBeenEditedBefore = true;
+            GImGui->ActiveIdHasBeenEditedBefore = true;
             retval = true;
             if (*v + v_rate > v_max)
                 *v = v_max;
@@ -61,11 +61,11 @@ namespace widgets
         ImGui::PushButtonRepeat(true);
         if (ImGui::Button("-", ImVec2(button_size, button_size)))
         {
-            GImGui->ActiveIdPreviousFrameHasBeenEditedBefore = true;
+            GImGui->ActiveIdHasBeenEditedBefore = true;
             retval = true;
-            if (ImGui::IsKeyDown(ImGuiKey_ModShift))
+            if (ImGui::IsKeyDown(ImGuiKey_ReservedForModShift))
                 v_rate /= 10;
-            else if (ImGui::IsKeyDown(ImGuiKey_ModCtrl))
+            else if (ImGui::IsKeyDown(ImGuiKey_ReservedForModCtrl))
                 v_rate /= 100;
 
             if (*v - v_rate < v_min)
@@ -76,11 +76,11 @@ namespace widgets
         ImGui::SameLine(0, style.ItemInnerSpacing.x);
         if (ImGui::Button("+", ImVec2(button_size, button_size)))
         {
-            GImGui->ActiveIdPreviousFrameHasBeenEditedBefore = true;
+            GImGui->ActiveIdHasBeenEditedBefore = true;
             retval = true;
-            if (ImGui::IsKeyDown(ImGuiKey_ModShift))
+            if (ImGui::IsKeyDown(ImGuiKey_ReservedForModShift))
                 v_rate /= 10;
-            else if (ImGui::IsKeyDown(ImGuiKey_ModCtrl))
+            else if (ImGui::IsKeyDown(ImGuiKey_ReservedForModCtrl))
                 v_rate /= 100;
 
             if (*v + v_rate > v_max)

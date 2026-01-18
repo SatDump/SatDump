@@ -16,6 +16,7 @@
 #include "tools/ccsds_apid_demux/ccsds_apid_demux.h"
 #include "tools/ccsds_vcid_splitter/ccsds_vcid_splitter.h"
 #include "tools/deframer/deframer.h"
+#include "tools/deinterleave/deinterleave.h"
 #include "tools/diff_decode/diff_decode.h"
 #include "tools/soft2hard/soft2hard.h"
 #include "tools/take_skip/take_skip.h"
@@ -31,6 +32,7 @@ namespace satdump
         all_tools.push_back(std::make_shared<DeframerTool>());
         all_tools.push_back(std::make_shared<DifferentialTool>());
         all_tools.push_back(std::make_shared<Soft2HardTool>());
+        all_tools.push_back(std::make_shared<DeinterleaveTool>());
         all_tools.push_back(std::make_shared<CCSDSVcidSplitterTool>());
         all_tools.push_back(std::make_shared<CCSDSAPIDDemuxTool>());
 

@@ -3,6 +3,7 @@
 #include "db/db_handler.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
+#include "utils/string.h"
 #include <string>
 
 namespace satdump
@@ -129,15 +130,16 @@ namespace satdump
 
     void TleDBHandler::putTLE(TLE tle) // TODOREWORK put actual time of TLE!!!!!
     {
+        replaceAllStr(tle.name, "'", "''");
         std::string sql = "INSERT INTO tle (norad, name, time, line1, line2) VALUES (" + std::to_string(tle.norad) + //
-                          ", \"" + tle.name + "\", '" + std::to_string(time(0)) + "', '" + tle.line1 + "', '" +      //
-                          tle.line2 + "') ON CONFLICT(norad) DO UPDATE SET name=\"" + tle.name +                     //
-                          "\", time='" + std::to_string(time(0)) + "', line1='" + tle.line1 + "', line2='" + tle.line2 + "';";
+                          ", '" + tle.name + "', '" + std::to_string(time(0)) + "', '" + tle.line1 + "', '" +        //
+                          tle.line2 + "') ON CONFLICT(norad) DO UPDATE SET name='" + tle.name +                      //
+                          "', time='" + std::to_string(time(0)) + "', line1='" + tle.line1 + "', line2='" + tle.line2 + "';";
 
         char *err = NULL;
         if (sqlite3_exec(h->db, sql.c_str(), NULL, 0, &err))
         {
-            logger->error("Error inserting TLE in database! %s", err);
+            logger->error("Error inserting TLE in database! %s (%s)", err, sql.c_str());
             sqlite3_free(err);
         }
     }

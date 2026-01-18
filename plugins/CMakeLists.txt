@@ -98,10 +98,7 @@ if(PLUGIN_NOAA_METOP OR PLUGINS_ALL)
   add_subdirectory(noaa_metop_support)
 endif()
 
-option(
-  PLUGIN_METOPSG
-  "Enable the MetOp-SG support plugin"
-  OFF)
+option(PLUGIN_METOPSG "Enable the MetOp-SG support plugin" OFF)
 
 if(PLUGIN_METOPSG OR PLUGINS_ALL)
   add_subdirectory(metopsg_support)
@@ -285,6 +282,12 @@ option(PLUGIN_SEAWIFS "Enable the SeaWIFs support plugin" OFF)
 
 if(PLUGIN_SEAWIFS OR PLUGINS_ALL)
   add_subdirectory(seawifs_support)
+endif()
+
+option(PLUGIN_OMINOUS "Enable the Ominous support plugin" OFF)
+
+if(PLUGIN_OMINOUS)
+  add_subdirectory(ominous_support)
 endif()
 # ##############################################################################
 option(PLUGIN_SIMD_SSE41 "Enable SIMD SSE41 plugin" ON)
@@ -477,7 +480,7 @@ endif()
 # ##############################################################################
 option(PLUGIN_BITVIEW_APP "Enable BitView Application (Very WIP)" OFF)
 
-if(PLUGIN_BITVIEW_APP)
+if(PLUGIN_BITVIEW_APP OR PLUGINS_ALL)
   add_subdirectory(bitview_app)
 endif()
 

@@ -146,7 +146,7 @@ void ImageViewWidget::draw(ImVec2 win_size)
         has_to_update = false;
     }
 
-    ImGui::BeginChild(id_str.c_str(), win_size, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+    ImGui::BeginChild(id_str.c_str(), win_size, 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
     if (img_chunks.size() > 0)
     {
@@ -256,6 +256,8 @@ void ImageViewWidget::draw(ImVec2 win_size)
         ImPlot::PopStyleVar();
         ImPlot::PopStyleVar();
     }
+
+    ImGui::Dummy(ImVec2(0.0f, 0.0f)); // To avoid triggerring a weird assertion
 
     ImGui::EndChild();
     image_mtx.unlock();

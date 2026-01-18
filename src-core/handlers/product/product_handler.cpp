@@ -91,7 +91,7 @@ namespace satdump
                         }
                         else
                         {
-                            logger->trace("Disabling unavailable preset : " + cfg["name"].get<std::string>());
+                            logger->debug("Disabling unavailable preset : " + cfg["name"].get<std::string>());
                         }
                     }
                     catch (std::exception &e)
@@ -241,6 +241,6 @@ namespace satdump
             return file_name;
         }
 
-        void ProductHandler::saveResult(std::string directory) { throw satdump_exception("saveResult NOT implemented for this handler! => " + directory); }
+        bool ProductHandler::saveResult(std::string directory) { throw satdump_exception("saveResult NOT implemented for this handler! => " + directory); }
     } // namespace handlers
 } // namespace satdump
