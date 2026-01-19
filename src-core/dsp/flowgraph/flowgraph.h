@@ -57,7 +57,7 @@ namespace satdump
 
                     BlockIOType type;
 
-                    NLOHMANN_DEFINE_TYPE_INTRUSIVE(InOut, id, name, is_out);
+                    NLOHMANN_DEFINE_TYPE_INTRUSIVE(InOut, id, name, is_out, type);
                 };
 
                 std::vector<InOut> node_io;
@@ -120,7 +120,7 @@ namespace satdump
             Flowgraph();
             ~Flowgraph();
 
-            //            LuaVariableManager var_manager_test;
+            std::map<std::string, double> variables;
 
             std::shared_ptr<Node> addNode(std::string id, std::shared_ptr<NodeInternal> i)
             {
@@ -137,13 +137,13 @@ namespace satdump
                 for (auto &n : nodes)
                     j["nodes"][n->id] = n->getJSON();
                 j["links"] = links;
-                //                j["vars"] = var_manager_test.variables;
+                j["vars"] = variables;
                 return j;
             }
 
             void setJSON(nlohmann::json j)
             {
-                //                var_manager_test.variables = j["vars"];
+                variables = j["vars"];
 
                 nodes.clear();
                 links.clear();

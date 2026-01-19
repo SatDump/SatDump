@@ -78,7 +78,20 @@ namespace satdump
                 if (running)
                     style::beginDisabled();
 
-                //                flowgraph.var_manager_test.drawVariables();
+                for (auto &v : flowgraph.variables)
+                {
+                    ImGui::Text("%s", v.first.c_str());
+                    ImGui::SameLine();
+                    ImGui::InputDouble(std::string("##" + v.first).c_str(), &v.second);
+                }
+
+                ImGui::InputText("##addvarname", &to_add_var_name);
+                ImGui::SameLine();
+                if (ImGui::Button("Add##addnewvariable") && to_add_var_name.size())
+                {
+                    flowgraph.variables.emplace(to_add_var_name, 0);
+                    to_add_var_name.clear();
+                }
 
                 if (running)
                     style::endDisabled();

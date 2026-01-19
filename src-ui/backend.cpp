@@ -98,11 +98,22 @@ void funcSetIcon(uint8_t *image, int w, int h)
 
 //
 
+#include "imgui/portable-file-dialogs.h"
 #include "nfd/include/nfd.hpp"
 #include "nfd/include/nfd_glfw3.h"
 
 std::string selectFolderDialog(std::string default_path)
 {
+#ifdef __APPLE__
+    auto result = pfd::select_folder("Select Folder", default_path);
+
+    while (!result.ready(1000))
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+    if (result.result().size() > 0)
+        return result.result();
+    return "";
+#else
     // Init file dialogs
     NFD::Guard nfdGuard;
 
@@ -124,10 +135,28 @@ std::string selectFolderDialog(std::string default_path)
         return ""; //"User pressed cancel.";
     else
         return ""; // "Error: " + std::string(NFD::GetError());
+#endif
 }
 
 std::string selectFileDialog(std::vector<std::pair<std::string, std::string>> filters, std::string default_path)
 {
+#ifdef __APPLE__
+    std::vector<std::string> f;
+    for (auto &ff : filters)
+    {
+        f.push_back(ff.first);
+        f.push_back(ff.second);
+    }
+
+    auto result = pfd::open_file("Select File", default_path, f);
+
+    while (!result.ready(1000))
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+    if (result.result().size() > 0 && result.result()[0].size() > 0)
+        return result.result()[0];
+    return "";
+#else
     // Init file dialogs
     NFD::Guard nfdGuard;
 
@@ -152,10 +181,28 @@ std::string selectFileDialog(std::vector<std::pair<std::string, std::string>> fi
         return ""; //"User pressed cancel.";
     else
         return ""; // "Error: " + std::string(NFD::GetError());
+#endif
 }
 
 std::string saveFileDialog(std::vector<std::pair<std::string, std::string>> filters, std::string default_path, std::string default_name)
 {
+#ifdef __APPLE__
+    std::vector<std::string> f;
+    for (auto &ff : filters)
+    {
+        f.push_back(ff.first);
+        f.push_back(ff.second);
+    }
+
+    auto result = pfd::save_file("Save File", default_path, f);
+
+    while (!result.ready(1000))
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+    if (result.result().size() > 0)
+        return result.result();
+    return "";
+#else
     // Init file dialogs
     NFD::Guard nfdGuard;
 
@@ -180,6 +227,7 @@ std::string saveFileDialog(std::vector<std::pair<std::string, std::string>> filt
         return ""; //"User pressed cancel.";
     else
         return ""; // "Error: " + std::string(NFD::GetError());
+#endif
 }
 
 void bindBackendFunctions()

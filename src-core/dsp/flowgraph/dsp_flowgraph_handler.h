@@ -21,6 +21,8 @@ namespace satdump
 
             std::thread flow_thread;
 
+            std::string to_add_var_name;
+
             // The Rest
             void drawMenu();
             void drawContents(ImVec2 win_size);
