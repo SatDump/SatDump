@@ -3,7 +3,10 @@
 
 #include "dsp/agc/agc.h"
 #include "dsp/conv/char_to_float.h"
+#include "dsp/conv/complex_to_ifloat.h"
+#include "dsp/conv/float_to_char.h"
 #include "dsp/conv/ifloat_to_complex.h"
+#include "dsp/conv/real_to_complex.h"
 #include "dsp/conv/short_to_float.h"
 #include "dsp/device/dev.h"
 #include "dsp/fft/fft_pan.h"
@@ -16,6 +19,7 @@
 #include "dsp/io/iq_source.h"
 #include "dsp/io/nng_iq_sink.h"
 #include "dsp/path/splitter.h"
+#include "dsp/pll/pll_carrier_tracking.h"
 #include "dsp/resampling/rational_resampler.h"
 #include "dsp/utils/throttle.h"
 
@@ -35,7 +39,6 @@
 #include "dsp/utils/freq_shift.h"
 #include "dsp/utils/hilbert.h"
 #include "dsp/utils/quadrature_demod.h"
-#include "dsp/utils/real_to_complex.h"
 #include "dsp/utils/vco.h"
 #include <cstdint>
 
@@ -116,6 +119,7 @@ namespace satdump
             registerNodeSimple<ndsp::AGCBlock<float>>(flowgraph, "AGC/Agc FF");
 
             registerNodeSimple<ndsp::CostasBlock>(flowgraph, "PLL/Costas Loop");
+            registerNodeSimple<ndsp::PLLCarrierTrackingBlock>(flowgraph, "PLL/PLL Carrier Tracking");
 
             registerNodeSimple<ndsp::MMClockRecoveryBlock<complex_t>>(flowgraph, "Timing/Clock Recovery MM CC");
             registerNodeSimple<ndsp::MMClockRecoveryBlock<float>>(flowgraph, "Timing/Clock Recovery MM FF");
@@ -132,8 +136,6 @@ namespace satdump
             registerNodeSimple<ndsp::CorrectIQBlock<complex_t>>(flowgraph, "Utils/Correct IQ");
 
             registerNodeSimple<ndsp::FreqShiftBlock>(flowgraph, "Utils/Frequency Shift");
-
-            registerNodeSimple<ndsp::RealToComplexBlock>(flowgraph, "Utils/Real to Complex");
 
             registerNodeSimple<ndsp::QuadratureDemodBlock>(flowgraph, "Utils/Quadrature Demod");
             registerNodeSimple<ndsp::HilbertBlock>(flowgraph, "Utils/Hilbert Transform");
@@ -162,7 +164,12 @@ namespace satdump
             registerNodeSimple<ndsp::CharToFloatBlock>(flowgraph, "Conv/Char To Float");
             registerNodeSimple<ndsp::ShortToFloatBlock>(flowgraph, "Conv/Short To Float");
 
+            registerNodeSimple<ndsp::FloatToCharBlock>(flowgraph, "Conv/Float To Char");
+
             registerNodeSimple<ndsp::IFloatToComplexBlock>(flowgraph, "Conv/IFloat To Complex");
+            registerNodeSimple<ndsp::ComplexToIFloatBlock>(flowgraph, "Conv/Complex To IFloat");
+
+            registerNodeSimple<ndsp::RealToComplexBlock>(flowgraph, "Conv/Real to Complex");
 
             eventBus->fire_event<RegisterNodesEvent>({flowgraph.node_internal_registry});
 

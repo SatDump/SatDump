@@ -9,8 +9,8 @@ namespace satdump
     {
         template <typename T>
         FileSinkBlock<T>::FileSinkBlock()
-            : Block("file_source_" + getShortTypeName<T>(), //
-                    {{"out", getTypeSampleType<T>()}, {}})
+            : Block("file_sink_" + getShortTypeName<T>(), //
+                    {{"out", getTypeSampleType<T>()}}, {})
         {
         }
 

@@ -30,8 +30,6 @@ namespace satdump
                 nlohmann::ordered_json p;
                 add_param_simple(p, "file", "string");
                 p["file"]["disable"] = is_work_running();
-                add_param_simple(p, "buffer_size", "int");
-                p["buffer_size"]["disable"] = is_work_running();
                 return p;
             }
 
