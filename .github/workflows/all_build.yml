@@ -374,9 +374,6 @@ jobs:
 
   build_macos_intel:
     runs-on: macos-14-intel
-    # MacOS builds are suspended due to significant issues with bundling for the time being
-    if: false
-
     steps:
       - uses: actions/checkout@v4
 
@@ -423,13 +420,13 @@ jobs:
       - name: Bundle
         working-directory: ${{runner.workspace}}/build
         shell: bash
-        env:
-          MACOS_TEAM: ${{ secrets.MACOS_TEAM }}
-          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
-          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-          MACOS_SIGNING_SIGNATURE: ${{ secrets.MACOS_SIGNING_SIGNATURE }}
-          MACOS_NOTARIZATION_UN: ${{ secrets.MACOS_NOTARIZATION_UN }}
-          MACOS_NOTARIZATION_PWD: ${{ secrets.MACOS_NOTARIZATION_PWD }}
+        #env:
+        #  MACOS_TEAM: ${{ secrets.MACOS_TEAM }}
+        #  MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+        #  MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+        #  MACOS_SIGNING_SIGNATURE: ${{ secrets.MACOS_SIGNING_SIGNATURE }}
+        #  MACOS_NOTARIZATION_UN: ${{ secrets.MACOS_NOTARIZATION_UN }}
+        #  MACOS_NOTARIZATION_PWD: ${{ secrets.MACOS_NOTARIZATION_PWD }}
         run: $GITHUB_WORKSPACE/macOS/bundle.sh Intel
 
       - name: Upload DMG
@@ -440,9 +437,6 @@ jobs:
 
   build_macos_silicon:
     runs-on: macos-14
-    # MacOS builds are suspended due to significant issues with bundling for the time being
-    if: false
-
     steps:
       - uses: actions/checkout@v4
 
@@ -489,13 +483,13 @@ jobs:
       - name: Bundle
         working-directory: ${{runner.workspace}}/build
         shell: bash
-        env:
-          MACOS_TEAM: ${{ secrets.MACOS_TEAM }}
-          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
-          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-          MACOS_SIGNING_SIGNATURE: ${{ secrets.MACOS_SIGNING_SIGNATURE }}
-          MACOS_NOTARIZATION_UN: ${{ secrets.MACOS_NOTARIZATION_UN }}
-          MACOS_NOTARIZATION_PWD: ${{ secrets.MACOS_NOTARIZATION_PWD }}
+        #env:
+        #  MACOS_TEAM: ${{ secrets.MACOS_TEAM }}
+        #  MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+        #  MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+        #  MACOS_SIGNING_SIGNATURE: ${{ secrets.MACOS_SIGNING_SIGNATURE }}
+        #  MACOS_NOTARIZATION_UN: ${{ secrets.MACOS_NOTARIZATION_UN }}
+        #  MACOS_NOTARIZATION_PWD: ${{ secrets.MACOS_NOTARIZATION_PWD }}
         run: $GITHUB_WORKSPACE/macOS/bundle.sh Silicon
 
       - name: Upload DMG
