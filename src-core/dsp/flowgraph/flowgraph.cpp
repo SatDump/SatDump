@@ -117,6 +117,8 @@ namespace satdump
 
         void Flowgraph::render()
         {
+            std::lock_guard<std::mutex> lg(flow_mtx);
+
             ImNodes::PushAttributeFlag(ImNodesAttributeFlags_EnableLinkDetachWithDragClick);
 
             ImNodes::BeginNodeEditor();
@@ -380,6 +382,7 @@ namespace satdump
                 for (auto &b : additional_blocks)
                     b->stop();
 
+                // TODOREWORK investigate this
                 std::this_thread::sleep_for(std::chrono::seconds(2));
 
                 for (auto &n : nodes)

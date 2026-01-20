@@ -121,6 +121,7 @@ namespace satdump
                 {
                     std::string load_at = backend::selectFileDialog({{"JSON Files", "json"}}, "");
 
+                    logger->info("Loading flowgraph : " + load_at);
                     if (load_at == "")
                         return;
 
