@@ -373,12 +373,12 @@ jobs:
           path: ${{runner.workspace}}/build/*.deb
 
   build_macos_intel:
-    runs-on: macos-14-intel
+    runs-on: macos-15-intel
     steps:
       - uses: actions/checkout@v4
 
       - name: Select Xcode version
-        run: sudo xcode-select -s '/Applications/Xcode_15.2.app/Contents/Developer'
+        run: sudo xcode-select -s '/Applications/Xcode_16.4.app/Contents/Developer'
 
       - name: Install build dependencies
         run: brew install dylibbundler automake meson
@@ -436,12 +436,12 @@ jobs:
           path: ${{runner.workspace}}/build/*.dmg
 
   build_macos_silicon:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
 
       - name: Select Xcode version
-        run: sudo xcode-select -s '/Applications/Xcode_15.4.app/Contents/Developer'
+        run: sudo xcode-select -s '/Applications/Xcode_16.2.app/Contents/Developer'
 
       - name: Install build dependencies
         run: brew install dylibbundler libtool autoconf automake meson

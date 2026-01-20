@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nlohmann/json.hpp"
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -57,7 +58,7 @@ namespace satdump
 
                     BlockIOType type;
 
-                    NLOHMANN_DEFINE_TYPE_INTRUSIVE(InOut, id, name, is_out, type);
+                    NLOHMANN_DEFINE_TYPE_INTRUSIVE(InOut, id, name, is_out);
                 };
 
                 std::vector<InOut> node_io;
@@ -107,6 +108,8 @@ namespace satdump
             };
 
         private:
+            std::mutex flow_mtx;
+
             std::vector<std::shared_ptr<Node>> nodes;
             std::vector<Link> links;
 
@@ -133,6 +136,7 @@ namespace satdump
 
             nlohmann::json getJSON()
             {
+                std::lock_guard<std::mutex> lg(flow_mtx);
                 nlohmann::json j;
                 for (auto &n : nodes)
                     j["nodes"][n->id] = n->getJSON();
@@ -143,7 +147,9 @@ namespace satdump
 
             void setJSON(nlohmann::json j)
             {
-                variables = j["vars"];
+                std::lock_guard<std::mutex> lg(flow_mtx);
+                if (j.contains("vars"))
+                    variables = j["vars"];
 
                 nodes.clear();
                 links.clear();
@@ -153,7 +159,8 @@ namespace satdump
                     if (node_internal_registry.count(n.value()["int_id"]))
                     {
                         auto i = node_internal_registry[n.value()["int_id"]].func(this);
-                        nodes.push_back(std::make_shared<Node>(this, n.value(), i));
+                        auto nn = std::make_shared<Node>(this, n.value(), i);
+                        nodes.push_back(nn);
                     }
                     else
                     {
@@ -180,6 +187,27 @@ namespace satdump
 
                     if (got_in && got_ou)
                         links.push_back(link);
+                }
+
+                // Update node IOs to reflect the proper types on links
+                for (auto &n : nodes)
+                {
+                    size_t ic = 0, oc = 0;
+                    for (auto &io : n->node_io)
+                    {
+                        if (io.is_out)
+                        {
+                            if (n->internal->blk->get_outputs().size() > oc)
+                                io.type = n->internal->blk->get_outputs()[oc].type;
+                            oc++;
+                        }
+                        else
+                        {
+                            if (n->internal->blk->get_inputs().size() > ic)
+                                io.type = n->internal->blk->get_inputs()[ic++].type;
+                            ic++;
+                        }
+                    }
                 }
             }
 

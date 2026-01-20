@@ -56,7 +56,7 @@ fi
 
 echo "Re-linking binaries"
 plugin_args=$(ls MacApp/SatDump.app/Contents/Resources/plugins | xargs printf -- '-x MacApp/SatDump.app/Contents/Resources/plugins/%s ')
-dylibbundler $SIGN_FLAG -cd -s $GITHUB_WORKSPACE/vcpkg/installed/osx-satdump/lib/ -s . -d MacApp/SatDump.app/Contents/libs -b -x MacApp/SatDump.app/Contents/MacOS/satdump-ui -x MacApp/SatDump.app/Contents/MacOS/satdump_sdr_server -x MacApp/SatDump.app/Contents/MacOS/satdump $plugin_args
+dylibbundler $SIGN_FLAG -cd -s $GITHUB_WORKSPACE/vcpkg/installed/osx-satdump/lib/ -s $GITHUB_WORKSPACE/vcpkg/buildtrees/hdf5/osx-satdump-rel/bin/ -s $GITHUB_WORKSPACE/vcpkg/buildtrees/zstd/osx-satdump-rel/lib/ -s $GITHUB_WORKSPACE/vcpkg/buildtrees/zlib/osx-satdump-rel -s . -d MacApp/SatDump.app/Contents/libs -b -x MacApp/SatDump.app/Contents/MacOS/satdump-ui -x MacApp/SatDump.app/Contents/MacOS/satdump_sdr_server -x MacApp/SatDump.app/Contents/MacOS/satdump $plugin_args
 
 if [[ -n "$MACOS_SIGNING_SIGNATURE" ]]
 then
