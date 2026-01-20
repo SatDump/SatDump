@@ -378,7 +378,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Select Xcode version
-        run: sudo xcode-select -s '/Applications/Xcode_15.2.app/Contents/Developer'
+        run: sudo xcode-select -s '/Applications/Xcode_16.4.app/Contents/Developer'
 
       - name: Install build dependencies
         run: brew install dylibbundler automake meson
@@ -441,7 +441,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Select Xcode version
-        run: sudo xcode-select -s '/Applications/Xcode_15.4.app/Contents/Developer'
+        run: sudo xcode-select -s '/Applications/Xcode_16.2.app/Contents/Developer'
 
       - name: Install build dependencies
         run: brew install dylibbundler libtool autoconf automake meson
