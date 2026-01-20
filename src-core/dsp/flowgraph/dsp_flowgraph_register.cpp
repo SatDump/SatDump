@@ -3,6 +3,7 @@
 
 #include "dsp/agc/agc.h"
 #include "dsp/conv/char_to_float.h"
+#include "dsp/conv/complex_to_float.h"
 #include "dsp/conv/complex_to_ifloat.h"
 #include "dsp/conv/float_to_char.h"
 #include "dsp/conv/ifloat_to_complex.h"
@@ -170,6 +171,8 @@ namespace satdump
             registerNodeSimple<ndsp::ComplexToIFloatBlock>(flowgraph, "Conv/Complex To IFloat");
 
             registerNodeSimple<ndsp::RealToComplexBlock>(flowgraph, "Conv/Real to Complex");
+
+            registerNodeSimple<ndsp::ComplexToFloatBlock>(flowgraph, "Conv/Complex To Float");
 
             eventBus->fire_event<RegisterNodesEvent>({flowgraph.node_internal_registry});
 
