@@ -372,7 +372,7 @@ namespace satdump
                 for (auto &b : additional_blocks)
                     b->start();
                 for (auto &n : nodes)
-                    n->internal->up_state();
+                    n->internal->upd_state();
 
                 // And then wait for them to exit
                 for (auto &n : nodes)
@@ -383,7 +383,7 @@ namespace satdump
                 std::this_thread::sleep_for(std::chrono::seconds(2));
 
                 for (auto &n : nodes)
-                    n->internal->up_state();
+                    n->internal->upd_state();
             }
             catch (std::exception &e)
             {

@@ -26,7 +26,7 @@ namespace satdump
 
             virtual bool render();
 
-            virtual void up_state() { optdisp->update(); }
+            virtual void upd_state() { optdisp->update(); }
 
             virtual nlohmann::json getP();
             virtual void setP(nlohmann::json p);
