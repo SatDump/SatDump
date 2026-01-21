@@ -1,6 +1,7 @@
 #pragma once
 
 #include "generic.h"
+#include <cstddef>
 #include <vector>
 
 class AtmosphericGasesITU : public GenericAttenuation

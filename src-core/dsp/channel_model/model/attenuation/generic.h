@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstddef>
 
 /*!
  * \brief Parent class for attenuation objects.

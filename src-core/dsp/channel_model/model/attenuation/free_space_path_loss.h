@@ -1,6 +1,7 @@
 #pragma once
 
 #include "generic.h"
+#include <cstddef>
 
 /*
  * Calculate Free-Space path-loss based on ITU R-REC-P.619
