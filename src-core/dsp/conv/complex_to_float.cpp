@@ -16,8 +16,8 @@ namespace satdump
         {
             for (uint32_t i = 0; i < nsamples[0]; i++)
             {
-                output[0][i] = input[i]->real;
-                output[1][i] = input[i]->imag;
+                output[0][i] = input[0][i].real;
+                output[1][i] = input[0][i].imag;
             }
 
             nsamples_out[0] = nsamples[0];

@@ -29,10 +29,15 @@ namespace satdump
             float output_buffer_size_ratio[No];
 
         private:
+            Ti *ibufs[Ni];
+            uint32_t ibufs_sz[Ni];
+
+            To *obufs[No];
+            uint32_t obufs_sz[No];
+
+        private:
             bool work()
             {
-                Ti *ibufs[Ni];
-                uint32_t ibufs_sz[Ni];
                 DSPBuffer iblk[Ni];
                 uint32_t max_buf_size = 0;
                 for (int i = 0; i < Ni; i++)
@@ -52,10 +57,9 @@ namespace satdump
                     ibufs_sz[i] = iblk[i].size;
 
                     if (max_buf_size < iblk[i].max_size)
-                        max_buf_size < iblk[i].max_size;
+                        max_buf_size = iblk[i].max_size;
                 }
 
-                To *obufs[No];
                 DSPBuffer oblk[No];
                 for (int o = 0; o < No; o++)
                 {
@@ -63,7 +67,6 @@ namespace satdump
                     obufs[o] = oblk[o].template getSamples<To>();
                 }
 
-                uint32_t obufs_sz[No];
                 process(ibufs, ibufs_sz, obufs, obufs_sz);
 
                 for (int o = 0; o < No; o++)
