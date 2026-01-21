@@ -3,6 +3,7 @@
 #include "generic.h"
 #include <vector>
 #include <cstddef>
+#include <tuple>
 
 class AtmosphericGasesRegression : public GenericAttenuation
 {
