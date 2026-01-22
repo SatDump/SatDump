@@ -476,6 +476,12 @@ namespace satdump
                                                logger->trace("Viewer loading shapefile " + path);
                                                e->addHandler(std::make_shared<handlers::ShapefileHandler>(path));
                                            }});
+                    else if (std::filesystem::path(path).extension().string() == ".satdump_dsp_flowgraph")
+                        loaders.push_back({"DSP Flowgraph Loader", [](std::string path, ExplorerApplication *e)
+                                           {
+                                               logger->trace("Viewer loading DSP flowgraph " + path);
+                                               e->addHandler(std::make_shared<handlers::DSPFlowGraphHandler>(path));
+                                           }});
 
                     // Plugin loaders
                     eventBus->fire_event<ExplorerRequestFileLoad>({path, loaders});

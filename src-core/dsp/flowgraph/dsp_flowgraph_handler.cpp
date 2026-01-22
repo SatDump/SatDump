@@ -14,7 +14,7 @@ namespace satdump
 {
     namespace handlers
     {
-        DSPFlowGraphHandler::DSPFlowGraphHandler()
+        DSPFlowGraphHandler::DSPFlowGraphHandler(std::string file)
         {
             // TODOREWORK
             if (ImNodes::GetCurrentContext() == nullptr)
@@ -23,6 +23,10 @@ namespace satdump
             handler_tree_icon = u8"\uf92f";
 
             ndsp::registerNodesInFlowgraph(flowgraph);
+
+            if (file != "")
+                flowgraph.setJSON(loadCborFile(file));
+            current_file = file;
         }
 
         DSPFlowGraphHandler::~DSPFlowGraphHandler()
@@ -104,13 +108,13 @@ namespace satdump
             {
                 auto fun = [this]()
                 {
-                    std::string save_at = backend::saveFileDialog({{"JSON Files", "*.json"}}, "", "flowgraph.json");
+                    std::string save_at = current_file == "" ? backend::saveFileDialog({{"SatDump DSP Flowgraph", "satdump_dsp_flowgraph"}}, "", "flowgraph.satdump_dsp_flowgraph") : current_file;
 
+                    logger->info("Saving flowgraph : " + save_at);
                     if (save_at == "")
                         return;
 
-                    std::string json = flowgraph.getJSON().dump(4);
-                    std::ofstream(save_at, std::ios::binary).write(json.c_str(), json.size());
+                    saveCborFile(save_at, flowgraph.getJSON());
                 };
                 tq.push(fun);
             }
@@ -119,13 +123,13 @@ namespace satdump
             {
                 auto fun = [this]()
                 {
-                    std::string load_at = backend::selectFileDialog({{"JSON Files", "json"}}, "");
+                    std::string load_at = backend::selectFileDialog({{"SatDump DSP Flowgraph", "satdump_dsp_flowgraph"}}, "");
 
                     logger->info("Loading flowgraph : " + load_at);
                     if (load_at == "")
                         return;
 
-                    flowgraph.setJSON(loadJsonFile(load_at));
+                    flowgraph.setJSON(loadCborFile(load_at));
                 };
                 tq.push(fun);
             }

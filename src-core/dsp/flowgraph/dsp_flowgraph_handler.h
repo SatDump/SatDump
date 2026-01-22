@@ -14,8 +14,10 @@ namespace satdump
         class DSPFlowGraphHandler : public Handler
         {
         public:
-            DSPFlowGraphHandler();
+            DSPFlowGraphHandler(std::string file = "");
             ~DSPFlowGraphHandler();
+
+            std::string current_file = "";
 
             ndsp::Flowgraph flowgraph;
 
@@ -30,7 +32,7 @@ namespace satdump
 
             TaskQueue tq;
 
-            std::string getName() { return "Flowgraph"; }
+            std::string getName() { return current_file == "" ? "DSP Flowgraph" : std::filesystem::path(current_file).stem().string(); }
 
             std::string getID() { return "dsp_flowgraph_handler"; }
         };
