@@ -184,7 +184,7 @@ namespace metopsg
                     image::save_png(img, directory + "/" + name + ".png");
                 }
 
-                dataset.products_list.push_back("Sentinel-5");
+                // dataset.products_list.push_back("Sentinel-5");
 
                 sentinel5_status = DONE;
             }
