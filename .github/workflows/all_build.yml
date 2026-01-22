@@ -417,9 +417,9 @@ jobs:
         # Execute the build.  You can specify a specific target with "--target <NAME>"
         run: make -j8
 
-      - name: Bundle
-        working-directory: ${{runner.workspace}}/build
-        shell: bash
+      #- name: Bundle
+      #  working-directory: ${{runner.workspace}}/build
+      #  shell: bash
         #env:
         #  MACOS_TEAM: ${{ secrets.MACOS_TEAM }}
         #  MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
@@ -427,13 +427,13 @@ jobs:
         #  MACOS_SIGNING_SIGNATURE: ${{ secrets.MACOS_SIGNING_SIGNATURE }}
         #  MACOS_NOTARIZATION_UN: ${{ secrets.MACOS_NOTARIZATION_UN }}
         #  MACOS_NOTARIZATION_PWD: ${{ secrets.MACOS_NOTARIZATION_PWD }}
-        run: $GITHUB_WORKSPACE/macOS/bundle.sh Intel
+      #  run: $GITHUB_WORKSPACE/macOS/bundle.sh Intel
 
-      - name: Upload DMG
-        uses: actions/upload-artifact@v4
-        with:
-          name: SatDump-macOS-Intel
-          path: ${{runner.workspace}}/build/*.dmg
+      #- name: Upload DMG
+      #  uses: actions/upload-artifact@v4
+      #  with:
+      #    name: SatDump-macOS-Intel
+      #    path: ${{runner.workspace}}/build/*.dmg
 
   build_macos_silicon:
     runs-on: macos-15
@@ -480,9 +480,9 @@ jobs:
         # Execute the build.  You can specify a specific target with "--target <NAME>"
         run: make -j6
 
-      - name: Bundle
-        working-directory: ${{runner.workspace}}/build
-        shell: bash
+      #- name: Bundle
+      #  working-directory: ${{runner.workspace}}/build
+      #  shell: bash
         #env:
         #  MACOS_TEAM: ${{ secrets.MACOS_TEAM }}
         #  MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
@@ -490,13 +490,13 @@ jobs:
         #  MACOS_SIGNING_SIGNATURE: ${{ secrets.MACOS_SIGNING_SIGNATURE }}
         #  MACOS_NOTARIZATION_UN: ${{ secrets.MACOS_NOTARIZATION_UN }}
         #  MACOS_NOTARIZATION_PWD: ${{ secrets.MACOS_NOTARIZATION_PWD }}
-        run: $GITHUB_WORKSPACE/macOS/bundle.sh Silicon
+      #  run: $GITHUB_WORKSPACE/macOS/bundle.sh Silicon
 
-      - name: Upload DMG
-        uses: actions/upload-artifact@v4
-        with:
-          name: SatDump-macOS-Silicon
-          path: ${{runner.workspace}}/build/*.dmg
+      #- name: Upload DMG
+      #  uses: actions/upload-artifact@v4
+      #  with:
+      #    name: SatDump-macOS-Silicon
+      #    path: ${{runner.workspace}}/build/*.dmg
 
   # Yes, since I was asked to do like SDR++ for this I did look at how Ryzerth has done it :-)
   update_nightly_release:
