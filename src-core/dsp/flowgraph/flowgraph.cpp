@@ -3,6 +3,7 @@
 #include <chrono>
 #include <limits>
 
+#include "core/style.h"
 #include "dsp/block.h"
 #include "imgui/imgui.h"
 #include "imgui/imnodes/imnodes.h"
@@ -119,6 +120,7 @@ namespace satdump
         {
             std::lock_guard<std::mutex> lg(flow_mtx);
 
+            ImNodes::PushStyleVar(ImNodesStyleVar_PinCircleRadius, 6);
             ImNodes::PushAttributeFlag(ImNodesAttributeFlags_EnableLinkDetachWithDragClick);
 
             ImNodes::BeginNodeEditor();
@@ -138,25 +140,23 @@ namespace satdump
 
                 for (auto &io : n->node_io)
                 {
+                    ImNodes::PushColorStyle(ImNodesCol_Pin, getColorFromDSPType(io.type));
                     if (io.is_out)
                     {
-                        ImNodes::PushColorStyle(ImNodesCol_Pin, getColorFromDSPType(io.type));
                         ImNodes::BeginOutputAttribute(io.id);
-                        //                    const float node_width = 200.0 * ui_scale;
-                        //                    const float label_width = ImGui::CalcTextSize(io.name.c_str()).x;
-                        //                    ImGui::Indent(node_width - label_width);
+                        const float node_width = ImNodes::GetNodeDimensions(n->id).x;
+                        const float label_width = ImGui::CalcTextSize(io.name.c_str()).x;
+                        ImGui::Indent(node_width - label_width - 20 * ui_scale);
                         ImGui::Text("%s", io.name.c_str());
                         ImNodes::EndOutputAttribute();
-                        ImNodes::PopColorStyle();
                     }
                     else
                     {
-                        ImNodes::PushColorStyle(ImNodesCol_Pin, getColorFromDSPType(io.type));
                         ImNodes::BeginInputAttribute(io.id);
                         ImGui::Text("%s", io.name.c_str());
                         ImNodes::EndInputAttribute();
-                        ImNodes::PopColorStyle();
                     }
+                    ImNodes::PopColorStyle();
                 }
 
                 ImNodes::EndNode();
@@ -188,6 +188,9 @@ namespace satdump
             }
 
             ImNodes::EndNodeEditor();
+
+            ImNodes::PopAttributeFlag();
+            ImNodes::PopStyleVar();
 
             // Lock down edition when running!
             if (!is_running)

@@ -104,22 +104,26 @@ namespace satdump
 
         void DSPFlowGraphHandler::drawMenuBar()
         {
-            if (ImGui::MenuItem("Save"))
+            bool is_save_as = false;
+            if (ImGui::MenuItem("\ueb4b", NULL, false, current_file != "") || //
+                (is_save_as = ImGui::MenuItem("\ueb4a")) ||                   //
+                (ImGui::IsKeyDown(ImGuiKey_ReservedForModCtrl) && ImGui::IsKeyPressed(ImGuiKey_S)))
             {
-                auto fun = [this]()
+                auto fun = [this, is_save_as]()
                 {
-                    std::string save_at = current_file == "" ? backend::saveFileDialog({{"SatDump DSP Flowgraph", "satdump_dsp_flowgraph"}}, "", "flowgraph.satdump_dsp_flowgraph") : current_file;
+                    std::string save_at = is_save_as ? backend::saveFileDialog({{"SatDump DSP Flowgraph", "satdump_dsp_flowgraph"}}, "", "flowgraph.satdump_dsp_flowgraph") : current_file;
 
                     logger->info("Saving flowgraph : " + save_at);
                     if (save_at == "")
                         return;
 
                     saveCborFile(save_at, flowgraph.getJSON());
+                    current_file = save_at;
                 };
                 tq.push(fun);
             }
 
-            if (ImGui::MenuItem("Load"))
+            if (ImGui::MenuItem("\uea7f"))
             {
                 auto fun = [this]()
                 {
@@ -134,6 +138,7 @@ namespace satdump
                 tq.push(fun);
             }
 
+#if 0
             if (ImGui::MenuItem("To Clipboard"))
             {
                 std::string json = flowgraph.getJSON().dump(4);
@@ -145,6 +150,7 @@ namespace satdump
                 nlohmann::json v = nlohmann::json::parse(ImGui::GetClipboardText());
                 flowgraph.setJSON(v);
             }
+#endif
         }
 
         void DSPFlowGraphHandler::drawContents(ImVec2 win_size) { flowgraph.render(); }
