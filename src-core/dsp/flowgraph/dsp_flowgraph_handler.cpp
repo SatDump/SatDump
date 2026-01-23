@@ -42,22 +42,6 @@ namespace satdump
             if (ImGui::CollapsingHeader("Flowgraph"))
             {
                 if (running)
-                {
-                    if (ImGui::Button("Stop"))
-                        flowgraph.stop();
-                }
-                else
-                {
-                    if (ImGui::Button("Start"))
-                    {
-                        if (flow_thread.joinable())
-                            flow_thread.join();
-                        auto fun = [&]() { flowgraph.run(); };
-                        flow_thread = std::thread(fun);
-                    }
-                }
-
-                if (running)
                     style::beginDisabled();
 
 #if 0
@@ -104,6 +88,24 @@ namespace satdump
 
         void DSPFlowGraphHandler::drawMenuBar()
         {
+            bool running = flowgraph.is_running;
+
+            if (running)
+            {
+                if (ImGui::MenuItem("\ufc62"))
+                    flowgraph.stop();
+            }
+            else
+            {
+                if (ImGui::MenuItem("\uf909"))
+                {
+                    if (flow_thread.joinable())
+                        flow_thread.join();
+                    auto fun = [&]() { flowgraph.run(); };
+                    flow_thread = std::thread(fun);
+                }
+            }
+
             bool is_save_as = false;
             if (ImGui::MenuItem("\ueb4b", NULL, false, current_file != "") || //
                 (is_save_as = ImGui::MenuItem("\ueb4a")) ||                   //

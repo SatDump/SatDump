@@ -121,6 +121,7 @@ namespace satdump
             std::lock_guard<std::mutex> lg(flow_mtx);
 
             ImNodes::PushStyleVar(ImNodesStyleVar_PinCircleRadius, 6);
+            ImNodes::PushStyleVar(ImNodesStyleVar_LinkThickness, 4);
             ImNodes::PushAttributeFlag(ImNodesAttributeFlags_EnableLinkDetachWithDragClick);
 
             ImNodes::BeginNodeEditor();
@@ -190,6 +191,7 @@ namespace satdump
             ImNodes::EndNodeEditor();
 
             ImNodes::PopAttributeFlag();
+            ImNodes::PopStyleVar();
             ImNodes::PopStyleVar();
 
             // Lock down edition when running!
