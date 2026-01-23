@@ -1,5 +1,6 @@
 #pragma once
 
+#include "dsp/flowgraph/context_wrapper.h"
 #include "dsp/flowgraph/flowgraph.h"
 #include "handlers/handler.h"
 
@@ -16,6 +17,8 @@ namespace satdump
         public:
             DSPFlowGraphHandler(std::string file = "");
             ~DSPFlowGraphHandler();
+
+            ContainedContext ctx;
 
             std::string current_file = "";
 

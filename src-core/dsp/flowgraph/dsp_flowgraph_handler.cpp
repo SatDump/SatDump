@@ -3,6 +3,7 @@
 
 #include "dsp/flowgraph/dsp_flowgraph_register.h"
 #include "imgui/imgui.h"
+#include "imgui/imgui_flags.h"
 #include "imgui/imnodes/imnodes.h"
 #include "logger.h"
 
@@ -133,6 +134,20 @@ namespace satdump
 #endif
         }
 
-        void DSPFlowGraphHandler::drawContents(ImVec2 win_size) { flowgraph.render(); }
+        void DSPFlowGraphHandler::drawContents(ImVec2 win_size)
+        {
+            ctx.config().color = ImGui::GetColorU32(ImGuiCol_WindowBg);
+
+            ctx.begin();
+
+            float f = 15;
+            ImGui::SetNextWindowPos({-f / ctx.scale(), -f / ctx.scale()});
+            ImGui::SetNextWindowSize({(float)(win_size.x / ctx.scale()) + 2 * (f / ctx.scale()), (float)(win_size.y / ctx.scale()) + 2 * (f / ctx.scale())});
+            ImGui::Begin("SatDump UI", nullptr, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse);
+            flowgraph.render();
+            ImGui::End();
+
+            ctx.end();
+        }
     } // namespace handlers
 } // namespace satdump
