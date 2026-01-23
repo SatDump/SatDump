@@ -46,6 +46,8 @@ namespace satdump
         public:
             void draw();
 
+            bool show_panel = true;
+
         protected:
             const std::string app_id;
 

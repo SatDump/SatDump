@@ -395,32 +395,46 @@ namespace satdump
 
             ImVec2 explorer_size = ImGui::GetContentRegionAvail();
 
-            if (ImGui::BeginTable("##explorer_table", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInnerV))
+            if (show_panel)
             {
-                ImGui::TableSetupColumn("##panel_v", ImGuiTableColumnFlags_None, explorer_size.x * panel_ratio);
-                ImGui::TableSetupColumn("##view", ImGuiTableColumnFlags_None, explorer_size.x * (1.0f - panel_ratio));
-                ImGui::TableNextColumn();
+                if (ImGui::BeginTable("##explorer_table", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInnerV))
+                {
+                    ImGui::TableSetupColumn("##panel_v", ImGuiTableColumnFlags_None, explorer_size.x * panel_ratio);
+                    ImGui::TableSetupColumn("##view", ImGuiTableColumnFlags_None, explorer_size.x * (1.0f - panel_ratio));
+                    ImGui::TableNextColumn();
 
-                float left_width = ImGui::GetColumnWidth(0);
-                float right_width = explorer_size.x - left_width;
-                if (left_width != last_width && last_width != -1)
-                    panel_ratio = left_width / explorer_size.x;
-                last_width = left_width;
+                    float left_width = ImGui::GetColumnWidth(0);
+                    float right_width = explorer_size.x - left_width;
+                    if (left_width != last_width && last_width != -1)
+                        panel_ratio = left_width / explorer_size.x;
+                    last_width = left_width;
 
-                ImGui::BeginChild("ExplorerChildPanel", {left_width, float(explorer_size.y - 10)}, false);
-                drawPanel();
-                ImGui::EndChild();
+                    ImGui::BeginChild("ExplorerChildPanel", {left_width, float(explorer_size.y - 10)}, false);
+                    drawPanel();
+                    ImGui::EndChild();
 
-                ImGui::TableNextColumn();
+                    ImGui::TableNextColumn();
+                    ImGui::BeginGroup();
+
+                    if (curr_handler)
+                        curr_handler->drawContents({float(right_width - 9 * ui_scale), float(explorer_size.y)});
+                    else
+                        drawContents();
+
+                    ImGui::EndGroup();
+                    ImGui::EndTable();
+                }
+            }
+            else
+            {
                 ImGui::BeginGroup();
 
                 if (curr_handler)
-                    curr_handler->drawContents({float(right_width - 9 * ui_scale), float(explorer_size.y)});
+                    curr_handler->drawContents({float(explorer_size.x - 9 * explorer_size.x), float(explorer_size.y)});
                 else
                     drawContents();
 
                 ImGui::EndGroup();
-                ImGui::EndTable();
             }
         }
 
@@ -480,7 +494,7 @@ namespace satdump
                         loaders.push_back({"DSP Flowgraph Loader", [](std::string path, ExplorerApplication *e)
                                            {
                                                logger->trace("Viewer loading DSP flowgraph " + path);
-                                               e->addHandler(std::make_shared<handlers::DSPFlowGraphHandler>(path));
+                                               e->addHandler(std::make_shared<handlers::DSPFlowGraphHandler>(path), true);
                                            }});
 
                     // Plugin loaders

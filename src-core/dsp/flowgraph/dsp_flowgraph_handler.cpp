@@ -39,28 +39,6 @@ namespace satdump
         {
             bool running = flowgraph.is_running;
 
-            if (ImGui::CollapsingHeader("Flowgraph"))
-            {
-                if (running)
-                    style::beginDisabled();
-
-#if 0
-                auto pos = ImGui::GetCursorPos();
-                ImGui::Button("##test", {50, 50});
-                pos.x += 10;
-                ImGui::GetWindowDrawList()                        //
-                    ->AddTriangleFilled({pos.x + 10, pos.y + 43}, //
-                                        {pos.x + 10, pos.y + 77}, //
-                                        {pos.x + 40, pos.y + 60}, //
-                                        ImColor(255, 255, 255, 255));
-#endif
-
-                //            needs_to_update |= TODO; // TODOREWORK move in top drawMenu?
-
-                if (running)
-                    style::endDisabled();
-            }
-
             if (ImGui::CollapsingHeader("Variables"))
             {
                 if (running)
