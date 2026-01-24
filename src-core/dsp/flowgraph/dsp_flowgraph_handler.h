@@ -5,6 +5,7 @@
 #include "handlers/handler.h"
 
 #include "dsp/device/dev.h"
+#include "imgui/imnodes/imnodes_internal.h"
 #include "utils/task_queue.h"
 
 // TODOREWORK, move into plugin? Or Core?
@@ -18,6 +19,7 @@ namespace satdump
             DSPFlowGraphHandler(std::string file = "");
             ~DSPFlowGraphHandler();
 
+            ImNodesContext *imnode_ctx = nullptr;
             ContainedContext ctx;
 
             std::string current_file = "";
