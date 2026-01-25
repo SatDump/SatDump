@@ -1,4 +1,5 @@
 #include "dsp_flowgraph_handler.h"
+#include "common/widgets/menuitem_tooltip.h"
 #include "core/backend.h"
 
 #include "dsp/flowgraph/dsp_flowgraph_register.h"
@@ -71,12 +72,12 @@ namespace satdump
 
             if (running)
             {
-                if (ImGui::MenuItem("\ufc62"))
+                if (widgets::MenuItemTooltip("\ufc62", "Stop flowgraph"))
                     flowgraph.stop();
             }
             else
             {
-                if (ImGui::MenuItem("\uf909"))
+                if (widgets::MenuItemTooltip("\uf909", "Start flowgraph"))
                 {
                     if (flow_thread.joinable())
                         flow_thread.join();
@@ -86,8 +87,8 @@ namespace satdump
             }
 
             bool is_save_as = false;
-            if (ImGui::MenuItem("\ueb4b", NULL, false, current_file != "") || //
-                (is_save_as = ImGui::MenuItem("\ueb4a")) ||                   //
+            if (widgets::MenuItemTooltip("\ueb4b", "Save file", NULL, false, current_file != "") || //
+                (is_save_as = widgets::MenuItemTooltip("\ueb4a", "Save file as")) ||                //
                 (ImGui::IsKeyDown(ImGuiKey_ReservedForModCtrl) && ImGui::IsKeyPressed(ImGuiKey_S)))
             {
                 auto fun = [this, is_save_as]()
@@ -104,7 +105,7 @@ namespace satdump
                 tq.push(fun);
             }
 
-            if (ImGui::MenuItem("\uea7f"))
+            if (widgets::MenuItemTooltip("\uea7f", "Load a file"))
             {
                 auto fun = [this]()
                 {
