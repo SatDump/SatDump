@@ -18,10 +18,6 @@ namespace satdump
     {
         DSPFlowGraphHandler::DSPFlowGraphHandler(std::string file)
         {
-            // TODOREWORK
-            if (ImNodes::GetCurrentContext() == nullptr)
-                ImNodes::CreateContext();
-
             handler_tree_icon = u8"\uf92f";
 
             ndsp::registerNodesInFlowgraph(flowgraph);
@@ -35,6 +31,9 @@ namespace satdump
         {
             if (flow_thread.joinable())
                 flow_thread.join();
+
+            if (imnode_ctx != nullptr)
+                ImNodes::DestroyContext(imnode_ctx);
         }
 
         void DSPFlowGraphHandler::drawMenu()
@@ -137,6 +136,10 @@ namespace satdump
 
         void DSPFlowGraphHandler::drawContents(ImVec2 win_size)
         {
+            if (imnode_ctx == nullptr)
+                imnode_ctx = ImNodes::CreateContext();
+            ImNodes::SetCurrentContext(imnode_ctx);
+
             ctx.config().color = ImGui::GetColorU32(ImGuiCol_WindowBg);
 
             ctx.begin();
