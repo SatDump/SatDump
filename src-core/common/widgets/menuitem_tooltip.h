@@ -4,6 +4,8 @@
  * @file menuitem_tooltip.h
  */
 
+#include <cstddef>
+
 namespace satdump
 {
     namespace widgets
@@ -16,6 +18,6 @@ namespace satdump
          * @param selected See ImGui
          * @param enabled See ImGui
          */
-        bool MenuItemTooltip(const char *label, const char *tooltip, const char *shortcut = __null, bool selected = false, bool enabled = true);
+        bool MenuItemTooltip(const char *label, const char *tooltip, const char *shortcut = NULL, bool selected = false, bool enabled = true);
     } // namespace widgets
 } // namespace satdump

@@ -2,6 +2,7 @@
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
+#include <cmath>
 
 inline static void CopyIOEvents(ImGuiContext *src, ImGuiContext *dst, ImVec2 origin, float scale)
 {
