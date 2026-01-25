@@ -6,8 +6,11 @@
 #include "core/style.h"
 #include "recorder/recorder.h"
 
+#include "status_logger_sink.h"
+
 #include "common/audio/audio_sink.h"
 #include "common/widgets/markdown_helper.h"
+#include "common/widgets/menuitem_tooltip.h"
 #include "core/backend.h"
 #include "core/plugin.h"
 #include "core/resources.h"
@@ -19,7 +22,6 @@
 #include "offline.h"
 #include "satdump_vars.h"
 #include "settings.h"
-#include "status_logger_sink.h"
 
 #include "imgui/implot/implot.h"
 #include "imgui/implot3d/implot3d.h"
@@ -30,7 +32,7 @@ namespace satdump
 
     SATDUMP_DLL2 bool update_ui = true;
 
-    widgets::MarkdownHelper credits_md;
+    ::widgets::MarkdownHelper credits_md;
 
     std::shared_ptr<NotifyLoggerSink> notify_logger_sink;
     std::shared_ptr<StatusLoggerSink> status_logger_sink;
@@ -185,7 +187,7 @@ namespace satdump
 
             if (ImGui::BeginMenuBar())
             {
-                if (ImGui::BeginMenu("Help"))
+                if (widgets::BeginMenuTooltip("?", "Help"))
                 {
                     if (ImGui::MenuItem("Documentation"))
                         ;

@@ -12,5 +12,13 @@ namespace satdump
                 ImGui::SetTooltip("%s", tooltip);
             return v;
         }
+
+        bool BeginMenuTooltip(const char *label, const char *tooltip, bool enabled)
+        {
+            bool v = ImGui::BeginMenu(label, enabled);
+            if (!v && ImGui::IsItemHovered())
+                ImGui::SetTooltip("%s", tooltip);
+            return v;
+        }
     } // namespace widgets
 } // namespace satdump
