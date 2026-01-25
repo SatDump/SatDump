@@ -21,8 +21,6 @@ namespace satdump
             bool needs_reinit = false;
 
         private:
-            // T *buffer = nullptr;
-
             float d_samprate;
             float d_freq;
             float d_amp;

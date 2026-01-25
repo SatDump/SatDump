@@ -10,11 +10,6 @@ namespace satdump
                     {{"out", getTypeSampleType<T>()}})
         {
             d_buffer_size = p_buffer_size;
-
-            // if (buffer == nullptr)
-            //     volk_free(buffer);
-
-            // buffer = dsp::create_volk_buffer<T>(1e6);
         }
 
         template <typename T>
@@ -29,8 +24,6 @@ namespace satdump
         template <typename T>
         CosBlock<T>::~CosBlock()
         {
-            // if (buffer == nullptr)
-            //     volk_free(buffer);
         }
 
         template <typename T>
@@ -70,33 +63,6 @@ namespace satdump
 
                 oblk.size = d_buffer_size;
                 outputs[0].fifo->wait_enqueue(oblk);
-
-                //
-                // DSPBuffer oblk = outputs[0].fifo->newBufferSamples(d_buffer_size, sizeof(T));
-                // T *obuf = oblk.getSamples<T>();
-                //
-                // int nsamples = oblk.size;
-                //
-                // // memcpy(void *__restrict dest, const void *__restrict src, size_t n)
-                //
-                // for (int i = 0; i < oblk.size; i++)
-                // {
-                //     float t = i / (double)d_samprate;
-                //     float amp = cosf(t * d_freq * M_PI);
-                //     obuf[i] = amp;
-                // }
-
-                // float fracFreq = d_freq / d_samprate;
-                // d_phase += 2.0 * M_PI * fracFreq;
-                //
-                // d_phase += ((d_phase >= 2.0 * M_PI) * -2.0 * M_PI) + ((d_phase < 0.0) * 2.0 * M_PI);
-                //
-                // for (int i = 0; i < oblk.size; i++)
-                // {
-                //     obuf[i] = cos(d_phase) * d_amp;
-                // }
-
-                // outputs[0].fifo->wait_enqueue(oblk);
             }
             else
             {
