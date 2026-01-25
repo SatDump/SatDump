@@ -23,6 +23,8 @@
 #include "dsp/path/splitter.h"
 #include "dsp/pll/pll_carrier_tracking.h"
 #include "dsp/resampling/rational_resampler.h"
+#include "dsp/utils/correct_iq.h"
+#include "dsp/utils/cosine_source.h"
 #include "dsp/utils/throttle.h"
 
 #include "common/widgets/fft_plot.h"
@@ -43,6 +45,7 @@
 #include "dsp/utils/quadrature_demod.h"
 #include "dsp/utils/vco.h"
 #include <cstdint>
+#include <memory>
 
 namespace satdump
 {
@@ -58,6 +61,18 @@ namespace satdump
                 ndsp::NodeInternal::render();
                 float prog = double(((ndsp::IQSourceBlock *)blk.get())->d_progress) / double(((ndsp::IQSourceBlock *)blk.get())->d_filesize);
                 ImGui::ProgressBar(prog, {100, 20});
+                return false;
+            }
+        };
+
+        class NodeTestCosine : public ndsp::NodeInternal
+        {
+        public:
+            NodeTestCosine(const ndsp::Flowgraph *f) : ndsp::NodeInternal(f, std::make_shared<ndsp::CosBlock<float>>()) {}
+
+            virtual bool render()
+            {
+                ndsp::NodeInternal::render();
                 return false;
             }
         };
@@ -116,6 +131,7 @@ namespace satdump
             registerNode<NodeTestFFT>(flowgraph, "fft_pan_cc", "FFT/FFT Pan");
             registerNode<NodeTestConst>(flowgraph, "const_disp_c", "View/Constellation Display");
             registerNode<NodeTestHisto>(flowgraph, "histo_disp_c", "View/Histogram Display");
+            registerNode<NodeTestCosine>(flowgraph, "cosine_f", "Utils/Cosine Source");
 
             registerNodeSimple<ndsp::AGCBlock<complex_t>>(flowgraph, "AGC/Agc CC");
             registerNodeSimple<ndsp::AGCBlock<float>>(flowgraph, "AGC/Agc FF");
