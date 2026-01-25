@@ -9,7 +9,7 @@ namespace satdump
         {
             bool v = ImGui::MenuItem(label, shortcut, selected, enabled);
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip(tooltip);
+                ImGui::SetTooltip("%s", tooltip);
             return v;
         }
     } // namespace widgets
