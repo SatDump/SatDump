@@ -158,6 +158,15 @@ namespace satdump
         }
     }
 
+    struct ExceptionReport
+    {
+        std::string type;
+        std::string exceptionCode;
+        std::string exceptionText;
+
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(ExceptionReport, type, exceptionCode, exceptionText)
+    };
+
     void ArchiveLoader::renderEumetsat(ImVec2 wsize)
     {
         bool should_disable = file_downloader.is_busy();
@@ -256,6 +265,25 @@ namespace satdump
                             {
                                 if (file_downloader.download_file(nat_link, download_path, "Authorization: Bearer " + getEumetSatToken()) != 1)
                                 {
+                                    size_t size = getFilesize(download_path);
+
+                                    if (size < 100e3)
+                                    {
+                                        try
+                                        {
+                                            auto json = loadJsonFile(download_path);
+                                            if (json["type"] == "ExceptionReport")
+                                            {
+                                                std::vector<ExceptionReport> errs = json["exceptions"];
+                                                for (auto &e : errs)
+                                                    logger->critical("EUMETSAT Error : " + e.exceptionText);
+                                            }
+                                        }
+                                        catch (std::exception &e)
+                                        {
+                                        }
+                                    }
+
                                     eventBus->fire_event<explorer::ExplorerAddHandlerEvent>(
                                         {std::make_shared<handlers::OffProcessingHandler>("off2pro", "file", download_path, process_path, nlohmann::json()), true, true});
                                 }
