@@ -46,9 +46,7 @@
 #include "dsp/utils/hilbert.h"
 #include "dsp/utils/quadrature_demod.h"
 #include "dsp/utils/vco.h"
-#include <complex.h>
 #include <cstdint>
-#include <memory>
 
 namespace satdump
 {
