@@ -6,9 +6,9 @@ namespace satdump
     {
         template <typename T>
         MultiplyBlock<T>::MultiplyBlock()
-            : BlockSimpleMulti<T, T, 2, 1>(                               //
-                  "add_" + getShortTypeName<T>() + getShortTypeName<T>(), //
-                  {{"in", getTypeSampleType<T>()}},                       //
+            : BlockSimpleMulti<T, T, 2, 1>(                                             //
+                  "multiply_" + getShortTypeName<T>(),                                  //
+                  {{"in 1", getTypeSampleType<T>()}, {"in 2", getTypeSampleType<T>()}}, //
                   {{"out", getTypeSampleType<T>()}})
         {
         }
@@ -19,24 +19,23 @@ namespace satdump
         }
 
         template <typename T>
-        void MultiplyBlock<T>::process(T *input_a, T *input_b, uint32_t nsamples, T *output, uint32_t nsamples_out)
+        void MultiplyBlock<T>::process(T **input, uint32_t *nsamples, T **output, uint32_t *nsamples_out)
         {
-            // nsamples_out = nsamples;
-            if constexpr (std::is_same_v<T, float>)
+
+            if (nsamples[0] != nsamples[1])
             {
-                for (uint32_t i = 0; i < nsamples; i++)
-                {
-                    volk_32f_x2_multiply_32f((float *)output, (const float *)input_a, (const float *)input_b, nsamples);
-                }
+                nsamples_out[0] = 0;
+                return;
             }
 
-            if constexpr (std::is_same_v<T, complex_t>)
+            for (uint32_t i = 0; i < nsamples[0]; i++)
             {
-                for (uint32_t i = 0; i < nsamples; i++)
-                {
-                    volk_32fc_x2_multiply_32fc((lv_32fc_t *)output, (const lv_32fc_t *)input_a, (const lv_32fc_t *)input_b, nsamples);
-                }
+                output[0][i] = input[0][i] * input[1][i];
             }
+
+            nsamples_out[0] = nsamples[0];
         }
+        template class MultiplyBlock<float>;
+        template class MultiplyBlock<complex_t>;
     } // namespace ndsp
 } // namespace satdump

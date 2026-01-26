@@ -14,12 +14,19 @@ namespace satdump
         class AddBlock : public BlockSimpleMulti<T, T, 2, 1>
         {
         public:
+            void process(T **input, uint32_t *nsamples, T **output, uint32_t *nsamples_out);
+
+        public:
             AddBlock();
             ~AddBlock();
 
-            void process(T *input_a, T *input_b, uint32_t nsamples, T *output, uint32_t nsamples_out);
-
             void init() {}
+
+            nlohmann::ordered_json get_cfg_list()
+            {
+                nlohmann::ordered_json p;
+                return p;
+            }
 
             nlohmann::json get_cfg(std::string key) { throw satdump_exception(key); }
 
