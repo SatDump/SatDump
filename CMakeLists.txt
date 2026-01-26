@@ -65,6 +65,12 @@ if(APPLE)
     find_package(Jemalloc REQUIRED)
     include_directories(${JEMALLOC_INCLUDE_DIR})
     link_libraries(${JEMALLOC_LIBRARY})
+
+    set(CMAKE_SKIP_RPATH FALSE)
+    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+    set(CMAKE_INSTALL_RPATH "@executable_path/../libs")
+    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+
 endif()
 
 if(UNIX)
