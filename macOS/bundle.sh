@@ -64,8 +64,9 @@ echo "Copying libraries..."
 
 mkdir MacApp/SatDump.app/Contents/libs
 cp $GITHUB_WORKSPACE/deps/lib/*.dylib MacApp/SatDump.app/Contents/libs
-cp $GITHUB_WORKSPACE/build/*.dylib MacApp/SatDump.app/Contents/libs
-cp $GITHUB_WORKSPACE/build/plugins/*.dylib MacApp/SatDump.app/Contents/libs
+# We are cd'd in the build dir
+cp ./*.dylib MacApp/SatDump.app/Contents/libs
+cp ./plugins/*.dylib MacApp/SatDump.app/Contents/libs
 
 # Symlinks are not copied by dylibbuilder, we gotta copy the homebrew libs manually.
 # There has to be a better way to do this?
