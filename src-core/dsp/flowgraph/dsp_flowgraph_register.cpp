@@ -25,7 +25,7 @@
 #include "dsp/resampling/rational_resampler.h"
 #include "dsp/utils/add.h"
 #include "dsp/utils/correct_iq.h"
-#include "dsp/utils/cosine_source.h"
+#include "dsp/utils/waveform.h"
 #include "dsp/utils/multiply.h"
 #include "dsp/utils/throttle.h"
 
@@ -66,10 +66,10 @@ namespace satdump
             }
         };
 
-        class NodeTestCosine : public ndsp::NodeInternal
+        class NodeTestWaveform : public ndsp::NodeInternal
         {
         public:
-            NodeTestCosine(const ndsp::Flowgraph *f) : ndsp::NodeInternal(f, std::make_shared<ndsp::CosBlock<float>>()) {}
+            NodeTestWaveform(const ndsp::Flowgraph *f) : ndsp::NodeInternal(f, std::make_shared<ndsp::WaveformBlock<float>>()) {}
 
             virtual bool render()
             {
@@ -132,7 +132,7 @@ namespace satdump
             registerNode<NodeTestFFT>(flowgraph, "fft_pan_cc", "FFT/FFT Pan");
             registerNode<NodeTestConst>(flowgraph, "const_disp_c", "View/Constellation Display");
             registerNode<NodeTestHisto>(flowgraph, "histo_disp_c", "View/Histogram Display");
-            registerNode<NodeTestCosine>(flowgraph, "cosine_f", "Utils/Cosine Source");
+            registerNode<NodeTestWaveform>(flowgraph, "waveform_f", "Utils/Waveform Source");
 
             registerNodeSimple<ndsp::AGCBlock<complex_t>>(flowgraph, "AGC/Agc CC");
             registerNodeSimple<ndsp::AGCBlock<float>>(flowgraph, "AGC/Agc FF");

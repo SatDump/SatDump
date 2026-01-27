@@ -9,9 +9,10 @@ namespace satdump
     namespace ndsp
     {
         template <typename T>
-        class CosBlock : public Block
+        class WaveformBlock : public Block
         {
         public:
+            std::string p_waveform = "cosine";
             float p_samprate = 48000;
             float p_freq = 10000;
             float p_amp = 1.0;
@@ -21,6 +22,7 @@ namespace satdump
             bool needs_reinit = false;
 
         private:
+            std::string d_waveform;
             float d_samprate;
             float d_freq;
             float d_amp;
@@ -34,14 +36,15 @@ namespace satdump
             bool work();
 
         public:
-            CosBlock();
-            ~CosBlock();
+            WaveformBlock();
+            ~WaveformBlock();
 
             void init();
 
             nlohmann::ordered_json get_cfg_list()
             {
                 nlohmann::ordered_json p;
+                add_param_simple(p, "waveform", "string", "Waveform");
                 add_param_simple(p, "samprate", "float", "Samplerate");
                 add_param_simple(p, "freq", "float", "Frequency");
                 add_param_simple(p, "amp", "float", "Amplitude");
@@ -52,7 +55,9 @@ namespace satdump
 
             nlohmann::json get_cfg(std::string key)
             {
-                if (key == "samprate")
+                if (key == "waveform")
+                    return p_waveform;
+                else if (key == "samprate")
                     return p_samprate;
                 else if (key == "freq")
                     return p_freq;
@@ -68,7 +73,12 @@ namespace satdump
 
             cfg_res_t set_cfg(std::string key, nlohmann::json v)
             {
-                if (key == "samprate")
+                if (key == "waveform")
+                {
+                    p_waveform = v;
+                    needs_reinit = true;
+                }
+                else if (key == "samprate")
                 {
                     p_samprate = v;
                     needs_reinit = true;
