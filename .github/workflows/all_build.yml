@@ -442,8 +442,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Select Xcode version
-        run: sudo xcode-select -s '/Applications/Xcode_16.2.app/Contents/Developer'
 
       - name: Install brew dependencies
         run: brew install dylibbundler libtool autoconf automake meson orc libxml2 zlib portaudio boost libusb nng volk libjpeg-turbo libtiff libomp libpng glfw3 libusb fftw libxml2 portaudio jemalloc nng zstd armadillo hdf5 sqlite3 llvm
