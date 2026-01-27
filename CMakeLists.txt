@@ -66,6 +66,12 @@ if(APPLE)
     include_directories(${JEMALLOC_INCLUDE_DIR})
     link_libraries(${JEMALLOC_LIBRARY})
 
+    # Omp is not happy in the Github environment, this forces it to play nice
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include")
+    link_libraries(/opt/homebrew/opt/libomp/lib/libomp.dylib)
+
+
     # Built-on dependencies
     link_directories(${CMAKE_SOURCE_DIR}/deps/lib)
     include_directories("${CMAKE_SOURCE_DIR}/deps/include")
