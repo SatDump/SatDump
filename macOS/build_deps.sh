@@ -10,10 +10,10 @@ then
 fi
 
 echo "---prefix"
-brew --prefix liboomp
+brew --prefix libomp
 
 echo "--omp"
-ls /opt/homebrew/opt/liboomp/
+ls /opt/homebrew/opt/libomp/
 
 # TODOREWORK: SHIM
 
