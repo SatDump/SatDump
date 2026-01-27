@@ -376,28 +376,23 @@ namespace satdump
                             throw satdump_exception("Block has unconnected output!");
                         }
                     }
+                }
 
-                    // Iterate through all nodes, check all inputs are connected
-                    for (auto &n : nodes)
+                // Iterate through all nodes, check all inputs are connected
+                for (auto &n : nodes)
+                {
+                    for (auto &i : n->node_io)
                     {
-                        for (auto &i : n->node_io)
-                        {
-                            if (i.is_out)
-                                continue;
+                        if (i.is_out)
+                            continue;
 
-                            bool found = false;
-                            for (auto &c : all_connected_inputs)
-                            {
-                                if (i.id == c)
-                                {
-                                    found = true;
-                                    break;
-                                }
-                            }
+                        bool missing = true;
+                        for (auto &c : all_connected_inputs)
+                            if (i.id == c)
+                                missing = false;
 
-                            if (!found)
-                                throw satdump_exception("Block (" + n->title + ") has unconnected input!");
-                        }
+                        if (missing)
+                            throw satdump_exception("Block (" + n->title + ") has unconnected input!");
                     }
                 }
 
