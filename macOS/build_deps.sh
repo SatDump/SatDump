@@ -9,10 +9,10 @@ then
     echo "Workspace $GITHUB_WORKSPACE"
 fi
 
-echo "---Homebrew"
-ls /opt/homebrew/lib
-echo "---libomp"
-ls /opt/homebrew/opt/liboomp/lib
+echo "---prefix"
+brew --prefix liboomp
+
+echo "--omp"
 ls /opt/homebrew/opt/liboomp/
 
 # TODOREWORK: SHIM
