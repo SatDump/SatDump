@@ -9,6 +9,19 @@ then
     echo "Workspace $GITHUB_WORKSPACE"
 fi
 
+echo "---Homebrew"
+ls /opt/homebrew
+echo "--USR"
+ls /usr/local/lib
+echo "---libomp"
+ls /opt/homebrew/opt/liboomp/lib
+ls /opt/homebrew/opt/liboomp/
+
+# TODOREWORK: SHIM
+
+exit 1
+
+
 # This is where the libraries are pulled & built in
 working_dir="$GITHUB_WORKSPACE/deps-temp"
 
