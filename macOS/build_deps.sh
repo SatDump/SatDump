@@ -9,11 +9,9 @@ then
     echo "Workspace $GITHUB_WORKSPACE"
 fi
 
-echo "---prefix"
-brew --prefix libomp
-
 echo "--omp"
-ls /opt/homebrew/opt/libomp/
+ls /opt/homebrew/opt/libomp/lib
+# I swear on my momma if this is there
 
 # TODOREWORK: SHIM
 
