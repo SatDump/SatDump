@@ -23,7 +23,12 @@
 #include "dsp/path/splitter.h"
 #include "dsp/pll/pll_carrier_tracking.h"
 #include "dsp/resampling/rational_resampler.h"
+#include "dsp/utils/add.h"
+#include "dsp/utils/correct_iq.h"
+#include "dsp/utils/multiply.h"
+#include "dsp/utils/subtract.h"
 #include "dsp/utils/throttle.h"
+#include "dsp/utils/waveform.h"
 
 #include "common/widgets/fft_plot.h"
 
@@ -120,6 +125,15 @@ namespace satdump
             registerNodeSimple<ndsp::AGCBlock<complex_t>>(flowgraph, "AGC/Agc CC");
             registerNodeSimple<ndsp::AGCBlock<float>>(flowgraph, "AGC/Agc FF");
 
+            registerNodeSimple<ndsp::MultiplyBlock<float>>(flowgraph, "Utils/Multiply FF");
+            registerNodeSimple<ndsp::MultiplyBlock<complex_t>>(flowgraph, "Utils/Multiply CC");
+
+            registerNodeSimple<ndsp::SubtractBlock<float>>(flowgraph, "Utils/Subtract FF");
+            registerNodeSimple<ndsp::SubtractBlock<complex_t>>(flowgraph, "Utils/Subtract CC");
+
+            registerNodeSimple<ndsp::AddBlock<float>>(flowgraph, "Utils/Add FF");
+            registerNodeSimple<ndsp::AddBlock<complex_t>>(flowgraph, "Utils/Add CC");
+
             registerNodeSimple<ndsp::CostasBlock>(flowgraph, "PLL/Costas Loop");
             registerNodeSimple<ndsp::PLLCarrierTrackingBlock>(flowgraph, "PLL/PLL Carrier Tracking");
 
@@ -150,6 +164,8 @@ namespace satdump
             registerNodeSimple<ndsp::ThrottleBlock<float>>(flowgraph, "Utils/Throttle FF");
 
             registerNodeSimple<ndsp::NNGIQSinkBlock>(flowgraph, "IO/NNG IQ Sink");
+
+            registerNodeSimple<ndsp::WaveformBlock<float>>(flowgraph, "IO/Waveform F");
 
             registerNodeSimple<ndsp::FileSourceBlock<complex_t>>(flowgraph, "IO/File Source C");
             registerNodeSimple<ndsp::FileSourceBlock<float>>(flowgraph, "IO/File Source F");
