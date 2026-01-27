@@ -261,6 +261,9 @@ namespace satdump
 
             try
             {
+                // Hold all input IDs that will be connected
+                std::vector<int> all_connected_inputs;
+
                 // Holds stuff such as splitters when one output goes to more than
                 // one input
                 std::vector<std::shared_ptr<ndsp::Block>> additional_blocks;
@@ -309,6 +312,7 @@ namespace satdump
                                                 // n2->internal->blk->inputs[b2] = blk->outputs[o];
                                                 inputs_to_feed.push_back({n2->internal->blk, b2}); //  &n2->internal->blk->get_output(b2, 16 /*TODOREWORK*/));
                                                 logger->trace("Assigned to : " + n2->internal->blk->d_id);
+                                                all_connected_inputs.push_back(l.end);
                                             }
 
                                             b2++;
@@ -331,6 +335,7 @@ namespace satdump
                                                 // n2->internal->blk->inputs[b2] = blk->outputs[o];
                                                 inputs_to_feed.push_back({n2->internal->blk, b2}); // inputs_to_feed.push_back(&n2->internal->blk->get_output(b2, 16 /*TODOREWORK*/));
                                                 logger->trace("Assigned to : " + n2->internal->blk->d_id);
+                                                all_connected_inputs.push_back(l.start);
                                             }
 
                                             b2++;
@@ -369,6 +374,29 @@ namespace satdump
                         else if (inputs_to_feed.size() == 0)
                         {
                             throw satdump_exception("Block has unconnected output!");
+                        }
+                    }
+
+                    // Iterate through all nodes, check all inputs are connected
+                    for (auto &n : nodes)
+                    {
+                        for (auto &i : n->node_io)
+                        {
+                            if (i.is_out)
+                                continue;
+
+                            bool found = false;
+                            for (auto &c : all_connected_inputs)
+                            {
+                                if (i.id == c)
+                                {
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            if (!found)
+                                throw satdump_exception("Block (" + n->title + ") has unconnected input!");
                         }
                     }
                 }

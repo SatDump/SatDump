@@ -51,14 +51,14 @@ namespace satdump
                 {
                     b.ptr = volk_malloc(size, volk_get_alignment());
                     b.ptr_size = size;
-                    printf("Alloc\n");
+                   // printf("Alloc\n");
                 }
                 else if (b.ptr_size < size)
                 {
                     volk_free(b.ptr);
                     b.ptr = volk_malloc(size, volk_get_alignment());
                     b.ptr_size = size;
-                    printf("Realloc\n");
+                   // printf("Realloc\n");
                 }
                 return b;
             }
