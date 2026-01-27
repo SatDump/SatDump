@@ -59,18 +59,24 @@ endif()
 
 if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
-    link_directories(vcpkg/installed/osx-satdump/lib)
+    #link_directories(vcpkg/installed/osx-satdump/lib)
 
     # Jemalloc
     find_package(Jemalloc REQUIRED)
     include_directories(${JEMALLOC_INCLUDE_DIR})
     link_libraries(${JEMALLOC_LIBRARY})
 
-    set(CMAKE_SKIP_RPATH FALSE)
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-    set(CMAKE_INSTALL_RPATH "@executable_path/../libs")
-    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+    # Homebrew libs
+    link_directories(/opt/homebrew/lib)
+    link_directories(${CMAKE_SOURCE_DIR}/build/deps/lib)
+    include_directories("${CMAKE_SOURCE_DIR}/build//deps/include")
 
+    if(BUNDLING_MODE)
+        set(CMAKE_SKIP_RPATH FALSE)
+        set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE) 
+        set(CMAKE_INSTALL_RPATH "@executable_path/../libs")
+        set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+    endif()
 endif()
 
 if(UNIX)

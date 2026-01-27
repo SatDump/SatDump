@@ -6,6 +6,12 @@ then
     cd $( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/../build
 fi
 
+HOMEBREW_LIB="/usr/local"
+if [[ $(uname -m) == 'arm64' ]]; then
+  HOMEBREW_LIB="/opt/homebrew"
+fi
+
+
 if [[ -n "$MACOS_CERTIFICATE" && -n "$MACOS_CERTIFICATE_PWD" ]]
 then
     echo "Extracting signing certificate..."
@@ -54,13 +60,45 @@ then
     SIGN_FLAG="-ns"
 fi
 
-echo "Copying all libs (nasty hack!)"
-mkdir -p MacAppLibs
-find $GITHUB_WORKSPACE/vcpkg -name '*.dylib' -exec cp '{}' MacAppLibs \;
+echo "Copying libraries..."
+
+mkdir MacApp/SatDump.app/Contents/libs
+cp $GITHUB_WORKSPACE/build/deps/lib/*.dylib MacApp/SatDump.app/Contents/libs
+cp $GITHUB_WORKSPACE/build/*.dylib MacApp/SatDump.app/Contents/libs
+cp $GITHUB_WORKSPACE/build/plugins/*.dylib MacApp/SatDump.app/Contents/libs
+
+# Symlinks are not copied by dylibbuilder, we gotta copy the homebrew libs manually.
+# There has to be a better way to do this?
+cp $HOMEBREW_LIB/lib/libjemalloc* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libglfw* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libarmadillo* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libvolk* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libpng* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libfftw* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libnng* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libzstd* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libtiff* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libusb* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libportaudio* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libhdf5* MacApp/SatDump.app/Contents/libs
+
+# libomp is not in the lib dir because why would it be?
+cp $HOMEBREW_LIB/opt/libomp/lib/libomp* MacApp/SatDump.app/Contents/libs
+
 
 echo "Re-linking binaries"
 plugin_args=$(ls MacApp/SatDump.app/Contents/Resources/plugins | xargs printf -- '-x MacApp/SatDump.app/Contents/Resources/plugins/%s ')
-dylibbundler $SIGN_FLAG -cd -s MacAppLibs -s . -d MacApp/SatDump.app/Contents/libs -b -x MacApp/SatDump.app/Contents/MacOS/satdump-ui -x MacApp/SatDump.app/Contents/MacOS/satdump_sdr_server -x MacApp/SatDump.app/Contents/MacOS/satdump $plugin_args
+dylibbundler $SIGN_FLAG \
+  -cd \
+  -s $HOMEBREW_LIB/lib \
+  -s deps/lib \
+  -s . \
+  -d MacApp/SatDump.app/Contents/libs \
+  -x MacApp/SatDump.app/Contents/MacOS/satdump-ui \
+  -x MacApp/SatDump.app/Contents/MacOS/satdump_sdr_server \
+  -x MacApp/SatDump.app/Contents/MacOS/satdump \
+  $plugin_args
+
 
 if [[ -n "$MACOS_SIGNING_SIGNATURE" ]]
 then
