@@ -67,9 +67,7 @@ if(APPLE)
     link_libraries(${JEMALLOC_LIBRARY})
 
     # Omp is not happy in the Github environment, this forces it to play nice
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include")
-    link_libraries(/opt/homebrew/opt/libomp/lib/libomp.dylib)
+    link_directories(/opt/homebrew/opt/libomp/lib/)
 
 
     # Built-on dependencies
@@ -79,6 +77,7 @@ if(APPLE)
     if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
         link_directories(/opt/homebrew/lib)
         set(CMAKE_PREFIX_PATH "/opt/homebrew/;${CMAKE_SOURCE_DIR}/deps")
+
 
         # Should improve performance on Silicon
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")

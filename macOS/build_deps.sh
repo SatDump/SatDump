@@ -9,13 +9,11 @@ then
     echo "Workspace $GITHUB_WORKSPACE"
 fi
 
-echo "--omp"
-ls /opt/homebrew/opt/libomp/lib
-# I swear on my momma if this is there
 
 # TODOREWORK: SHIM
 
-exit 1
+mkdir $GITHUB_WORKSPACE/deps
+exit 0
 
 
 # This is where the libraries are pulled & built in
