@@ -448,18 +448,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Select Xcode version
+        run: sudo xcode-select -s '/Applications/Xcode_16.2.app/Contents/Developer'
 
       - name: Install brew dependencies
-        run: brew install dylibbundler libtool autoconf automake meson orc libxml2 zlib portaudio boost libusb nng volk libjpeg-turbo libtiff libomp libpng glfw3 libusb fftw libxml2 portaudio jemalloc nng zstd armadillo hdf5 sqlite3 llvm
+        run: brew install dylibbundler libtool autoconf automake meson orc libxml2 zlib portaudio boost libusb nng volk libjpeg-turbo libtiff libomp libpng glfw3 libusb fftw libxml2 portaudio jemalloc nng zstd armadillo hdf5 sqlite3
 
       - name: Create Build Environment
         # Some projects don't allow in-source building, so create a separate build directory
         # We'll use this as our working directory for all subsequent commands
         run: cmake -E make_directory ${{runner.workspace}}/build
 
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        id: macos-deps-silicon
+        with:
+          path: deps
+          key: macos-deps-silicon-${{ hashFiles('macOS/bundle_deps.sh') }}
+      
       - name: Build dependencies
+        if: steps.macos-deps-silicon.outputs.cache-hit != 'true'
         working-directory: ${{runner.workspace}}/build
-        shell: bash
+        shell: bash        
         run: $GITHUB_WORKSPACE/macOS/build_deps.sh
       
       - name: Configure CMake
