@@ -11,6 +11,7 @@ fi
 
 # This is where the libraries are pulled & built in
 working_dir="$GITHUB_WORKSPACE/deps-temp"
+output_dir="$GITHUB_WORKSPACE/deps"
 
 # Libusb from homebrew is used
 HOMEBREW_LIB="/usr/local"
@@ -21,25 +22,32 @@ fi
 
 # Cleans up working space
 rm -rf $working_dir
-rm -rf $GITHUB_WORKSPACE/deps
+rm -rf $output_dir
+
+
+# Canonicalization, directory creation
+mkdir $output_dir
+mkdir $output_dir/lib
+mkdir $output_dir/include
+cd $output_dir
+output_dir=$(pwd)
+
+echo "Dependencies will be saved at $output_dir"
 
 mkdir $working_dir
 cd $working_dir
 working_dir=$(pwd)
 echo "Dependencies will be built in: $working_dir"
 
-mkdir $working_dir/deps
-mkdir $working_dir/deps/lib
-mkdir $working_dir/deps/include
 
 echo "Setting up venv"
 python3 -m venv venv
 source venv/bin/activate
 pip3 install mako
 
-build_args="-DCMAKE_INSTALL_PREFIX=$(cd ./deps && pwd) -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=$osx_target -DCMAKE_MACOSX_RPATH=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5"
-standard_include="$(cd ./deps/include && pwd)"
-standard_lib="$(cd ./deps/lib && pwd)"
+build_args="-DCMAKE_INSTALL_PREFIX=$output_dir -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=$osx_target -DCMAKE_MACOSX_RPATH=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+standard_include="$output_dir/include"
+standard_lib="$output_dir/lib"
 libusb_include="$HOMEBREW_LIB/opt/libusb/include/libusb-1.0"
 libusb_lib="$HOMEBREW_LIB/opt/libusb/lib/libusb-1.0.0.dylib"
 
@@ -181,9 +189,9 @@ rm -rf uhd
 echo "Adding SDRPlay Library..."
 curl -LJ --output sdrplay-macos.zip https://www.satdump.org/sdrplay-macos.zip
 unzip sdrplay-macos.zip
-cp sdrplay-macos/lib/* ./deps/lib
-cp sdrplay-macos/include/* ./deps/include
-cd ./deps/lib
+cp sdrplay-macos/lib/* $output_dir/lib
+cp sdrplay-macos/include/* $output_dir/include
+cd $output_dir/lib
 ln -s libsdrplay_api.3.15.dylib libsdrplay_api.dylib
 cd -
 rm -rf sdrplay-macos*
@@ -191,13 +199,12 @@ rm -rf sdrplay-macos*
 deactivate #Exit the venv
 
 echo "Cleaning up..."
-
-mv $working_dir/deps $GITHUB_WORKSPACE/deps
 rm -r $working_dir
 
 # Sanity check
-if [ ! -d $GITHUB_WORKSPACE/deps ] ; then
+if [ ! -d $output_dir ] ; then
     echo "Something went wrong, deps directory does not exist!"
     exit 1
 fi
+
 echo "Done!"
