@@ -1,24 +1,36 @@
 #!/bin/bash
 set -Eeo pipefail
 
+if [[ -z "$GITHUB_WORKSPACE" ]]
+then
+    GITHUB_WORKSPACE=".."
+    cd $( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/../build
+
+    echo "Workspace $GITHUB_WORKSPACE"
+fi
+
 # This is where the libraries are pulled & built in
-working_dir="deps-temp"
+working_dir="$GITHUB_WORKSPACE/deps-temp"
 
 # Libusb from homebrew is used
 HOMEBREW_LIB="/usr/local"
 if [[ $(uname -m) == 'arm64' ]]; then
+  echo "Configured Homebrew for Silicon"
   HOMEBREW_LIB="/opt/homebrew"
 fi
 
 # Cleans up working space
 rm -rf $working_dir
-rm -rf deps
+rm -rf $GITHUB_WORKSPACE/deps
 
 mkdir $working_dir
 cd $working_dir
-mkdir deps
-mkdir deps/lib
-mkdir deps/include
+working_dir=$(pwd)
+echo "Dependencies will be built in: $working_dir"
+
+mkdir $working_dir/deps
+mkdir $working_dir/deps/lib
+mkdir $working_dir/deps/include
 
 echo "Setting up venv"
 python3 -m venv venv
@@ -181,8 +193,12 @@ deactivate #Exit the venv
 
 echo "Cleaning up..."
 
-cd ..
-mv $working_dir/deps .
+mv $working_dir/deps $GITHUB_WORKSPACE/deps
 rm -r $working_dir
 
+# Sanity check
+if [ ! -d $GITHUB_WORKSPACE/deps ] ; then
+    echo "Something went wrong, deps directory does not exist!"
+    exit 1
+fi
 echo "Done!"

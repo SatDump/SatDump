@@ -66,17 +66,21 @@ if(APPLE)
     include_directories(${JEMALLOC_INCLUDE_DIR})
     link_libraries(${JEMALLOC_LIBRARY})
 
-    # Homebrew libs
-    link_directories(/opt/homebrew/lib)
-    link_directories(${CMAKE_SOURCE_DIR}/build/deps/lib)
-    include_directories("${CMAKE_SOURCE_DIR}/build/deps/include")
+    # Built-on dependencies
+    link_directories(${CMAKE_SOURCE_DIR}/deps/lib)
+    include_directories("${CMAKE_SOURCE_DIR}/deps/include")
 
-    set(CMAKE_PREFIX_PATH "/opt/homebrew/;${CMAKE_SOURCE_DIR}/build/deps")
-
-    # Should improve performance on Silicon
     if(CMAKE_APPLE_SILICON_PROCESSOR)
+        link_directories(/opt/homebrew/lib)
+        set(CMAKE_PREFIX_PATH "/opt/homebrew/;${CMAKE_SOURCE_DIR}/deps")
+
+        # Should improve performance on Silicon
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+    else()
+        # Homebrew path is different on Intel-based MacOS
+        link_directories(/usr/local/lib)
+        set(CMAKE_PREFIX_PATH "/usr/local/;${CMAKE_SOURCE_DIR}/deps")
     endif()
 
     # Rpaths are stripped when we are going to bundle, done to prevent duplicate LC_PATH crap

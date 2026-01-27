@@ -63,7 +63,7 @@ fi
 echo "Copying libraries..."
 
 mkdir MacApp/SatDump.app/Contents/libs
-cp $GITHUB_WORKSPACE/build/deps/lib/*.dylib MacApp/SatDump.app/Contents/libs
+cp $GITHUB_WORKSPACE/deps/lib/*.dylib MacApp/SatDump.app/Contents/libs
 cp $GITHUB_WORKSPACE/build/*.dylib MacApp/SatDump.app/Contents/libs
 cp $GITHUB_WORKSPACE/build/plugins/*.dylib MacApp/SatDump.app/Contents/libs
 
