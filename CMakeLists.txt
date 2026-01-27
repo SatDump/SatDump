@@ -66,26 +66,27 @@ if(APPLE)
     include_directories(${JEMALLOC_INCLUDE_DIR})
     link_libraries(${JEMALLOC_LIBRARY})
 
-    # Omp is not happy in the Github environment, this forces it to play nice
-    link_directories(/opt/homebrew/opt/libomp/lib/)
-
-
-    # Built-on dependencies
+    # Manually built dependencies
     link_directories(${CMAKE_SOURCE_DIR}/deps/lib)
     include_directories("${CMAKE_SOURCE_DIR}/deps/include")
 
+    # Homebrew path is different on Silicon-based and Intel-based MacOS
     if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
         link_directories(/opt/homebrew/lib)
         set(CMAKE_PREFIX_PATH "/opt/homebrew/;${CMAKE_SOURCE_DIR}/deps")
 
+        # omp is not in /lib because why would it be
+        link_directories(/opt/homebrew/opt/libomp/lib/)
 
         # Should improve performance on Silicon
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
     else()
-        # Homebrew path is different on Intel-based MacOS
         link_directories(/usr/local/lib)
         set(CMAKE_PREFIX_PATH "/usr/local/;${CMAKE_SOURCE_DIR}/deps")
+    
+        # omp is not in /lib because why would it be
+        link_directories(/usr/local/opt/libomp/lib/)
     endif()
 
     # Rpaths are stripped when we are going to bundle, done to prevent duplicate LC_PATH crap

@@ -9,13 +9,6 @@ then
     echo "Workspace $GITHUB_WORKSPACE"
 fi
 
-
-# TODOREWORK: SHIM
-
-mkdir $GITHUB_WORKSPACE/deps
-exit 0
-
-
 # This is where the libraries are pulled & built in
 working_dir="$GITHUB_WORKSPACE/deps-temp"
 
@@ -196,7 +189,6 @@ cd -
 rm -rf sdrplay-macos*
 
 deactivate #Exit the venv
-
 
 echo "Cleaning up..."
 

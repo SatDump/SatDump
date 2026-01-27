@@ -17,6 +17,4 @@ srv/
 .cache
 compile_commands.json
 as.predefined
-tst/
-test/
-a/
+deps/
