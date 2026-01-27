@@ -69,8 +69,17 @@ if(APPLE)
     # Homebrew libs
     link_directories(/opt/homebrew/lib)
     link_directories(${CMAKE_SOURCE_DIR}/build/deps/lib)
-    include_directories("${CMAKE_SOURCE_DIR}/build//deps/include")
+    include_directories("${CMAKE_SOURCE_DIR}/build/deps/include")
 
+    set(CMAKE_PREFIX_PATH "/opt/homebrew/;${CMAKE_SOURCE_DIR}/build/deps")
+
+    # Should improve performance on Silicon
+    if(CMAKE_APPLE_SILICON_PROCESSOR)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+    endif()
+
+    # Rpaths are stripped when we are going to bundle, done to prevent duplicate LC_PATH crap
     if(BUNDLING_MODE)
         set(CMAKE_SKIP_RPATH FALSE)
         set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE) 
