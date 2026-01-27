@@ -70,7 +70,7 @@ if(APPLE)
     link_directories(${CMAKE_SOURCE_DIR}/deps/lib)
     include_directories("${CMAKE_SOURCE_DIR}/deps/include")
 
-    if(CMAKE_APPLE_SILICON_PROCESSOR)
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
         link_directories(/opt/homebrew/lib)
         set(CMAKE_PREFIX_PATH "/opt/homebrew/;${CMAKE_SOURCE_DIR}/deps")
 
