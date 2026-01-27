@@ -464,7 +464,7 @@ jobs:
         id: macos-deps-silicon
         with:
           path: deps
-          key: macos-deps-silicon-${{ hashFiles('macOS/bundle_deps.sh') }}
+          key: macos-deps-silicon-${{ hashFiles('macOS/build_deps.sh') }}
       
       - name: Build dependencies
         if: steps.macos-deps-silicon.outputs.cache-hit != 'true'
