@@ -10,9 +10,7 @@ then
 fi
 
 echo "---Homebrew"
-ls /opt/homebrew
-echo "--USR"
-ls /usr/local/lib
+ls /opt/homebrew/lib
 echo "---libomp"
 ls /opt/homebrew/opt/liboomp/lib
 ls /opt/homebrew/opt/liboomp/
