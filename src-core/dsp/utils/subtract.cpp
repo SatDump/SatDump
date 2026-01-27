@@ -1,25 +1,25 @@
-#include "add.h"
+#include "subtract.h"
 
 namespace satdump
 {
     namespace ndsp
     {
         template <typename T>
-        AddBlock<T>::AddBlock()
+        SubtractBlock<T>::SubtractBlock()
             : BlockSimpleMulti<T, T, 2, 1>(                                             //
-                  "add_" + getShortTypeName<T>(),                                       //
+                  "subtract_" + getShortTypeName<T>(),                                  //
                   {{"in 1", getTypeSampleType<T>()}, {"in 2", getTypeSampleType<T>()}}, //
                   {{"out", getTypeSampleType<T>()}})
         {
         }
 
         template <typename T>
-        AddBlock<T>::~AddBlock()
+        SubtractBlock<T>::~SubtractBlock()
         {
         }
 
         template <typename T>
-        void AddBlock<T>::process(T **input, uint32_t *nsamples, T **output, uint32_t *nsamples_out)
+        void SubtractBlock<T>::process(T **input, uint32_t *nsamples, T **output, uint32_t *nsamples_out)
         {
             if (nsamples[0] != nsamples[1])
             {
@@ -29,12 +29,12 @@ namespace satdump
 
             for (uint32_t i = 0; i < nsamples[0]; i++)
             {
-                output[0][i] = input[0][i] + input[1][i];
+                output[0][i] = input[0][i] - input[1][i];
             }
 
             nsamples_out[0] = nsamples[0];
         }
-        template class AddBlock<float>;
-        template class AddBlock<complex_t>;
+        template class SubtractBlock<float>;
+        template class SubtractBlock<complex_t>;
     } // namespace ndsp
 } // namespace satdump

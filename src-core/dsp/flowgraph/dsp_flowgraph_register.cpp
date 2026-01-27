@@ -26,6 +26,7 @@
 #include "dsp/utils/add.h"
 #include "dsp/utils/correct_iq.h"
 #include "dsp/utils/multiply.h"
+#include "dsp/utils/subtract.h"
 #include "dsp/utils/throttle.h"
 #include "dsp/utils/waveform.h"
 
@@ -126,6 +127,9 @@ namespace satdump
 
             registerNodeSimple<ndsp::MultiplyBlock<float>>(flowgraph, "Utils/Multiply FF");
             registerNodeSimple<ndsp::MultiplyBlock<complex_t>>(flowgraph, "Utils/Multiply CC");
+
+            registerNodeSimple<ndsp::SubtractBlock<float>>(flowgraph, "Utils/Subtract FF");
+            registerNodeSimple<ndsp::SubtractBlock<complex_t>>(flowgraph, "Utils/Subtract CC");
 
             registerNodeSimple<ndsp::AddBlock<float>>(flowgraph, "Utils/Add FF");
             registerNodeSimple<ndsp::AddBlock<complex_t>>(flowgraph, "Utils/Add CC");
