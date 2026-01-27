@@ -6,7 +6,7 @@ namespace satdump
     {
         template <typename T>
         WaveformBlock<T>::WaveformBlock()
-            : Block("cosine_source_" + getShortTypeName<T>(), {}, //
+            : Block("waveform_" + getShortTypeName<T>(), {}, //
                     {{"out", getTypeSampleType<T>()}})
         {
             d_buffer_size = p_buffer_size;

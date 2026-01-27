@@ -25,9 +25,9 @@
 #include "dsp/resampling/rational_resampler.h"
 #include "dsp/utils/add.h"
 #include "dsp/utils/correct_iq.h"
-#include "dsp/utils/waveform.h"
 #include "dsp/utils/multiply.h"
 #include "dsp/utils/throttle.h"
+#include "dsp/utils/waveform.h"
 
 #include "common/widgets/fft_plot.h"
 
@@ -62,18 +62,6 @@ namespace satdump
                 ndsp::NodeInternal::render();
                 float prog = double(((ndsp::IQSourceBlock *)blk.get())->d_progress) / double(((ndsp::IQSourceBlock *)blk.get())->d_filesize);
                 ImGui::ProgressBar(prog, {100, 20});
-                return false;
-            }
-        };
-
-        class NodeTestWaveform : public ndsp::NodeInternal
-        {
-        public:
-            NodeTestWaveform(const ndsp::Flowgraph *f) : ndsp::NodeInternal(f, std::make_shared<ndsp::WaveformBlock<float>>()) {}
-
-            virtual bool render()
-            {
-                ndsp::NodeInternal::render();
                 return false;
             }
         };
@@ -132,7 +120,6 @@ namespace satdump
             registerNode<NodeTestFFT>(flowgraph, "fft_pan_cc", "FFT/FFT Pan");
             registerNode<NodeTestConst>(flowgraph, "const_disp_c", "View/Constellation Display");
             registerNode<NodeTestHisto>(flowgraph, "histo_disp_c", "View/Histogram Display");
-            registerNode<NodeTestWaveform>(flowgraph, "waveform_f", "Utils/Waveform Source");
 
             registerNodeSimple<ndsp::AGCBlock<complex_t>>(flowgraph, "AGC/Agc CC");
             registerNodeSimple<ndsp::AGCBlock<float>>(flowgraph, "AGC/Agc FF");
@@ -173,6 +160,8 @@ namespace satdump
             registerNodeSimple<ndsp::ThrottleBlock<float>>(flowgraph, "Utils/Throttle FF");
 
             registerNodeSimple<ndsp::NNGIQSinkBlock>(flowgraph, "IO/NNG IQ Sink");
+
+            registerNodeSimple<ndsp::WaveformBlock<float>>(flowgraph, "IO/Waveform F");
 
             registerNodeSimple<ndsp::FileSourceBlock<complex_t>>(flowgraph, "IO/File Source C");
             registerNodeSimple<ndsp::FileSourceBlock<float>>(flowgraph, "IO/File Source F");
