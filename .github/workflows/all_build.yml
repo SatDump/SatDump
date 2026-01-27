@@ -469,7 +469,7 @@ jobs:
       - name: Build dependencies
         if: steps.macos-deps-silicon.outputs.cache-hit != 'true'
         working-directory: ${{runner.workspace}}/build
-        shell: bash        
+        shell: bash
         run: $GITHUB_WORKSPACE/macOS/build_deps.sh
       
       - name: Configure CMake

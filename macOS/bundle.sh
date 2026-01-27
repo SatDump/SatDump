@@ -92,7 +92,7 @@ plugin_args=$(ls MacApp/SatDump.app/Contents/Resources/plugins | xargs printf --
 dylibbundler $SIGN_FLAG \
   -cd \
   -s $HOMEBREW_LIB/lib \
-  -s deps/lib \
+  -s $GITHUB_WORKSPACE/deps/lib \
   -s . \
   -d MacApp/SatDump.app/Contents/libs \
   -x MacApp/SatDump.app/Contents/MacOS/satdump-ui \
