@@ -40,7 +40,7 @@ void funcRebuildFonts()
 
 void funcSetMousePos(int x, int y)
 {
-    glfwSetCursorPos(window, x, y);
+    glfwSetCursorPos(window, x + backend::mouse_set_offset_x, y + backend::mouse_set_offset_y);
     ImGui_ImplGlfw_CursorPosCallback(window, x, y);
 }
 

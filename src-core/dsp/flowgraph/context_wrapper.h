@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/backend.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
 #include <cmath>
@@ -69,7 +70,6 @@ struct ContainedContextConfig
     float zoom_divisions = 10.f;
     float zoom_smoothness = 5.f;
     float default_zoom = 1.f;
-    ImGuiKey reset_zoom_key = ImGuiKey_R;
     ImGuiMouseButton scroll_button = ImGuiMouseButton_Middle;
 };
 
@@ -128,6 +128,9 @@ inline void ContainedContext::begin()
     setFontDensity();
     ImGui::PopStyleColor();
     m_pos = ImGui::GetWindowPos();
+
+    backend::mouse_set_offset_x += m_pos.x;
+    backend::mouse_set_offset_y += m_pos.y;
 
     m_size = ImGui::GetContentRegionAvail();
     m_origin = ImGui::GetCursorScreenPos();
@@ -221,7 +224,7 @@ inline void ContainedContext::end()
     }
 
     // Zoom reset
-    if (ImGui::IsKeyPressed(m_config.reset_zoom_key, false))
+    if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Middle))
         m_scaleTarget = m_config.default_zoom;
 
     // Scrolling
@@ -232,4 +235,7 @@ inline void ContainedContext::end()
     this->m_ctx->IO.MousePos = (ImGui::GetMousePos() - m_origin) / m_scale;
     ImGui::EndChild();
     ImGui::PopID();
+
+    backend::mouse_set_offset_x -= m_pos.x;
+    backend::mouse_set_offset_y -= m_pos.y;
 }
