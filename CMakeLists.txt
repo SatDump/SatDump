@@ -74,10 +74,6 @@ if(APPLE)
         link_directories(/opt/homebrew/lib)
         set(CMAKE_PREFIX_PATH "/opt/homebrew/;${CMAKE_SOURCE_DIR}/deps")
         link_directories(/opt/homebrew/opt/libomp/lib/) # omp needs special handling as it is not in /lib
-
-        # Should improve performance on Silicon
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
     else()
         link_directories(/usr/local/lib)
         set(CMAKE_PREFIX_PATH "/usr/local/;${CMAKE_SOURCE_DIR}/deps")
@@ -158,6 +154,14 @@ if(MSVC OR BUILD_MSVC)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     include_directories(vcpkg/installed/${VCPKG_TARGET_TRIPLET}/include)
     link_directories(vcpkg/installed/${VCPKG_TARGET_TRIPLET}/lib)
+endif()
+
+if(NOT DEFINED ENV{CI})
+    if(APPLE OR UNIX)
+        message("-- Not running on CI. Building for native architecture! Will likely not be portable to other systems.")
+        set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -march=native")    
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+    endif()
 endif()
 
 project(SatDump VERSION "2.0.0")
