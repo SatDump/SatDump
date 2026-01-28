@@ -20,6 +20,7 @@
 #include "dsp/io/iq_sink.h"
 #include "dsp/io/iq_source.h"
 #include "dsp/io/nng_iq_sink.h"
+#include "dsp/io/waveform.h"
 #include "dsp/path/splitter.h"
 #include "dsp/pll/pll_carrier_tracking.h"
 #include "dsp/resampling/rational_resampler.h"
@@ -28,7 +29,6 @@
 #include "dsp/utils/multiply.h"
 #include "dsp/utils/subtract.h"
 #include "dsp/utils/throttle.h"
-#include "dsp/utils/waveform.h"
 
 #include "common/widgets/fft_plot.h"
 
