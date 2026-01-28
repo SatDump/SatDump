@@ -59,7 +59,6 @@ endif()
 
 if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
-    #link_directories(vcpkg/installed/osx-satdump/lib)
 
     # Jemalloc
     find_package(Jemalloc REQUIRED)
@@ -74,9 +73,7 @@ if(APPLE)
     if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
         link_directories(/opt/homebrew/lib)
         set(CMAKE_PREFIX_PATH "/opt/homebrew/;${CMAKE_SOURCE_DIR}/deps")
-
-        # omp is not in /lib because why would it be
-        link_directories(/opt/homebrew/opt/libomp/lib/)
+        link_directories(/opt/homebrew/opt/libomp/lib/) # omp needs special handling as it is not in /lib
 
         # Should improve performance on Silicon
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")
@@ -84,9 +81,8 @@ if(APPLE)
     else()
         link_directories(/usr/local/lib)
         set(CMAKE_PREFIX_PATH "/usr/local/;${CMAKE_SOURCE_DIR}/deps")
-    
-        # omp is not in /lib because why would it be
-        link_directories(/usr/local/opt/libomp/lib/)
+        link_directories(/usr/local/opt/libomp/lib/) # omp needs special handling as it is not in /lib
+       
     endif()
 
     # Rpaths are stripped when we are going to bundle, done to prevent duplicate LC_PATH crap

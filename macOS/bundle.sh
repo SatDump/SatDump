@@ -61,15 +61,15 @@ then
 fi
 
 echo "Copying libraries..."
-
 mkdir MacApp/SatDump.app/Contents/libs
 cp $GITHUB_WORKSPACE/deps/lib/*.dylib MacApp/SatDump.app/Contents/libs
-# We are cd'd in the build dir
+# We are already in the build dir, that's where the satdump dylibs are - ./ and ./plugins
 cp ./*.dylib MacApp/SatDump.app/Contents/libs
 cp ./plugins/*.dylib MacApp/SatDump.app/Contents/libs
 
-# Symlinks are not copied by dylibbuilder, we gotta copy the homebrew libs manually.
-# There has to be a better way to do this?
+# Symlinks are not copied by dylibbuilder, we gotta copy these homebrew libs manually.
+# Surely there has to be a better way to do this? This should work for the time being,
+# as these paths should be standardized.
 cp $HOMEBREW_LIB/lib/libjemalloc* MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/libglfw* MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/libarmadillo* MacApp/SatDump.app/Contents/libs
@@ -83,7 +83,7 @@ cp $HOMEBREW_LIB/lib/libusb* MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/libportaudio* MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/libhdf5* MacApp/SatDump.app/Contents/libs
 
-# libomp is not in the lib dir because why would it be?
+# Libomp is not in /lib becuase it was born that way, we gotta use the full path
 cp $HOMEBREW_LIB/opt/libomp/lib/libomp* MacApp/SatDump.app/Contents/libs
 
 
