@@ -1,4 +1,5 @@
 #include "backend.h"
+#include "cli/open.h"
 #include "cli/recstart.h"
 #include "common/cli_utils.h"
 #include "common/detect_header.h"
@@ -236,7 +237,10 @@ int main(int argc, char *argv[])
         [](const satdump::cli::RegisterSubcommandEvent &evt)
         {
             if (evt.is_gui)
+            {
                 evt.cmd_handlers.push_back(std::make_shared<satdump::RecStartCmdHandler>());
+                evt.cmd_handlers.push_back(std::make_shared<satdump::OpenCmdHandler>());
+            }
         });
 
     // Parse commands, if present
