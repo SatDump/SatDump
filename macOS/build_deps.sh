@@ -1,87 +1,55 @@
 #!/bin/bash
 set -Eeo pipefail
+
 if [[ -z "$GITHUB_WORKSPACE" ]]
 then
     GITHUB_WORKSPACE=".."
-    cd $( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/..
+    cd $( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/../build
+
+    echo "Workspace $GITHUB_WORKSPACE"
 fi
 
-if [[ -d vcpkg ]]
-then
-    rm -rf vcpkg
+# This is where the libraries are pulled & built in
+working_dir="$GITHUB_WORKSPACE/deps-temp"
+output_dir="$GITHUB_WORKSPACE/deps"
+
+# Libusb from homebrew is used
+HOMEBREW_LIB="/usr/local"
+if [[ $(uname -m) == 'arm64' ]]; then
+  echo "Configured Homebrew for Silicon"
+  HOMEBREW_LIB="/opt/homebrew"
 fi
-git clone https://github.com/microsoft/vcpkg
-cd vcpkg
-git checkout 74e6536
 
-if [[ "$(uname -m)" == "arm64" ]]
-then
-    cp ../macOS/arm64-osx-satdump.cmake triplets/osx-satdump.cmake
-    osx_target="15.0"
-else
-    cp ../macOS/x64-osx-satdump.cmake triplets/osx-satdump.cmake
-    osx_target="10.15"
-fi
-./bootstrap-vcpkg.sh
+# Cleans up working space
+rm -rf $working_dir
+rm -rf $output_dir
 
-echo "Installing vcpkg packages..."
 
-# Core packages. libxml2 is for libiio
-./vcpkg install --triplet osx-satdump libjpeg-turbo tiff libpng glfw3 libusb fftw3 libxml2 portaudio jemalloc nng zstd armadillo hdf5[cpp] sqlite3
+# Canonicalization, directory creation
+mkdir $output_dir
+mkdir $output_dir/lib
+mkdir $output_dir/include
+cd $output_dir
+output_dir=$(pwd)
 
-# Entirely for UHD...
-./vcpkg install --triplet osx-satdump boost-chrono boost-date-time boost-filesystem boost-program-options boost-system boost-serialization boost-thread \
-                                      boost-test boost-format boost-asio boost-math boost-graph boost-units boost-lockfree boost-circular-buffer        \
-                                      boost-assign boost-dll
+echo "Dependencies will be saved at $output_dir"
 
-# Remove nested symlinks on known problematic libs
-for dylib in libz.dylib libzstd.dylib libhdf5.dylib libhdf5_hl.dylib
-do
-    target_dylib=$(readlink installed/osx-satdump/lib/$dylib)
-    final_dylib=$(readlink installed/osx-satdump/lib/$target_dylib)
-    if [[ -n final_dylib ]]
-    then
-        mv installed/osx-satdump/lib/$final_dylib installed/osx-satdump/lib/$target_dylib
-    fi
-done
+mkdir $working_dir
+cd $working_dir
+working_dir=$(pwd)
+echo "Dependencies will be built in: $working_dir"
 
-mkdir build && cd build
 
-#Used for volk and uhd builds
 echo "Setting up venv"
 python3 -m venv venv
 source venv/bin/activate
 pip3 install mako
 
-build_args="-DCMAKE_TOOLCHAIN_FILE=$(cd ../scripts/buildsystems && pwd)/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=osx-satdump -DCMAKE_INSTALL_PREFIX=$(cd ../installed/osx-satdump && pwd) -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=$osx_target -DCMAKE_MACOSX_RPATH=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5"
-standard_include="$(cd ../installed/osx-satdump/include && pwd)"
-standard_lib="$(cd ../installed/osx-satdump/lib && pwd)"
-libusb_include="$(cd $standard_include/libusb-1.0 && pwd)"
-libusb_lib="$standard_lib/libusb-1.0.0.dylib"
-
-echo "Building OpenMP"
-mkdir libomp && cd libomp
-curl -LJ --output openmp-17.0.6.src.tar.xz https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.6/openmp-17.0.6.src.tar.xz
-curl -LJ --output cmake-17.0.6.src.tar.xz https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.6/cmake-17.0.6.src.tar.xz
-tar -xf openmp-17.0.6.src.tar.xz
-tar -xf cmake-17.0.6.src.tar.xz
-mv cmake-17.0.6.src cmake
-cd openmp-17.0.6.src
-mkdir build && cd build
-cmake $build_args -DLIBOMP_INSTALL_ALIASES=OFF ..
-make -j$(sysctl -n hw.logicalcpu)
-make install
-cd ../../..
-rm -rf libomp
-
-echo "Building orc"
-git clone https://github.com/GStreamer/orc --depth 1 -b 0.4.38
-cd orc
-MACOSX_DEPLOYMENT_TARGET=$osx_target meson setup --buildtype=release --prefix=$(cd ../../installed/osx-satdump && pwd) -Dgtk_doc=disabled build
-MACOSX_DEPLOYMENT_TARGET=$osx_target meson compile -C build --verbose
-MACOSX_DEPLOYMENT_TARGET=$osx_target meson install -C build
-cd ..
-rm -rf orc
+build_args="-DCMAKE_INSTALL_PREFIX=$output_dir -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=$osx_target -DCMAKE_MACOSX_RPATH=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+standard_include="$output_dir/include"
+standard_lib="$output_dir/lib"
+libusb_include="$HOMEBREW_LIB/opt/libusb/include/libusb-1.0"
+libusb_lib="$HOMEBREW_LIB/opt/libusb/lib/libusb-1.0.0.dylib"
 
 echo "Building cpu_features..."
 git clone https://github.com/google/cpu_features --depth 1 -b v0.9.0
@@ -92,16 +60,6 @@ make -j$(sysctl -n hw.logicalcpu)
 make install
 cd ../..
 rm -rf cpu_features
-
-echo "Building Volk..."
-git clone https://github.com/gnuradio/volk --depth 1 -b v3.1.2
-cd volk
-mkdir build && cd build
-cmake $build_args -DENABLE_TESTING=OFF -DENABLE_MODTOOL=OFF ..
-make -j$(sysctl -n hw.logicalcpu)
-make install
-cd ../..
-rm -rf volk
 
 echo "Building Airspy..."
 git clone https://github.com/airspy/airspyone_host --depth 1 #-b v1.0.10
@@ -159,7 +117,10 @@ cd libfobos
 sed -i '' 's/#target_link_libraries/target_link_libraries/' CMakeLists.txt
 sed -i '' 's/"udev"/"udev" EXCLUDE_FROM_ALL/' CMakeLists.txt
 mkdir build && cd build
-cmake $build_args -DLIBUSB_INCLUDE_DIRS=$standard_include -DCMAKE_INSTALL_LIBDIR=$standard_lib ..
+# Fobos is incredibly picky about USB dirs for some reason, when it doesn't complain,
+# everything else does - hardcoded them to make it shut up
+cmake $build_args -DLIBUSB_LIBRARIES=$HOMEBREW_LIB/opt/libusb/lib/libusb-1.0.dylib -DLIBUSB_INCLUDE_DIRS=$HOMEBREW_LIB/opt/libusb/include \
+ -DCMAKE_INSTALL_LIBDIR=$standard_lib ..
 make -j$(sysctl -n hw.logicalcpu)
 make install
 cd ../..
@@ -192,7 +153,7 @@ cd libad9361-iio
 git checkout 2264074
 sed -i '' 's/<iio\/iio.h>/<iio.h>/g' test/*.c    #Patch tests for macOS
 sed -i '' 's/option(OSX_FRAMEWORK "Create a OSX_FRAMEWORK" ON)/option(OSX_FRAMEWORK "Create a OSX_FRAMEWORK" OFF)/' CMakeLists.txt    #Just a dylib, please!
-sed -i '' 's|/Library/Frameworks|'"$PWD/../installed/osx-satdump"'|g' CMakeLists.txt  #No, don't build into /Library
+sed -i '' 's|/Library/Frameworks|'"$PWD/deps"'|g' CMakeLists.txt  #No, don't build into /Library
 mkdir build && cd build
 cmake $build_args -DOSX_PACKAGE=OFF -DWITH_DOC=OFF -DENABLE_PACKAGING=OFF ..
 make -j$(sysctl -n hw.logicalcpu)
@@ -216,8 +177,10 @@ git clone https://github.com/EttusResearch/uhd --depth 1 -b v4.9.0.0
 cd uhd/host
 sed -i '' 's/ appropriately or"/");/g' lib/utils/paths.cpp                          #Disable non-applicable help
 sed -i '' '/follow the below instructions to download/{N;d;}' lib/utils/paths.cpp
+# boost_system isn't shipped standalone anymore, this makes sure it doesn't try finding it
+sed -i '' '/^set(UHD_BOOST_REQUIRED_COMPONENTS/,/^[[:space:]]*)/{/^[[:space:]]*system[[:space:]]*$/d;}' CMakeLists.txt
 mkdir build && cd build
-cmake $build_args -DENABLE_MAN_PAGES=OFF -DENABLE_MANUAL=OFF -DENABLE_PYTHON_API=OFF -DENABLE_EXAMPLES=OFF -DENABLE_UTILS=OFF -DENABLE_TESTS=OFF ..
+cmake $build_args -Dboost_system_DIR=$HOMEBREW_LIB/opt/boost/lib/cmake/Boost-1.90.0 -DENABLE_MAN_PAGES=OFF -DENABLE_MANUAL=OFF -DENABLE_PYTHON_API=OFF -DENABLE_EXAMPLES=OFF -DENABLE_UTILS=OFF -DENABLE_TESTS=OFF ..
 make -j$(sysctl -n hw.logicalcpu)
 make install
 cd ../../..
@@ -226,12 +189,22 @@ rm -rf uhd
 echo "Adding SDRPlay Library..."
 curl -LJ --output sdrplay-macos.zip https://www.satdump.org/sdrplay-macos.zip
 unzip sdrplay-macos.zip
-cp sdrplay-macos/lib/* ../installed/osx-satdump/lib
-cp sdrplay-macos/include/* ../installed/osx-satdump/include
-cd ../installed/osx-satdump/lib
+cp sdrplay-macos/lib/* $output_dir/lib
+cp sdrplay-macos/include/* $output_dir/include
+cd $output_dir/lib
 ln -s libsdrplay_api.3.15.dylib libsdrplay_api.dylib
 cd -
 rm -rf sdrplay-macos*
 
 deactivate #Exit the venv
+
+echo "Cleaning up..."
+rm -r $working_dir
+
+# Sanity check
+if [ ! -d $output_dir ] ; then
+    echo "Something went wrong, deps directory does not exist!"
+    exit 1
+fi
+
 echo "Done!"

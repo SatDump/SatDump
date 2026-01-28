@@ -59,18 +59,39 @@ endif()
 
 if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
-    link_directories(vcpkg/installed/osx-satdump/lib)
 
     # Jemalloc
     find_package(Jemalloc REQUIRED)
     include_directories(${JEMALLOC_INCLUDE_DIR})
     link_libraries(${JEMALLOC_LIBRARY})
 
-    set(CMAKE_SKIP_RPATH FALSE)
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-    set(CMAKE_INSTALL_RPATH "@executable_path/../libs")
-    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+    # Manually built dependencies
+    link_directories(${CMAKE_SOURCE_DIR}/deps/lib)
+    include_directories("${CMAKE_SOURCE_DIR}/deps/include")
 
+    # Homebrew path is different on Silicon-based and Intel-based MacOS
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+        link_directories(/opt/homebrew/lib)
+        set(CMAKE_PREFIX_PATH "/opt/homebrew/;${CMAKE_SOURCE_DIR}/deps")
+        link_directories(/opt/homebrew/opt/libomp/lib/) # omp needs special handling as it is not in /lib
+
+        # Should improve performance on Silicon
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+    else()
+        link_directories(/usr/local/lib)
+        set(CMAKE_PREFIX_PATH "/usr/local/;${CMAKE_SOURCE_DIR}/deps")
+        link_directories(/usr/local/opt/libomp/lib/) # omp needs special handling as it is not in /lib
+       
+    endif()
+
+    # Rpaths are stripped when we are going to bundle, done to prevent duplicate LC_PATH crap
+    if(BUNDLING_MODE)
+        set(CMAKE_SKIP_RPATH FALSE)
+        set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE) 
+        set(CMAKE_INSTALL_RPATH "@executable_path/../libs")
+        set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+    endif()
 endif()
 
 if(UNIX)

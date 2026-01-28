@@ -374,105 +374,40 @@ jobs:
 
   build_macos_intel:
     runs-on: macos-15-intel
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Select Xcode version
-        run: sudo xcode-select -s '/Applications/Xcode_16.4.app/Contents/Developer'
-
-      - name: Install build dependencies
-        run: brew install dylibbundler automake meson
-
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        id: macos-deps-intel
-        with:
-          path: vcpkg
-          key: macos-deps-intel-${{ hashFiles('macOS/Configure-vcpkg.sh') }}
-
-      - name: Build vcpkg
-        shell: bash
-        if: steps.macos-deps-intel.outputs.cache-hit != 'true'
-        run: $GITHUB_WORKSPACE/macOS/Configure-vcpkg.sh
-
-      - name: Clean up vcpkg
-        if: steps.macos-deps-intel.outputs.cache-hit != 'true'
-        run: rm -rf $GITHUB_WORKSPACE/vcpkg/packages $GITHUB_WORKSPACE/vcpkg/downloads $GITHUB_WORKSPACE/vcpkg/buildtrees
-
-      - name: Create Build Environment
-        # Some projects don't allow in-source building, so create a separate build directory
-        # We'll use this as our working directory for all subsequent commands
-        run: cmake -E make_directory ${{runner.workspace}}/build
-
-      - name: Configure CMake
-        working-directory: ${{runner.workspace}}/build
-        # Note the current convention is to use the -S and -B options here to specify source
-        # and build directories, but this is only available with CMake 3.13 and higher.
-        # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 -DVCPKG_TARGET_TRIPLET=osx-satdump
-
-      - name: Build
-        working-directory: ${{runner.workspace}}/build
-        shell: bash
-        # Execute the build.  You can specify a specific target with "--target <NAME>"
-        run: make -j8
-
-      - name: Bundle
-        working-directory: ${{runner.workspace}}/build
-        shell: bash
-        #env:
-        #  MACOS_TEAM: ${{ secrets.MACOS_TEAM }}
-        #  MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
-        #  MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-        #  MACOS_SIGNING_SIGNATURE: ${{ secrets.MACOS_SIGNING_SIGNATURE }}
-        #  MACOS_NOTARIZATION_UN: ${{ secrets.MACOS_NOTARIZATION_UN }}
-        #  MACOS_NOTARIZATION_PWD: ${{ secrets.MACOS_NOTARIZATION_PWD }}
-        run: $GITHUB_WORKSPACE/macOS/bundle.sh Intel
-
-      - name: Upload DMG
-        uses: actions/upload-artifact@v4
-        with:
-          name: SatDump-macOS-Intel
-          path: ${{runner.workspace}}/build/*.dmg
-
-  build_macos_silicon:
-    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
 
       - name: Select Xcode version
         run: sudo xcode-select -s '/Applications/Xcode_16.2.app/Contents/Developer'
 
-      - name: Install build dependencies
-        run: brew install dylibbundler libtool autoconf automake meson
-
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        id: macos-deps-silicon
-        with:
-          path: vcpkg
-          key: macos-deps-silicon-${{ hashFiles('macOS/Configure-vcpkg.sh') }}
-
-      - name: Build vcpkg
-        shell: bash
-        if: steps.macos-deps-silicon.outputs.cache-hit != 'true'
-        run: $GITHUB_WORKSPACE/macOS/Configure-vcpkg.sh
-
-      - name: Clean up vcpkg
-        if: steps.macos-deps-silicon.outputs.cache-hit != 'true'
-        run: rm -rf $GITHUB_WORKSPACE/vcpkg/packages $GITHUB_WORKSPACE/vcpkg/downloads $GITHUB_WORKSPACE/vcpkg/buildtrees
+      - name: Install brew dependencies
+        run: brew install dylibbundler libtool autoconf automake meson orc libxml2 zlib portaudio boost libusb nng volk libjpeg-turbo libtiff libomp libpng glfw3 libusb fftw libxml2 portaudio jemalloc nng zstd armadillo hdf5 sqlite3
 
       - name: Create Build Environment
         # Some projects don't allow in-source building, so create a separate build directory
         # We'll use this as our working directory for all subsequent commands
         run: cmake -E make_directory ${{runner.workspace}}/build
 
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        id: macos-deps-intel
+        with:
+          path: deps
+          key: macos-deps-intel-${{ hashFiles('macOS/build_deps.sh') }}
+      
+      - name: Build dependencies
+        if: steps.macos-deps-intel.outputs.cache-hit != 'true'
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        run: $GITHUB_WORKSPACE/macOS/build_deps.sh
+      
       - name: Configure CMake
         working-directory: ${{runner.workspace}}/build
         # Note the current convention is to use the -S and -B options here to specify source
         # and build directories, but this is only available with CMake 3.13 and higher.
         # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DVCPKG_TARGET_TRIPLET=osx-satdump
+        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUNDLING_MODE=ON -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
 
       - name: Build
         working-directory: ${{runner.workspace}}/build
@@ -490,7 +425,67 @@ jobs:
         #  MACOS_SIGNING_SIGNATURE: ${{ secrets.MACOS_SIGNING_SIGNATURE }}
         #  MACOS_NOTARIZATION_UN: ${{ secrets.MACOS_NOTARIZATION_UN }}
         #  MACOS_NOTARIZATION_PWD: ${{ secrets.MACOS_NOTARIZATION_PWD }}
-        run: $GITHUB_WORKSPACE/macOS/bundle.sh Silicon
+        run: $GITHUB_WORKSPACE/macOS/bundle.sh
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: SatDump-macOS-Intel
+          path: ${{runner.workspace}}/build/*.dmg
+
+  build_macos_silicon:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode version
+        run: sudo xcode-select -s '/Applications/Xcode_16.2.app/Contents/Developer'
+
+      - name: Install brew dependencies
+        run: brew install dylibbundler libtool autoconf automake meson orc libxml2 zlib portaudio boost libusb nng volk libjpeg-turbo libtiff libomp libpng glfw3 libusb fftw libxml2 portaudio jemalloc nng zstd armadillo hdf5 sqlite3
+
+      - name: Create Build Environment
+        # Some projects don't allow in-source building, so create a separate build directory
+        # We'll use this as our working directory for all subsequent commands
+        run: cmake -E make_directory ${{runner.workspace}}/build
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        id: macos-deps-silicon
+        with:
+          path: deps
+          key: macos-deps-silicon-${{ hashFiles('macOS/build_deps.sh') }}
+      
+      - name: Build dependencies
+        if: steps.macos-deps-silicon.outputs.cache-hit != 'true'
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        run: $GITHUB_WORKSPACE/macOS/build_deps.sh
+      
+      - name: Configure CMake
+        working-directory: ${{runner.workspace}}/build
+        # Note the current convention is to use the -S and -B options here to specify source
+        # and build directories, but this is only available with CMake 3.13 and higher.
+        # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
+        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUNDLING_MODE=ON -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+
+      - name: Build
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        # Execute the build.  You can specify a specific target with "--target <NAME>"
+        run: make -j6
+
+      - name: Bundle
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        #env:
+        #  MACOS_TEAM: ${{ secrets.MACOS_TEAM }}
+        #  MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+        #  MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+        #  MACOS_SIGNING_SIGNATURE: ${{ secrets.MACOS_SIGNING_SIGNATURE }}
+        #  MACOS_NOTARIZATION_UN: ${{ secrets.MACOS_NOTARIZATION_UN }}
+        #  MACOS_NOTARIZATION_PWD: ${{ secrets.MACOS_NOTARIZATION_PWD }}
+        run: $GITHUB_WORKSPACE/macOS/bundle.sh
 
       - name: Upload DMG
         uses: actions/upload-artifact@v4
