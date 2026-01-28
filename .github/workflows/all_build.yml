@@ -448,7 +448,7 @@ jobs:
         # These are preinstalled in the GitHub runners, cause needless warnings to appear
         # Add these back if these ever become missing for some reason
         # sqlite3 zstd libpng libtiff libjpeg-turbo libusb
-        run: brew install dylibbundler libtool autoconf automake meson orc libxml2 zlib portaudio boost nng volk libomp glfw3 libusb fftw libxml2 portaudio jemalloc nng armadillo hdf5 
+        run: brew install dylibbundler libtool autoconf automake meson orc libxml2 zlib portaudio boost nng volk libomp glfw3 fftw libxml2 portaudio jemalloc nng armadillo hdf5 
 
       - name: Create Build Environment
         # Some projects don't allow in-source building, so create a separate build directory
