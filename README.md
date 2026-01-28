@@ -92,23 +92,23 @@ For compilation information, see the dedicated documentation [here](https://docs
 
 ### macOS
 
-Dependency-free macOS builds are provided on the [releases page](https://github.com/altillimity/SatDump/releases) (Thanks to JVital2013, the builds are also signed!).
+Dependency-free macOS builds are provided on the [releases page](https://github.com/altillimity/SatDump/releases).
 
-General build instructions (Brew and XCode command line tools required)
+General build instructions (Homebrew is required!)
 
 ```bash
-# Install build tools
-brew install dylibbundler libtool autoconf automake meson orc libxml2 zlib portaudio boost libusb nng volk libjpeg-turbo libtiff libomp libpng glfw3 libusb fftw libxml2 portaudio jemalloc nng zstd armadillo hdf5 sqlite3
+# Install build tools and dependencies
+brew install cmake dylibbundler libtool autoconf automake meson orc libxml2 zlib portaudio boost libusb nng volk libjpeg-turbo libtiff libomp libpng glfw3 libusb fftw libxml2 portaudio jemalloc nng zstd armadillo hdf5 sqlite3
 
 # Clone SatDump
 git clone https://github.com/SatDump/SatDump.git && cd SatDump
 mkdir build && cd build
 
-# Build dependencies
+# Build additional dependencies
 ../macOS/build_deps.sh
 
 # Build SatDump
-cmake -DCMAKE_BUILD_TYPE=Release ..  # If you want to bundle the app, you must do -DBUNDLING_MODE=ON, that makes the binary usable in a bundle
+cmake -DCMAKE_BUILD_TYPE=Release ..  # If you want to bundle the app, you must also add -DBUNDLING_MODE=ON, that makes the binary usable in a bundle
 make -j$(sysctl -n hw.logicalcpu)
 
 # If -DBUNDLING_MODE was OFF
@@ -121,7 +121,7 @@ ln -s ../satdump_cfg.json . # Symlink settings so it can run
 # If -DBUNDLING_MODE was ON and you want to bundle the app
 ../macOS/bundle.sh
 
-# The finished bundle is now in ./MacApp, open it using Finder
+# The bundled app is now available in ./MacApp
 ```
 
 ### Linux
