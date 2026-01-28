@@ -382,7 +382,10 @@ jobs:
         run: sudo xcode-select -s '/Applications/Xcode_16.2.app/Contents/Developer'
 
       - name: Install brew dependencies
-        run: brew install dylibbundler libtool autoconf automake meson orc libxml2 zlib portaudio boost libusb nng volk libjpeg-turbo libtiff libomp libpng glfw3 libusb fftw libxml2 portaudio jemalloc nng zstd armadillo hdf5 sqlite3
+        # These are preinstalled in the GitHub runners, cause needless warnings to appear
+        # Add these back if these ever become missing for some reason
+        # sqlite3 libtool autoconf libjpeg-turbo libtiff libusb libpng zstd
+        run: brew install dylibbundler automake meson orc libxml2 zlib portaudio boost nng volk libomp glfw3 libusb fftw libxml2 portaudio jemalloc nng armadillo hdf5 
 
       - name: Create Build Environment
         # Some projects don't allow in-source building, so create a separate build directory
@@ -442,7 +445,10 @@ jobs:
         run: sudo xcode-select -s '/Applications/Xcode_16.2.app/Contents/Developer'
 
       - name: Install brew dependencies
-        run: brew install dylibbundler libtool autoconf automake meson orc libxml2 zlib portaudio boost libusb nng volk libjpeg-turbo libtiff libomp libpng glfw3 libusb fftw libxml2 portaudio jemalloc nng zstd armadillo hdf5 sqlite3
+        # These are preinstalled in the GitHub runners, cause needless warnings to appear
+        # Add these back if these ever become missing for some reason
+        # sqlite3 zstd libpng libtiff libjpeg-turbo libusb
+        run: brew install dylibbundler libtool autoconf automake meson orc libxml2 zlib portaudio boost nng volk libomp glfw3 libusb fftw libxml2 portaudio jemalloc nng armadillo hdf5 
 
       - name: Create Build Environment
         # Some projects don't allow in-source building, so create a separate build directory
