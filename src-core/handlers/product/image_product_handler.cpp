@@ -187,7 +187,7 @@ namespace satdump
 
                 // Expression entry
                 ImGui::SetNextItemWidth(ImGui::GetWindowSize().x - 10 * ui_scale);
-                ImGui::InputTextMultiline("##expression", &expression);
+                ImGui::InputTextMultiline("##expression", &expression, {0,0}, ImGuiInputTextFlags_WordWrap);
                 if (ImGui::Button("Apply"))
                 {
                     channel_selection_curr_id = -1;
