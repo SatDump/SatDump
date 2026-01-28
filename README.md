@@ -22,10 +22,10 @@ Quick-Start :
 - Check settings shown below are right (such as sample rate)
 - Press "Start"!
 
-![Image showing the processing window](image.png)
+![Image showing the processing window](gui-menu.png)
 
-![As drsceibed below](image-1.png)
-*SatDump demodulating a JPSS-2 baseband*
+![As described below](gui-processing.png)
+*SatDump (1.0) demodulating a DVB-S2 baseband*
 
 ### Live processing or recording (directly from your SDR)
 
@@ -36,8 +36,8 @@ Quick-Start :
 - Start it, and done!
 
 
-![SatDump as described below](live_source.png)
-*SatDump tuned to an FM station using a Nooelec Smart SDR v5*
+![SatDump as described below](gui-live-source.png)
+*SatDump tuned to 103 MHz using a HydraSDR*
 
 ## CLI Version
 
