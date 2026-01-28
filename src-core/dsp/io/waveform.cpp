@@ -49,7 +49,6 @@ namespace satdump
 
                 if (p_waveform == "cosine")
                 {
-
                     for (size_t i = 0; i < nsamples; i++)
                     {
                         obuf[i] = tmp_val;

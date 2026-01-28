@@ -3,6 +3,7 @@
 #include "common/dsp/utils/random.h"
 #include "dsp/block.h"
 #include "dsp/block_helpers.h"
+#include "dsp/complex_json.h"
 
 namespace satdump
 {
@@ -44,6 +45,7 @@ namespace satdump
             nlohmann::ordered_json get_cfg_list()
             {
                 nlohmann::ordered_json p;
+                add_param_list(p, "waveform", "list", {"cosine", "sine"}, "Waveform");
                 add_param_simple(p, "waveform", "string", "Waveform");
                 add_param_simple(p, "samprate", "float", "Samplerate");
                 add_param_simple(p, "freq", "float", "Frequency");
