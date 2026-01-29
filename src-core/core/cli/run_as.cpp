@@ -17,7 +17,7 @@ namespace satdump
 {
     struct JSONDiags
     {
-        bool lint;
+        bool lint = false;
         int ndiags = 0;
         nlohmann::json all_diags;
     };
@@ -66,7 +66,7 @@ namespace satdump
     {
         try
         {
-            // Retrow the original exception so we can catch it again
+            // Rethrow the original exception so we can catch it again
             throw;
         }
         catch (std::exception &e)
@@ -100,10 +100,21 @@ namespace satdump
         runAngelScript(script, subcom->count("--lint"), subcom->count("--predef"));
     }
 
+    struct ASEngineDeleter
+    {
+        void operator()(asIScriptEngine *e) const noexcept
+        {
+            if (e)
+                e->ShutDownAndRelease();
+        }
+    };
+
     int ScriptCmdHandler::runAngelScript(std::string file, bool lint, bool predef)
     {
         // Create the script engine
-        asIScriptEngine *engine = asCreateScriptEngine();
+        std::unique_ptr<asIScriptEngine, ASEngineDeleter> engine(asCreateScriptEngine());
+        if (!engine)
+            return 1;
 
         // Set the message callback to receive information on errors in human readable form.
         JSONDiags diags;
@@ -116,12 +127,12 @@ namespace satdump
         // string type for C++ applications. Every developer is free to register its own string type.
         // The SDK do however provide a standard add-on for registering a string type, so it's not
         // necessary to implement the registration yourself if you don't want to.
-        satdump::script::registerAll(engine);
+        satdump::script::registerAll(engine.get());
 
         if (predef)
-            script::GenerateScriptPredefined(engine, "../as.predefined");
+            script::GenerateScriptPredefined(engine.get(), "../as.predefined");
 
-        if (!script::buildModuleFromFile(engine, "script", file))
+        if (!script::buildModuleFromFile(engine.get(), "script", file))
             return 1;
 
         if (lint)
@@ -130,11 +141,8 @@ namespace satdump
             return 0;
         }
 
-        if (!script::runVoidMainFromModule(engine, "script"))
+        if (!script::runVoidMainFromModule(engine.get(), "script"))
             return 1;
-
-        // Clean up
-        engine->ShutDownAndRelease();
 
         return 0;
     }
