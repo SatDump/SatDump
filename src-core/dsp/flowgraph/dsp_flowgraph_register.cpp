@@ -2,6 +2,7 @@
 #include "core/plugin.h"
 
 #include "dsp/agc/agc.h"
+#include "dsp/clock_recovery/clock_recovery_mm_fast.h"
 #include "dsp/conv/char_to_float.h"
 #include "dsp/conv/complex_to_float.h"
 #include "dsp/conv/complex_to_ifloat.h"
@@ -139,6 +140,9 @@ namespace satdump
 
             registerNodeSimple<ndsp::MMClockRecoveryBlock<complex_t>>(flowgraph, "Timing/Clock Recovery MM CC");
             registerNodeSimple<ndsp::MMClockRecoveryBlock<float>>(flowgraph, "Timing/Clock Recovery MM FF");
+
+            registerNodeSimple<ndsp::MMClockRecoveryFastBlock<complex_t>>(flowgraph, "Timing/Clock Recovery Fast MM CC");
+            registerNodeSimple<ndsp::MMClockRecoveryFastBlock<float>>(flowgraph, "Timing/Clock Recovery Fast MM FF");
 
             registerNodeSimple<ndsp::RationalResamplerBlock<complex_t>>(flowgraph, "Resampling/Rational Resampler CC");
             registerNodeSimple<ndsp::RationalResamplerBlock<float>>(flowgraph, "Resampling/Rational Resampler FF");

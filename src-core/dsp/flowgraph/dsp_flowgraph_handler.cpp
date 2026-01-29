@@ -63,6 +63,11 @@ namespace satdump
                 if (running)
                     style::endDisabled();
             }
+
+            if (ImGui::CollapsingHeader("Flowgraph"))
+            {
+                ImGui::Checkbox("Debug Mode", &flowgraph.debug_mode);
+            }
         }
 
         void DSPFlowGraphHandler::drawMenuBar()

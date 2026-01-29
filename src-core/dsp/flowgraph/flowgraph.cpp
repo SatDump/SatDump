@@ -7,7 +7,6 @@
 #include "dsp/block.h"
 #include "imgui/imgui.h"
 #include "imgui/imnodes/imnodes.h"
-#include "imgui/imnodes/imnodes_internal.h"
 #include "logger.h"
 
 #include "utils/string.h"
@@ -367,7 +366,7 @@ namespace satdump
 
                             ptr->link(blk.get(), o, 0, 16 /*TODOREWORK*/); // ptr->inputs[0] = blk->outputs[o];
                             for (int v = 0; v < inputs_to_feed.size(); v++)
-                                inputs_to_feed[v].blk->link(ptr.get(), v, inputs_to_feed[0].idx, 16 /*TODOREWORK*/); //(*inputs_to_feed[v]) = ptr->outputs[v];
+                                inputs_to_feed[v].blk->link(ptr.get(), v, inputs_to_feed[v].idx, 16 /*TODOREWORK*/); //(*inputs_to_feed[v]) = ptr->outputs[v];
 
                             additional_blocks.push_back(ptr);
                         }

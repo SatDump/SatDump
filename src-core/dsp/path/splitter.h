@@ -1,7 +1,7 @@
 #pragma once
 
-#include "common/dsp/complex.h"
 #include "dsp/block.h"
+#include "dsp/block_helpers.h"
 #include <mutex>
 #include <string>
 
@@ -64,7 +64,7 @@ namespace satdump
                         Block::outputs.clear();
                         for (int i = 0; i < p_noutputs; i++)
                         {
-                            BlockIO o = {{"out" + std::to_string(i + 1), std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}};
+                            BlockIO o = {"out" + std::to_string(i + 1), getTypeSampleType<T>()};
                             o.blkdata = std::make_shared<IOInfo>(IOInfo{std::to_string(i + 1), true});
                             o.fifo = std::make_shared<DSPStream>(4); // TODOREWORK
                             Block::outputs.push_back(o);
@@ -82,7 +82,7 @@ namespace satdump
             {
                 std::lock_guard<std::mutex> lock_mtx(vfos_mtx);
 
-                BlockIO o = {{id, std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}};
+                BlockIO o = {{id, getTypeSampleType<T>()}};
                 o.blkdata = std::make_shared<IOInfo>(IOInfo{id, forward_terminator});
                 o.fifo = std::make_shared<DSPStream>(4); // TODOREWORK
                 Block::outputs.push_back(o);
