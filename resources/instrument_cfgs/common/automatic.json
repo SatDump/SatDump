@@ -48,12 +48,12 @@
         },
         {
             "name": "MCIR (Uncalibrated)",
-            "expression": "cch4=(ch4 * 4 - 0.01); bm=equp(maps/map_aweeri.jpg); cch4 * (cch4) + (1-cch4) * bm(0), cch4 * (cch4) + (1-cch4) * bm(1), cch4 * (cch4) + (1-cch4) * bm(2)",
+            "expression": "cch4=({10.5um} * 4 - 0.01); bm=equp(maps/map_aweeri.jpg); cch4 * (cch4) + (1-cch4) * bm(0), cch4 * (cch4) + (1-cch4) * bm(1), cch4 * (cch4) + (1-cch4) * bm(2)",
             "description": "descriptions/MCIR.md"
         },
         {
             "name": "MCIR (Uncalibrated, NASA Underlay)",
-            "expression": "cch4=(ch4 * 4 - 0.01); bm=equp(maps/nasa_hd.jpg); cch4 * (cch4) + (1-cch4) * bm(0), cch4 * (cch4) + (1-cch4) * bm(1), cch4 * (cch4) + (1-cch4) * bm(2)",
+            "expression": "cch4=({10.5um} * 4 - 0.01); bm=equp(maps/nasa_hd.jpg); cch4 * (cch4) + (1-cch4) * bm(0), cch4 * (cch4) + (1-cch4) * bm(1), cch4 * (cch4) + (1-cch4) * bm(2)",
             "description": "descriptions/MCIR.md"
         },
         {
