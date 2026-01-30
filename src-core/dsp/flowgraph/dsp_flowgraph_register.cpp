@@ -26,6 +26,7 @@
 #include "dsp/pll/pll_carrier_tracking.h"
 #include "dsp/resampling/rational_resampler.h"
 #include "dsp/utils/add.h"
+#include "dsp/utils/blanker.h"
 #include "dsp/utils/correct_iq.h"
 #include "dsp/utils/multiply.h"
 #include "dsp/utils/subtract.h"
@@ -166,6 +167,9 @@ namespace satdump
 
             registerNodeSimple<ndsp::ThrottleBlock<complex_t>>(flowgraph, "Utils/Throttle CC");
             registerNodeSimple<ndsp::ThrottleBlock<float>>(flowgraph, "Utils/Throttle FF");
+
+            registerNodeSimple<ndsp::BlankerBlock<complex_t>>(flowgraph, "Utils/Blanker CC");
+            registerNodeSimple<ndsp::BlankerBlock<float>>(flowgraph, "Utils/Blanker FF");
 
             registerNodeSimple<ndsp::NNGIQSinkBlock>(flowgraph, "IO/NNG IQ Sink");
 

@@ -102,16 +102,21 @@ namespace satdump
 
         retry:
             audio_mtx.lock();
+#if 1
             if (audio_buff.size() > samplerate * 0.2)
             {
                 audio_mtx.unlock();
                 goto retry;
             }
-
-            std::vector<int16_t> buf_resamp_out(nsam);
-            volk_32f_s32f_convert_16i(buf_resamp_out.data(), ibuf, nsam, 32767);
-            audio_buff.insert(audio_buff.end(), buf_resamp_out.data(), buf_resamp_out.data() + nsam);
-            audio_mtx.unlock();
+#else
+            if (audio_buff.size() < samplerate * 1)
+#endif
+            {
+                std::vector<int16_t> buf_resamp_out(nsam);
+                volk_32f_s32f_convert_16i(buf_resamp_out.data(), ibuf, nsam, 32767);
+                audio_buff.insert(audio_buff.end(), buf_resamp_out.data(), buf_resamp_out.data() + nsam);
+                audio_mtx.unlock();
+            }
 
             inputs[0].fifo->free(iblk);
 

@@ -28,7 +28,7 @@ public:
 
     static void registerDevs(const satdump::ndsp::RequestDeviceListEvent &evt)
     {
-        if (evt.m == satdump::ndsp::DeviceBlock::MODE_SINGLE_TX)
+        if (evt.m != satdump::ndsp::DeviceBlock::MODE_SINGLE_RX && evt.m != satdump::ndsp::DeviceBlock::MODE_NORMAL)
             return;
 
         auto d = satdump::ndsp::RTLSDRDevBlock::listDevs();
