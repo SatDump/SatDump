@@ -394,6 +394,7 @@ namespace satdump
             drawMenuBar();
 
             ImVec2 explorer_size = ImGui::GetContentRegionAvail();
+            if (explorer_size.x < 0.0f || explorer_size.y < 0.0f) return;
 
             if (show_panel)
             {
