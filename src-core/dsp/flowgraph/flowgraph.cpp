@@ -1,4 +1,5 @@
 #include "flowgraph.h"
+#include "common/widgets/CircularProgressBar.h"
 #include "core/exception.h"
 #include <chrono>
 #include <limits>
@@ -138,6 +139,7 @@ namespace satdump
                 if (n->internal->render())
                     n->updateIO(); // TODOREWORK!
 
+                int in_pos = 0;
                 for (auto &io : n->node_io)
                 {
                     ImNodes::PushColorStyle(ImNodesCol_Pin, getColorFromDSPType(io.type));
@@ -154,7 +156,24 @@ namespace satdump
                     {
                         ImNodes::BeginInputAttribute(io.id);
                         ImGui::Text("%s", io.name.c_str());
+
+                        if (debug_mode)
+                        {
+                            if (in_pos < n->internal->blk->get_inputs().size())
+                            {
+                                auto f = n->internal->blk->get_inputs()[in_pos];
+
+                                if (f.fifo)
+                                {
+                                    float v = (float)f.fifo->size_approx() / (float)f.fifo->max_capacity();
+                                    ImGui::SameLine();
+                                    CircularProgressBar(f.name.c_str(), v, {20, 20}, style::theme.green);
+                                }
+                            }
+                        }
+
                         ImNodes::EndInputAttribute();
+                        in_pos++;
                     }
                     ImNodes::PopColorStyle();
                 }

@@ -16,24 +16,6 @@ namespace satdump
             bool r = optdisp->draw();
             ImGui::PopItemWidth();
 
-            if (f->debug_mode)
-            {
-                if (blk->get_inputs().size())
-                {
-                    ImGui::Text("Buffers :");
-
-                    for (auto &i : blk->get_inputs())
-                    {
-                        if (!i.fifo)
-                            continue;
-                        float f = (float)i.fifo->size_approx() / (float)i.fifo->max_capacity();
-                        CircularProgressBar(i.name.c_str(), f, {20, 20}, style::theme.green);
-                        ImGui::SameLine();
-                        ImGui::Text("%s", i.name.c_str());
-                    }
-                }
-            }
-
             return r;
         }
 
