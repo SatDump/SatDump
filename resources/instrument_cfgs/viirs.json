@@ -161,6 +161,11 @@
         {
             "name": "DNB Night",
             "expression": "chdnb * 50 - 0.5"
+        },
+        {
+            "name": "DNB Night Arctic FC",
+            "expression": "lut=lut(lut/generic/arctic.png);dnb =chdnb * 46 - 0.5;lut(dnb, 0, 0),lut(dnb, 0, 1),lut(dnb, 0, 2)",
+            "description": "descriptions/VIIRSDNB_ArcticFC.md"
         }
     ]
 }
