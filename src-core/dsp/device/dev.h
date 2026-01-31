@@ -32,6 +32,7 @@ namespace satdump
                 MODE_NORMAL = 0,
                 MODE_SINGLE_RX = 1,
                 MODE_SINGLE_TX = 2,
+                MODE_RX_TX = 3,
             };
 
         protected:

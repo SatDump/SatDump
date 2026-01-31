@@ -8,6 +8,7 @@
 #include "core/style.h"
 #include "dsp/cyclo_test.h"
 #include "dsp/flowgraph/dsp_flowgraph_handler.h"
+#include "explorer/dsp/fm_test.h"
 #include "handlers/dataset/dataset_handler.h"
 #include "handlers/dummy_handler.h"
 #include "handlers/product/image_product_handler.h" // TODOREWORK CLEAN
@@ -259,6 +260,8 @@ namespace satdump
                             addHandler(std::make_shared<handlers::NewRecHandler>());
                         if (ImGui::MenuItem("CycloHelper TEST"))
                             addHandler(std::make_shared<handlers::CycloHelperHandler>());
+                        if (ImGui::MenuItem("FM Test"))
+                            addHandler(std::make_shared<handlers::FMTestHandler>());
                         ImGui::EndMenu();
                     }
 
@@ -394,6 +397,8 @@ namespace satdump
             drawMenuBar();
 
             ImVec2 explorer_size = ImGui::GetContentRegionAvail();
+            if (explorer_size.x < 0.0f || explorer_size.y < 0.0f)
+                return;
 
             if (show_panel)
             {

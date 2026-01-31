@@ -174,6 +174,11 @@ namespace satdump
                     set_cfg("rx_ch_number", 0);
                     set_cfg("tx_ch_number", 1);
                 }
+                else if (devMode == MODE_RX_TX)
+                {
+                    set_cfg("rx_ch_number", 1);
+                    set_cfg("tx_ch_number", 1);
+                }
             }
 
             nlohmann::ordered_json get_cfg_list()

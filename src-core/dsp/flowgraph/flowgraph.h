@@ -120,6 +120,9 @@ namespace satdump
             void renderAddMenu(std::pair<const std::string, NodeInternalReg> &opt, std::vector<std::string> cats, int pos);
 
         public:
+            bool debug_mode = false;
+
+        public:
             Flowgraph();
             ~Flowgraph();
 

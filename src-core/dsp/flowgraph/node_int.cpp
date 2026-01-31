@@ -1,4 +1,6 @@
 #include "node_int.h"
+#include "common/widgets/CircularProgressBar.h"
+#include "core/style.h"
 #include "flowgraph.h"
 #include "imgui/imgui.h"
 
@@ -13,6 +15,7 @@ namespace satdump
             ImGui::PushItemWidth(200);
             bool r = optdisp->draw();
             ImGui::PopItemWidth();
+
             return r;
         }
 

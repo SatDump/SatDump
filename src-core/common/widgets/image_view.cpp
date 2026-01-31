@@ -128,6 +128,65 @@ inline void addPlotScroll(ImPlotPlot &plot, float wheel_scroll)
     }
 }
 
+static double TickStep(double x)
+{
+    // 1/2/5 * 10^n step
+    if (x <= 0.0)
+        return 1.0;
+    const double e = floor(log10(x));
+    const double p = pow(10.0, e);
+    const double f = x / p;
+    double nf;
+    if (f < 1.5)
+        nf = 1.0;
+    else if (f < 3.0)
+        nf = 2.0;
+    else if (f < 7.0)
+        nf = 5.0;
+    else
+        nf = 10.0;
+    return nf * p;
+}
+
+static void SetGridTicks(ImPlotPlot &plot, float target_px = 48.0f)
+{
+    ImPlotAxis &x = plot.XAxis(0);
+    ImPlotAxis &y = plot.YAxis(0);
+
+    const double xmin = x.Range.Min, xmax = x.Range.Max;
+    const double ymin = y.Range.Min, ymax = y.Range.Max;
+    const double xspan = xmax - xmin;
+    if (xspan <= 0.0) return;
+
+    const float wpx = plot.PlotRect.GetWidth();
+    const float hpx = plot.PlotRect.GetHeight();
+    if (wpx <= 0 || hpx <= 0) return;
+
+    const double units_per_px = xspan / (double)wpx;
+    double step = TickStep(units_per_px * (double)target_px);
+    if (!(step > 0.0) || !std::isfinite(step)) return;
+
+    const int MAX_TICKS = 2048;
+    if (xspan / step > MAX_TICKS)
+        step = TickStep(xspan / MAX_TICKS);
+
+    static thread_local std::vector<double> xticks;
+    static thread_local std::vector<double> yticks;
+    xticks.clear();
+    yticks.clear();
+
+    const double x0 = floor(xmin / step) * step;
+    const double y0 = floor(ymin / step) * step;
+
+    for (double v = x0; v <= xmax + step * 0.5; v += step)
+        xticks.push_back(v);
+    for (double v = y0; v <= ymax + step * 0.5; v += step)
+        yticks.push_back(v);
+
+    ImPlot::SetupAxisTicks(ImAxis_X1, xticks.data(), (int)xticks.size(), nullptr, false);
+    ImPlot::SetupAxisTicks(ImAxis_Y1, yticks.data(), (int)yticks.size(), nullptr, false);
+}
+
 void ImageViewWidget::draw(ImVec2 win_size)
 {
     image_mtx.lock();
@@ -164,6 +223,13 @@ void ImageViewWidget::draw(ImVec2 win_size)
             else
                 ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels /*| ImPlotAxisFlags_NoGridLines*/ | (isSelectingCrop ? ImPlotAxisFlags_Lock : 0),
                                   ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels /*| ImPlotAxisFlags_NoGridLines*/ | (isSelectingCrop ? ImPlotAxisFlags_Lock : 0));
+
+            auto* p = ImPlot::GetCurrentPlot();
+            if (p && ImHasFlag(p->Flags, ImPlotFlags_Equal))
+            {
+                float target_px = ImClamp(48.0f * ui_scale, 24.0f, 96.0f);
+                SetGridTicks(*p, target_px);
+            }
 
             for (auto &chunk : img_chunks)
                 ImPlot::PlotImage((id_str + "plotimg").c_str(), (void *)(intptr_t)chunk.texture_id, ImPlotPoint(chunk.offset_x, chunk.offset_y),

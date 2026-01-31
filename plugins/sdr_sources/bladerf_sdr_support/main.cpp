@@ -31,6 +31,12 @@ public:
 
     static void registerDevs(const satdump::ndsp::RequestDeviceListEvent &evt)
     {
+        if (evt.m != satdump::ndsp::DeviceBlock::MODE_SINGLE_RX && //
+            evt.m != satdump::ndsp::DeviceBlock::MODE_SINGLE_TX && //
+            evt.m != satdump::ndsp::DeviceBlock::MODE_RX_TX &&     //
+            evt.m != satdump::ndsp::DeviceBlock::MODE_NORMAL)
+            return;
+
         auto d = satdump::ndsp::BladeRFDevBlock::listDevs();
         evt.i.insert(evt.i.end(), d.begin(), d.end());
     }

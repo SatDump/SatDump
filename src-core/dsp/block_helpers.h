@@ -2,11 +2,18 @@
 
 #include "block.h"
 #include "common/dsp/complex.h"
+#include <memory>
 
 namespace satdump
 {
     namespace ndsp // TODOREWORK back to normal DSP!
     {
+        struct RequestBlockEvent
+        {
+            std::string id;
+            std::vector<std::shared_ptr<Block>> &blk;
+        };
+
         // TODOREWORK cleanup!!!!
         template <typename T>
         std::string getShortTypeName()

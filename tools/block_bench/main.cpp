@@ -2,6 +2,7 @@
 #include "common/dsp_source_sink/format_notated.h"
 #include "common/utils.h"
 #include "dsp/clock_recovery/clock_recovery_mm.h"
+#include "dsp/clock_recovery/clock_recovery_mm_fast.h"
 #include "dsp/path/splitter.h"
 #include "dsp/utils/freq_shift.h"
 #include "init.h"
@@ -192,6 +193,13 @@ int main(int argc, char *argv[])
         auto p = std::make_shared<satdump::ndsp::MMClockRecoveryBlock<complex_t>>();
         p->set_cfg("omega", v);
         benchmarkNDSPBlock<complex_t>(p, 10, "MM NEW Recovery, omega " + std::to_string(v));
+    }
+
+    for (float v : {1.2, 2.0, 3.0})
+    {
+        auto p = std::make_shared<satdump::ndsp::MMClockRecoveryFastBlock<complex_t>>();
+        p->set_cfg("omega", v);
+        benchmarkNDSPBlock<complex_t>(p, 10, "MM NEW Recovery Fast, omega " + std::to_string(v));
     }
 
     logger->debug("Benchmarking Splitter (1 out)...");
