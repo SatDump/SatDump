@@ -33,11 +33,6 @@
             "autogen": true
         },
         {
-            "name": "Night Microphysics",
-            "expression": "cch9=(4, brightness_temperature, 200, 400); cch10=(5, brightness_temperature, 200, 400); cch4=(2, brightness_temperature, 200, 400); 1-(0.015+cch9-cch10)*19.047619047619047, 1-(0.035+cch4-cch9)*20.2020202020202, ((cch9*200-43.7)/49.5)",
-            "description": "descriptions/NightMicro.md"
-        },
-        {
             "name": "HVC",
             "expression": "cch4=(4, brightness_temperature, 320, 220);cch1=(1, albedo, 0.000000, 0.900000);lut=lut(lut/WXtoImg-HVC-1.png);(lut(cch1, cch4, 0)^1.4)*3.5,  (lut(cch1, cch4, 1)^1.4)*3.5,  (lut(cch1, cch4, 2)^1.4)*3.5",
             "description": "descriptions/HVC.md"
