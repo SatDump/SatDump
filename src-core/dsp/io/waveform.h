@@ -3,7 +3,7 @@
 #include "common/dsp/utils/random.h"
 #include "dsp/block.h"
 #include "dsp/block_helpers.h"
-#include "dsp/complex_json.h"
+#include "common/dsp/complex.h"
 
 namespace satdump
 {

@@ -52,16 +52,22 @@ namespace satdump
                     for (size_t i = 0; i < nsamples; i++)
                     {
                         obuf[i] = tmp_val;
-                        T t = i / (double)d_samprate;
+                        float t = i / (double)d_samprate;
 
                         d_phase += ((d_phase >= 2.0 * M_PI) * -2.0 * M_PI) + ((d_phase < 0.0) * 2.0 * M_PI);
 
-                        T cosWave = d_amp * T(cos(2.0 * M_PI * d_freq * t + d_phase));
+                        float cosWave = d_amp * float(cos(2.0 * M_PI * d_freq * t + d_phase));
 
                         obuf[i] = cosWave;
 
-                        T ns = T(sqrt((noise_imp * noise_snr_linear) / 2)) * T(d_rng.gasdev());
+                        float ns = float(sqrt((noise_imp * noise_snr_linear) / 2)) * float(d_rng.gasdev());
+
                         obuf[i] = obuf[i] + ns;
+
+                        if constexpr (std::is_same_v<T, complex_t>)
+                        {
+                            obuf[i] = complex_t(obuf[i]);
+                        }
                     }
                 }
                 if (p_waveform == "sine")
@@ -70,16 +76,22 @@ namespace satdump
                     for (size_t i = 0; i < nsamples; i++)
                     {
                         obuf[i] = tmp_val;
-                        T t = i / (double)d_samprate;
+                        float t = i / (double)d_samprate;
 
                         d_phase += ((d_phase >= 2.0 * M_PI) * -2.0 * M_PI) + ((d_phase < 0.0) * 2.0 * M_PI);
 
-                        T sinWave = d_amp * T(sin(2.0 * M_PI * d_freq * t + d_phase));
+                        float sinWave = d_amp * float(sin(2.0 * M_PI * d_freq * t + d_phase));
 
                         obuf[i] = sinWave;
 
-                        T ns = T(sqrt((noise_imp * noise_snr_linear) / 2)) * T(d_rng.gasdev());
+                        float ns = float(sqrt((noise_imp * noise_snr_linear) / 2)) * float(d_rng.gasdev());
+
                         obuf[i] = obuf[i] + ns;
+
+                        if constexpr (std::is_same_v<T, complex_t>)
+                        {
+                            obuf[i] = complex_t(obuf[i].real, obuf[i].imag);
+                        }
                     }
                 }
 
@@ -94,7 +106,7 @@ namespace satdump
 
             return false;
         }
-        // template class WaveformBlock<complex_t>;
+        template class WaveformBlock<complex_t>;
         template class WaveformBlock<float>;
     } // namespace ndsp
 } // namespace satdump
