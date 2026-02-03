@@ -82,7 +82,7 @@ namespace satdump
             {
                 std::lock_guard<std::mutex> lock_mtx(vfos_mtx);
 
-                BlockIO o = {{id, getTypeSampleType<T>()}};
+                BlockIO o = {id, getTypeSampleType<T>()};
                 o.blkdata = std::make_shared<IOInfo>(IOInfo{id, forward_terminator});
                 o.fifo = std::make_shared<DSPStream>(4); // TODOREWORK
                 Block::outputs.push_back(o);
