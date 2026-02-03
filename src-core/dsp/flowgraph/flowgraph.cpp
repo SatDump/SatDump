@@ -170,6 +170,10 @@ namespace satdump
                                 {
                                     float v = (float)f.fifo->size_approx() / (float)f.fifo->max_capacity();
                                     ImGui::SameLine();
+                                    if (v > 1)
+                                        v = 1;
+                                    if (v < 0)
+                                        v = 0;
                                     CircularProgressBar(f.name.c_str(), v, {20, 20}, style::theme.green);
                                 }
                             }

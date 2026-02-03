@@ -156,7 +156,7 @@ if(MSVC OR BUILD_MSVC)
     link_directories(vcpkg/installed/${VCPKG_TARGET_TRIPLET}/lib)
 endif()
 
-if(NOT DEFINED ENV{CI})
+if((NOT DEFINED ENV{CI}) AND NOT DEFINED ANDROID)
     if(APPLE OR UNIX)
         message("-- Not running on CI. Building for native architecture! Will likely not be portable to other systems.")
         set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -march=native")    
