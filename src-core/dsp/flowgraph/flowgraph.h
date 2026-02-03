@@ -50,6 +50,8 @@ namespace satdump
                 float pos_x = 0;
                 float pos_y = 0;
 
+                bool disabled = false;
+
                 struct InOut
                 {
                     int id;
@@ -83,6 +85,9 @@ namespace satdump
 
                     pos_x = j.contains("pos_x") ? j["pos_x"].get<float>() : 0;
                     pos_y = j.contains("pos_y") ? j["pos_y"].get<float>() : 0;
+
+                    if (j.contains("disabled"))
+                        disabled = j["disabled"];
                 }
 
                 nlohmann::json getJSON()
@@ -94,6 +99,7 @@ namespace satdump
                     j["int_cfg"] = internal->getP();
                     j["pos_x"] = pos_x;
                     j["pos_y"] = pos_y;
+                    j["disabled"] = disabled;
                     return j;
                 }
             };
@@ -159,7 +165,7 @@ namespace satdump
 
                 for (auto &n : j["nodes"].items())
                 {
-                    if (node_internal_registry.count(n.value()["int_id"]))
+                    if (n.value().contains("int_id") && node_internal_registry.count(n.value()["int_id"]))
                     {
                         auto i = node_internal_registry[n.value()["int_id"]].func(this);
                         auto nn = std::make_shared<Node>(this, n.value(), i);

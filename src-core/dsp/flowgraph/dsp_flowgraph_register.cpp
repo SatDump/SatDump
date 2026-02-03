@@ -1,4 +1,5 @@
 #include "dsp_flowgraph_register.h"
+#include "common/dsp_source_sink/format_notated.h"
 #include "core/plugin.h"
 
 #include "dsp/agc/agc.h"
@@ -29,6 +30,7 @@
 #include "dsp/utils/blanker.h"
 #include "dsp/utils/correct_iq.h"
 #include "dsp/utils/multiply.h"
+#include "dsp/utils/samplerate_meter.h"
 #include "dsp/utils/subtract.h"
 #include "dsp/utils/throttle.h"
 
@@ -82,6 +84,20 @@ namespace satdump
             }
         };
 
+        template <typename T>
+        class NodeSamplerateMeter : public ndsp::NodeInternal
+        {
+        public:
+            NodeSamplerateMeter(const ndsp::Flowgraph *f) : ndsp::NodeInternal(f, std::make_shared<ndsp::SamplerateMeterBlock<T>>()) {}
+
+            virtual bool render()
+            {
+                ndsp::NodeInternal::render();
+                ImGui::Text("%s", format_notated(((ndsp::SamplerateMeterBlock<T> *)blk.get())->measured_samplerate, "SPS", 4).c_str());
+                return false;
+            }
+        };
+
         class NodeTestFFT : public ndsp::NodeInternal
         {
         private:
@@ -116,13 +132,16 @@ namespace satdump
 
         void registerNodesInFlowgraph(ndsp::Flowgraph &flowgraph)
         {
-            registerNode<NodeTestIQSource>(flowgraph, "iq_source_cc", "IO/IQ Source");
+            registerNode<NodeTestIQSource>(flowgraph, "IO/IQ Source");
+
+            registerNode<ndsp::NodeSamplerateMeter<complex_t>>(flowgraph, "Utils/Samplerate Meter CC");
+            registerNode<ndsp::NodeSamplerateMeter<float>>(flowgraph, "Utils/Samplerate Meter FF");
 
             registerNodeSimple<ndsp::IQSinkBlock>(flowgraph, "IO/IQ Sink");
 
-            registerNode<NodeTestFFT>(flowgraph, "fft_pan_cc", "FFT/FFT Pan");
-            registerNode<NodeTestConst>(flowgraph, "const_disp_c", "View/Constellation Display");
-            registerNode<NodeTestHisto>(flowgraph, "histo_disp_c", "View/Histogram Display");
+            registerNode<NodeTestFFT>(flowgraph, "FFT/FFT Pan");
+            registerNode<NodeTestConst>(flowgraph, "View/Constellation Display");
+            registerNode<NodeTestHisto>(flowgraph, "View/Histogram Display");
 
             registerNodeSimple<ndsp::AGCBlock<complex_t>>(flowgraph, "AGC/Agc CC");
             registerNodeSimple<ndsp::AGCBlock<float>>(flowgraph, "AGC/Agc FF");

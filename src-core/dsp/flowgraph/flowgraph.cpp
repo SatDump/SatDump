@@ -157,7 +157,7 @@ namespace satdump
                         ImNodes::BeginInputAttribute(io.id);
                         ImGui::Text("%s", io.name.c_str());
 
-                        if (debug_mode)
+                        if (is_running && debug_mode)
                         {
                             if (in_pos < n->internal->blk->get_inputs().size())
                             {

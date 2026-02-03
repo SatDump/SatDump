@@ -76,7 +76,10 @@ namespace satdump
                 }
                 image::set_metadata_proj_cfg(img, proj_cfg);
                 geocorrect_image = false;
-                setImage(img);
+
+                auto sh = std::make_shared<ImageHandler>(img);
+                sh->image_name = image_name + " Crop";
+                addSubHandler(sh);
             };
         }
 
