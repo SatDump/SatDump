@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nlohmann/json.hpp"
+#include <exception>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -165,15 +166,29 @@ namespace satdump
 
                 for (auto &n : j["nodes"].items())
                 {
-                    if (n.value().contains("int_id") && node_internal_registry.count(n.value()["int_id"]))
+                    if (n.value().contains("int_id"))
                     {
-                        auto i = node_internal_registry[n.value()["int_id"]].func(this);
-                        auto nn = std::make_shared<Node>(this, n.value(), i);
-                        nodes.push_back(nn);
+                        if (node_internal_registry.count(n.value()["int_id"]))
+                        {
+                            try
+                            {
+                                auto i = node_internal_registry[n.value()["int_id"]].func(this);
+                                auto nn = std::make_shared<Node>(this, n.value(), i);
+                                nodes.push_back(nn);
+                            }
+                            catch (std::exception &e)
+                            {
+                                logger->error("Error adding node with ID : " + n.value()["int_id"].get<std::string>() + ", Error : %s", e.what());
+                            }
+                        }
+                        else
+                        {
+                            logger->error("Could not find node with ID : " + n.value()["int_id"].get<std::string>());
+                        }
                     }
                     else
                     {
-                        logger->error("Could not find node with ID : " + n.value()["int_id"].get<std::string>());
+                        logger->error("Node is missing int_id!");
                     }
                 }
 

@@ -131,6 +131,9 @@ namespace satdump
 
             for (auto &n : nodes)
             {
+                if (n->disabled)
+                    style::beginDisabled();
+
                 ImNodes::BeginNode(n->id);
                 ImNodes::BeginNodeTitleBar();
                 ImGui::Text("%s", n->title.c_str());
@@ -189,19 +192,35 @@ namespace satdump
                 auto pos = ImNodes::GetNodeGridSpacePos(n->id);
                 n->pos_x = pos.x;
                 n->pos_y = pos.y;
+
+                if (n->disabled)
+                    style::endDisabled();
             }
 
             //        ImNodes::PopColorStyle();
 
             for (auto &l : links)
             {
+                bool disabled = false;
+
                 BlockIOType type;
                 for (auto &n : nodes)
                     for (auto &io : n->node_io)
+                    {
                         if (io.id == l.start)
+                        {
                             type = io.type;
+                            if (n->disabled)
+                                disabled = true;
+                        }
+                        else if (io.id == l.end)
+                        {
+                            if (n->disabled)
+                                disabled = true;
+                        }
+                    }
 
-                ImNodes::PushColorStyle(ImNodesCol_Link, getColorFromDSPType(type));
+                ImNodes::PushColorStyle(ImNodesCol_Link, disabled ? (ImColor)ImGui::GetColorU32(ImGuiCol_TextDisabled) : getColorFromDSPType(type));
                 ImNodes::Link(l.id, l.start, l.end);
                 ImNodes::PopColorStyle();
             }
@@ -230,6 +249,7 @@ namespace satdump
                     links.erase(iter);
                 }
 
+                ///////////////////// Node Key Handlers
                 if (!ImGui::IsAnyItemActive() && ImGui::IsKeyPressed(ImGuiKey_Delete))
                 {
                     int node_s = ImNodes::NumSelectedNodes();
@@ -253,6 +273,31 @@ namespace satdump
                         }
                     }
                 }
+
+                if (!ImGui::IsAnyItemActive() && ImGui::IsKeyPressed(ImGuiKey_D))
+                {
+                    int node_s = ImNodes::NumSelectedNodes();
+
+                    if (node_s > 0)
+                    {
+                        std::vector<int> nodes_ids(node_s);
+                        ImNodes::GetSelectedNodes(nodes_ids.data());
+
+                        for (auto &id : nodes_ids)
+                        {
+                            auto iter = std::find_if(nodes.begin(), nodes.end(), [id](const std::shared_ptr<Node> &node) -> bool { return node->id == id; });
+                            logger->trace("NODE DISABLE %d", id);
+                            for (auto &linkid : iter->get()->node_io)
+                            {
+                                auto liter = std::find_if(links.begin(), links.end(), [linkid](const Link &link) -> bool { return link.start == linkid.id || link.end == linkid.id; });
+                                // if (liter != links.end())
+                                //     links->disabled = true;
+                            }
+                            iter->get()->disabled = !iter->get()->disabled;
+                        }
+                    }
+                }
+                ///////////////////// Node Key Handlers end
 
                 if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
                     ImGui::OpenPopup("##popuprightclickflowgraph");
@@ -289,6 +334,9 @@ namespace satdump
                 // Iterate through all nodes
                 for (auto &n : nodes)
                 {
+                    if (n->disabled)
+                        continue;
+
                     //                    n->internal->applyP(); // TODOREWORK?
                     auto &blk = n->internal->blk;
 
@@ -321,6 +369,9 @@ namespace satdump
                                 // Iterate through nodes to find valid inputs
                                 for (auto &n2 : nodes)
                                 {
+                                    if (n2->disabled)
+                                        continue;
+
                                     for (int b = 0, b2 = 0; b < n2->node_io.size(); b++)
                                     {
                                         if (!n2->node_io[b].is_out)
@@ -344,6 +395,9 @@ namespace satdump
                                 // Iterate through nodes to find valid inputs
                                 for (auto &n2 : nodes)
                                 {
+                                    if (n2->disabled)
+                                        continue;
+
                                     for (int b = 0, b2 = 0; b < n2->node_io.size(); b++)
                                     {
                                         if (!n2->node_io[b].is_out)
@@ -399,6 +453,9 @@ namespace satdump
                 // Iterate through all nodes, check all inputs are connected
                 for (auto &n : nodes)
                 {
+                    if (n->disabled)
+                        continue;
+
                     for (auto &i : n->node_io)
                     {
                         if (i.is_out)
@@ -416,15 +473,18 @@ namespace satdump
 
                 // Start them all
                 for (auto &n : nodes)
-                    n->internal->blk->start();
+                    if (!n->disabled)
+                        n->internal->blk->start();
                 for (auto &b : additional_blocks)
                     b->start();
                 for (auto &n : nodes)
-                    n->internal->upd_state();
+                    if (!n->disabled)
+                        n->internal->upd_state();
 
                 // And then wait for them to exit
                 for (auto &n : nodes)
-                    n->internal->blk->stop();
+                    if (!n->disabled)
+                        n->internal->blk->stop();
                 for (auto &b : additional_blocks)
                     b->stop();
 
@@ -432,7 +492,8 @@ namespace satdump
                 std::this_thread::sleep_for(std::chrono::seconds(2));
 
                 for (auto &n : nodes)
-                    n->internal->upd_state();
+                    if (!n->disabled)
+                        n->internal->upd_state();
             }
             catch (std::exception &e)
             {
@@ -449,6 +510,9 @@ namespace satdump
                 // Iterate through all nodes
                 for (auto &n : nodes)
                 {
+                    if (n->disabled)
+                        continue;
+
                     // Stop only those that are sources
                     if (n->internal->blk->get_inputs().size() == 0)
                     {
