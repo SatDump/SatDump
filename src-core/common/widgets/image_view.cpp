@@ -6,6 +6,7 @@
 #include "imgui/implot/implot.h"
 #include "imgui/implot/implot_internal.h"
 #include "logger.h"
+#include <cmath>
 #include <cstdio>
 
 ImageViewWidget::ImageViewWidget()
