@@ -1,9 +1,9 @@
 #pragma once
 
+#include "common/dsp/complex.h"
 #include "common/dsp/utils/random.h"
 #include "dsp/block.h"
 #include "dsp/block_helpers.h"
-#include "common/dsp/complex.h"
 
 namespace satdump
 {
@@ -30,7 +30,7 @@ namespace satdump
             float d_phase;
             int d_buffer_size;
 
-            T tmp_val;
+            float tmp_val_f;
 
             dsp::Random d_rng;
 

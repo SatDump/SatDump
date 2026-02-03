@@ -45,28 +45,35 @@ namespace satdump
 
                 double noise_imp = 1;
                 double noise_snr_linear = 1e3 * pow(10, -150 / 10);
-                // T noise_target_level = T(sqrt((noise_imp * noise_snr_linear) / 2));
 
                 if (p_waveform == "cosine")
                 {
                     for (size_t i = 0; i < nsamples; i++)
                     {
-                        obuf[i] = tmp_val;
                         float t = i / (double)d_samprate;
 
                         d_phase += ((d_phase >= 2.0 * M_PI) * -2.0 * M_PI) + ((d_phase < 0.0) * 2.0 * M_PI);
 
                         float cosWave = d_amp * float(cos(2.0 * M_PI * d_freq * t + d_phase));
 
-                        obuf[i] = cosWave;
+                        tmp_val_f = cosWave;
 
                         float ns = float(sqrt((noise_imp * noise_snr_linear) / 2)) * float(d_rng.gasdev());
 
-                        obuf[i] = obuf[i] + ns;
+                        tmp_val_f += ns;
+
+                        if constexpr (std::is_same_v<T, float>)
+                        {
+                            obuf[i] = tmp_val_f;
+                        }
 
                         if constexpr (std::is_same_v<T, complex_t>)
                         {
-                            obuf[i] = complex_t(obuf[i]);
+                            float sinOfCos = d_amp * float(sin(2.0 * M_PI * d_freq * t + d_phase));
+
+                            sinOfCos += ns;
+
+                            obuf[i] = complex_t(tmp_val_f, sinOfCos);
                         }
                     }
                 }
@@ -75,22 +82,30 @@ namespace satdump
 
                     for (size_t i = 0; i < nsamples; i++)
                     {
-                        obuf[i] = tmp_val;
                         float t = i / (double)d_samprate;
 
                         d_phase += ((d_phase >= 2.0 * M_PI) * -2.0 * M_PI) + ((d_phase < 0.0) * 2.0 * M_PI);
 
                         float sinWave = d_amp * float(sin(2.0 * M_PI * d_freq * t + d_phase));
 
-                        obuf[i] = sinWave;
+                        tmp_val_f = sinWave;
 
                         float ns = float(sqrt((noise_imp * noise_snr_linear) / 2)) * float(d_rng.gasdev());
 
-                        obuf[i] = obuf[i] + ns;
+                        tmp_val_f += ns;
+
+                        if constexpr (std::is_same_v<T, float>)
+                        {
+                            obuf[i] = tmp_val_f;
+                        }
 
                         if constexpr (std::is_same_v<T, complex_t>)
                         {
-                            obuf[i] = complex_t(obuf[i].real, obuf[i].imag);
+                            float cosOfSin = d_amp * float(cos(2.0 * M_PI * d_freq * t + d_phase));
+
+                            cosOfSin += ns;
+
+                            obuf[i] = complex_t(cosOfSin, tmp_val_f);
                         }
                     }
                 }
