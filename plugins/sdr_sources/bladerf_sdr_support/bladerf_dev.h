@@ -467,6 +467,7 @@ namespace satdump
 
             void start();
             void stop(bool stop_now = false);
+            bool is_async() { return outputs.size() > 0; }
 
         public:
             static std::vector<DeviceInfo> listDevs();

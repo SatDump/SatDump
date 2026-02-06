@@ -219,6 +219,18 @@ namespace satdump
 
         public:
             /**
+             * @brief Returns true if a block is async.
+             * An async block is a block that has outputs
+             * without inputs or inputs that won't directly
+             * affect/stop the outputs' behavior. This includes
+             * sources (eg, a SDR Device), TXing and RXing at the
+             * same time, and anything with similar requirements.
+             * @return true if the block is async
+             */
+            virtual bool is_async() { return inputs.size() == 0; }
+
+        public:
+            /**
              * @brief set_cfg status.
              * @param RES_OK Applied fine
              * @param RES_LISTUPD get_cfg_list must be pulled again
