@@ -27,6 +27,8 @@ namespace satdump
 
             void init() {}
 
+            bool is_async() { return true; }
+
             nlohmann::ordered_json get_cfg_list()
             {
                 nlohmann::ordered_json p;
