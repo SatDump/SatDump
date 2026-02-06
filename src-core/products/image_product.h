@@ -173,15 +173,18 @@ namespace satdump
             /**
              * @brief Get image channel by wavenumber. Returns the closest one
              * @param double wavenumber
+             * @param tolerance_percent maximum tolerance on wavenumber
              * @return the image channel struct
              */
-            ImageHolder &get_channel_image_by_wavenumber(double wavenumber)
+            ImageHolder &get_channel_image_by_wavenumber(double wavenumber, double tolerance_percent = 5)
             {
                 double best = 1e40;
+                double valid_min = wavenumber * ((100. - tolerance_percent) / 100.);
+                double valid_max = wavenumber * ((100. + tolerance_percent) / 100.);
                 ImageHolder *out = nullptr;
                 for (auto &img : images)
                 {
-                    if (img.wavenumber != -1 && best > abs(img.wavenumber - wavenumber))
+                    if (img.wavenumber != -1 && best > abs(img.wavenumber - wavenumber) && valid_min <= img.wavenumber && img.wavenumber <= valid_max)
                     {
                         out = &img;
                         best = abs(img.wavenumber - wavenumber);
@@ -195,9 +198,10 @@ namespace satdump
             /**
              * @brief Get image channel by unit string. Returns the closest one
              * @param str Unit string
+             * @param tolerance_percent maximum tolerance on wavenumber
              * @return the image channel struct
              */
-            ImageHolder &get_channel_image_by_unitstr(std::string str)
+            ImageHolder &get_channel_image_by_unitstr(std::string str, double tolerance_percent = 5)
             {
                 double val = 0;
 
@@ -208,7 +212,7 @@ namespace satdump
                 else
                     throw satdump_exception("Couldn't parse unit and value from " + str);
 
-                return get_channel_image_by_wavenumber(val);
+                return get_channel_image_by_wavenumber(val, tolerance_percent);
             }
 
             /**

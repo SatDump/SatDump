@@ -88,7 +88,7 @@ namespace satdump
 
 #ifdef __ANDROID__
             JavaVM *java_vm = g_App->activity->vm;
-            JNIEnv *java_env = NULL;
+            JNIEnv *java_env = NULL; // TODOREWORK?
 
             jint jni_return = java_vm->GetEnv((void **)&java_env, JNI_VERSION_1_6);
             if (jni_return == JNI_ERR)

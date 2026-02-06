@@ -266,7 +266,23 @@ namespace satdump
 
                 for (auto tkt : all_found)
                 {
-                    auto atkt = product->get_channel_image_by_unitstr(tkt).channel_name;
+                    std::string wavelength;
+                    std::string polarisation = "*";
+                    double tolerance_percent = 5;
+
+                    auto parts = splitString(tkt, ',');
+                    if (parts.size() == 0)
+                        parts = {tkt};
+
+                    wavelength = parts[0];
+
+                    if (parts.size() >= 2)
+                        polarisation = parts[1];
+
+                    if (parts.size() >= 3)
+                        tolerance_percent = std::stod(parts[2]);
+
+                    auto atkt = product->get_channel_image_by_unitstr(wavelength, tolerance_percent).channel_name;
                     replaceAllStr(expression, "{" + tkt + "}", atkt);
                 }
             }
