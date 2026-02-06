@@ -5,8 +5,6 @@ namespace satdump
 {
     namespace ndsp
     {
-        inline float branchless_clip(float x, float clip) { return 0.5 * (std::abs(x + clip) - std::abs(x - clip)); }
-
         CostasBlock::CostasBlock() : BlockSimple("costas_cc", {{"in", DSP_SAMPLE_TYPE_CF32}}, {{"out", DSP_SAMPLE_TYPE_CF32}}) {}
 
         CostasBlock::~CostasBlock() {}
