@@ -10,6 +10,7 @@
 #include "image/processing.h"
 #include "imgui/imgui.h"
 #include "init.h"
+#include "instruments/amsu/amsu_pols.h"
 #include "instruments/mhs/mhs_pols.h"
 #include "logger.h"
 #include "metop.h"
@@ -423,6 +424,8 @@ namespace metop
                 }
                 else
                     logger->warn("(AMSU) Calibration data for " + sat_name + " not found. Calibration will not be performed");
+
+                noaa_metop::amsu::add_pols(&amsu_products);
 
                 amsu_products.save(directory);
                 dataset.products_list.push_back("AMSU");

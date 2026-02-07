@@ -1,4 +1,5 @@
 #include "amsu_nat.h"
+#include "../../../../noaa_metop_support/instruments/amsu/amsu_pols.h"
 #include "common/repack.h"
 #include "core/resources.h"
 #include "logger.h"
@@ -136,6 +137,8 @@ namespace satdump
                     amsu_products->set_channel_unit(c, CALIBRATION_ID_EMISSIVE_RADIANCE);
                     amsu_products->set_channel_wavenumber(c, calib_coefs["all"]["wavenumber"][c]); // TODOREWORK, pull proper sat
                 }
+
+                noaa_metop::amsu::add_pols(amsu_products.get());
             }
         }
 

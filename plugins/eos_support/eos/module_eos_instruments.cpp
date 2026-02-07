@@ -1,4 +1,5 @@
 #include "module_eos_instruments.h"
+#include "../../noaa_metop_support/instruments/amsu/amsu_pols.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
 #include "common/ccsds/ccsds_aos/vcdu.h"
 #include "common/utils.h"
@@ -335,6 +336,8 @@ namespace eos
 
                 for (int i = 0; i < 13; i++)
                     amsu_products.images.push_back({i + 2, "AMSU-A1-" + std::to_string(i + 1), std::to_string(i + 3), amsu_a1_reader.getChannel(i), 16});
+
+                noaa_metop::amsu::add_pols(&amsu_products);
 
                 amsu_products.save(directory);
                 dataset.products_list.push_back("AMSU");
