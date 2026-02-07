@@ -5,6 +5,7 @@
 #include "core/resources.h"
 #include "imgui/imgui.h"
 #include "init.h"
+#include "instruments/mhs/mhs_pols.h"
 #include "logger.h"
 #include "products/dataset.h"
 #include "products/image_product.h"
@@ -24,7 +25,8 @@ namespace noaa
               avhrr_reader(is_gac, parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1),
               hirs_reader(parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1),
               sem_reader(parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1),
-              telemetry_reader(parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1, parameters.count("telemetry_parity_check") > 0 ? parameters["telemetry_parity_check"].get<bool>() : true)
+              telemetry_reader(parameters.count("year_override") > 0 ? parameters["year_override"].get<int>() : -1,
+                               parameters.count("telemetry_parity_check") > 0 ? parameters["telemetry_parity_check"].get<bool>() : true)
         {
             fsfsm_enable_output = false;
         }
@@ -324,11 +326,11 @@ namespace noaa
                     telemetry_products.set_tle(satellite_tle);
 
                     // AVHRR
-                    for(int channel=0; channel < 22; channel++)
+                    for (int channel = 0; channel < 22; channel++)
                     {
                         if (telemetry_reader.avhrr[channel].size() == 0)
                         {
-                                continue;
+                            continue;
                         }
                         satdump::products::PunctiformProduct::DataHolder h;
                         h.channel_name = "AVHRR " + std::string(telemetry_reader.avhrr_telemetry_names[channel]);
@@ -381,6 +383,8 @@ namespace noaa
                     }
                     else
                         logger->warn("(MHS) Calibration data for " + sat_name + " not found. Calibration will not be performed");
+
+                    noaa_metop::mhs::add_pols(&mhs_products);
 
                     saveJsonFile(directory + "/MHS_tlm.json", mhs_reader.dump_telemetry(calib_coefs[sat_name]));
                     mhs_products.save(directory);
@@ -609,11 +613,11 @@ namespace noaa
                     telemetry_products.set_tle(satellite_tle);
 
                     // AVHRR
-                    for(int channel=0; channel < 22; channel++)
+                    for (int channel = 0; channel < 22; channel++)
                     {
                         if (telemetry_reader.avhrr[channel].size() == 0)
                         {
-                                continue;
+                            continue;
                         }
                         satdump::products::PunctiformProduct::DataHolder h;
                         h.channel_name = "AVHRR " + std::string(telemetry_reader.avhrr_telemetry_names[channel]);

@@ -1,4 +1,5 @@
 #include "mhs_nat.h"
+#include "../../../../noaa_metop_support/instruments/mhs/mhs_pols.h"
 #include "common/repack.h"
 #include "core/resources.h"
 #include "logger.h"
@@ -156,6 +157,8 @@ namespace satdump
                     mhs_products->set_channel_unit(n, CALIBRATION_ID_EMISSIVE_RADIANCE);
                     mhs_products->set_channel_wavenumber(n, calib_coefs[info.sat_name]["wavenumber"][n]);
                 }
+
+                noaa_metop::mhs::add_pols(mhs_products.get());
             }
         }
 
