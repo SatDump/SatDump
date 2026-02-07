@@ -1,9 +1,9 @@
 {
     "type": "normal_single_line",
-    "scan_angle": 116.7,
-    "roll_offset": 0.96,
-    "yaw_offset": 0,
-    "pitch_offset": -20.1,
+    "scan_angle": 116.85,
+    "roll_offset": 1.11,
+    "yaw_offset": -0.065,
+    "pitch_offset": -20.2,
     "image_width": 1285,
     "gcp_spacing_x": 100,
     "gcp_spacing_y": 100,
