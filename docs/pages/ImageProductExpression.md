@@ -137,7 +137,7 @@ cch1=({630nm}, sun_angle_compensated_reflective_radiance, 0.000000, 90.000000);
 cch2, cch2, cch1
 ```
 
-By default, this will select any channel polarization and the frequency/wavelength with a tolerance of 5%. This can be changed by using, for example, `{10.4um,*,10}`, which will select a channel of any polarization with a tolerance of 10% around 10.4um. Similarly, `{89Ghz,H}` will select a channel of horizontal polarization with the default tolerance of 5%.
+By default, this will select any channel polarization and the frequency/wavelength with a tolerance of 5%. This can be changed by using, for example, `{10.4um,*,10}`, which will select a channel of any polarization with a tolerance of 10% around 10.4um. Similarly, `{89GHz,H}` will select a channel of horizontal polarization with the default tolerance of 5%.
 
 Available polatizations are :
 - `N` : None/All (eg, AVHRR, MSU-MR, etc)
