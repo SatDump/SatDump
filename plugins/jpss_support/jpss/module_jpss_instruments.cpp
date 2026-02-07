@@ -8,6 +8,7 @@
 #include "image/io.h"
 #include "imgui/imgui.h"
 #include "init.h"
+#include "instruments/atms/atms_pols.h"
 #include "instruments/viirs/viirs_viewang.h"
 #include "jpss.h"
 #include "logger.h"
@@ -203,6 +204,8 @@ namespace jpss
                 }
                 else
                     logger->warn("(ATMS) Calibration data for " + sat_name + " not found. Calibration will not be performed");
+
+                atms::add_pols(&atms_products);
 
                 atms_products.save(directory);
                 dataset.products_list.push_back("ATMS");
