@@ -41,6 +41,16 @@ namespace satdump
         class ImageProduct : public Product
         {
         public:
+            enum channel_polarization_t
+            {
+                POL_NONE = 0,
+                POL_HORIZONTAL = 1,
+                POL_VERTICAL = 2,
+                POL_RHCP = 3,
+                POL_LHCP = 4,
+                POL_ANY = 99,
+            };
+
             /**
              * @brief Struct holding both the image
              * and some metadata
@@ -64,6 +74,7 @@ namespace satdump
                 int bit_depth = 16;
                 ChannelTransform ch_transform = ChannelTransform().init_none();
                 double wavenumber = -1;
+                channel_polarization_t polarization = POL_NONE;
                 std::string calibration_type = "";
             };
 
@@ -174,9 +185,10 @@ namespace satdump
              * @brief Get image channel by wavenumber. Returns the closest one
              * @param double wavenumber
              * @param tolerance_percent maximum tolerance on wavenumber
+             * @param polarization to select the channel by polarization. Ignored by default
              * @return the image channel struct
              */
-            ImageHolder &get_channel_image_by_wavenumber(double wavenumber, double tolerance_percent = 5)
+            ImageHolder &get_channel_image_by_wavenumber(double wavenumber, channel_polarization_t polarization = POL_ANY, double tolerance_percent = 5)
             {
                 double best = 1e40;
                 double valid_min = wavenumber * ((100. - tolerance_percent) / 100.);
@@ -184,6 +196,13 @@ namespace satdump
                 ImageHolder *out = nullptr;
                 for (auto &img : images)
                 {
+                    // Check pol
+                    bool pol_valid = true;
+                    if (polarization != POL_ANY)
+                        if (img.polarization != polarization)
+                            continue;
+
+                    // Check center freq
                     if (img.wavenumber != -1 && best > abs(img.wavenumber - wavenumber) && valid_min <= img.wavenumber && img.wavenumber <= valid_max)
                     {
                         out = &img;
@@ -199,9 +218,10 @@ namespace satdump
              * @brief Get image channel by unit string. Returns the closest one
              * @param str Unit string
              * @param tolerance_percent maximum tolerance on wavenumber
+             * @param polarization to select the channel by polarization. Ignored by default
              * @return the image channel struct
              */
-            ImageHolder &get_channel_image_by_unitstr(std::string str, double tolerance_percent = 5)
+            ImageHolder &get_channel_image_by_unitstr(std::string str, channel_polarization_t polarization = POL_ANY, double tolerance_percent = 5)
             {
                 double val = 0;
 
@@ -212,7 +232,7 @@ namespace satdump
                 else
                     throw satdump_exception("Couldn't parse unit and value from " + str);
 
-                return get_channel_image_by_wavenumber(val, tolerance_percent);
+                return get_channel_image_by_wavenumber(val, polarization, tolerance_percent);
             }
 
             /**
@@ -286,6 +306,35 @@ namespace satdump
              * @return channel frequency in Hz
              */
             double get_channel_frequency(int index) { return wavenumber_to_freq(get_channel_wavenumber(index)); }
+
+            /**
+             * @brief Set channel polarization
+             * @param index absolute channel index
+             * @param polarization polarization type
+             */
+            void set_channel_polarization(int index, channel_polarization_t polarization)
+            {
+                for (auto &img : images)
+                    if (img.abs_index == index)
+                    {
+                        img.polarization = polarization;
+                        return;
+                    }
+                throw satdump_exception("Product Channel Index " + std::to_string(index) + " is not present!");
+            }
+
+            /**
+             * @brief Get channel polarization
+             * @param index absolute channel index
+             * @return channel polarization
+             */
+            double get_channel_polarization(int index)
+            {
+                for (auto &img : images)
+                    if (img.abs_index == index)
+                        return img.polarization;
+                throw satdump_exception("Product Channel Index " + std::to_string(index) + " is not present!");
+            }
 
             /**
              * @brief Set channel calibration unit

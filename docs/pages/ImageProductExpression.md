@@ -124,7 +124,7 @@ For several instruments, channels are not actually aligned with one or the other
 
 The output alignment and size will be dictated by the first channel found in the equation. Therefore `ch2, ch2, ch1` will lead to `ch2` being used as the output size/offset, while `ch1 * 0 + ch2, ch2, ch1` will generate the same output but using `ch1` as an output reference. This behaviour can be overwritten by explicitely specifying `ref_channel=1` if necessary. Do note said channel *must* be part of the expression still.
 
-## Wavelength/Frequency-based Channel selection
+## Wavelength/Frequency/Polarization-based Channel selection
 
 A lot of composites are common between several instruments, and re-writing them for each can be cumbersome. Instead, it is possible to automatically select a channel by specifying a wavelength or frequency.
 
@@ -136,3 +136,13 @@ cch2=({830nm}, sun_angle_compensated_reflective_radiance, 0.000000, 97.050700);
 cch1=({630nm}, sun_angle_compensated_reflective_radiance, 0.000000, 90.000000);
 cch2, cch2, cch1
 ```
+
+By default, this will select any channel polarization and the frequency/wavelength with a tolerance of 5%. This can be changed by using, for example, `{10.4um,*,10}`, which will select a channel of any polarization with a tolerance of 10% around 10.4um. Similarly, `{89Ghz,H}` will select a channel of horizontal polarization with the default tolerance of 5%.
+
+Available polatizations are :
+- `N` : None/All (eg, AVHRR, MSU-MR, etc)
+- `H` : Horizontal, as defined by the instrument
+- `V` : Vertical, as defined by the instrument
+- `R` : Right-Hand circular
+- `L` : Left-Hand circular
+- `*` : Any, effectively ignore this as a selection parameter
