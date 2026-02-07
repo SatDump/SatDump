@@ -1,0 +1,16 @@
+{
+    "presets": [
+        {
+            "name": "ATMS-like False Color",
+            "expression": "cch4=({183GHz,H}, emissive_radiance, 0.059, 0.09); cch2=({157GHz,*}, emissive_radiance, 0.039, 0.068); cch1=({89GHz,*}, emissive_radiance, 0.013, 0.022); cch1, cch2, cch4",
+            "image": {
+                "geo_correct": true,
+                 "individual_equalize": true
+            },
+            "description": "descriptions/NDVI.md"
+        }
+    ],
+    "instruments": [
+        "mhs"
+    ]
+}
