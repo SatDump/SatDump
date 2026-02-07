@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <portaudio.h>
 #include <volk/volk_malloc.h>
 
 namespace satdump
@@ -28,7 +29,7 @@ namespace satdump
             err = Pa_OpenDefaultStream(&stream,                             //
                                        0,                                   //
                                        1,                                   //
-                                       paInt16,                             //
+                                       paFloat32,                           //
                                        samplerate,                          //
                                        256,                                 //
                                        &PortAudioSinkBlock::audio_callback, //
@@ -66,7 +67,7 @@ namespace satdump
         int PortAudioSinkBlock::audio_callback(const void *, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *, PaStreamCallbackFlags, void *userData)
         {
             PortAudioSinkBlock *tthis = (PortAudioSinkBlock *)userData;
-            int16_t *buffer = (int16_t *)output;
+            float *buffer = (float *)output;
 
             tthis->audio_mtx.lock();
             unsigned int in_vec = tthis->audio_buff.size();
@@ -75,13 +76,13 @@ namespace satdump
             if (in_vec > frameCount)
             {
                 tthis->audio_mtx.lock();
-                memcpy(buffer, tthis->audio_buff.data(), frameCount * sizeof(int16_t));
+                memcpy(buffer, tthis->audio_buff.data(), frameCount * sizeof(float));
                 tthis->audio_buff.erase(tthis->audio_buff.begin(), tthis->audio_buff.begin() + frameCount);
                 tthis->audio_mtx.unlock();
             }
             else
             {
-                memset(buffer, 0, frameCount * sizeof(int16_t));
+                memset(buffer, 0, frameCount * sizeof(float));
             }
 
             return 0;
@@ -112,9 +113,7 @@ namespace satdump
             if (audio_buff.size() < samplerate * 1)
 #endif
             {
-                std::vector<int16_t> buf_resamp_out(nsam);
-                volk_32f_s32f_convert_16i(buf_resamp_out.data(), ibuf, nsam, 32767);
-                audio_buff.insert(audio_buff.end(), buf_resamp_out.data(), buf_resamp_out.data() + nsam);
+                audio_buff.insert(audio_buff.end(), ibuf, ibuf + nsam);
                 audio_mtx.unlock();
             }
 

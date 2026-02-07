@@ -15,7 +15,7 @@ namespace satdump
             double samplerate = 48e3;
 
             std::mutex audio_mtx;
-            std::vector<int16_t> audio_buff;
+            std::vector<float> audio_buff;
 
             PaStream *stream;
 

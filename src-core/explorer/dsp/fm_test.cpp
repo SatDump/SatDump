@@ -50,7 +50,7 @@ namespace satdump
 
             rx_resamp->set_cfg("decimation", 1e6);
             rx_resamp->set_cfg("interpolation", 48e3);
-            rx_quad->set_cfg("gain", 0.012);
+            rx_quad->set_cfg("gain", 5);
             rx_audio_sink->set_cfg("samplerate", 48e3);
 
             rx_resamp->link(rx_agc.get(), 0, 0, 4);
