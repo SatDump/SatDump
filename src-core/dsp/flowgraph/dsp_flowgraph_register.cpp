@@ -3,10 +3,12 @@
 #include "core/plugin.h"
 
 #include "dsp/agc/agc.h"
+#include "dsp/agc/blk_agc.h"
 #include "dsp/clock_recovery/clock_recovery_mm_fast.h"
 #include "dsp/conv/char_to_float.h"
 #include "dsp/conv/complex_to_float.h"
 #include "dsp/conv/complex_to_ifloat.h"
+#include "dsp/conv/complex_to_imag.h"
 #include "dsp/conv/float_to_char.h"
 #include "dsp/conv/float_to_complex.h"
 #include "dsp/conv/ifloat_to_complex.h"
@@ -146,6 +148,9 @@ namespace satdump
             registerNodeSimple<ndsp::AGCBlock<complex_t>>(flowgraph, "AGC/Agc CC");
             registerNodeSimple<ndsp::AGCBlock<float>>(flowgraph, "AGC/Agc FF");
 
+            registerNodeSimple<ndsp::BlkAGCBlock<complex_t>>(flowgraph, "AGC/Block Agc CC");
+            registerNodeSimple<ndsp::BlkAGCBlock<float>>(flowgraph, "AGC/Block Agc FF");
+
             registerNodeSimple<ndsp::MultiplyBlock<float>>(flowgraph, "Utils/Multiply FF");
             registerNodeSimple<ndsp::MultiplyBlock<complex_t>>(flowgraph, "Utils/Multiply CC");
 
@@ -193,6 +198,7 @@ namespace satdump
             registerNodeSimple<ndsp::NNGIQSinkBlock>(flowgraph, "IO/NNG IQ Sink");
 
             registerNodeSimple<ndsp::WaveformBlock<float>>(flowgraph, "IO/Waveform F");
+            registerNodeSimple<ndsp::WaveformBlock<complex_t>>(flowgraph, "IO/Waveform C");
 
             registerNodeSimple<ndsp::FileSourceBlock<complex_t>>(flowgraph, "IO/File Source C");
             registerNodeSimple<ndsp::FileSourceBlock<float>>(flowgraph, "IO/File Source F");
@@ -214,10 +220,11 @@ namespace satdump
             registerNodeSimple<ndsp::IFloatToComplexBlock>(flowgraph, "Conv/IFloat To Complex");
             registerNodeSimple<ndsp::ComplexToIFloatBlock>(flowgraph, "Conv/Complex To IFloat");
 
-            registerNodeSimple<ndsp::RealToComplexBlock>(flowgraph, "Conv/Real to Complex");
+            registerNodeSimple<ndsp::RealToComplexBlock>(flowgraph, "Conv/Real To Complex");
 
             registerNodeSimple<ndsp::ComplexToFloatBlock>(flowgraph, "Conv/Complex To Float");
             registerNodeSimple<ndsp::FloatToComplexBlock>(flowgraph, "Conv/Float To Complex");
+            registerNodeSimple<ndsp::ComplexToImagBlock>(flowgraph, "Conv/Complex To Imag");
 
             eventBus->fire_event<RegisterNodesEvent>({flowgraph.node_internal_registry});
 

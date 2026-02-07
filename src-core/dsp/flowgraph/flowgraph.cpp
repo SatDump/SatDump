@@ -487,7 +487,7 @@ namespace satdump
 
                 // And then wait for them to exit
                 for (auto &n : nodes)
-                    if (!n->disabled)
+                    if (!n->disabled && !n->internal->blk->is_async())
                         n->internal->blk->stop();
                 for (auto &b : additional_blocks)
                     b->stop();
@@ -511,6 +511,8 @@ namespace satdump
         {
             try
             {
+                std::vector<std::thread> all_th;
+
                 // Iterate through all nodes
                 for (auto &n : nodes)
                 {
@@ -518,13 +520,22 @@ namespace satdump
                         continue;
 
                     // Stop only those that are sources
-                    if (n->internal->blk->get_inputs().size() == 0)
+                    if (n->internal->blk->is_async())
                     {
-                        logger->trace("Stopping source " + n->internal->blk->d_id);
-                        n->internal->blk->stop(true);
-                        logger->trace("Stopped source " + n->internal->blk->d_id);
+                        auto v = [&]
+                        {
+                            logger->trace("Stopping source " + n->internal->blk->d_id);
+                            n->internal->blk->stop(true);
+                            logger->trace("Stopped source " + n->internal->blk->d_id);
+                        };
+                        all_th.push_back(std::thread(v));
                     }
                 }
+
+                // Wait
+                for (auto &v : all_th)
+                    if (v.joinable())
+                        v.join();
             }
             catch (std::exception &e)
             {

@@ -295,7 +295,50 @@
                     "viterbi_outsync_after": 20,
                     "derandomize": true,
                     "rs_i": 5,
-                    "rs_type": "rs223"
+                    "rs_type": "rs223",
+                    "rs_usecheck": true
+                }
+            },
+            "products": {
+                // "satellite": "proba3"
+            }
+        }
+    },
+    "proba3_dump_qpsk12": {
+        "name": "Proba-3 Dump QPSK 1/2",
+        "live": [
+            1,
+            2
+        ],
+        "frequencies": [
+            [
+                "Main",
+                2256.22e6
+            ]
+        ],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "psk_demod",
+                "parameters": {
+                    "constellation": "qpsk",
+                    "symbolrate": 425e3,
+                    "rrc_alpha": 0.5,
+                    "pll_bw": 0.002
+                }
+            },
+            "cadu": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
+                    "constellation": "qpsk",
+                    "cadu_size": 10232,
+                    "viterbi_ber_thresold": 0.300,
+                    "viterbi_outsync_after": 20,
+                    "derandomize": true,
+                    "rs_i": 5,
+                    "rs_type": "rs223",
+                    "rs_usecheck": true
                 }
             },
             "products": {
@@ -328,15 +371,15 @@
                 }
             },
             "cadu": {
-                "module": "ccsds_conv_concat_decoder",
+                "module": "ccsds_simple_psk_decoder",
                 "parameters": {
                     "constellation": "qpsk",
                     "cadu_size": 10232,
-                    "viterbi_ber_thresold": 0.300,
-                    "viterbi_outsync_after": 20,
+                    "nrzm": false,
                     "derandomize": true,
                     "rs_i": 5,
-                    "rs_type": "rs223"
+                    "rs_type": "rs223",
+                    "rs_usecheck": true
                 }
             },
             "products": {
