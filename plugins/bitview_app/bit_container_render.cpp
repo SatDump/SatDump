@@ -1,4 +1,5 @@
 #include "bit_container.h"
+#include "core/resources.h"
 #include "image/image.h"
 #include "image/text.h"
 #include "imgui/imgui_image.h"
@@ -12,7 +13,7 @@ namespace satdump
 
         image::Image img(8, d_chunk_size, d_chunk_size * 14, 4);
         image::TextDrawer text_draw;
-        text_draw.init_font("/home/alan/Downloads/monospace.medium.ttf");
+        text_draw.init_font(resources::getResourcePath("fonts/monospace.medium.ttf"));
 
         for (int64_t line = 0; (size_t)line < d_chunk_size; line++)
         {

@@ -3,11 +3,11 @@
 #include "style.h"
 #include "backend.h"
 #include "config.h"
+#include "core/resources.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
-#include "core/resources.h"
 #include <filesystem>
 
 #ifdef __APPLE__
@@ -43,6 +43,8 @@ namespace style
     {
         // Set standard theme info
         ui_scale = backend::device_scale * satdump::satdump_cfg.main_cfg["user_interface"]["manual_dpi_scaling"]["value"].get<float>();
+        if (ui_scale <= 0)
+            ui_scale = 1; // Avoid having ImGui crash...
         ImGuiStyle &style = ImGui::GetStyle();
         style = ImGuiStyle();
         theme = Theme();

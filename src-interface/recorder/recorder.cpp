@@ -738,13 +738,12 @@ namespace satdump
                 float fft_height = wf_size * (show_waterfall ? waterfall_ratio : 1.0);
                 float wf_height = wf_size * (1 - waterfall_ratio) + 15 * ui_scale;
                 float wfft_widht = right_width - 9 * ui_scale;
-                bool t = true;
 #ifdef __ANDROID__
                 int offset = 8;
 #else
                 int offset = 30;
 #endif
-                ImGui::SetNextWindowSizeConstraints(ImVec2((right_width + offset * ui_scale), 50), ImVec2((right_width + offset * ui_scale), wf_size));
+                // ImGui::SetNextWindowSizeConstraints(ImVec2((right_width + offset * ui_scale), 50), ImVec2((right_width + offset * ui_scale), wf_size));
                 //                   ImGui::SetNextWindowSize(ImVec2((right_width + offset * ui_scale), show_waterfall ? waterfall_ratio * wf_size : wf_size));
                 ImGui::SetCursorScreenPos(ImVec2(left_width + 8, 25 * ui_scale));
                 if (ImGui::BeginChild("#fft", ImVec2((right_width + offset * ui_scale), (show_waterfall ? waterfall_ratio * wf_size : wf_size)), ImGuiChildFlags_ResizeY, //
