@@ -745,15 +745,14 @@ namespace satdump
                 int offset = 30;
 #endif
                 ImGui::SetNextWindowSizeConstraints(ImVec2((right_width + offset * ui_scale), 50), ImVec2((right_width + offset * ui_scale), wf_size));
-                ImGui::SetNextWindowSize(ImVec2((right_width + offset * ui_scale), show_waterfall ? waterfall_ratio * wf_size : wf_size));
-                ImGui::SetNextWindowPos(ImVec2(left_width, 25 * ui_scale));
-                if (ImGui::Begin("#fft", &t,
-                                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoScrollbar |
-                                     ImGuiWindowFlags_NoScrollWithMouse))
+                //                   ImGui::SetNextWindowSize(ImVec2((right_width + offset * ui_scale), show_waterfall ? waterfall_ratio * wf_size : wf_size));
+                ImGui::SetCursorScreenPos(ImVec2(left_width + 8, 25 * ui_scale));
+                if (ImGui::BeginChild("#fft", ImVec2((right_width + offset * ui_scale), (show_waterfall ? waterfall_ratio * wf_size : wf_size)), ImGuiChildFlags_ResizeY, //
+                                      ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoScrollbar |
+                                          ImGuiWindowFlags_NoScrollWithMouse))
                 {
-                    // ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 2 * ui_scale);
                     fft_plot->draw({float(wfft_widht), fft_height});
-                    if (show_waterfall && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                    if (show_waterfall) // && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
                         waterfall_ratio = ImGui::GetWindowHeight() / wf_size;
                     if (ImGui::IsWindowHovered())
                     {
@@ -770,7 +769,7 @@ namespace satdump
                 if (show_waterfall)
                 {
                     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 8 * ui_scale);
-                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 15 * ui_scale);
+                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 4 * ui_scale);
                     waterfall_plot->draw({wfft_widht, wf_height}, is_started);
                 }
             }
