@@ -72,7 +72,7 @@ namespace satdump
                 return "cu8";
                 break;
             case WAV16:
-                return "wav";
+                return "wav16";
                 break;
                 // #ifdef BUILD_ZIQ
                 //             case ZIQ:
@@ -101,7 +101,7 @@ namespace satdump
                 type = CF32;
             else if (s == "cu8" || s == "u8")
                 type = CU8;
-            else if (s == "w16" || s == "wav")
+            else if (s == "wav16")
                 type = WAV16;
             // #ifdef BUILD_ZIQ
             //             else if (s == "ziq")
@@ -124,7 +124,7 @@ namespace satdump
                                     "cs16\0"
                                     "cs8\0"
                                     "cu8\0"
-                                    "wav16\0"
+                                    "w16\0"
                                     // #ifdef BUILD_ZIQ
                                     //                                     "ziq\0"
                                     // #endif

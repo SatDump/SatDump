@@ -36,6 +36,7 @@ namespace satdump
             // Generate taps
             std::vector<float> rtaps = p_taps.size() > 0 ? p_taps : dsp::firdes::design_resampler_filter_float(d_interpolation, d_decimation, 0.4); // 0.4 = Fractional BW
             pfb.init(rtaps, d_interpolation);
+            d_ctr = 0;
 
             // Set size ratio for output buffer
             double v = double(d_interpolation) / double(d_decimation);

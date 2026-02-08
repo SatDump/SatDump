@@ -495,6 +495,11 @@ namespace satdump
                 // TODOREWORK investigate this
                 std::this_thread::sleep_for(std::chrono::seconds(2));
 
+                // Restop them all, including async ones
+                for (auto &n : nodes)
+                    if (!n->disabled)
+                        n->internal->blk->stop();
+
                 for (auto &n : nodes)
                     if (!n->disabled)
                         n->internal->upd_state();
