@@ -36,7 +36,11 @@ namespace satdump
             // Generate taps
             std::vector<float> rtaps = p_taps.size() > 0 ? p_taps : dsp::firdes::design_resampler_filter_float(d_interpolation, d_decimation, 0.4); // 0.4 = Fractional BW
             pfb.init(rtaps, d_interpolation);
+
+            // Reset stuff
             d_ctr = 0;
+            in_buffer = 0;
+            inc = 0;
 
             // Set size ratio for output buffer
             double v = double(d_interpolation) / double(d_decimation);
@@ -54,10 +58,17 @@ namespace satdump
         template <typename T>
         uint32_t RationalResamplerBlock<T>::process(T *input, uint32_t nsamples, T *output)
         {
-            memcpy(&buffer[pfb.ntaps - 1], input, nsamples * sizeof(T));
+            if (in_buffer + nsamples >= 1e6)
+            {
+                printf("TODOREWORK Error! Was about to overflow internal buffer!\n");
+                return 0;
+            }
+
+            memcpy(&buffer[in_buffer], input, nsamples * sizeof(T));
+            in_buffer += nsamples;
 
             outc = 0;
-            while (inc < nsamples)
+            while (inc + pfb.ntaps < in_buffer)
             {
                 if constexpr (std::is_same_v<T, float>)
                     volk_32f_x2_dot_prod_32f(&output[outc++], &buffer[inc], pfb.taps[d_ctr], pfb.ntaps);
@@ -68,9 +79,9 @@ namespace satdump
                 d_ctr = d_ctr % d_interpolation;
             }
 
-            inc -= nsamples;
-
-            memmove(&buffer[0], &buffer[nsamples], pfb.ntaps * sizeof(T));
+            memmove(&buffer[0], &buffer[inc], (in_buffer - inc) * sizeof(T));
+            in_buffer -= inc;
+            inc = 0;
 
             return outc;
         }

@@ -22,6 +22,7 @@ namespace satdump
         private:
             // Buffer
             T *buffer = nullptr;
+            uint32_t in_buffer = 0;
 
             // Settings
             int d_interpolation;

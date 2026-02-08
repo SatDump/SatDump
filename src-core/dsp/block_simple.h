@@ -42,7 +42,8 @@ namespace satdump
 
                 oblk.size = process(iblk.getSamples<Ti>(), iblk.size, oblk.getSamples<To>());
 
-                outputs[0].fifo->wait_enqueue(oblk);
+                if (oblk.size > 0)
+                    outputs[0].fifo->wait_enqueue(oblk);
                 inputs[0].fifo->free(iblk);
 
                 return false;
