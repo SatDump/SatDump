@@ -71,6 +71,9 @@ cp ./plugins/*.dylib MacApp/SatDump.app/Contents/libs
 # Surely there has to be a better way to do this? This should work for the time being,
 # as these paths should be standardized.
 cp $HOMEBREW_LIB/lib/libjemalloc* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libcpu_features* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/liborc* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libarpack* MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/libglfw* MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/libarmadillo* MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/libvolk* MacApp/SatDump.app/Contents/libs
