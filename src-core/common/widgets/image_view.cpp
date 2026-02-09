@@ -157,15 +157,18 @@ static void SetGridTicks(ImPlotPlot &plot, float target_px = 48.0f)
     const double xmin = x.Range.Min, xmax = x.Range.Max;
     const double ymin = y.Range.Min, ymax = y.Range.Max;
     const double xspan = xmax - xmin;
-    if (xspan <= 0.0) return;
+    if (xspan <= 0.0)
+        return;
 
     const float wpx = plot.PlotRect.GetWidth();
     const float hpx = plot.PlotRect.GetHeight();
-    if (wpx <= 0 || hpx <= 0) return;
+    if (wpx <= 0 || hpx <= 0)
+        return;
 
     const double units_per_px = xspan / (double)wpx;
     double step = TickStep(units_per_px * (double)target_px);
-    if (!(step > 0.0) || !std::isfinite(step)) return;
+    if (!(step > 0.0) || !std::isfinite(step))
+        return;
 
     const int MAX_TICKS = 2048;
     if (xspan / step > MAX_TICKS)
@@ -225,7 +228,7 @@ void ImageViewWidget::draw(ImVec2 win_size)
                 ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels /*| ImPlotAxisFlags_NoGridLines*/ | (isSelectingCrop ? ImPlotAxisFlags_Lock : 0),
                                   ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels /*| ImPlotAxisFlags_NoGridLines*/ | (isSelectingCrop ? ImPlotAxisFlags_Lock : 0));
 
-            auto* p = ImPlot::GetCurrentPlot();
+            auto *p = ImPlot::GetCurrentPlot();
             if (p && ImHasFlag(p->Flags, ImPlotFlags_Equal))
             {
                 float target_px = ImClamp(48.0f * ui_scale, 24.0f, 96.0f);
@@ -279,6 +282,8 @@ void ImageViewWidget::draw(ImVec2 win_size)
 
             if (isSelectingCrop)
             {
+                ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+
                 if (!ImGui::IsMouseReleased(ImGuiMouseButton_Left))
                 {
                     crop_end_pos = ImVec2(ImPlot::GetPlotMousePos().x, ImPlot::GetPlotMousePos().y);

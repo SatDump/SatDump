@@ -92,7 +92,7 @@ namespace satdump
 
         void ImageProductHandler::drawMenu()
         {
-            bool needs_to_be_disabled = is_processing;
+            bool needs_to_be_disabled = is_processing || img_handler->get_is_processing();
 
             if (ImGui::CollapsingHeader("Channels", ImGuiTreeNodeFlags_DefaultOpen))
             {
@@ -225,9 +225,13 @@ namespace satdump
             }
 
             // The image controls
+            if (needs_to_be_disabled)
+                style::beginDisabled();
             img_handler->drawMenu();
             if (img_handler->wasMenuTriggered) // If image got anything changed, reset too
                 resetPreset();
+            if (needs_to_be_disabled)
+                style::endDisabled();
 
             // Advanced controls
             if (enabled_advanced_menus)

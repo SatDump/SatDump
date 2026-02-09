@@ -75,6 +75,18 @@ namespace satdump
             }
 
             /**
+             * @brief Get the processing status externally
+             * @return current status
+             */
+            bool get_is_processing()
+            {
+                is_processing_mtx.lock();
+                bool s = is_processing;
+                is_processing_mtx.unlock();
+                return s;
+            }
+
+            /**
              * @brief Perform processing asynchronously, in a thread
              */
             void asyncProcess()

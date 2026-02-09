@@ -107,7 +107,8 @@ namespace satdump
                 needs_to_update |= ImGui::Checkbox("Median Blur", &median_blur_img);
                 needs_to_update |= ImGui::Checkbox("Despeckle", &despeckle_img);
                 needs_to_update |= ImGui::Checkbox("Rotate 180", &rotate180_image);
-                needs_to_update |= ImGui::Checkbox("Geo Correct", &geocorrect_image); // TODOREWORK Disable if it can't be?
+                if (image_proj_valid)
+                    needs_to_update |= ImGui::Checkbox("Geo Correct", &geocorrect_image); // TODOREWORK Disable if it can't be?
                 needs_to_update |= ImGui::Checkbox("Equalize", &equalize_img);
                 needs_to_update |= ImGui::Checkbox("Individual Equalize", &equalize_perchannel_img);
                 needs_to_update |= ImGui::Checkbox("White Balance", &white_balance_img);
@@ -123,7 +124,8 @@ namespace satdump
                     needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
                 }
 
-                needs_to_update |= ImGui::Checkbox("Remove Background", &remove_background_img);
+                if (image_proj_valid)
+                    needs_to_update |= ImGui::Checkbox("Remove Background", &remove_background_img);
 
                 needs_to_update |= ImGui::Checkbox("Hue/Saturation", &huesaturation_img);
                 if (huesaturation_img)

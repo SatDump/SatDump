@@ -182,6 +182,7 @@ namespace satdump
             if (ImGui::BeginPopupModal("About", &about_en, /*ImGuiWindowFlags_AlwaysAutoResize |*/ ImGuiWindowFlags_AlwaysVerticalScrollbar))
             {
                 credits_md.render();
+                ImGui::Dummy({400 * ui_scale, 0});
                 ImGui::EndPopup();
             }
 

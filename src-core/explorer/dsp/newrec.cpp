@@ -35,16 +35,16 @@ namespace satdump
 
             fftp = std::make_shared<ndsp::FFTPanBlock>();
             fftp->set_input(splitter->add_output("main_fft"), 0);
-            fftp->avg_num = 30;
+            fftp->avg_num = 1; // 30;
 
-            fft_plot = std::make_shared<widgets::FFTPlot>(fftp->output_fft_buff, 8192, -90, -50, 10);
+            fft_plot = std::make_shared<widgets::FFTPlot>(fftp->output_fft_buff, 65536, -90, -50, 10);
             fft_plot->frequency = 431.8e6;
             fft_plot->enable_freq_scale = true;
 
-            waterfall_plot = std::make_shared<widgets::WaterfallPlot>(8192, 2000);
-            waterfall_plot->set_size(8192);
+            waterfall_plot = std::make_shared<widgets::WaterfallPlot>(65536, 2000);
+            waterfall_plot->set_size(65536);
             waterfall_plot->set_rate(30, 20);
-            waterfall_plot->set_palette(colormaps::loadMap(resources::getResourcePath("waterfall/spectravue.json")));
+            waterfall_plot->set_palette(colormaps::loadMap(resources::getResourcePath("waterfall/classic.json")));
 
             fftp->on_fft = [this](float *p) { waterfall_plot->push_fft(p); };
 
@@ -109,7 +109,7 @@ namespace satdump
                     taskq.push(
                         [this]()
                         {
-                            fftp->set_fft_settings(8192, dev->getStreamSamplerate(0, false), 2000);
+                            fftp->set_fft_settings(65536, dev->getStreamSamplerate(0, false), 30);
                             fftp->avg_num = 1;
 
                             splitter->link(dev.get(), 0, 0, 100); //        fftp->inputs[0] = dev->outputs[0];
