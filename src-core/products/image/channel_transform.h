@@ -4,8 +4,8 @@
  * @file channel_transform.h
  */
 
-#include "nlohmann/json.hpp"
 #include "core/exception.h"
+#include "nlohmann/json.hpp"
 
 #include "projection/thinplatespline.h" // TODOREWORK Move to here?
 
@@ -109,9 +109,7 @@ namespace satdump
         {
             j["type"] = (int)v.d_type;
 
-            if (v.d_type == TYPE_AFFINE ||
-                v.d_type == TYPE_AFFINE_SLANTX ||
-                v.d_type == TYPE_AFFINE_INTERPX)
+            if (v.d_type == TYPE_AFFINE || v.d_type == TYPE_AFFINE_SLANTX || v.d_type == TYPE_AFFINE_INTERPX)
             {
                 j["ax"] = v.affine_a_x;
                 j["ay"] = v.affine_a_y;
@@ -140,9 +138,7 @@ namespace satdump
         {
             v.d_type = (transform_type_t)j["type"].get<int>();
 
-            if (v.d_type == TYPE_AFFINE ||
-                v.d_type == TYPE_AFFINE_SLANTX ||
-                v.d_type == TYPE_AFFINE_INTERPX)
+            if (v.d_type == TYPE_AFFINE || v.d_type == TYPE_AFFINE_SLANTX || v.d_type == TYPE_AFFINE_INTERPX)
             {
                 v.affine_a_x = j["ax"];
                 v.affine_a_y = j["ay"];
@@ -189,8 +185,7 @@ namespace satdump
                     v.interp_rev_interpolator->add_point(p.second.first, p.second.second, p2);
                 }
 
-                v.interp_fwd_interpolator->solve();
-                v.interp_rev_interpolator->solve();
+                printf("%d %d\n", v.interp_fwd_interpolator->solve(), v.interp_rev_interpolator->solve());
             }
         }
 
@@ -236,11 +231,11 @@ namespace satdump
             else if (d_type == TYPE_INTERP_XY)
             {
                 double out[2]; // TODOREWORK
-                printf("%f %f FWD => ", *x, *y);
+              //  printf("%f %f FWD => ", *x, *y);
                 interp_fwd_interpolator->get_point(*x, *y, out);
                 *x = out[0];
                 *y = out[1];
-                printf("%f %f\n ", *x, *y);
+              //  printf("%f %f\n ", *x, *y);
             }
             else if (d_type == TYPE_INVALID)
                 throw satdump_exception("Invalid Channel Transform!\n");
@@ -285,4 +280,4 @@ namespace satdump
                 throw satdump_exception("Invalid Channel Transform!\n");
         }
     };
-}
+} // namespace satdump
