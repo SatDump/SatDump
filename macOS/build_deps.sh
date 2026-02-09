@@ -51,16 +51,6 @@ standard_lib="$output_dir/lib"
 libusb_include="$HOMEBREW_LIB/opt/libusb/include/libusb-1.0"
 libusb_lib="$HOMEBREW_LIB/opt/libusb/lib/libusb-1.0.0.dylib"
 
-echo "Building cpu_features..."
-git clone https://github.com/google/cpu_features --depth 1 -b v0.9.0
-cd cpu_features
-mkdir build && cd build
-cmake $build_args -DBUILD_TESTING=OFF -DBUILD_EXECUTABLE=OFF ..
-make -j$(sysctl -n hw.logicalcpu)
-make install
-cd ../..
-rm -rf cpu_features
-
 echo "Building Airspy..."
 git clone https://github.com/airspy/airspyone_host --depth 1 #-b v1.0.10
 cd airspyone_host/libairspy
