@@ -267,39 +267,7 @@ namespace satdump
 
                 for (auto tkt : all_found)
                 {
-                    std::string wavelength;
-                    std::string polarization = "*";
-                    double tolerance_percent = 5;
-
-                    auto parts = splitString(tkt, ',');
-                    if (parts.size() == 0)
-                        parts = {tkt};
-
-                    wavelength = parts[0];
-
-                    if (parts.size() >= 2)
-                        polarization = parts[1];
-
-                    if (parts.size() >= 3)
-                        tolerance_percent = std::stod(parts[2]);
-
-                    ImageProduct::channel_polarization_t p;
-                    if (polarization == "N")
-                        p = ImageProduct::POL_NONE;
-                    else if (polarization == "H")
-                        p = ImageProduct::POL_HORIZONTAL;
-                    else if (polarization == "V")
-                        p = ImageProduct::POL_VERTICAL;
-                    else if (polarization == "R")
-                        p = ImageProduct::POL_RHCP;
-                    else if (polarization == "L")
-                        p = ImageProduct::POL_LHCP;
-                    else if (polarization == "*")
-                        p = ImageProduct::POL_ANY;
-                    else
-                        throw satdump_exception("Invalid polarization " + polarization + " in token \"" + tkt + "\"");
-
-                    auto atkt = product->get_channel_image_by_unitstr(wavelength, p, tolerance_percent).channel_name;
+                    auto atkt = product->get_channel_image_by_unitstr(tkt).channel_name;
                     replaceAllStr(expression, "{" + tkt + "}", atkt);
                 }
             }

@@ -15,6 +15,7 @@
 
 // TODOREWORK MOVE
 #include "common/calibration.h"
+#include "utils/string.h"
 #include "utils/unit_parser.h"
 #include <string>
 
@@ -62,7 +63,9 @@ namespace satdump
              * @param bit_depth Image bit depth
              * @param ch_transform Channel transform to reference field
              * @param wavenumber Wavenumber
-             * @param calibration_type optiona, calibration output type, goes hand-in-hand with unit, but do note
+             * @param polarization Polarization of the channel (Circular/Linear/etc)
+             * @param bandwidth Bandwidth of the channel
+             * @param calibration_type optional, calibration output type, goes hand-in-hand with unit, but do note
              * a calibration type enforces a specific unit! If this isn't a standard ID, specify your unit here instead
              */
             struct ImageHolder
@@ -75,6 +78,7 @@ namespace satdump
                 ChannelTransform ch_transform = ChannelTransform().init_none();
                 double wavenumber = -1;
                 channel_polarization_t polarization = POL_NONE;
+                double bandwidth = -1;
                 std::string calibration_type = "";
             };
 
@@ -182,31 +186,49 @@ namespace satdump
             }
 
             /**
-             * @brief Get image channel by wavenumber. Returns the closest one
+             * @brief Get image channel by specifications. Returns the closest one
              * @param double wavenumber
-             * @param tolerance_percent maximum tolerance on wavenumber
              * @param polarization to select the channel by polarization. Ignored by default
+             * @param bandwidth bandwidth of the channel to filter by
+             * @param freq_tolerance_percent maximum tolerance on wavenumber
+             * @param bw_tolerance_percent max tolerance on bandwidth
              * @return the image channel struct
              */
-            ImageHolder &get_channel_image_by_wavenumber(double wavenumber, channel_polarization_t polarization = POL_ANY, double tolerance_percent = 5)
+            ImageHolder &get_channel_image_by_specifications(double wavenumber,                             //
+                                                             channel_polarization_t polarization = POL_ANY, //
+                                                             double bandwidth = -1,                         //
+                                                             double freq_tolerance_percent = 5,             //
+                                                             double bw_tolerance_percent = 20)
             {
-                double best = 1e40;
-                double valid_min = wavenumber * ((100. - tolerance_percent) / 100.);
-                double valid_max = wavenumber * ((100. + tolerance_percent) / 100.);
+                double fbest = 1e40;
+                double fvalid_min = wavenumber * ((100. - freq_tolerance_percent) / 100.);
+                double fvalid_max = wavenumber * ((100. + freq_tolerance_percent) / 100.);
+
+                double bbest = 1e40;
+                double bvalid_min = bandwidth * ((100. - bw_tolerance_percent) / 100.);
+                double bvalid_max = bandwidth * ((100. + bw_tolerance_percent) / 100.);
+
                 ImageHolder *out = nullptr;
                 for (auto &img : images)
                 {
                     // Check pol
-                    bool pol_valid = true;
                     if (polarization != POL_ANY)
                         if (img.polarization != polarization)
                             continue;
 
-                    // Check center freq
-                    if (img.wavenumber != -1 && best > abs(img.wavenumber - wavenumber) && valid_min <= img.wavenumber && img.wavenumber <= valid_max)
+                    // Check center freq and bandwidth
+                    if (img.wavenumber != -1 &&                     //
+                        fbest > abs(img.wavenumber - wavenumber) && //
+                        fvalid_min <= img.wavenumber &&             //
+                        img.wavenumber <= fvalid_max &&             //
+                        (bandwidth == -1 ||                         //
+                         (bbest > abs(img.bandwidth - bandwidth) && //
+                          bvalid_min <= img.bandwidth &&            //
+                          img.bandwidth <= bvalid_max)))
                     {
                         out = &img;
-                        best = abs(img.wavenumber - wavenumber);
+                        fbest = abs(img.wavenumber - wavenumber);
+                        bbest = abs(img.bandwidth - bandwidth);
                     }
                 }
                 if (out == nullptr)
@@ -216,23 +238,69 @@ namespace satdump
 
             /**
              * @brief Get image channel by unit string. Returns the closest one
+             * See documentation page "Image Product Expression" for further info.
              * @param str Unit string
-             * @param tolerance_percent maximum tolerance on wavenumber
-             * @param polarization to select the channel by polarization. Ignored by default
              * @return the image channel struct
              */
-            ImageHolder &get_channel_image_by_unitstr(std::string str, channel_polarization_t polarization = POL_ANY, double tolerance_percent = 5)
+            ImageHolder &get_channel_image_by_unitstr(std::string str)
             {
-                double val = 0;
+                double freq = 0;
+                channel_polarization_t polarization = POL_ANY;
+                double bw = -1;
+                double freq_tolerance_percent = 5;
+                double bw_tolerance_percent = 20;
 
-                if (parseUnitFromString(str, val, UNIT_METER))
-                    val = freq_to_wavenumber(SPEED_OF_LIGHT_M_S / val);
-                else if (parseUnitFromString(str, val, UNIT_HERTZ))
-                    val = freq_to_wavenumber(val);
+                // Parse the token
+                auto parts = splitString(str, ',');
+                if (parts.size() == 0)
+                    parts = {str};
+
+                ////////////////////////////////////////////////
+                // Format is : {Freq,Pol,Bandwidth,FreqTol,BwTol}
+                ////////////////////////////////////////////////
+
+                if (parseUnitFromString(parts[0], freq, UNIT_METER))
+                    freq = freq_to_wavenumber(SPEED_OF_LIGHT_M_S / freq);
+                else if (parseUnitFromString(parts[0], freq, UNIT_HERTZ))
+                    freq = freq_to_wavenumber(freq);
                 else
-                    throw satdump_exception("Couldn't parse unit and value from " + str);
+                    throw satdump_exception("Couldn't parse frequency unit and value from " + str);
 
-                return get_channel_image_by_wavenumber(val, polarization, tolerance_percent);
+                if (parts.size() >= 2)
+                {
+                    if (parts[1] == "N")
+                        polarization = ImageProduct::POL_NONE;
+                    else if (parts[1] == "H")
+                        polarization = ImageProduct::POL_HORIZONTAL;
+                    else if (parts[1] == "V")
+                        polarization = ImageProduct::POL_VERTICAL;
+                    else if (parts[1] == "R")
+                        polarization = ImageProduct::POL_RHCP;
+                    else if (parts[1] == "L")
+                        polarization = ImageProduct::POL_LHCP;
+                    else if (parts[1] == "*")
+                        polarization = ImageProduct::POL_ANY;
+                    else
+                        throw satdump_exception("Invalid polarization " + parts[1] + " in token \"" + str + "\"");
+                }
+
+                if (parts.size() >= 3)
+                {
+                    if (parseUnitFromString(parts[2], bw, UNIT_METER))
+                        bw = SPEED_OF_LIGHT_M_S / bw;
+                    else if (parseUnitFromString(parts[2], bw, UNIT_HERTZ))
+                        ;
+                    else
+                        throw satdump_exception("Couldn't parse bandwidth unit and value from " + str);
+                }
+
+                if (parts.size() >= 4)
+                    freq_tolerance_percent = std::stod(parts[3]);
+
+                if (parts.size() >= 5)
+                    bw_tolerance_percent = std::stod(parts[4]);
+
+                return get_channel_image_by_specifications(freq, polarization, bw, freq_tolerance_percent, bw_tolerance_percent);
             }
 
             /**
@@ -333,6 +401,37 @@ namespace satdump
                 for (auto &img : images)
                     if (img.abs_index == index)
                         return img.polarization;
+                throw satdump_exception("Product Channel Index " + std::to_string(index) + " is not present!");
+            }
+
+            /**
+             * @brief Set channel bandwidth in Hz. Can also represent
+             * a visible interval (eg, 0.55 um to 0.68um) by converting
+             * the bandwidth in wavelength to freq
+             * @param index absolute channel index
+             * @param bandwidth bandwidth value in Hz
+             */
+            void set_channel_bandwidth(int index, double bandwidth)
+            {
+                for (auto &img : images)
+                    if (img.abs_index == index)
+                    {
+                        img.bandwidth = bandwidth;
+                        return;
+                    }
+                throw satdump_exception("Product Channel Index " + std::to_string(index) + " is not present!");
+            }
+
+            /**
+             * @brief Get channel bandwidth in Hz
+             * @param index absolute channel index
+             * @return channel bandwidth
+             */
+            double get_channel_bandwidth(int index)
+            {
+                for (auto &img : images)
+                    if (img.abs_index == index)
+                        return img.bandwidth;
                 throw satdump_exception("Product Channel Index " + std::to_string(index) + " is not present!");
             }
 

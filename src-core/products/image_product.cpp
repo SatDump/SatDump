@@ -55,6 +55,8 @@ namespace satdump
                     contents["images"][c]["wavenumber"] = images[c].wavenumber;
                 if (images[c].polarization != POL_NONE)
                     contents["images"][c]["polarization"] = images[c].polarization;
+                if (images[c].bandwidth != -1)
+                    contents["images"][c]["bandwidth"] = images[c].bandwidth;
                 if (images[c].calibration_type != "")
                     contents["images"][c]["calibration_type"] = images[c].calibration_type;
                 //// META
@@ -159,6 +161,8 @@ namespace satdump
                     img_holder.wavenumber = contents["images"][c]["wavenumber"];
                 if (contents["images"][c].contains("polarization"))
                     img_holder.polarization = contents["images"][c]["polarization"];
+                if (contents["images"][c].contains("bandwidth"))
+                    img_holder.bandwidth = contents["images"][c]["bandwidth"];
                 if (contents["images"][c].contains("calibration_type"))
                     img_holder.calibration_type = contents["images"][c]["calibration_type"];
                 //// META

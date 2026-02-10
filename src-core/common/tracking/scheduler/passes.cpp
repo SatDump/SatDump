@@ -20,6 +20,12 @@ namespace satdump
         predict_orbital_elements_t *satellite_object_ = predict_parse_tle(tle->line1.c_str(), tle->line2.c_str());
         double current_time = initial_time;
 
+        if (predict_is_geosynchronous(satellite_object_))
+        {
+            logger->warn("NORAD #%d is GEO!");
+            return passes;
+        }
+
         if (premade_passes.size() == 0) // Normal algo, for normal LEOs
         {
             while (current_time < initial_time + timespan)
