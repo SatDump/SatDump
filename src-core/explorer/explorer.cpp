@@ -315,30 +315,7 @@ namespace satdump
                     delete[] px;
                 }
 
-#if 0
-                ImGui::Image((void *)satdump_logo_texture, ImVec2(50 * ui_scale, 50 * ui_scale));
-                ImGui::SameLine();
-                ImGui::PushFont(style::bigFont);
-                ImGui::TextUnformatted(" Welcome to SatDump!");
-                ImGui::PopFont();
-
-                if (ImGui::BeginTable("##dscovrinstrumentstable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg, {-1, ImGui::GetWindowHeight()}))
-                {
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("Shortcuts");
-                    ImGui::TableSetColumnIndex(1);
-                    ImGui::Text("Tip of the day");
-
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("Something else!?");
-                    ImGui::TableSetColumnIndex(1);
-                    ImGui::Text("Yes, why not?");
-
-                    ImGui::EndTable();
-                }
-#else
+#if 1
                 std::pair<float, float> dims = {ImGui::GetWindowWidth(), ImGui::GetWindowHeight()};
                 float scale = backend::device_scale;
 

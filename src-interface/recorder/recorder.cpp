@@ -251,7 +251,7 @@ namespace satdump
     void RecorderApplication::drawMenu()
     {
         bool assume_started = is_started;
-        if (ImGui::CollapsingHeader("Device", tracking_started_cli ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::CollapsingHeader("Source", tracking_started_cli ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_DefaultOpen))
         {
             ImGui::Spacing();
             if (assume_started)
