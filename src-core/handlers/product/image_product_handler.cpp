@@ -144,6 +144,12 @@ namespace satdump
                         else if (pol == products::ImageProduct::POL_LHCP)
                             ImGui::Text("Pol : L");
                     }
+
+                    if (ch.bandwidth != -1)
+                    {
+                        auto bw = product->get_channel_bandwidth(ch.abs_index);
+                        ImGui::Text("Bandwidth : %s / %s", format_notated(bw, "Hz", 2).c_str(), format_notated(SPEED_OF_LIGHT_M_S / bw, "m", 2).c_str());
+                    }
                 }
 
                 // Calibration menu, if possible. Allow editing ranges

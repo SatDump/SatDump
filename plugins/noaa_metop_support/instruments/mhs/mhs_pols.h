@@ -12,6 +12,12 @@ namespace noaa_metop
             pro->set_channel_polarization(2, satdump::products::ImageProduct::POL_HORIZONTAL);
             pro->set_channel_polarization(3, satdump::products::ImageProduct::POL_HORIZONTAL);
             pro->set_channel_polarization(4, satdump::products::ImageProduct::POL_VERTICAL);
+
+            pro->set_channel_bandwidth(0, 2800e6);
+            pro->set_channel_bandwidth(1, 2800e6);
+            pro->set_channel_bandwidth(2, 1000e6);
+            pro->set_channel_bandwidth(3, 2000e6);
+            pro->set_channel_bandwidth(4, 2000e6);
         }
     } // namespace mhs
 } // namespace noaa_metop
