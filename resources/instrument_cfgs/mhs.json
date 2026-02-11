@@ -19,35 +19,12 @@
             "description": "descriptions/sounders/MHS421.md"
         },
         {
-            "name": "Microwave Airmass",
-            "expression": "cch5=(5, emissive_radiance, 0.06, 0.096); cch4=(4, emissive_radiance, 0.059, 0.09); cch3=(3, emissive_radiance, 0.0713, 0.0868); cch5, cch4, cch3",
-            "image": {
-                "individual_equalize": true
-            },
-            "description": "descriptions/sounders/MicrowaveAirmass.md"
-        },
-        {
-            "name": "Rainfall",
-            "expression": "cch5=(5, emissive_radiance, 0.06, 0.096); cch4=(4, emissive_radiance, 0.059, 0.09); lut=lut(lut/generic/roygbiv.png); lut((((cch5-cch4))-0.95)^0.25, 0, 0), lut((((1-(cch5-cch4))-0.95)^0.25), 0, 1), lut((((cch5-cch4))-0.95)^0.25, 0, 2)",
-            "description": "descriptions/sounders/Rainfall.md"
-        },
-        {
-            "name": "Rainfall (Transparent)",
-            "expression": "cch5=(5, emissive_radiance, 0.06, 0.096); cch4=(4, emissive_radiance, 0.059, 0.09); lut=lut(lut/generic/roygbiv.png); lut((((cch5-cch4))-0.95)^0.25, 0, 0), lut((((1-(cch5-cch4))-0.95)^0.25), 0, 1), lut((((cch5-cch4))-0.95)^0.25, 0, 2), ((1-(cch5-cch4))-0.95)^0.25 > 0.01 ? 1 : 0",
-            "description": "descriptions/sounders/RainfallTransparent.md"
-        },
-        {
             "name": "Snow cover (Transparent)",
             "description": "descriptions/sounders/SnowcoverTransparent.md"
         },
         {
             "name": "Significant Thunderstorms (Transparent)",
             "description": "descriptions/sounders/Thunderstorm.md"
-        },
-        {
-            "name": "SSEC 89 GHz AMSU-B BT",
-            "expression": "cch1=(1, brightness_temperature, 180, 280);lut=lut(lut/cal/ssec_amsu.png);lut(cch1, 0, 0), lut(cch1, 0, 1), lut(cch1, 0, 2)",
-            "description": "descriptions/sounders/SSEC89GHz.md"
         },
         {
             "name": "165.5 GHz",

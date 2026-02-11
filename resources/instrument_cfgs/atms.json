@@ -27,14 +27,6 @@
             "description": "descriptions/sounders/MHS221.md"
         },
         {
-            "name": "Microwave Airmass",
-            "expression": "ch18,ch19,ch20",
-            "image": {
-                "individual_equalize": true
-            },
-            "description": "descriptions/sounders/MicrowaveAirmass.md"
-        },
-        {
             "name": "AMSU Surface Relative Temperature",
             "expression": "cos(ln(ch1) + ln(ch2)+0.8)",
             "image": {

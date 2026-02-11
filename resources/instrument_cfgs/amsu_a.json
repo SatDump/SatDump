@@ -36,13 +36,6 @@
             "image": {
                 "individual_equalize": false
             }
-        },
-        {
-            "name": "SSEC 89 GHz AMSU-A BT",
-            "expression": "cch15=(15, brightness_temperature, 180.000000, 280.000000);lut=lut(lut/cal/ssec_amsu.png);lut(cch15, 0, 0), lut(cch15, 0, 1), lut(cch15, 0, 2)",
-            "image": {
-                "individual_equalize": false
-            }
         }
     ],
     "default": {
