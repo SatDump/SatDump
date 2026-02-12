@@ -164,6 +164,16 @@ else
     for lib in MacApp/SatDump.app/Contents/libs/*.dylib; do
         codesign -v --force --timestamp --sign - $lib
     done
+
+    for dylib in MacApp/SatDump.app/Contents/Resources/plugins/*.dylib
+    do
+	    codesign -v --force --timestamp --sign - $dylib
+    done
+
+    codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign - MacApp/SatDump.app/Contents/MacOS/satdump
+    codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign - MacApp/SatDump.app/Contents/MacOS/satdump_sdr_server
+    codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign - MacApp/SatDump.app/Contents/MacOS/satdump-ui
+
 fi
 
 echo "Creating SatDump.dmg..."
