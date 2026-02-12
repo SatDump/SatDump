@@ -67,9 +67,10 @@ cp $GITHUB_WORKSPACE/deps/lib/*.dylib MacApp/SatDump.app/Contents/libs
 cp ./*.dylib MacApp/SatDump.app/Contents/libs
 cp ./plugins/*.dylib MacApp/SatDump.app/Contents/libs
 
-# Symlinks are not copied by dylibbuilder, we gotta copy these homebrew libs manually.
+# Symlinks are not copied by dylibbuilder, we gotta copy homebrew libs manually.
+# This enables running without homebrew deps installed system-wide
 # Surely there has to be a better way to do this? This should work for the time being,
-# as these paths should be standardized.
+# as these paths should be standardized. Extremely hands-on approach though.
 cp $HOMEBREW_LIB/lib/libjemalloc* MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/libcpu_features* MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/liborc* MacApp/SatDump.app/Contents/libs
@@ -86,9 +87,45 @@ cp $HOMEBREW_LIB/lib/libusb* MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/libportaudio* MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/libhdf5* MacApp/SatDump.app/Contents/libs
 
-# Libomp is not in /lib becuase it was born that way, we gotta use the full path
-cp $HOMEBREW_LIB/opt/libomp/lib/libomp* MacApp/SatDump.app/Contents/libs
+# Dependencies for libs
+cp $HOMEBREW_LIB/lib/libmpi* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libsz* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libaec* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libopen-pal* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libevent* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libssl* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libcrypto* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libhwloc* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libpmix* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/liblzma* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libjpeg* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libboost* MacApp/SatDump.app/Contents/libs
 
+
+# These are not in /lib becuase they were born that way, we gotta use the full path
+cp $HOMEBREW_LIB/opt/libomp/lib/libomp* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/opt/openblas/lib/libopenblas* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/opt/gfortran/lib/gcc/current/*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/opt/icu4c/lib/libicu* MacApp/SatDump.app/Contents/libs
+
+
+echo "Patching absolute dependency paths..."
+
+# We copy libraries but their dependencies still point to the homebrew path
+for lib in MacApp/SatDump.app/Contents/libs/*.dylib; do
+    # dylib's own ID
+    install_name_tool -id @rpath/$(basename "$lib") "$lib"
+
+    # lib's dependencies
+    deps=$(otool -L "$lib" | awk '{print $1}' | grep '^/opt/homebrew/') || true
+
+    # check used as not every dep has cooked homebrew libs
+    if [[ -n "$deps" ]]; then
+        while read -r dep; do
+            install_name_tool -change "$dep" "@rpath/$(basename "$dep")" "$lib"
+        done <<< "$deps"
+    fi
+done
 
 echo "Re-linking binaries"
 plugin_args=$(ls MacApp/SatDump.app/Contents/Resources/plugins | xargs printf -- '-x MacApp/SatDump.app/Contents/Resources/plugins/%s ')
@@ -121,6 +158,12 @@ then
     codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign "$MACOS_SIGNING_SIGNATURE" MacApp/SatDump.app/Contents/MacOS/satdump_sdr_server
     codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign "$MACOS_SIGNING_SIGNATURE" MacApp/SatDump.app/Contents/MacOS/satdump-ui
 
+else 
+    # Since we adjusted homebrew paths in dylibs, we must resign the libs
+    # We don't have a proper signature, so an ad-hoc one will have to do...
+    for lib in MacApp/SatDump.app/Contents/libs/*.dylib; do
+        codesign -v --force --timestamp --sign - $lib
+    done
 fi
 
 echo "Creating SatDump.dmg..."
