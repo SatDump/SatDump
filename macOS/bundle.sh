@@ -143,7 +143,7 @@ dylibbundler $SIGN_FLAG \
 
 if [[ -n "$MACOS_SIGNING_SIGNATURE" ]]
 then
-    echo "Code signing..."
+    echo "Signing code using proper signature..."
     for dylib in MacApp/SatDump.app/Contents/libs/*.dylib
     do
 	    codesign -v --force --timestamp --sign "$MACOS_SIGNING_SIGNATURE" $dylib
@@ -159,6 +159,7 @@ then
     codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign "$MACOS_SIGNING_SIGNATURE" MacApp/SatDump.app/Contents/MacOS/satdump-ui
 
 else 
+    echo "No signature found, signing with ad-hoc signature..."
     # Since we adjusted homebrew paths in dylibs, we must resign the libs
     # We don't have a proper signature, so an ad-hoc one will have to do...
     for lib in MacApp/SatDump.app/Contents/libs/*.dylib; do
@@ -174,6 +175,8 @@ else
     codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign - MacApp/SatDump.app/Contents/MacOS/satdump_sdr_server
     codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign - MacApp/SatDump.app/Contents/MacOS/satdump-ui
 
+    # Finally, sign the bundle
+    codesign --force --deep --sign - MacApp/SatDump.app
 fi
 
 echo "Creating SatDump.dmg..."
