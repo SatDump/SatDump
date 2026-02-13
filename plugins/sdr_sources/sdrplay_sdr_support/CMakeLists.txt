@@ -14,6 +14,10 @@ if(SDRPLAY_LIBRARY OR MSVC)
     file(GLOB_RECURSE sdrplay_sdr_support_CPPS *.cpp)
     add_library(sdrplay_sdr_support SHARED ${sdrplay_sdr_support_CPPS})
     target_include_directories(sdrplay_sdr_support PUBLIC src)
+    
+    if (APPLE)
+        target_compile_definitions(sdrplay_sdr_support PUBLIC SDRPLAY_LIB_PATH="libsdrplay_api.dylib")
+    endif()
 
     if(MSVC)
         target_link_libraries(sdrplay_sdr_support PUBLIC satdump_core)
