@@ -99,14 +99,23 @@ cp $HOMEBREW_LIB/lib/libhwloc* MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/libpmix* MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/liblzma* MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/libjpeg* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libboost* MacApp/SatDump.app/Contents/libs
+
+# boost has a crap ton of modules, selected individually so we don't copy  unnecessary stuff
+cp $HOMEBREW_LIB/lib/libboost_atomic* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libboost_container* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libboost_chrono* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libboost_date* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libboost_filesystem* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libboost_program* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libboost_serialization* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libboost_thread* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libboost_unit* MacApp/SatDump.app/Contents/libs
 
 
 # These are not in /lib becuase they were born that way, we gotta use the full path
 cp $HOMEBREW_LIB/opt/libomp/lib/libomp* MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/opt/openblas/lib/libopenblas* MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/opt/gfortran/lib/gcc/current/*.dylib MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/opt/icu4c/lib/libicu* MacApp/SatDump.app/Contents/libs
 
 
 echo "Patching absolute dependency paths..."
