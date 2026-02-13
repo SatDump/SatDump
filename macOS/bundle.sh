@@ -100,7 +100,7 @@ cp $HOMEBREW_LIB/lib/libpmix*.dylib MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/liblzma*.dylib MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/libjpeg*.dylib MacApp/SatDump.app/Contents/libs
 
-# boost has a crap ton of modules, selected individually so we don't copy  unnecessary stuff
+# boost has a crap ton of modules, selected individually so we don't copy unnecessary stuff
 cp $HOMEBREW_LIB/lib/libboost_atomic*.dylib MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/libboost_container*.dylib MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/libboost_chrono*.dylib MacApp/SatDump.app/Contents/libs
@@ -120,15 +120,15 @@ cp $HOMEBREW_LIB/opt/gfortran/lib/gcc/current/*.dylib MacApp/SatDump.app/Content
 
 echo "Patching absolute dependency paths..."
 
-# We copy libraries but their dependencies still point to the homebrew path
+# We copy libraries but their dependencies still point to the homebrew path, we gotta replace with an rpath
 for lib in MacApp/SatDump.app/Contents/libs/*.dylib; do
     # dylib's own ID
     install_name_tool -id @rpath/$(basename "$lib") "$lib"
 
-    # lib's dependencies
-    deps=$(otool -L "$lib" | awk '{print $1}' | grep '^/opt/homebrew/') || true
+    # lib's dependencies, pipefail is on so we must '|| true' as not every dependecy has
+    # dependencies in the homebrew paths
+    deps=$(otool -L "$lib" | awk '{print $1}' | grep "^$HOMEBREW_LIB/") || true
 
-    # check used as not every dep has cooked homebrew libs
     if [[ -n "$deps" ]]; then
         while read -r dep; do
             install_name_tool -change "$dep" "@rpath/$(basename "$dep")" "$lib"
