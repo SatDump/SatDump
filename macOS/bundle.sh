@@ -65,9 +65,9 @@ mkdir MacApp/SatDump.app/Contents/libs
 cp $GITHUB_WORKSPACE/deps/lib/*.dylib MacApp/SatDump.app/Contents/libs
 # We are already in the build dir, that's where the satdump dylibs are - ./ and ./plugins
 cp ./*.dylib MacApp/SatDump.app/Contents/libs
-cp ./plugins/*.dylib MacApp/SatDump.app/Contents/libs
+cp ./plugins/*.dylib MacApp/SatDump.app/Contents/libs # TODOREWORK figure out why satdump craps the bed without this line
 
-# Symlinks are not copied by dylibbuilder, we gotta copy homebrew libs manually.
+# Symlinks are not copied by dylibbuilder, we gotta copy dependencies manually from homebrew.
 # This enables running without homebrew deps installed system-wide
 # Surely there has to be a better way to do this? This should work for the time being,
 # as these paths should be standardized. Extremely hands-on approach though.
@@ -87,7 +87,7 @@ cp $HOMEBREW_LIB/lib/libusb*.dylib MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/libportaudio*.dylib MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/libhdf5*.dylib MacApp/SatDump.app/Contents/libs
 
-# Dependencies for libs
+# Dependencies for libs (not satdump directly)
 cp $HOMEBREW_LIB/lib/libmpi*.dylib MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/libsz*.dylib MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/lib/libaec*.dylib MacApp/SatDump.app/Contents/libs
@@ -114,7 +114,7 @@ cp $HOMEBREW_LIB/lib/libboost_unit*.dylib MacApp/SatDump.app/Contents/libs
 
 # These are not in /lib becuase they were born that way, we gotta use the full path
 cp $HOMEBREW_LIB/opt/libomp/lib/libomp*.dylib MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/opt/openblas/lib/libopenblas*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/opt/openblas/lib/libopenblas.0*.dylib MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/opt/gfortran/lib/gcc/current/*.dylib MacApp/SatDump.app/Contents/libs
 
 
