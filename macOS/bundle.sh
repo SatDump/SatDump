@@ -71,50 +71,50 @@ cp ./plugins/*.dylib MacApp/SatDump.app/Contents/libs
 # This enables running without homebrew deps installed system-wide
 # Surely there has to be a better way to do this? This should work for the time being,
 # as these paths should be standardized. Extremely hands-on approach though.
-cp $HOMEBREW_LIB/lib/libjemalloc* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libcpu_features* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/liborc* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libarpack* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libglfw* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libarmadillo* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libvolk* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libpng* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libfftw* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libnng* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libzstd* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libtiff* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libusb* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libportaudio* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libhdf5* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libjemalloc*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libcpu_features*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/liborc*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libarpack*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libglfw*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libarmadillo*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libvolk*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libpng*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libfftw*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libnng*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libzstd*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libtiff*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libusb*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libportaudio*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libhdf5*.dylib MacApp/SatDump.app/Contents/libs
 
 # Dependencies for libs
-cp $HOMEBREW_LIB/lib/libmpi* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libsz* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libaec* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libopen-pal* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libevent* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libssl* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libcrypto* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libhwloc* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libpmix* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/liblzma* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libjpeg* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libmpi*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libsz*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libaec*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libopen-pal*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libevent*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libssl*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libcrypto*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libhwloc*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libpmix*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/liblzma*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libjpeg*.dylib MacApp/SatDump.app/Contents/libs
 
 # boost has a crap ton of modules, selected individually so we don't copy  unnecessary stuff
-cp $HOMEBREW_LIB/lib/libboost_atomic* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libboost_container* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libboost_chrono* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libboost_date* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libboost_filesystem* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libboost_program* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libboost_serialization* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libboost_thread* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/lib/libboost_unit* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libboost_atomic*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libboost_container*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libboost_chrono*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libboost_date*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libboost_filesystem*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libboost_program*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libboost_serialization*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libboost_thread*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/lib/libboost_unit*.dylib MacApp/SatDump.app/Contents/libs
 
 
 # These are not in /lib becuase they were born that way, we gotta use the full path
-cp $HOMEBREW_LIB/opt/libomp/lib/libomp* MacApp/SatDump.app/Contents/libs
-cp $HOMEBREW_LIB/opt/openblas/lib/libopenblas* MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/opt/libomp/lib/libomp*.dylib MacApp/SatDump.app/Contents/libs
+cp $HOMEBREW_LIB/opt/openblas/lib/libopenblas*.dylib MacApp/SatDump.app/Contents/libs
 cp $HOMEBREW_LIB/opt/gfortran/lib/gcc/current/*.dylib MacApp/SatDump.app/Contents/libs
 
 
