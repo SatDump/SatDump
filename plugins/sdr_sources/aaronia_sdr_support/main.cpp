@@ -20,6 +20,12 @@ public:
         if (!satdump::satdump_cfg.main_cfg["plugin_settings"]["aaronia_support"].is_null())
             rtsa_api_path = satdump::satdump_cfg.main_cfg["plugin_settings"]["aaronia_support"];
 
+        if (!std::filesystem::exists(rtsa_api_path))
+        {
+            logger->info("Couldn't find RTSA API at  '" + rtsa_api_path + "', not loading!");
+            return;
+        }
+
         try
         {
             rtsa_api = new RTSAApiInstance(rtsa_api_path);
@@ -29,7 +35,7 @@ public:
         }
         catch (std::exception &e)
         {
-            logger->error("RTSA API could not be loaded! %s", e.what());
+            logger->error("Failed to load RTSA API! %s", e.what());
         }
     }
 
