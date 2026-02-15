@@ -32,6 +32,7 @@
 #include "dsp/resampling/rational_resampler.h"
 #include "dsp/utils/add.h"
 #include "dsp/utils/blanker.h"
+#include "dsp/conv/complex_to_mag.h"
 #include "dsp/utils/correct_iq.h"
 #include "dsp/utils/multiply.h"
 #include "dsp/utils/samplerate_meter.h"
@@ -229,6 +230,7 @@ namespace satdump
             registerNodeSimple<ndsp::FloatToComplexBlock>(flowgraph, "Conv/Float To Complex");
             registerNodeSimple<ndsp::ComplexToImagBlock>(flowgraph, "Conv/Complex To Imag");
             registerNodeSimple<ndsp::ComplexToRealBlock>(flowgraph, "Conv/Complex To Real");
+            registerNodeSimple<ndsp::ComplexToMagBlock>(flowgraph, "Conv/Complex To Mag");
 
             eventBus->fire_event<RegisterNodesEvent>({flowgraph.node_internal_registry});
 
