@@ -94,7 +94,20 @@
                 "value": "",
                 "name": "Tracked DCS Addresses",
                 "description": "Only process DCS messages from the specified addresses (comma separated).\n\nExample: DE4CB498, DE4704BE"
+            },
+            "write_emwin_nws": {
+                "type": "bool",
+                "value": true,
+                "name": "Save EMWIN NWS image files",
+                "description": "Whether NWS advisories and weather charts should be saved"
+            },
+            "write_emwin_text": {
+                "type": "bool",
+                "value": false,
+                "name": "Save EMWIN text files",
+                "description": "EMWIN sends down a lot of raw text data including METAR reports, station readings, and written forecasts. These usually use up a lot of space because of their quantity, you can use this setting to toggle saving them."
             }
+
         },
         "work": {
             "baseband": {},

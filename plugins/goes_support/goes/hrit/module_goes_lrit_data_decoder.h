@@ -29,6 +29,10 @@ namespace goes
             bool write_unknown;
             bool write_lrit;
 
+            // EMWIN-specific
+            bool write_emwin_text;
+            bool write_emwin_nws;
+
             bool fill_missing;
             int max_fill_lines;
 
@@ -57,6 +61,7 @@ namespace goes
             std::map<std::string, SZ_com_t> rice_parameters_all;
 
             void initDCS();
+            void saveEMWINFile(std::string directory, std::string filename, char *buffer, size_t size);
             void processLRITFile(satdump::xrit::XRITFile &file);
             void saveLRITFile(satdump::xrit::XRITFile &file, std::string path);
 
