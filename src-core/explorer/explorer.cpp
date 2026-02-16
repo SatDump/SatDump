@@ -6,11 +6,14 @@
 #include "core/plugin.h"
 
 #include "core/style.h"
-#include "dsp/cyclo_test.h"
 #include "dsp/flowgraph/dsp_flowgraph_handler.h"
-#include "explorer/dsp/fm_test.h"
 #include "handlers/dataset/dataset_handler.h"
 #include "handlers/dummy_handler.h"
+#include "handlers/experimental/decoupled/rec_backend.h"
+#include "handlers/experimental/decoupled/rec_frontend.h"
+#include "handlers/experimental/decoupled/test/test_http.h"
+#include "handlers/experimental/decoupled/testremote.h"
+#include "handlers/experimental/decoupled/testremote_backend.h"
 #include "handlers/product/image_product_handler.h" // TODOREWORK CLEAN
 #include "handlers/projection/projection_handler.h"
 #include "handlers/vector/shapefile_handler.h"
@@ -20,8 +23,10 @@
 #include "imgui/imgui.h"
 
 // TODOREWORK
-#include "dsp/newrec.h"
-#include "dsp/waterfall_test.h"
+#include "handlers/experimental/dsp/cyclo_test.h"
+#include "handlers/experimental/dsp/fm_test.h"
+#include "handlers/experimental/dsp/newrec.h"
+#include "handlers/experimental/dsp/waterfall_test.h"
 
 #include "image/io.h"
 
@@ -249,6 +254,12 @@ namespace satdump
                 {
                     if (ImGui::MenuItem("Projection"))
                         addHandler(std::make_shared<handlers::ProjectionHandler>());
+
+                    if (ImGui::MenuItem("TestRemoteStuff"))
+                        addHandler(std::make_shared<handlers::TestRemoteHandlerHandler>(std::make_shared<handlers::TestHttpBackend>(std::make_shared<handlers::TestRemoteHandlerBackend>())));
+
+                    if (ImGui::MenuItem("TestRemoteRec"))
+                        addHandler(std::make_shared<handlers::RecFrontendHandler>(std::make_shared<handlers::TestHttpBackend>(std::make_shared<handlers::RecBackend>())));
 
                     if (ImGui::BeginMenu("Tools"))
                     { // TODOREWORK?
