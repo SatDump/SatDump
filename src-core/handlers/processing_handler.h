@@ -114,9 +114,6 @@ namespace satdump
                 auto fun = [this]() { process(); };
                 async_thread = std::thread(fun);
             }
-
-            static std::string getID();
-            static std::shared_ptr<Handler> getInstance();
         };
     } // namespace handlers
 } // namespace satdump

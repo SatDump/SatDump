@@ -112,14 +112,14 @@ namespace satdump
              * streams. You should not modify them.
              * @return The block's input BlockIOs.
              */
-            std::vector<BlockIO> get_inputs() { return inputs; }
+            virtual std::vector<BlockIO> get_inputs() { return inputs; }
 
             /**
              * @brief Get the block's output configurations and
              * streams. You should not modify them.
              * @return The block's output BlockIOs.
              */
-            std::vector<BlockIO> get_outputs() { return outputs; }
+            virtual std::vector<BlockIO> get_outputs() { return outputs; }
 
             /**
              * @brief Link an input to an output stream of some sort.
@@ -128,7 +128,7 @@ namespace satdump
              * @param f input BlockIO to link to an input
              * @param i index of the input (probably quite often 0)
              */
-            void set_input(BlockIO f, int i)
+            virtual void set_input(BlockIO f, int i)
             {
                 if (i >= (int)inputs.size())
                     throw satdump_exception("Input index " + std::to_string(i) + " does not exist for " + d_id + "!");
@@ -144,7 +144,7 @@ namespace satdump
              * @param nbuf of buffers to setup in the output
              * @return BlockIO struct of the output
              */
-            BlockIO get_output(int i, int nbuf)
+            virtual BlockIO get_output(int i, int nbuf)
             {
                 if (i >= (int)outputs.size())
                     throw satdump_exception("Ouput index " + std::to_string(i) + " does not exist for " + d_id + "!");
