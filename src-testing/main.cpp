@@ -10,179 +10,23 @@
  * Don't judge the code you might see in there! :)
  **********************************************************************/
 
+#include "handlers/experimental/decoupled/rec_backend.h"
+#include "handlers/experimental/decoupled/rec_frontend.h"
+#include "handlers/experimental/decoupled/test/test_http.h"
 #include "init.h"
 #include "logger.h"
-
-#include "procfile.h"
-#include "product_info.h"
-#include "type.h"
-#include "utils/file/file_iterators.h"
-#include "utils/file/folder_file_iterators.h"
-#include "utils/file/zip_file_iterators.h"
-#include "utils/http.h"
-#include "utils/time.h"
 #include <cmath>
-#include <cstdint>
-#include <filesystem>
-#include <functional>
-#include <memory>
-#include <string>
-#include <vector>
 
 int main(int argc, char *argv[])
 {
     initLogger();
-
-    std::string f;
-    satdump::perform_http_request("https://hpiers.obspm.fr/iers/bul/bulc/ntp/leap-seconds.list", f);
-
-    std::istringstream ls_stream(f);
-    std::string l;
-    while (std::getline(ls_stream, l))
-    {
-        if (l.size() > 0 && l[0] == '#')
-            continue;
-        logger->trace(l);
-
-        std::vector<std::string> parts;
-        std::string p;
-        char lastc = ' ';
-        for (auto &c : l)
-        {
-            if (c == ' ' && lastc != ' ')
-            {
-                parts.push_back(p);
-                p.clear();
-            }
-
-            p.push_back(c);
-            lastc = c;
-        }
-        parts.push_back(p);
-
-        // for (auto &p : parts)
-        //     logger->info(p);
-
-        if (parts.size() == 6)
-        {
-            uint64_t tim = std::stoull(parts[0]) - 2208988800;
-            int leaps = std::stod(parts[1]);
-
-            logger->info("%s : %d", satdump::timestamp_to_string(tim).c_str(), leaps);
-        }
-    }
-
-#if 0
-    logger->set_level(slog::LOG_OFF);
+    logger->set_level(slog::LOG_ERROR);
     satdump::initSatdump();
     completeLoggerInit();
     logger->set_level(slog::LOG_TRACE);
 
-#if 1
-    std::string path = argv[1];
+    auto h = std::make_shared<satdump::handlers::RecFrontendHandler>(std::make_shared<satdump::handlers::TestHttpBackend>(std::make_shared<satdump::handlers::RecBackend>()));
 
-    {
-        satdump::firstparty::FirstPartyProductInfo info;
-
-        bool is_zip = std::filesystem::path(path).extension() == ".zip";
-        bool is_file = std::filesystem::is_regular_file(path);
-
-        if (is_zip)
-        {
-            satdump::utils::ZipFilesIterator fit(path);
-            std::shared_ptr<satdump::utils::FilesIteratorItem> f;
-
-            while (fit.getNext(f))
-            {
-                if (f)
-                {
-                    info = satdump::firstparty::parseFirstPartyInfo(f);
-                    if (info.type != satdump::firstparty::PRODUCT_NONE)
-                        break;
-                }
-            }
-        }
-        else if (is_file)
-        {
-            std::shared_ptr<satdump::utils::FilesIteratorItem> f = std::make_shared<satdump::utils::FolderFileIteratorItem>(path);
-            info = satdump::firstparty::parseFirstPartyInfo(f);
-        }
-        else
-        {
-            logger->error("Not a file or ZIP!");
-        }
-
-        logger->info(info.name);
-
-        if (info.group_id.size() || is_zip)
-        {
-            logger->trace("Group : " + info.group_id);
-
-            std::shared_ptr<satdump::utils::FilesIterator> fit;
-            if (is_zip)
-                fit = std::make_shared<satdump::utils::ZipFilesIterator>(path);
-            else
-                fit = std::make_shared<satdump::utils::FolderFilesIterator>(std::filesystem::path(path).parent_path());
-
-            std::shared_ptr<satdump::utils::FilesIteratorItem> f;
-            while (fit->getNext(f))
-            {
-                if (!f)
-                    continue;
-
-                if (info.group_id == satdump::firstparty::parseFirstPartyInfo(f).group_id)
-                {
-                    logger->trace(" - " + f->name);
-                }
-            }
-        }
-        else
-        {
-            std::shared_ptr<satdump::utils::FilesIteratorItem> f = std::make_shared<satdump::utils::FolderFileIteratorItem>(path);
-            logger->trace(" - " + f->name);
-        }
-    }
-
-#else
-#if 1
-    std::unique_ptr<satdump::utils::FilesIterator> fit = std::make_unique<satdump::utils::FolderFilesIterator>(argv[1]);
-#else
-    std::unique_ptr<satdump::utils::FilesIterator> fit = std::make_unique<satdump::utils::ZipFilesIterator>(
-        "/tmp/satdump_official/W_XX-EUMETSAT-Darmstadt,IMG+SAT,MTI1+FCI-1C-RRAD-FDHSI-FD--x-x---x_C_EUMT_20250724120349_IDPFI_OPE_20250724120007_20250724120935_N__O_0073_0000.zip");
-#endif
-
-    std::unique_ptr<satdump::utils::FilesIteratorItem> f;
-
-    while (fit->getNext(f))
-    {
-        if (f)
-        {
-            std::string identified;
-            for (auto &p : satdump::official::getRegisteredProducts())
-            {
-                auto finfo = p.testFile(f);
-                if (finfo.type != satdump::official::PRODUCT_NONE)
-                    identified = (finfo.group_id.size() ? finfo.group_id + " | " : std::string()) + finfo.name; //+ " " = f->name);
-            }
-
-            if (identified.size())
-                logger->info(f->name + " =======> " + identified);
-            else
-                logger->error(f->name);
-
-#if 0
-            uint32_t test1, test2, test3;
-            if (sscanf(f->name.c_str(), "W_XX-EUMETSAT-Darmstadt,IMG+SAT,MTI%*d+FCI-1C-RRAD-FDHSI-FD--CHK-BODY---NC4E_C_EUMT_%14u_IDPFI_OPE_%14u_%14u_N__O_%*d_%*d.nc", &test1, &test2, &test3) == 3)
-            {
-                logger->trace(f->name + " MTG FCI Images");
-            }
-            else
-            {
-                logger->info(f->name);
-            }
-#endif
-        }
-    }
-#endif
-#endif
+    while (1)
+        ;
 }
