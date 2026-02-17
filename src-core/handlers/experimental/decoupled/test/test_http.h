@@ -66,7 +66,7 @@ namespace satdump
                 nng_http_req_get_data(msg, &ptr, &ptrl);
                 //  logger->info("Got : %s", (char *)ptr);
 
-                nlohmann::json output;
+                nlohmann::ordered_json output;
 
                 output = tthis->bkd2->get_cfg(std::string((char *)ptr, ptrl));
 
@@ -93,7 +93,7 @@ namespace satdump
                 // logger->info("Got : %s", (char *)ptr);
 
                 nlohmann::json input;
-                nlohmann::json output;
+                nlohmann::ordered_json output;
 
                 try
                 {

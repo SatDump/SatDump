@@ -33,18 +33,22 @@ namespace satdump
             bool thread_should_run = true;
             std::thread rx_th;
 
+            const std::string address = "0.0.0.0:8080";
+            // const std::string address = "192.168.10.96:8080";
+            const std::string ws_add = "ws://" + address + "/ws";
+            const std::string ht_add = "http://" + address + "";
+
         public:
             TestHttpClientBackend()
             {
                 {
-
                     int rv = 0;
                     if (rv = nng_bus0_open(&socket); rv != 0)
                     {
                         printf("pair open error\n");
                     }
 
-                    if (rv = nng_dial(socket, "ws://0.0.0.0:8080/ws", &dialer, 0); rv != 0)
+                    if (rv = nng_dial(socket, ws_add.c_str(), &dialer, 0); rv != 0)
                     {
                         printf("server listen error\n");
                     }
@@ -87,14 +91,14 @@ namespace satdump
             nlohmann::ordered_json _get_cfg_list()
             {
                 std::string res;
-                perform_http_request("http://0.0.0.0:8080/list", res);
+                perform_http_request(ht_add + "/list", res);
                 return nlohmann::ordered_json::parse(res);
             }
 
             nlohmann::ordered_json _get_cfg(std::string key)
             {
                 std::string res;
-                perform_http_request_post("http://0.0.0.0:8080/get", res, key);
+                perform_http_request_post(ht_add + "/get", res, key);
                 return nlohmann::ordered_json::parse(res);
             }
 
@@ -103,7 +107,7 @@ namespace satdump
                 std::string res;
                 nlohmann::json vs;
                 vs[key] = v;
-                perform_http_request_post("http://0.0.0.0:8080/set", res, vs.dump());
+                perform_http_request_post(ht_add + "/set", res, vs.dump());
                 return nlohmann::ordered_json::parse(res)["res"];
             }
         };
