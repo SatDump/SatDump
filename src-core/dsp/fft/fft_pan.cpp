@@ -115,7 +115,7 @@ namespace satdump
                     for (int i = 0; i < fft_size; i++)
                         output_fft_buff[i] = output_fft_buff[i] * (1.0f - avg_rate) + fft_output_buffer[i] * avg_rate;
 
-                    on_fft(output_fft_buff);
+                    on_fft(output_fft_buff, fft_size);
                 }
 
                 if (pos_in_buffer < in_reshape_buffer)

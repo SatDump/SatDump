@@ -6,6 +6,7 @@
 #include "dsp/fft/fft_pan.h"
 #include "dsp/path/splitter.h"
 #include "nlohmann/json.hpp"
+#include <cstddef>
 #include <cstdint>
 #include <string>
 
@@ -28,6 +29,9 @@ namespace satdump
 
             std::shared_ptr<ndsp::FFTPanBlock> fftp;
 
+            int fft_size = 65536;
+            int fft_rate = 30;
+
         public:
             RecBackend()
             {
@@ -37,7 +41,7 @@ namespace satdump
 
                 fftp = std::make_shared<ndsp::FFTPanBlock>();
                 fftp->set_input(splitter->add_output("main_fft"), 0);
-                fftp->on_fft = [this](float *p) { push_stream_data("fft", (uint8_t *)p, 65536 * sizeof(float)); };
+                fftp->on_fft = [this](float *p, size_t s) { push_stream_data("fft", (uint8_t *)p, s * sizeof(float)); };
             }
             ~RecBackend() {}
 
@@ -46,8 +50,7 @@ namespace satdump
                 if (!dev_blk || is_started)
                     return;
 
-                fftp->set_fft_settings(65536, dev_blk->getStreamSamplerate(0, false), 30);
-                fftp->avg_num = 1;
+                fftp->set_fft_settings(fft_size, dev_blk->getStreamSamplerate(0, false), fft_rate);
 
                 splitter->link(dev_blk.get(), 0, 0, 100); //        fftp->inputs[0] = dev->outputs[0];
 
@@ -73,14 +76,19 @@ namespace satdump
             nlohmann::ordered_json _get_cfg_list()
             {
                 nlohmann::ordered_json p;
+
                 p["available_devices"]["type"] = "json";
                 p["current_device"]["type"] = "json";
+
                 if (dev_blk)
                 {
                     p["dev/list"]["type"] = "json";
                     p["dev/cfg"]["type"] = "json";
                 }
+
                 p["started"]["type"] = "bool";
+
+                p["fft/avg_num"]["type"] = "float";
                 return p;
             }
 
@@ -96,13 +104,19 @@ namespace satdump
                     return dev_blk->get_cfg();
                 else if (key == "started")
                     return is_started;
+                else if (key == "fft/avg_num")
+                    return fftp->avg_num;
+                else if (key == "fft/size")
+                    return fft_size;
+                else if (key == "fft/rate")
+                    return fft_rate;
                 else
-                    throw satdump_exception("Oops");
+                    return nlohmann::json();
             }
 
             cfg_res_t _set_cfg(std::string key, nlohmann::ordered_json v)
             {
-                if (key == "current_device")
+                if (!is_started && key == "current_device")
                 {
                     bool found = false;
                     for (auto &d : available_devices)
@@ -123,6 +137,34 @@ namespace satdump
                         start();
                     else if (is_started && !val)
                         stop();
+                }
+                else if (key == "fft/avg_num")
+                {
+                    fftp->avg_num = v;
+                }
+                else if (key == "fft/size")
+                {
+                    fft_size = v;
+
+                    if (fft_size < 8)
+                        fft_size = 8;
+                    if (fft_size > 65536 * 8)
+                        fft_size = 65536 * 8;
+
+                    if (is_started)
+                        fftp->set_fft_settings(fft_size, dev_blk->getStreamSamplerate(0, false), fft_rate);
+                }
+                else if (key == "fft/rate")
+                {
+                    fft_rate = v;
+
+                    if (fft_rate < 1)
+                        fft_rate = 1;
+                    if (fft_rate > 100e3)
+                        fft_rate = 100e3;
+
+                    if (is_started)
+                        fftp->set_fft_settings(fft_size, dev_blk->getStreamSamplerate(0, false), fft_rate);
                 }
                 else
                     throw satdump_exception("Oops");

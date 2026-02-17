@@ -12,6 +12,7 @@
 #include "handlers/experimental/decoupled/rec_backend.h"
 #include "handlers/experimental/decoupled/rec_frontend.h"
 #include "handlers/experimental/decoupled/test/test_http.h"
+#include "handlers/experimental/decoupled/test/test_http_client.h"
 #include "handlers/experimental/decoupled/testremote.h"
 #include "handlers/experimental/decoupled/testremote_backend.h"
 #include "handlers/product/image_product_handler.h" // TODOREWORK CLEAN
@@ -260,6 +261,9 @@ namespace satdump
 
                     if (ImGui::MenuItem("TestRemoteRec"))
                         addHandler(std::make_shared<handlers::RecFrontendHandler>(std::make_shared<handlers::TestHttpBackend>(std::make_shared<handlers::RecBackend>())));
+
+                    if (ImGui::MenuItem("TestRemoteClient"))
+                        addHandler(std::make_shared<handlers::RecFrontendHandler>(std::make_shared<handlers::TestHttpClientBackend>()));
 
                     if (ImGui::BeginMenu("Tools"))
                     { // TODOREWORK?

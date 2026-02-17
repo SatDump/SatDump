@@ -46,7 +46,7 @@ namespace satdump
             waterfall_plot->set_rate(30, 20);
             waterfall_plot->set_palette(colormaps::loadMap(resources::getResourcePath("waterfall/classic.json")));
 
-            fftp->on_fft = [this](float *p) { waterfall_plot->push_fft(p); };
+            fftp->on_fft = [this](float *p, size_t sz) { waterfall_plot->push_fft(p); };
 
             // TMP
             const_disp = std::make_shared<ndsp::ConstellationDisplayBlock>();

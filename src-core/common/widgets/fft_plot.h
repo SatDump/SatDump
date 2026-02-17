@@ -1,8 +1,8 @@
 #pragma once
 
+#include "image/image.h"
 #include "imgui/imgui.h"
 #include <mutex>
-#include "image/image.h"
 #include <string>
 
 namespace widgets
@@ -38,6 +38,13 @@ namespace widgets
             work_mutex.unlock();
         }
 
+        void set_ptr(float *v)
+        {
+            work_mutex.lock();
+            values = v;
+            work_mutex.unlock();
+        }
+
         std::vector<std::pair<std::string, double>> vfo_freqs;
     };
-}
+} // namespace widgets

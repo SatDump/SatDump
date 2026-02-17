@@ -42,7 +42,7 @@ namespace satdump
             ~FFTPanBlock();
             void set_fft_settings(int size, uint64_t samplerate, int rate = 60);
 
-            std::function<void(float *)> on_fft = [](float *) {};
+            std::function<void(float *, size_t)> on_fft = [](float *, size_t size) {};
 
             float *output_fft_buff;
 

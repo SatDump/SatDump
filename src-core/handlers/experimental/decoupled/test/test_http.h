@@ -6,6 +6,7 @@
 #include "nlohmann/json.hpp"
 #include <cstddef>
 #include <cstdint>
+#include <exception>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -63,11 +64,11 @@ namespace satdump
                 void *ptr;
                 size_t ptrl;
                 nng_http_req_get_data(msg, &ptr, &ptrl);
-                logger->info("Got : %s", (char *)ptr);
+                //  logger->info("Got : %s", (char *)ptr);
 
                 nlohmann::json output;
 
-                output = tthis->bkd2->get_cfg(std::string((char *)ptr));
+                output = tthis->bkd2->get_cfg(std::string((char *)ptr, ptrl));
 
                 std::string jsonstr = output.dump();
 
@@ -89,12 +90,22 @@ namespace satdump
                 void *ptr;
                 size_t ptrl;
                 nng_http_req_get_data(msg, &ptr, &ptrl);
-                logger->info("Got : %s", (char *)ptr);
+                // logger->info("Got : %s", (char *)ptr);
 
-                nlohmann::json input = nlohmann::json::parse(std::string((char *)ptr));
+                nlohmann::json input;
                 nlohmann::json output;
 
-                output["res"] = tthis->bkd2->set_cfg(input);
+                try
+                {
+                    input = nlohmann::json::parse(std::string((char *)ptr, ptrl));
+                    output["res"] = tthis->bkd2->set_cfg(input);
+                }
+                catch (std::exception &e)
+                {
+                    output["res"] = 2;
+                    output["err"] = e.what();
+                    output["input"] = std::string((char *)ptr, ptrl);
+                }
 
                 std::string jsonstr = output.dump();
 
@@ -112,13 +123,18 @@ namespace satdump
                 bkd2->set_stream_rx_handler(
                     [this](std::string v, uint8_t *dat, size_t sz)
                     {
-                        logger->info("Stream " + v);
+                        // logger->info("Stream " + v);
                         push_stream_data(v, dat, sz);
+
+                        uint32_t fftsz = sz;
 
                         std::vector<uint8_t> send_buf;
                         send_buf.push_back(v.size());
-                        send_buf.insert(send_buf.end(), v.begin(), v.end());
-                        send_buf.insert(send_buf.end(), &sz, &sz + sizeof(size_t));
+                        send_buf.insert(send_buf.end(), v.begin(), v.begin() + v.size());
+                        send_buf.push_back((fftsz >> 24) & 0xFF);
+                        send_buf.push_back((fftsz >> 16) & 0xFF);
+                        send_buf.push_back((fftsz >> 8) & 0xFF);
+                        send_buf.push_back((fftsz >> 0) & 0xFF);
                         send_buf.insert(send_buf.end(), dat, dat + sz);
                         nng_send(socket, send_buf.data(), send_buf.size(), NNG_FLAG_NONBLOCK);
                     });
