@@ -1,13 +1,11 @@
 #include "module_goes_lrit_data_decoder.h"
 #include "core/plugin.h"
 #include "imgui/imgui.h"
-#include "imgui/imgui_image.h"
 #include "logger.h"
 #include "lrit_header.h"
 #include "xrit/processor/xrit_channel_processor_render.h"
 #include "xrit/transport/xrit_demux.h"
 #include <filesystem>
-#include <fstream>
 
 namespace goes
 {
@@ -21,6 +19,8 @@ namespace goes
             fill_missing = parameters.contains("fill_missing") ? parameters["fill_missing"].get<bool>() : false;
             parse_dcs = parameters.contains("parse_dcs") ? parameters["parse_dcs"].get<bool>() : false;
             write_lrit = parameters.contains("write_lrit") ? parameters["write_lrit"].get<bool>() : false;
+            write_emwin_text = parameters.contains("write_emwin_text") ? parameters["write_emwin_text"].get<bool>() : false;
+            write_emwin_nws = parameters.contains("write_emwin_nws") ? parameters["write_emwin_nws"].get<bool>() : true;
 
             if (parse_dcs && parameters.contains("tracked_addresses") && parameters["tracked_addresses"].is_string())
             {
