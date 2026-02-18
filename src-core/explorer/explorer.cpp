@@ -256,19 +256,15 @@ namespace satdump
                     if (ImGui::MenuItem("Projection"))
                         addHandler(std::make_shared<handlers::ProjectionHandler>());
 
-                    if (ImGui::MenuItem("TestRemoteStuff"))
-                        addHandler(std::make_shared<handlers::TestRemoteHandlerHandler>(std::make_shared<handlers::TestHttpBackend>(std::make_shared<handlers::TestRemoteHandlerBackend>())));
-
-                    if (ImGui::MenuItem("TestRemoteRec"))
-                        addHandler(std::make_shared<handlers::RecFrontendHandler>(std::make_shared<handlers::TestHttpBackend>(std::make_shared<handlers::RecBackend>())));
-
-                    if (ImGui::MenuItem("TestRemoteClient"))
-                        addHandler(std::make_shared<handlers::RecFrontendHandler>(std::make_shared<handlers::TestHttpClientBackend>()));
-
                     if (ImGui::BeginMenu("Tools"))
                     { // TODOREWORK?
                         if (ImGui::MenuItem("DSP Flowgraph"))
                             addHandler(std::make_shared<handlers::DSPFlowGraphHandler>());
+                        ImGui::EndMenu();
+                    }
+
+                    if (ImGui::BeginMenu("Experimental"))
+                    { // TODOREWORK?
                         if (ImGui::MenuItem("Waterfall TEST"))
                             addHandler(std::make_shared<handlers::WaterfallTestHandler>());
                         if (ImGui::MenuItem("NewRec TEST"))
@@ -277,6 +273,12 @@ namespace satdump
                             addHandler(std::make_shared<handlers::CycloHelperHandler>());
                         if (ImGui::MenuItem("FM Test"))
                             addHandler(std::make_shared<handlers::FMTestHandler>());
+                        if (ImGui::MenuItem("TestRemoteStuff"))
+                            addHandler(std::make_shared<handlers::TestRemoteHandlerHandler>(std::make_shared<handlers::TestHttpBackend>(std::make_shared<handlers::TestRemoteHandlerBackend>())));
+                        if (ImGui::MenuItem("TestRemoteRec"))
+                            addHandler(std::make_shared<handlers::RecFrontendHandler>(std::make_shared<handlers::TestHttpBackend>(std::make_shared<handlers::RecBackend>())));
+                        if (ImGui::MenuItem("TestRemoteClient"))
+                            addHandler(std::make_shared<handlers::RecFrontendHandler>(std::make_shared<handlers::TestHttpClientBackend>()));
                         ImGui::EndMenu();
                     }
 
