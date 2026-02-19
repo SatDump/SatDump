@@ -9,6 +9,7 @@
 #include "dsp/conv/complex_to_float.h"
 #include "dsp/conv/complex_to_ifloat.h"
 #include "dsp/conv/complex_to_imag.h"
+#include "dsp/conv/complex_to_mag.h"
 #include "dsp/conv/complex_to_real.h"
 #include "dsp/conv/float_to_char.h"
 #include "dsp/conv/float_to_complex.h"
@@ -21,6 +22,7 @@
 #include "dsp/filter/rrc.h"
 #include "dsp/flowgraph/dsp_flowgraph_handler.h"
 #include "dsp/flowgraph/flowgraph.h"
+#include "dsp/hier/psk_demod.h"
 #include "dsp/io/file_sink.h"
 #include "dsp/io/file_source.h"
 #include "dsp/io/iq_sink.h"
@@ -32,7 +34,6 @@
 #include "dsp/resampling/rational_resampler.h"
 #include "dsp/utils/add.h"
 #include "dsp/utils/blanker.h"
-#include "dsp/conv/complex_to_mag.h"
 #include "dsp/utils/correct_iq.h"
 #include "dsp/utils/multiply.h"
 #include "dsp/utils/samplerate_meter.h"
@@ -231,6 +232,8 @@ namespace satdump
             registerNodeSimple<ndsp::ComplexToImagBlock>(flowgraph, "Conv/Complex To Imag");
             registerNodeSimple<ndsp::ComplexToRealBlock>(flowgraph, "Conv/Complex To Real");
             registerNodeSimple<ndsp::ComplexToMagBlock>(flowgraph, "Conv/Complex To Mag");
+
+            registerNodeSimple<ndsp::PSKDemodHierBlock>(flowgraph, "Modem/PSK Demod");
 
             eventBus->fire_event<RegisterNodesEvent>({flowgraph.node_internal_registry});
 

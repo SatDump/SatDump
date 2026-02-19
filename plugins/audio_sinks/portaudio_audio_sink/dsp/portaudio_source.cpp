@@ -34,9 +34,9 @@ namespace satdump
             Block::start();
         }
 
-        void PortAudioSourceBlock::stop(bool stop_now)
+        void PortAudioSourceBlock::stop(bool stop_now, bool force)
         {
-            Block::stop(stop_now);
+            Block::stop(stop_now, force);
 
             if (stream != nullptr)
             {

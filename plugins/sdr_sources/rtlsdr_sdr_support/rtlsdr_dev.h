@@ -183,7 +183,7 @@ namespace satdump
             }
 
             void start();
-            void stop(bool stop_now = false);
+            void stop(bool stop_now = false, bool force=false);
 
         public:
             static std::vector<DeviceInfo> listDevs();

@@ -89,7 +89,7 @@ namespace satdump
             is_started = true;
         }
 
-        void HydraSDRDevBlock::stop(bool stop_now)
+        void HydraSDRDevBlock::stop(bool stop_now, bool force)
         {
             if (stop_now && is_started) // TODOREWORK Split wait & stop?
             {

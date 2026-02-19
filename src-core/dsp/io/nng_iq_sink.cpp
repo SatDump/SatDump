@@ -24,9 +24,9 @@ namespace satdump
             Block::start();
         }
 
-        void NNGIQSinkBlock::stop(bool stop_now)
+        void NNGIQSinkBlock::stop(bool stop_now, bool force)
         {
-            Block::stop(stop_now);
+            Block::stop(stop_now, force);
 
             nng_listener_close(listener);
         }

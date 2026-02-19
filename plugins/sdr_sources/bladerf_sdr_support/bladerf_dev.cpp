@@ -217,7 +217,7 @@ namespace satdump
             is_started = true;
         }
 
-        void BladeRFDevBlock::stop(bool stop_now)
+        void BladeRFDevBlock::stop(bool stop_now, bool force)
         {
             if (is_started) // TODOREWORK Split wait & stop?
             {

@@ -43,9 +43,9 @@ namespace satdump
             Block::start();
         }
 
-        void IQSinkBlock::stop(bool stop_now)
+        void IQSinkBlock::stop(bool stop_now, bool force)
         {
-            Block::stop(stop_now);
+            Block::stop(stop_now, force);
 
             if (file_stream != nullptr)
             {

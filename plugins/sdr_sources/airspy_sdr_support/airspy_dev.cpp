@@ -89,7 +89,7 @@ namespace satdump
             is_started = true;
         }
 
-        void AirspyDevBlock::stop(bool stop_now)
+        void AirspyDevBlock::stop(bool stop_now, bool force)
         {
             if (stop_now && is_started) // TODOREWORK Split wait & stop?
             {

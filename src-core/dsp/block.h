@@ -361,11 +361,20 @@ namespace satdump
              * loop it should exit & joins the thread to wait.
              * TODOREWORK, potentially allow sending the terminator
              * as well to force-quit.
+             * @param stop_now the normal stop just marks the block
+             * for stopping when convenient, when the work() function
+             * exists by itself. Setting this to true will tell the block
+             * to stop now if it can send a terminator.
+             * @param force this will exit work() as soon as
+             * possible, leaving it in an unknown state. Do not
+             * use until it is for live-reconfiguration!
              */
-            virtual void stop(bool stop_now = false)
+            virtual void stop(bool stop_now = false, bool force = false)
             { // TODOREWORK allow sending terminator in this function?
                 if (stop_now)
                     work_should_exit = true;
+                if (force)
+                    blk_should_run = false;
 
                 blk_th_mtx.lock();
                 if (blk_th.joinable())
