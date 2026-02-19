@@ -20,6 +20,7 @@
 #include "dsp/conv/uchar_to_float.h"
 #include "dsp/device/dev.h"
 #include "dsp/fft/fft_pan.h"
+#include "dsp/filter/lpf.h"
 #include "dsp/filter/rrc.h"
 #include "dsp/flowgraph/dsp_flowgraph_handler.h"
 #include "dsp/flowgraph/flowgraph.h"
@@ -179,6 +180,9 @@ namespace satdump
             registerNodeSimple<ndsp::RationalResamplerBlock<float>>(flowgraph, "Resampling/Rational Resampler FF");
 
             registerNodeSimple<ndsp::RRC_FIRBlock<complex_t>>(flowgraph, "Filter/RRC FIR CC");
+
+            // registerNodeSimple<ndsp::LPF_FIRBlock<complex_t>>(flowgraph, "Filter/LPF FIR CC");
+            registerNodeSimple<ndsp::LPF_FIRBlock<float>>(flowgraph, "Filter/LPF FIR FF");
 
             registerNodeSimple<ndsp::CyclostationaryAnalysis>(flowgraph, "Utils/Cyclostationary Analysis");
 
