@@ -100,7 +100,7 @@ void init(struct android_app *app)
         logger->add_sink(loading_screen_sink);
 
         satdump::tle_do_update_on_init = false;
-        satdump::initSatdump();
+        satdump::initSatDump();
         satdump::initMainUI();
 
         // Shut down loading screen
@@ -300,6 +300,8 @@ void android_main(struct android_app *app)
         // Initiate a new frame
         tick();
     }
+
+    satdump::exitSatDump();
 }
 
 // Unfortunately, there is no way to show the on-screen input from native code.

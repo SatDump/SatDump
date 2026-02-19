@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
     // We don't wanna spam with init this time around
     initLogger();
     logger->set_level(slog::LOG_OFF);
-    satdump::initSatdump();
+    satdump::initSatDump();
     completeLoggerInit();
     logger->set_level(slog::LOG_TRACE);
 
@@ -224,4 +224,6 @@ int main(int argc, char *argv[])
     benchmarkBlock(complex_t, complex_t, dsp::SmartResamplerBlock<complex_t>, 10, "Smart Resampler, Dec 100", 100.0, /**/ 1, 100);
     benchmarkBlock(complex_t, complex_t, dsp::RationalResamplerBlock<complex_t>, 10, "Polyphase Resampler, Dec 10", 10.0, /**/ 1, 10);
     benchmarkBlock(complex_t, complex_t, dsp::RationalResamplerBlock<complex_t>, 10, "Polyphase Resampler, Dec 100", 100.0, /**/ 1, 100);
+
+    satdump::exitSatDump();
 }

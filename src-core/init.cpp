@@ -42,7 +42,7 @@ namespace satdump
     SATDUMP_DLL std::shared_ptr<TleDBHandler> db_tle;
     SATDUMP_DLL std::shared_ptr<IersDBHandler> db_iers;
 
-    void initSatdump(bool is_gui)
+    void initSatDump(bool is_gui)
     {
         auto lvl = logger->get_level();
         logger->set_level(slog::LOG_INFO);
@@ -178,5 +178,11 @@ namespace satdump
 
         // Start task scheduler
         taskScheduler->start_thread();
+    }
+
+    void exitSatDump()
+    {
+        logger->info("Exiting SatDump! Bye!");
+        taskScheduler.reset();
     }
 } // namespace satdump

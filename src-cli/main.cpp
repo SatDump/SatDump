@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     // Init SatDump, silent or verbose as requested
     if (!verbose)
         logger->set_level(slog::LOG_WARN);
-    satdump::initSatdump();
+    satdump::initSatDump();
     completeLoggerInit();
     if (!verbose)
         logger->set_level(slog::LOG_TRACE);
@@ -29,5 +29,7 @@ int main(int argc, char *argv[])
     if (v != 0)
         return v;
     h.run();
+
+    satdump::exitSatDump();
     return 0;
 }

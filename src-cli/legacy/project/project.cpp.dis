@@ -27,7 +27,7 @@ int main_project(int argc, char *argv[])
 {
     // We don't wanna spam with init this time around
     logger->set_level(slog::LOG_ERROR);
-    satdump::initSatdump();
+    satdump::initSatDump();
     completeLoggerInit();
     logger->set_level(slog::LOG_TRACE);
 
@@ -144,5 +144,6 @@ int main_project(int argc, char *argv[])
 
     image::save_img(projected_image_result, target_cfg["file"]);
 
+    satdump::exitSatDump();
     return 0;
 }

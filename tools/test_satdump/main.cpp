@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
         final_report["standalone_offline"] = run_standalone_tests_offline(config, input_folder, output_folder + "/standalone_offline");
 
     initLogger();
-    satdump::initSatdump();
+    satdump::initSatDump();
     completeLoggerInit();
 
     // Single-Instance tests
@@ -147,4 +147,6 @@ int main(int argc, char *argv[])
     std::ofstream output_file(std::string(argv[3]) + "/tests_results.json");
     output_file << final_report.dump(4);
     output_file.close();
+
+    satdump::exitSatDump();
 }

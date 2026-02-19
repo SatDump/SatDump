@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
     // We don't wanna spam with init this time around
     logger->set_level(slog::LOG_OFF);
     satdump::tle_do_update_on_init = false;
-    satdump::initSatdump();
+    satdump::initSatDump();
     completeLoggerInit();
     logger->set_level(slog::LOG_TRACE);
 
@@ -82,5 +82,7 @@ int main(int argc, char *argv[])
     while (1)
         tcp_server->wait_client();
     //  std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    satdump::exitSatDump();
     return 0;
 }

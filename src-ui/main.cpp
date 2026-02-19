@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
     if (!verbose)
         logger->set_level(slog::LOG_WARN);
     satdump::tle_do_update_on_init = false;
-    satdump::initSatdump(true);
+    satdump::initSatDump(true);
     if (!verbose)
         logger->set_level(slog::LOG_TRACE);
 
@@ -300,6 +300,7 @@ int main(int argc, char *argv[])
     }
 
     logger->info("Exiting!");
+    satdump::exitSatDump();
 
 #ifdef __APPLE__
     exit(0);
