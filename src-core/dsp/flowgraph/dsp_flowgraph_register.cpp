@@ -10,6 +10,7 @@
 #include "dsp/conv/complex_to_ifloat.h"
 #include "dsp/conv/complex_to_imag.h"
 #include "dsp/conv/complex_to_mag.h"
+#include "dsp/conv/complex_to_mag_squared.h"
 #include "dsp/conv/complex_to_real.h"
 #include "dsp/conv/float_to_char.h"
 #include "dsp/conv/float_to_complex.h"
@@ -35,6 +36,7 @@
 #include "dsp/utils/add.h"
 #include "dsp/utils/blanker.h"
 #include "dsp/utils/correct_iq.h"
+#include "dsp/utils/exponentiate.h"
 #include "dsp/utils/multiply.h"
 #include "dsp/utils/samplerate_meter.h"
 #include "dsp/utils/subtract.h"
@@ -199,6 +201,8 @@ namespace satdump
             registerNodeSimple<ndsp::BlankerBlock<complex_t>>(flowgraph, "Utils/Blanker CC");
             registerNodeSimple<ndsp::BlankerBlock<float>>(flowgraph, "Utils/Blanker FF");
 
+            registerNodeSimple<ndsp::ExponentiateBlock>(flowgraph, "Utils/Exponentiate CC");
+
             registerNodeSimple<ndsp::NNGIQSinkBlock>(flowgraph, "IO/NNG IQ Sink");
 
             registerNodeSimple<ndsp::WaveformBlock<float>>(flowgraph, "IO/Waveform F");
@@ -232,6 +236,7 @@ namespace satdump
             registerNodeSimple<ndsp::ComplexToImagBlock>(flowgraph, "Conv/Complex To Imag");
             registerNodeSimple<ndsp::ComplexToRealBlock>(flowgraph, "Conv/Complex To Real");
             registerNodeSimple<ndsp::ComplexToMagBlock>(flowgraph, "Conv/Complex To Mag");
+            registerNodeSimple<ndsp::ComplexToMagSquaredBlock>(flowgraph, "Conv/Complex To Mag²");
 
             registerNodeSimple<ndsp::PSKDemodHierBlock>(flowgraph, "Modem/PSK Demod");
 

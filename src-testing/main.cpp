@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 {
     initLogger();
     logger->set_level(slog::LOG_ERROR);
-    satdump::initSatdump();
+    satdump::initSatDump();
     completeLoggerInit();
     logger->set_level(slog::LOG_TRACE);
 
