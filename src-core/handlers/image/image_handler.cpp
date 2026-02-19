@@ -191,7 +191,13 @@ namespace satdump
                     std::string save_type = "png";
                     satdump_cfg.tryAssignValueFromSatDumpGeneral(save_type, "image_format");
                     std::string default_path = satdump_cfg.getValueFromSatDumpDirectories<std::string>("default_image_output_directory");
-                    std::string saved_at = save_image_dialog(getSaneName(), default_path, "Save Image", &getImage(), &save_type);
+                    std::string image_filename;
+                    if (satdump_cfg.getValueFromSatDumpDirectories<bool>("image_filename_sanitise")) {
+                        image_filename = getSaneName();
+                    } else {
+                        image_filename = image_name;
+                    }
+                    std::string saved_at = save_image_dialog(image_filename, default_path, "Save Image", &getImage(), &save_type);
                     if (saved_at == "")
                         logger->info("Save cancelled");
                     else
