@@ -207,9 +207,11 @@ namespace satdump
             for (char &name_char : product_name)
                 if ((name_char >= 'A' && name_char <= 'Z') || (name_char >= '-' && name_char <= '9'))
                     product_name_abbr += name_char;
-            std::replace(instrument_name_upper.begin(), instrument_name_upper.end(), ' ', '_');
-            std::replace(product_source_upper.begin(), product_source_upper.end(), ' ', '_');
-            std::replace(product_name_upper.begin(), product_name_upper.end(), ' ', '_');
+            if (satdump_cfg.getValueFromSatDumpDirectories<bool>("sanitise_image_filenames")) { 
+                std::replace(instrument_name_upper.begin(), instrument_name_upper.end(), ' ', '_');
+                std::replace(product_source_upper.begin(), product_source_upper.end(), ' ', '_');
+                std::replace(product_name_upper.begin(), product_name_upper.end(), ' ', '_');
+            }
 
             file_name = std::regex_replace(file_name, std::regex("\\$t"), std::to_string(timevalue));
             file_name = std::regex_replace(file_name, std::regex("\\$y"), std::to_string(timeReadable->tm_year + 1900));

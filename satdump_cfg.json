@@ -313,7 +313,7 @@
             "type": "bool",
             "value": true,
             "name": "Sanitise Image Filenames",
-            "description": "If enabled, image filenames will be sanitised. For example, spaces will be replaced with underscores."
+            "description": "If enabled, image filenames will be sanitised. This may affect other file types. Some characters (e.g. '/') will be replaced regardless of the state of this setting."
         },
         "image_filename_template": {
             "type": "labeled_options",
