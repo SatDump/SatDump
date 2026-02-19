@@ -309,11 +309,11 @@
             "name": "Default Proj Output Directory",
             "description": "Path to the default folder to open when saving a projection in the explorer."
         },
-        "sanitise_image_filenames": {
+        "replace_spaces_in_filenames": {
             "type": "bool",
             "value": true,
-            "name": "Sanitise Image Filenames",
-            "description": "If enabled, image filenames will be sanitised. This may affect other file types. Some characters (e.g. '/') will be replaced regardless of the state of this setting."
+            "name": "Replace Spaces",
+            "description": "If enabled, spaces will be replaced with underscores in image filenames."
         },
         "image_filename_template": {
             "type": "labeled_options",

@@ -191,13 +191,7 @@ namespace satdump
                     std::string save_type = "png";
                     satdump_cfg.tryAssignValueFromSatDumpGeneral(save_type, "image_format");
                     std::string default_path = satdump_cfg.getValueFromSatDumpDirectories<std::string>("default_image_output_directory");
-                    std::string image_filename;
-                    if (satdump_cfg.getValueFromSatDumpDirectories<bool>("sanitise_image_filenames")) {
-                        image_filename = getSaneName();
-                    } else {
-                        image_filename = image_name;
-                    }
-                    std::string saved_at = save_image_dialog(image_filename, default_path, "Save Image", &getImage(), &save_type);
+                    std::string saved_at = save_image_dialog(getSaneName(), default_path, "Save Image", &getImage(), &save_type);
                     if (saved_at == "")
                         logger->info("Save cancelled");
                     else
@@ -354,7 +348,9 @@ namespace satdump
         std::string ImageHandler::getSaneName()
         {
             std::string img_name = image_name;
-            replaceAllStr(img_name, " ", "_");
+            if (satdump_cfg.getValueFromSatDumpDirectories<bool>("replace_spaces_in_filenames")) {
+                replaceAllStr(img_name, " ", "_");
+            }
             replaceAllStr(img_name, "/", "_");
             replaceAllStr(img_name, "\\", "_");
             return img_name;
