@@ -192,7 +192,7 @@ namespace satdump
                     satdump_cfg.tryAssignValueFromSatDumpGeneral(save_type, "image_format");
                     std::string default_path = satdump_cfg.getValueFromSatDumpDirectories<std::string>("default_image_output_directory");
                     std::string image_filename;
-                    if (satdump_cfg.getValueFromSatDumpDirectories<bool>("image_filename_sanitise")) {
+                    if (satdump_cfg.getValueFromSatDumpDirectories<bool>("sanitise_image_filenames")) {
                         image_filename = getSaneName();
                     } else {
                         image_filename = image_name;

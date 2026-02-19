@@ -309,7 +309,7 @@
             "name": "Default Proj Output Directory",
             "description": "Path to the default folder to open when saving a projection in the explorer."
         },
-        "image_filename_sanitise": {
+        "sanitise_image_filenames": {
             "type": "bool",
             "value": true,
             "name": "Sanitise Image Filenames",
