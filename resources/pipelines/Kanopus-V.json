@@ -1,0 +1,31 @@
+{
+    "kanopus_v_qpsk": {
+        "name": "Kanopus-V QPSK",
+        "parameters": {
+            "hard_symbols": {
+                "type": "bool",
+                "value": false,
+                "name": "Hard Symbols"
+            }
+        },
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "psk_demod",
+                "parameters": {
+                    "constellation": "qpsk",
+                    "symbolrate": 61.44e6,
+                    "rrc_taps": 31,
+                    "rrc_alpha": 0.6,
+                    "pll_bw": 0.004
+                }
+            },
+            "frm": {
+                "module": "kanopusv_decoder"
+            },
+            "products": {
+                "module": "kanopusv_instruments"
+            }
+        }
+    }
+}

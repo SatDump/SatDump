@@ -284,6 +284,12 @@ if(PLUGIN_SEAWIFS OR PLUGINS_ALL)
   add_subdirectory(seawifs_support)
 endif()
 
+option(PLUGIN_KANOPUS "Enable the Kanopus support plugin" OFF)
+
+if(PLUGIN_KANOPUS OR PLUGINS_ALL)
+  add_subdirectory(kanopus_support)
+endif()
+
 option(PLUGIN_OMINOUS "Enable the Ominous support plugin" OFF)
 
 if(PLUGIN_OMINOUS)
