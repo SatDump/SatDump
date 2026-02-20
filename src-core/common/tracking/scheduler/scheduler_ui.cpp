@@ -379,6 +379,8 @@ namespace satdump
         upcoming_satellite_passes_mtx.unlock();
         if (set_engaged)
             setEngaged(autotrack_engaged, curr_time);
+
+        ImGui::Dummy({0, 0});
     }
 
     image::Image AutoTrackScheduler::getScheduleImage(int width, double curr_time)
