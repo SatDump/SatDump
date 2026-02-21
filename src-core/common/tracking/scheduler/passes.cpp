@@ -22,7 +22,18 @@ namespace satdump
 
         if (predict_is_geosynchronous(satellite_object_))
         {
-            logger->warn("NORAD #%d is GEO!");
+            logger->debug("NORAD #%d is GEO!", norad);
+
+            predict_position satellite_orbit2;
+            predict_observation observation_pos2;
+            predict_orbit(satellite_object_, &satellite_orbit2, predict_to_julian_double(current_time));
+            predict_observe_orbit(observer_station, &satellite_orbit2, &observation_pos2);
+            if (observation_pos2.elevation * RAD_TO_DEG > 0)
+            {
+                // Assume it is visible constantly
+                logger->debug("NORAD #%d is visible to the QTH", norad);
+                passes.push_back({norad, initial_time, initial_time + timespan, (float)(observation_pos2.elevation * RAD_TO_DEG)});
+            }
             return passes;
         }
 
