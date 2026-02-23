@@ -59,7 +59,9 @@ namespace bochum
     void handleBochumPkt(std::string cmd);
     void udpReceiveThread()
     {
-        const int internal_port = 10001;
+        // BOCR Broadcast is Port 10001
+        // Sat2View Re-Broadcast is Port 10088
+        const int internal_port = 10088;
 
 #if defined(_WIN32)
         WSADATA wsa;
@@ -75,7 +77,10 @@ namespace bochum
 
         int val_true = 1;
         if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char *)&val_true, sizeof(val_true)) < 0)
-            throw satdump_exception("Error setting socket option!");
+            throw satdump_exception("Error setting socket SO_REUSEADDR option!");
+        
+        if (setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, (const char *)&val_true, sizeof(val_true)) < 0)
+            throw satdump_exception("Error setting socket SO_REUSEPORT option!");
 
         memset(&recv_addr, 0, sizeof(recv_addr));
         recv_addr.sin_family = AF_INET;
@@ -121,8 +126,17 @@ namespace bochum
     /////////////////////////////////////////////////////////////////
 
     bool d_enabled = false;
-    std::string curr_name = "";
+    std::string curr_date = "yyyy-mm-dd";
+    std::string curr_time = "hh:mm:ss";
+    std::string curr_name = "-";
+    std::string curr_polarisation = "-";
     double curr_freq = 0;
+    double curr_f = 0;
+    double curr_az = 0;
+    double curr_el = 0;
+    double curr_range = 0;
+    double curr_range_rate = 0;
+    int curr_feed_id = 0;
     std::mutex ui_mtx;
 
     void handleBochumPkt(std::string cmd)
@@ -130,9 +144,18 @@ namespace bochum
         if (!d_enabled)
             return;
 
+        std::string date = cmd.substr(0, 10);
+        std::string time = cmd.substr(11, 8);
         std::string name = cmd.substr(20, 11);
-        double freq = std::stod(cmd.substr(69, 11)) * 1e6;
-
+        double az = std::stod(cmd.substr(31, 7));
+        double el = std::stod(cmd.substr(39, 7));
+        double range = std::stod(cmd.substr(47, 12));
+        double range_rate = std::stod(cmd.substr(60, 7));
+        double f  = std::stod(cmd.substr(68, 12));
+        double freq = f * 1e6;
+        std::string polarisation = cmd.substr(81, 1);
+        int feed_id = std::stoi(cmd.substr(82, 1));
+                
         if (curr_name != name)
         {
             logger->warn("[Bochum] Set object to %s", name.c_str());
@@ -198,8 +221,8 @@ namespace bochum
             curr_name = name;
             ui_mtx.unlock();
         }
-
-        if (abs(curr_freq - freq) > 1e6)
+        
+        if (fabs(curr_freq - freq) > 1e6)
         {
             satdump::eventBus->fire_event<satdump::RecorderSetFrequencyEvent>({freq});
             logger->warn("[Bochum] Set frequency to %f", freq);
@@ -207,15 +230,38 @@ namespace bochum
             curr_freq = freq;
             ui_mtx.unlock();
         }
+
+        ui_mtx.lock();
+        curr_date = date;
+        curr_time = time;
+        curr_f = f;
+        curr_az = az;
+        curr_el = el;
+        curr_range = range;
+        curr_range_rate = range_rate;
+        curr_polarisation = polarisation;
+        curr_feed_id = feed_id;
+        ui_mtx.unlock();
     }
 
     void recorderDrawPanelEvent(const satdump::RecorderDrawPanelEvent &evt)
     {
         if (ImGui::CollapsingHeader("Bochum"))
         {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 1.0f, 1.0f));
             ImGui::Checkbox("Enabled###bochumcontrolenabled", &d_enabled);
             ImGui::Text("Object : %s", curr_name.c_str());
-            ImGui::Text("Frequency : %f", curr_freq);
+            // ImGui::Text("Frequency : %f Hz", curr_freq);
+            ImGui::Text("Frequency : %f MHz", curr_f);
+            ImGui::Text("Azimuth : %.3f deg", curr_az);
+            ImGui::Text("Elevation : %.3f deg", curr_el);
+            ImGui::Text("Range : %f Mkm", curr_range);
+            ImGui::Text("Range rate : %.3f km/s", curr_range_rate);
+            ImGui::Text("Polarisation : %sHCP", curr_polarisation.c_str());
+            // ImGui::Text("Feed ID : %d", curr_feed_id);
+            ImGui::Text("Date : %s", curr_date.c_str());
+            ImGui::Text("Time : %s UTC", curr_time.c_str());
+            ImGui::PopStyleColor();
         }
     }
 };
