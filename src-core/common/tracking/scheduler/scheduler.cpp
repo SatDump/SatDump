@@ -64,7 +64,6 @@ namespace satdump
                             vfo_mode_norads_vis.insert({pass.norad, pass});
 
                             logger->critical("AOS!!!!!!!!!!!!!! %d", pass.norad);
-                            eventBus->fire_event<events::TrackingSchedulerAOSEvent>({upcoming_satellite_passes_sel[0]});
                             TrackedObject obj;
                             for (auto &v : enabled_satellites)
                                 if (v.norad == pass.norad)
@@ -80,7 +79,6 @@ namespace satdump
                     if (curr_time > p.second.los_time)
                     {
                         logger->critical("LOS!!!!!!!!!!!!!! %d ", p.first);
-                        eventBus->fire_event<events::TrackingSchedulerLOSEvent>({upcoming_satellite_passes_sel[0]});
                         TrackedObject obj;
                         for (auto &v : enabled_satellites)
                             if (v.norad == p.first)
@@ -110,7 +108,6 @@ namespace satdump
                     if (!autotrack_pass_has_started && curr_time > upcoming_satellite_passes_sel[0].aos_time)
                     {
                         logger->critical("AOS!!!!!!!!!!!!!! %d", upcoming_satellite_passes_sel[0].norad);
-                        eventBus->fire_event<events::TrackingSchedulerAOSEvent>({upcoming_satellite_passes_sel[0]});
                         TrackedObject obj;
                         for (auto &v : enabled_satellites)
                             if (v.norad == upcoming_satellite_passes_sel[0].norad)
@@ -125,7 +122,6 @@ namespace satdump
                     if (autotrack_pass_has_started)
                     {
                         logger->critical("LOS!!!!!!!!!!!!!! %d", upcoming_satellite_passes_sel[0].norad);
-                        eventBus->fire_event<events::TrackingSchedulerLOSEvent>({upcoming_satellite_passes_sel[0]});
                         TrackedObject obj;
                         for (auto &v : enabled_satellites)
                             if (v.norad == upcoming_satellite_passes_sel[0].norad)

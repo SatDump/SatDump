@@ -214,16 +214,4 @@ namespace satdump
 
         image::Image getScheduleImage(int width, double curr_time);
     };
-
-    namespace events
-    {
-        struct TrackingSchedulerAOSEvent
-        {
-            SatellitePass pass;
-        };
-        struct TrackingSchedulerLOSEvent
-        {
-            SatellitePass pass;
-        };
-    } // namespace events
 } // namespace satdump

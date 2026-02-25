@@ -508,9 +508,3 @@ option(PLUGIN_WIPSETTINGS_EDITOR_APP "Enable WIP Settings Editor Application"
 if(PLUGIN_WIPSETTINGS_EDITOR_APP)
   add_subdirectory(wip_settings_editor_app)
 endif()
-
-option(PLUGIN_WEBHOOK_APP "Enable Webhook Application" ON)
-
-if(PLUGIN_WEBHOOK_APP)
-  add_subdirectory(webhook_app)
-endif()

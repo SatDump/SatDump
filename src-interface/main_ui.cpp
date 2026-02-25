@@ -168,28 +168,18 @@ namespace satdump
             }
 
             if (settings_en)
-            {
                 ImGui::OpenPopup("Settings");
-                ImVec2 center = ImGui::GetIO().DisplaySize * 0.5f;
-                ImGui::SetNextWindowPos({center.x, 50 * ui_scale}, ImGuiCond_Appearing, ImVec2(0.5f, 0.0f));
-                ImGui::SetNextWindowSize({750 * ui_scale, 0});
-            }
 
-            if (ImGui::BeginPopupModal("Settings", &settings_en, ImGuiWindowFlags_AlwaysVerticalScrollbar))
+            if (ImGui::BeginPopupModal("Settings", &settings_en, /*ImGuiWindowFlags_AlwaysAutoResize |*/ ImGuiWindowFlags_AlwaysVerticalScrollbar))
             {
                 settings::render();
                 ImGui::EndPopup();
             }
 
             if (about_en)
-            {
                 ImGui::OpenPopup("About");
-                ImVec2 center = ImGui::GetIO().DisplaySize * 0.5f;
-                ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-                ImGui::SetNextWindowSize({750 * ui_scale, 0});
-            }
 
-            if (ImGui::BeginPopupModal("About", &about_en, ImGuiWindowFlags_AlwaysVerticalScrollbar))
+            if (ImGui::BeginPopupModal("About", &about_en, /*ImGuiWindowFlags_AlwaysAutoResize |*/ ImGuiWindowFlags_AlwaysVerticalScrollbar))
             {
                 credits_md.render();
                 ImGui::Dummy({400 * ui_scale, 0});
