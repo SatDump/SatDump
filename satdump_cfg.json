@@ -309,6 +309,12 @@
             "name": "Default Proj Output Directory",
             "description": "Path to the default folder to open when saving a projection in the explorer."
         },
+        "replace_spaces_in_filenames": {
+            "type": "bool",
+            "value": true,
+            "name": "Replace Spaces",
+            "description": "If enabled, spaces will be replaced with underscores in image filenames."
+        },
         "image_filename_template": {
             "type": "labeled_options",
             "value": "$i_$c",

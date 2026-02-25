@@ -348,7 +348,9 @@ namespace satdump
         std::string ImageHandler::getSaneName()
         {
             std::string img_name = image_name;
-            replaceAllStr(img_name, " ", "_");
+            if (satdump_cfg.getValueFromSatDumpDirectories<bool>("replace_spaces_in_filenames")) {
+                replaceAllStr(img_name, " ", "_");
+            }
             replaceAllStr(img_name, "/", "_");
             replaceAllStr(img_name, "\\", "_");
             return img_name;
