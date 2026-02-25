@@ -256,12 +256,6 @@
             "value": "yourpassword",
             "name": "Space-Track Password (Optional)",
             "description": "Optional, Space-Track password for historical TLEs"
-        },
-        "webhook_url": {
-            "type": "string",
-            "value": "",
-            "name": "Webhook URL (Optional)",
-            "description": "Optional, URL to send HTTP POST webhooks to"
         }
     },
     // Input/Output Directories
