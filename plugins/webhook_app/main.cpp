@@ -1,107 +1,120 @@
 #include "core/config.h"
 #include "core/plugin.h"
 #include "logger.h"
-#include "utils/http.h"
-#include "init.h"
+#include "common/rimgui.h"
 #include "nlohmann/json.hpp"
-#include "utils/time.h"
 
-#include "common/rimgui.h"                          // renderConfig
-#include "pipeline/pipeline.h"                      // PipelineDoneProcessingEvent
-#include "common/tracking/scheduler/scheduler.h"    // TrackingSchedulerAOSEvent, TrackingSchedulerLOSEvent
+#include "webhook.h"
 
-std::string webhook_url = "";
+static std::vector<webhook_app::WebhookConfig> webhook_configs;
 
 class Webhook : public satdump::Plugin
 {
 private:
-    static void renderConfig() { ImGui::InputText("Webhook URL", &webhook_url); }
+    std::vector<std::unique_ptr<webhook_app::WebhookSender>> senders;
 
-    static void save() { satdump::satdump_cfg.main_cfg["plugin_settings"]["webhook"]["url"] = webhook_url; }
-
-    void send_webhook(std::string message)
+    static void renderConfig()
     {
-        nlohmann::json payload;
-        if (webhook_url.find("discordapp.com/api/webhooks/") != std::string::npos)
-            payload["content"] = message;
-        else if (webhook_url.find("hooks.slack.com/services/") != std::string::npos)
-            payload["text"] = message;
-        else {
-            payload["message"] = message;
+        if (ImGui::Button("+ Add Webhook"))
+            webhook_configs.push_back({});
+
+        for (int i = 0; i < (int)webhook_configs.size(); i++)
+        {
+            ImGui::PushID(i);
+
+            ImGui::AlignTextToFramePadding();
+            ImGui::Text("Webhook %d", i + 1);
+            ImGui::SameLine();
+            ImGui::BeginDisabled(!webhook_app::WebhookSender::is_valid_url(webhook_configs[i].url));
+            if (ImGui::Button("Test"))
+                webhook_app::WebhookSender::test(webhook_configs[i]);
+            ImGui::EndDisabled();
+            ImGui::SameLine();
+            if (ImGui::Button("Remove"))
+            {
+                webhook_configs.erase(webhook_configs.begin() + i);
+                ImGui::PopID();
+                i--;
+                continue;
+            }
+
+            ImGui::InputText("URL", &webhook_configs[i].url);
+            ImGui::Checkbox("Pipeline Done", &webhook_configs[i].events.pipeline_done);
+            ImGui::SameLine();
+            ImGui::Checkbox("TLEs Updated", &webhook_configs[i].events.tles_updated);
+            ImGui::SameLine();
+            ImGui::Checkbox("Tracking AOS", &webhook_configs[i].events.tracking_aos);
+            ImGui::SameLine();
+            ImGui::Checkbox("Tracking LOS", &webhook_configs[i].events.tracking_los);
+
+            ImGui::Separator();
+            ImGui::PopID();
         }
-
-        std::string json = payload.dump();
-        logger->debug("Sending webhook: \"" + json + "\"");
-
-        std::string response;
-        satdump::perform_http_request_post(webhook_url, response, json, "Content-Type: application/json");
     }
 
-    void handle_event(const satdump::SatDumpStartedEvent &evt)
+    static void save()
     {
-        send_webhook("Started SatDump");
-    }
-
-    void handle_event(const satdump::pipeline::events::PipelineDoneProcessingEvent &evt)
-    {
-        satdump::pipeline::Pipeline pipeline = satdump::pipeline::getPipelineFromID(evt.pipeline_id);
-        send_webhook("Finished processing **" + pipeline.name + "** pipeline");
-    }
-
-    void handle_event(const satdump::events::TrackingSchedulerAOSEvent &evt)
-    {
-        std::string object_name = satdump::db_tle->get_from_norad(evt.pass.norad)->name;
-
-        std::stringstream elevation;
-        elevation << std::fixed << std::setprecision(2) << evt.pass.max_elevation;
-
-        std::string timestamp = satdump::timestamp_to_string(evt.pass.los_time, true);
-        std::string::size_type timestamp_delim = timestamp.find(" ");
-        std::string los_time = timestamp.substr(timestamp_delim + 1);
-
-        std::stringstream message;
-        message << "AOS **" << object_name << "**: Tracking ";
-        message << elevation.str() << "° pass until " << los_time;
-        send_webhook(message.str());
-    }
-
-    void handle_event(const satdump::events::TrackingSchedulerLOSEvent &evt)
-    {
-        std::string object_name = satdump::db_tle->get_from_norad(evt.pass.norad)->name;
-        send_webhook("LOS **" + object_name + "**");
-    }
-
-public:
-    std::string getID() { return "webhook"; }
-
-    void init()
-    {
-        satdump::eventBus->register_handler<satdump::config::RegisterPluginConfigHandlersEvent>(registerConfigHandler);
-        if (!satdump::satdump_cfg.main_cfg["plugin_settings"]["webhook"]["url"].is_null())
-            webhook_url = satdump::satdump_cfg.main_cfg["plugin_settings"]["webhook"]["url"];
-
-        if (webhook_url != "")
-#ifdef BUILD_IS_DEBUG
-            satdump::eventBus->register_handler<satdump::SatDumpStartedEvent>(
-                [this](const satdump::SatDumpStartedEvent &evt){ this->handle_event(evt); }
-            );
-#endif
-            satdump::eventBus->register_handler<satdump::pipeline::events::PipelineDoneProcessingEvent>(
-                [this](const satdump::pipeline::events::PipelineDoneProcessingEvent &evt){ this->handle_event(evt); }
-            );
-            satdump::eventBus->register_handler<satdump::events::TrackingSchedulerAOSEvent>(
-                [this](const satdump::events::TrackingSchedulerAOSEvent &evt){ this->handle_event(evt); }
-            );
-            satdump::eventBus->register_handler<satdump::events::TrackingSchedulerLOSEvent>(
-                [this](const satdump::events::TrackingSchedulerLOSEvent &evt){ this->handle_event(evt); }
-            );
-
-        logger->info("Webhook plugin!");
+        nlohmann::json webhooks = nlohmann::json::array();
+        for (auto &cfg : webhook_configs)
+        {
+            if (!webhook_app::WebhookSender::is_valid_url(cfg.url))
+                continue;
+            webhooks.push_back({
+                {"url", cfg.url},
+                {"events", {
+                    {"pipeline_done", cfg.events.pipeline_done},
+                    {"tles_updated", cfg.events.tles_updated},
+                    {"tracking_aos", cfg.events.tracking_aos},
+                    {"tracking_los", cfg.events.tracking_los},
+                }},
+            });
+        }
+        satdump::satdump_cfg.main_cfg["plugin_settings"]["webhook_app"]["webhooks"] = webhooks;
     }
 
     static void registerConfigHandler(const satdump::config::RegisterPluginConfigHandlersEvent &evt)
     {
         evt.plugin_config_handlers.push_back({"Event Webhooks", Webhook::renderConfig, Webhook::save});
+    }
+
+public:
+    std::string getID() { return "webhook_app"; }
+
+    void init()
+    {
+        satdump::eventBus->register_handler<satdump::config::RegisterPluginConfigHandlersEvent>(registerConfigHandler);
+
+        auto &cfg = satdump::satdump_cfg.main_cfg["plugin_settings"]["webhook_app"];
+        if (cfg.contains("webhooks") && cfg["webhooks"].is_array())
+        {
+            for (auto &entry : cfg["webhooks"])
+            {
+                webhook_app::WebhookConfig wc;
+                if (entry.contains("url") && entry["url"].is_string())
+                    wc.url = entry["url"].get<std::string>();
+                if (entry.contains("events"))
+                {
+                    auto &ev = entry["events"];
+                    if (ev.contains("pipeline_done") && ev["pipeline_done"].is_boolean())
+                        wc.events.pipeline_done = ev["pipeline_done"].get<bool>();
+                    if (ev.contains("tles_updated") && ev["tles_updated"].is_boolean())
+                        wc.events.tles_updated = ev["tles_updated"].get<bool>();
+                    if (ev.contains("tracking_aos") && ev["tracking_aos"].is_boolean())
+                        wc.events.tracking_aos = ev["tracking_aos"].get<bool>();
+                    if (ev.contains("tracking_los") && ev["tracking_los"].is_boolean())
+                        wc.events.tracking_los = ev["tracking_los"].get<bool>();
+                }
+                webhook_configs.push_back(wc);
+            }
+        }
+
+        for (auto &hook : webhook_configs)
+        {
+            if (webhook_app::WebhookSender::is_valid_url(hook.url))
+                senders.push_back(std::make_unique<webhook_app::WebhookSender>(hook));
+        }
+
+        logger->info("Webhook plugin!");
     }
 };
 
