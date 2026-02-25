@@ -1,4 +1,4 @@
-#include "plugin.h"
+#include "core/plugin.h"
 #include "logger.h"
 
 class Sample : public satdump::Plugin
