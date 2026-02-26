@@ -39,6 +39,7 @@
 #include "dsp/utils/correct_iq.h"
 #include "dsp/utils/exponentiate.h"
 #include "dsp/utils/multiply.h"
+#include "dsp/utils/psk_snr_estimator.h"
 #include "dsp/utils/samplerate_meter.h"
 #include "dsp/utils/subtract.h"
 #include "dsp/utils/throttle.h"
@@ -240,6 +241,8 @@ namespace satdump
             registerNodeSimple<ndsp::ComplexToMagSquaredBlock>(flowgraph, "Conv/Complex To Mag²");
 
             registerNodeSimple<ndsp::PSKDemodHierBlock>(flowgraph, "Modem/PSK Demod");
+
+            registerNodeSimple<ndsp::PSKSnrEstimatorBlock>(flowgraph, "Utils/PSK SNR Estimator");
 
             eventBus->fire_event<RegisterNodesEvent>({flowgraph.node_internal_registry});
 

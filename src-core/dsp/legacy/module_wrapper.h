@@ -65,7 +65,7 @@ namespace satdump
             {
                 if (key == "module")
                     module_id = v;
-                else if (key == "mod_cfg")
+                else if (key == "cfg")
                     mod_cfg = v;
                 else if (key == "outsize")
                     output_read_size = v;
