@@ -189,6 +189,13 @@ if(PLUGIN_ANALOG OR PLUGINS_ALL)
   add_subdirectory(analog_support)
 endif()
 
+option(PLUGIN_TRANSIT
+       "Enable the support plugin for Transit 5b-5" ON)
+
+if(PLUGIN_TRANSIT OR PLUGINS_ALL)
+  add_subdirectory(transit_support)
+endif()
+
 option(PLUGIN_ORBCOMM "Enable the support plugin for the Orbcomm constellation"
        OFF)
 

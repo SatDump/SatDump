@@ -1,0 +1,45 @@
+{
+    "transit_tlm": {
+        "name": "Transit TLM",
+        "live": [
+            1,
+            2
+        ],
+        "frequencies": [
+            [
+                "main",
+                136.658e6
+            ]
+        ],
+        "parameters": {
+            "samplerate": {
+                "value": 1e6
+            }
+        },
+        "work": {
+            "baseband": {},
+            "audio_wav": {
+                "module": "transit_demod",
+                "parameters": {
+                    "symbolrate": 48e3,
+                    "save_wav": true,
+                    "save_soft": true,
+                    "clock_gain_omega": 0.0005,
+                    "clock_mu": 0.5,
+                    "clock_gain_mu": 0.8,
+                    "clock_omega_relative_limit": 0.005 
+                }
+            },
+            "frm": {
+                "module": "transit_decoder",
+                "parameters": {
+                }
+            },
+            "products": {
+                "module": "transit_data",
+                "parameters": {
+                }
+            }
+        }
+    }
+}
