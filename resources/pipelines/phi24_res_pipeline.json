@@ -1,0 +1,16 @@
+{
+    "name": "CTT Φ-24 Topological Decoder",
+    "id": "phi24_decoder",
+    "modules": [
+        {
+            "id": "phi24_resonator",
+            "parameters": {
+                "alpha": 0.0765872,
+                "quench_ns": 11.0
+            }
+        },
+        {
+            "id": "symbol_output"
+        }
+    ]
+}

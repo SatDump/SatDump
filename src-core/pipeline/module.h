@@ -4,7 +4,7 @@
  * @file module.h
  */
 
-#include "nlohmann/json.hpp"
+#include "../nlohmann/json.hpp"
 #include <atomic>
 #include <memory>
 #include <string>

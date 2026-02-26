@@ -1,0 +1,81 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\geometry{margin=1in}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    captionpos=b,                    
+    keepspaces=true,                 
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{CTT Topological Resonator: Core Integration Specifications}
+\author{Americo Simoes}
+\date{February 2026}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+The CTT Topological Resonator is designed as a high-precision phase-tracking module for the SatDump manifold. It provides frequency stabilization for L-band signals, specifically targeting the $1.7$~GHz downlink window.
+
+\section{Mathematical Framework}
+The core of the resonator utilizes a Discrete-Time Topological Recurrence. Given a complex IQ input stream $z[n]$, the phase state $\phi$ evolves according to the following control law:
+
+\[ \phi[n+1] = \phi[n] + \omega + K \cdot \text{Im}\{z[n] \cdot e^{-j\phi[n]}\} \]
+
+Where:
+\begin{itemize}
+    \item $\phi[n]$ is the instantaneous phase at sample $n$.
+    \item $\omega$ is the center frequency offset ($2\pi f_c / f_s$).
+    \item $K$ is the topological coupling constant.
+\end{itemize}
+
+\section{Software Implementation}
+To prevent linker optimization errors (dead code elimination), the module is hard-linked into the SatDump core.
+
+\subsection{Registry Injection}
+The module is registered in \texttt{src-core/pipeline/module.cpp} using the following macro call:
+\begin{lstlisting}[language=C++]
+REGISTER_MODULE(CTTTopologicalResonator);
+\end{lstlisting}
+
+\subsection{Module Identification}
+The module manifests in the CLI with the following metadata:
+\begin{itemize}
+    \item \textbf{Internal ID:} \texttt{ctt\_phi24\_resonator}
+    \item \textbf{Type:} \texttt{ProcessingModule}
+\end{itemize}
+
+\section{Compilation and Verification}
+The binary was successfully compiled on Fedora using \texttt{GCC 15}. Verification was performed via:
+\begin{lstlisting}[language=bash]
+./satdump modules list | grep ctt
+\end{lstlisting}
+
+\end{document}

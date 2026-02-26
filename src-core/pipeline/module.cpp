@@ -1,3 +1,4 @@
+#include "../modules/ctt_topological_resonator.cpp"
 #define SATDUMP_DLL_EXPORT 1
 
 #include "module.h"
@@ -88,6 +89,7 @@ namespace satdump
             REGISTER_MODULE(demod::FSKDemodModule);
             REGISTER_MODULE(demod::PMDemodModule);
             REGISTER_MODULE(demod::PSKDemodModule);
+            REGISTER_MODULE(CTTTopologicalResonator);
             REGISTER_MODULE(demod::SDPSKDemodModule);
             REGISTER_MODULE(demod::XFSKBurstDemodModule);
 
