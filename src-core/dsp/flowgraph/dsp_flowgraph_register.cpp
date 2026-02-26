@@ -28,7 +28,7 @@
 #include "dsp/io/file_source.h"
 #include "dsp/io/iq_sink.h"
 #include "dsp/io/iq_source.h"
-#include "dsp/io/nng_iq_sink.h"
+#include "dsp/io/nng_sink.h"
 #include "dsp/io/waveform.h"
 #include "dsp/legacy/module_wrapper.h"
 #include "dsp/path/splitter.h"
@@ -204,7 +204,7 @@ namespace satdump
 
             registerNodeSimple<ndsp::ExponentiateBlock>(flowgraph, "Utils/Exponentiate CC");
 
-            registerNodeSimple<ndsp::NNGIQSinkBlock>(flowgraph, "IO/NNG IQ Sink");
+            registerNodeSimple<ndsp::NNGSinkBlock<complex_t>>(flowgraph, "IO/NNG Sink C");
 
             registerNodeSimple<ndsp::WaveformBlock<float>>(flowgraph, "IO/Waveform F");
             registerNodeSimple<ndsp::WaveformBlock<complex_t>>(flowgraph, "IO/Waveform C");

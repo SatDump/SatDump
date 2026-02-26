@@ -7,7 +7,8 @@ namespace satdump
 {
     namespace ndsp
     {
-        class NNGIQSinkBlock : public Block
+        template <typename T>
+        class NNGSinkBlock : public Block
         {
 
         private:
@@ -21,11 +22,11 @@ namespace satdump
 
         public:
             void start();
-            void stop(bool stop_now = false, bool force=false);
+            void stop(bool stop_now = false, bool force = false);
 
         public:
-            NNGIQSinkBlock();
-            ~NNGIQSinkBlock();
+            NNGSinkBlock();
+            ~NNGSinkBlock();
 
             nlohmann::ordered_json get_cfg_list()
             {

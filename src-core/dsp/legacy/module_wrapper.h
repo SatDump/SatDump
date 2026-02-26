@@ -21,6 +21,8 @@ namespace satdump
             bool work2shouldrun;
             std::thread work2Thread;
 
+            int output_read_size = 1024;
+
         private:
             bool work();
             void work2();
@@ -41,6 +43,9 @@ namespace satdump
                 add_param_simple(p, "cfg", "json");
                 if (is_work_running())
                     p["cfg"]["disabled"] = true;
+                add_param_simple(p, "outsize", "json");
+                if (is_work_running())
+                    p["outsize"]["disabled"] = true;
                 return p;
             }
 
@@ -50,6 +55,8 @@ namespace satdump
                     return module_id;
                 else if (key == "cfg")
                     return mod_cfg;
+                else if (key == "outsize")
+                    return output_read_size;
                 else
                     throw satdump_exception(key);
             }
@@ -60,6 +67,8 @@ namespace satdump
                     module_id = v;
                 else if (key == "mod_cfg")
                     mod_cfg = v;
+                else if (key == "outsize")
+                    output_read_size = v;
                 else
                     throw satdump_exception(key);
                 return RES_OK;

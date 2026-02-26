@@ -87,7 +87,7 @@ namespace satdump
         {
             while (work2shouldrun)
             {
-                DSPBuffer oblk = outputs[0].fifo->newBufferSamples(1024, sizeof(uint8_t));
+                DSPBuffer oblk = outputs[0].fifo->newBufferSamples(output_read_size, sizeof(uint8_t));
 
                 int got = mod->output_fifo->read(oblk.getSamples<uint8_t>(), oblk.max_size);
 
