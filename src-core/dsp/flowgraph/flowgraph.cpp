@@ -434,6 +434,12 @@ namespace satdump
                                 ptr = std::make_shared<ndsp::SplitterBlock<complex_t>>();
                             else if (blk->get_output(o, 0).type == ndsp::BlockIOType::DSP_SAMPLE_TYPE_F32)
                                 ptr = std::make_shared<ndsp::SplitterBlock<float>>();
+                            else if (blk->get_output(o, 0).type == ndsp::BlockIOType::DSP_SAMPLE_TYPE_S16)
+                                ptr = std::make_shared<ndsp::SplitterBlock<int16_t>>();
+                            else if (blk->get_output(o, 0).type == ndsp::BlockIOType::DSP_SAMPLE_TYPE_S8)
+                                ptr = std::make_shared<ndsp::SplitterBlock<int8_t>>();
+                            else if (blk->get_output(o, 0).type == ndsp::BlockIOType::DSP_SAMPLE_TYPE_U8)
+                                ptr = std::make_shared<ndsp::SplitterBlock<uint8_t>>();
                             else
                                 throw satdump_exception("Unsupported splitter block IO type");
 

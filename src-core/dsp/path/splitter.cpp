@@ -1,4 +1,5 @@
 #include "splitter.h"
+#include <cstdint>
 
 namespace satdump
 {
@@ -57,5 +58,8 @@ namespace satdump
 
         template class SplitterBlock<complex_t>;
         template class SplitterBlock<float>;
+        template class SplitterBlock<int16_t>;
+        template class SplitterBlock<int8_t>;
+        template class SplitterBlock<uint8_t>;
     } // namespace ndsp
 } // namespace satdump

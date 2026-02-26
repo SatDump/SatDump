@@ -30,6 +30,7 @@
 #include "dsp/io/iq_source.h"
 #include "dsp/io/nng_iq_sink.h"
 #include "dsp/io/waveform.h"
+#include "dsp/legacy/module_wrapper.h"
 #include "dsp/path/splitter.h"
 #include "dsp/pll/pll_carrier_tracking.h"
 #include "dsp/resampling/rational_resampler.h"
