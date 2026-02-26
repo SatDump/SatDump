@@ -22,6 +22,14 @@
                 1685.7e6
             ]
         ],
+        "parameters": {
+                    "only_full_disk": {
+                        "type": "bool",
+                        "value": false,
+                        "name": "Only save full disks",
+                        "description": "Throws out any crops. Only effective at decent SNRs!"
+                    }
+        },
         "samplerate": 6e6,
         "work": {
             "baseband": {},
@@ -36,8 +44,7 @@
                 }
             },
             "gvar": {
-                "module": "goes_gvar_decoder",
-                "parameters": {}
+                "module": "goes_gvar_decoder"
             },
             "products": {
                 "module": "goes_gvar_image_decoder"
@@ -506,7 +513,7 @@
                 "GOES-N Sensor data",
                 1676e6
             ]
-        ],        
+        ],
         "parameters": {
             "samplerate": {
                 "value": 6e6
