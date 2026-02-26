@@ -511,6 +511,6 @@ endif()
 
 option(PLUGIN_WEBHOOK_APP "Enable Webhook Application" ON)
 
-if(PLUGIN_WEBHOOK_APP)
+if(BUILD_GUI AND PLUGIN_WEBHOOK_APP)
   add_subdirectory(webhook_app)
 endif()
