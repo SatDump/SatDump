@@ -15,11 +15,8 @@ namespace satdump
             : BlockSimple<T, T>(std::is_same_v<T, complex_t> ? "rational_resampler_cc" : "rational_resampler_ff", {{"in", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}},
                                 {{"out", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}})
         {
-            // Buffer
-            if (buffer == nullptr)
-                volk_free(buffer); // TODOREWORK
-
-            buffer = dsp::create_volk_buffer<T>(1e6);
+            buffer.resize(8192);
+            buffer_size = buffer.size();
         }
 
         template <typename T>
@@ -51,8 +48,6 @@ namespace satdump
         template <typename T>
         RationalResamplerBlock<T>::~RationalResamplerBlock()
         {
-            if (buffer == nullptr)
-                volk_free(buffer);
         }
 
         template <typename T>
@@ -62,6 +57,13 @@ namespace satdump
             {
                 printf("TODOREWORK Error! Was about to overflow internal buffer!\n");
                 return 0;
+            }
+
+            // Automatically grow buffer
+            if (buffer_size < in_buffer + nsamples)
+            {
+                buffer.resize(buffer_size * 2);
+                buffer_size = buffer.size();
             }
 
             memcpy(&buffer[in_buffer], input, nsamples * sizeof(T));

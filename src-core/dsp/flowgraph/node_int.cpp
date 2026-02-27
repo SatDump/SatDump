@@ -8,7 +8,11 @@ namespace satdump
 {
     namespace ndsp
     {
-        NodeInternal::NodeInternal(const Flowgraph *f, std::shared_ptr<ndsp::Block> b) : f((Flowgraph *)f), blk(b) { optdisp = std::make_unique<ndsp::OptDisplayerWarper>(blk); }
+        NodeInternal::NodeInternal(const Flowgraph *f, std::shared_ptr<ndsp::Block> b) : f((Flowgraph *)f), blk(b)
+        {
+            optdisp = std::make_unique<ndsp::OptDisplayerWarper>(blk);
+            optdisp->setShowStats(true);
+        }
 
         bool NodeInternal::render()
         {

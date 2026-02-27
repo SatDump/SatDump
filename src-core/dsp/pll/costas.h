@@ -50,6 +50,7 @@ namespace satdump
                 add_param_simple(p, "loop_bw", "float");
                 add_param_simple(p, "order", "int");
                 add_param_simple(p, "freq_limit", "float");
+                add_param_simple(p, "freq", "stat");
                 return p;
             }
 
@@ -61,6 +62,8 @@ namespace satdump
                     return order;
                 else if (key == "freq_limit")
                     return freq_limit;
+                else if (key == "freq")
+                    return freq;
                 else
                     throw satdump_exception(key);
             }
@@ -79,6 +82,8 @@ namespace satdump
                     freq_limit = v;
                     init();
                 }
+                else if (key == "freq")
+                    ;
                 else
                     throw satdump_exception(key);
                 return RES_OK;

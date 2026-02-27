@@ -3,31 +3,32 @@
 #include "common/dsp/block.h"
 #include "common/dsp/complex.h"
 #include "dsp/block.h"
+#include "dsp/block_simple.h"
+#include <volk/volk_alloc.hh>
 
 namespace satdump
 {
     namespace ndsp
     {
         template <typename T>
-        class FIRBlock : public Block
+        class FIRBlock : public BlockSimple<T, T>
         {
         public:
             bool needs_reinit = false;
             std::vector<float> p_taps;
-            int p_buffer_size = 8192 * 8;
 
         private:
             int buffer_size = 0;
-            T *buffer = nullptr;
+            volk::vector<T> buffer;
             float **taps = nullptr;
             int ntaps;
             int align;
             int aligned_tap_count;
 
-            bool work();
+            size_t in_buffer;
 
-            size_t lbuf_size;
-            size_t lbuf_offset;
+        public:
+            uint32_t process(T *input, uint32_t nsamples, T *output);
 
         public:
             FIRBlock();
@@ -42,12 +43,11 @@ namespace satdump
                         volk_free(taps[i]);
                     volk_free(taps);
                 }
-                if (buffer != nullptr)
-                    volk_free(buffer);
 
                 // Init buffer
-                buffer = dsp::create_volk_buffer<T>(p_buffer_size); // TODOREWORK How to handle this from the initial buffer size?
-                buffer_size = p_buffer_size;
+                buffer.resize(8192);
+                buffer_size = buffer.size();
+                in_buffer = 0;
 
                 // Get alignement parameters
                 align = volk_get_alignment();
@@ -72,24 +72,20 @@ namespace satdump
             {
                 if (key == "taps")
                     return p_taps;
-                else if (key == "buffer_size")
-                    return p_buffer_size;
                 else
                     throw satdump_exception(key);
             }
 
-            cfg_res_t set_cfg(std::string key, nlohmann::json v)
+            Block::cfg_res_t set_cfg(std::string key, nlohmann::json v)
             {
                 if (key == "taps")
                 {
                     p_taps = v.get<std::vector<float>>();
                     needs_reinit = true;
                 }
-                else if (key == "buffer_size")
-                    p_buffer_size = v;
                 else
                     throw satdump_exception(key);
-                return RES_OK;
+                return Block::RES_OK;
             }
         };
     } // namespace ndsp

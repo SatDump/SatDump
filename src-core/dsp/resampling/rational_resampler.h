@@ -4,6 +4,7 @@
 #include "common/dsp/resamp/polyphase_bank.h"
 #include "dsp/block.h"
 #include "dsp/block_simple.h"
+#include <volk/volk_alloc.hh>
 
 namespace satdump
 {
@@ -21,7 +22,8 @@ namespace satdump
 
         private:
             // Buffer
-            T *buffer = nullptr;
+            volk::vector<T> buffer;
+            size_t buffer_size = 0;
             uint32_t in_buffer = 0;
 
             // Settings

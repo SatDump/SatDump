@@ -50,6 +50,8 @@ namespace satdump
                 disp.add_options(blk->get_cfg_list());
                 disp.set_values(blk->get_cfg());
             }
+
+            void setShowStats(bool v) { disp.show_stats = v; }
         };
     } // namespace ndsp
 } // namespace satdump

@@ -39,6 +39,7 @@ namespace satdump
                 bool is_float = false;
                 bool is_freq = false;
                 bool is_samplerate = false;
+                bool is_stat = false;
 
                 //                bool is_sub = false;
 
@@ -59,6 +60,7 @@ namespace satdump
                 int64_t _int = 0;
                 double _float = 0;
                 std::shared_ptr<widgets::DoubleList> _samplerate;
+                nlohmann::json _stat;
             };
 
             std::mutex opts_mtx;
@@ -78,9 +80,14 @@ namespace satdump
                     j = v._float;
                 else if (v.is_samplerate)
                     j = v._samplerate->get_value();
+                else if (v.is_stat)
+                    j = v._stat;
                 else
                     throw satdump_exception("Invalid options or JSON value! (GET " + v.id + ")");
             }
+
+        public:
+            bool show_stats = false;
 
         public:
             void add_options(nlohmann::ordered_json options)
@@ -116,6 +123,7 @@ namespace satdump
                     h.is_float = vv["type"] == "float";
                     h.is_freq = vv["type"] == "freq";
                     h.is_samplerate = vv["type"] == "samplerate";
+                    h.is_stat = vv["type"] == "stat";
 
                     h.is_list = vv.contains("list");
                     if (h.is_list)
@@ -189,6 +197,8 @@ namespace satdump
                             v._float = j;
                         else if (v.is_samplerate && j.is_number())
                             v._samplerate->set_value(j);
+                        else if (v.is_stat)
+                            v._stat = j;
                         else
                             logger->error("Invalid options or JSON value! (SET " + v.id + " => " + j.dump() + ")");
                     }
@@ -332,6 +342,11 @@ namespace satdump
                     else if (v.is_samplerate)
                     {
                         u |= v._samplerate->render();
+                    }
+                    else if (show_stats && v.is_stat)
+                    {
+                        ImGui::Text("%s : %s", v.name.c_str(), v._stat.dump().c_str());
+                        u = true;
                     }
                     else
                     {

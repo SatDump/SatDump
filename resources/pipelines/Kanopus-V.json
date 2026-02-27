@@ -17,7 +17,9 @@
                     "symbolrate": 61.44e6,
                     "rrc_taps": 31,
                     "rrc_alpha": 0.6,
-                    "pll_bw": 0.004
+                    "pll_bw": 0.002,
+                    "costas_max_offset": 1e6,
+                    "iq_swap": true // TODOREWORK
                 }
             },
             "frm": {

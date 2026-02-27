@@ -46,6 +46,7 @@ namespace satdump
                 add_param_simple(p, "outsize", "json");
                 if (is_work_running())
                     p["outsize"]["disabled"] = true;
+                add_param_simple(p, "status", "stat");
                 return p;
             }
 
@@ -57,6 +58,8 @@ namespace satdump
                     return mod_cfg;
                 else if (key == "outsize")
                     return output_read_size;
+                else if (key == "stat")
+                    return mod->getModuleStats();
                 else
                     throw satdump_exception(key);
             }
@@ -69,6 +72,8 @@ namespace satdump
                     mod_cfg = v;
                 else if (key == "outsize")
                     output_read_size = v;
+                else if (key == "stat")
+                    ;
                 else
                     throw satdump_exception(key);
                 return RES_OK;
