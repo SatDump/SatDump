@@ -17,7 +17,14 @@ void USRPSource::open_sdr()
 
     // USB transport parameters, optimal values from testing
     addr["recv_frame_size"] = "8000"; // RX frame size
+
+#ifdef __APPLE__
+    // macOS appears to have a max size of 1024, iti s not happy above that
+    addr["num_recv_frames"] = "1024"; // RX buffer size
+#else
     addr["num_recv_frames"] = "1900"; // RX buffer size
+#endif
+
     // addr["send_frame_size"] = "8000";      // TX frame size
     // addr["num_send_frames"] = "1900";      // TX buffer size
 
