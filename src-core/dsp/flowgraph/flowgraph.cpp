@@ -14,6 +14,7 @@
 
 #include "dsp/path/splitter.h"
 
+#include <mutex>
 #include <thread>
 
 namespace satdump
@@ -45,6 +46,8 @@ namespace satdump
             for (int i = 0; i < std::numeric_limits<int>::max(); i++)
             {
                 bool already_contained = false;
+                printf("%d\n", (int)nodes.size());
+                return 0;
                 for (auto &n : nodes)
                     for (auto &io : n->node_io)
                         if (io.id == i)

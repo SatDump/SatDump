@@ -1,11 +1,14 @@
 #pragma once
 
+#include "common/dsp/block.h"
 #include "common/dsp/complex.h"
 #include "dsp/agc/agc.h"
 #include "dsp/block.h"
 #include "dsp/clock_recovery/clock_recovery_mm.h"
 #include "dsp/filter/rrc.h"
+#include "dsp/path/splitter.h"
 #include "dsp/pll/costas.h"
+#include "dsp/utils/psk_snr_estimator.h"
 #include "logger.h"
 #include "nlohmann/json.hpp"
 #include "utils/string.h"
@@ -23,6 +26,9 @@ namespace satdump
             MMClockRecoveryBlock<complex_t> rec_blk;
             CostasBlock pll_blk;
 
+            SplitterBlock<complex_t> const_split_blk;
+            PSKSnrEstimatorBlock snr_est_blk;
+
         private:
             bool running = false;
 
@@ -36,9 +42,9 @@ namespace satdump
             ~PSKDemodHierBlock();
 
             std::vector<BlockIO> get_inputs() { return rrc_blk.get_inputs(); }
-            std::vector<BlockIO> get_outputs() { return pll_blk.get_outputs(); }
+            std::vector<BlockIO> get_outputs() { return {const_split_blk.get_output_by_id("main")}; }
             void set_input(BlockIO f, int i) { rrc_blk.set_input(f, i); }
-            BlockIO get_output(int i, int nbuf) { return pll_blk.get_output(i, nbuf); }
+            BlockIO get_output(int i, int nbuf) { return const_split_blk.get_output_by_id("main"); }
 
             void init()
             {
@@ -47,7 +53,7 @@ namespace satdump
                     pll_blk.stop(true, true);
                     rec_blk.stop(true, true);
                     agc_blk.stop(true, true);
-                }
+                }*/
 
                 if (constellation == "oqpsk")
                 {
@@ -58,9 +64,12 @@ namespace satdump
                     agc_blk.link(&rrc_blk, 0, 0, 4);
                     rec_blk.link(&agc_blk, 0, 0, 4);
                     pll_blk.link(&rec_blk, 0, 0, 4);
+                    const_split_blk.link(&pll_blk, 0, 0, 4);
+
+                    snr_est_blk.set_input(const_split_blk.get_output_by_id("snr"), 0);
                 }
 
-                if (running)
+                /*if (running)
                 {
                     agc_blk.start();
                     rec_blk.start();
@@ -76,6 +85,9 @@ namespace satdump
                 agc_blk.start();
                 rec_blk.start();
                 pll_blk.start();
+                const_split_blk.start();
+
+                snr_est_blk.start();
 
                 running = true;
             }
@@ -86,6 +98,9 @@ namespace satdump
                 agc_blk.stop(stop_snow);
                 rec_blk.stop(stop_snow);
                 pll_blk.stop(stop_snow);
+                const_split_blk.stop(stop_snow);
+
+                snr_est_blk.stop(stop_snow);
 
                 running = false;
             }
@@ -98,6 +113,9 @@ namespace satdump
                 add_param_simple(v, "samplerate", "float");
                 add_param_simple(v, "symbolrate", "float");
                 add_param_simple(v, "advanced", "bool");
+
+                add_param_simple(v, "pll_freq", "stat");
+                add_param_simple(v, "snr", "stat");
 
                 if (advanced_mode)
                 {
@@ -144,6 +162,10 @@ namespace satdump
                     return symbolrate;
                 else if (key == "advanced")
                     return advanced_mode;
+                else if (key == "pll_freq")
+                    return dsp::rad_to_hz(pll_blk.get_cfg("freq").get<double>(), symbolrate);
+                else if (key == "snr")
+                    return snr_est_blk.get_cfg("snr");
                 else if (key.find("rrc_") == 0)
                 {
                     replaceAllStr(key, "rrc_", "");

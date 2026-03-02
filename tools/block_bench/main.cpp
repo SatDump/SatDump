@@ -172,13 +172,11 @@ int main(int argc, char *argv[])
     {
         auto p = std::make_shared<satdump::ndsp::FIRBlock<complex_t>>();
         p->p_taps = dsp::firdes::root_raised_cosine(1.0, 2, 1, 0.35, 31);
-        p->p_buffer_size = 8192 * 8;
         benchmarkNDSPBlock<complex_t>(p, 10, "FIR New RRC, 31 taps, omega 2.0");
     }
     {
         auto p = std::make_shared<satdump::ndsp::FIRBlock<complex_t>>();
         p->p_taps = dsp::firdes::root_raised_cosine(1.0, 2, 1, 0.35, 361);
-        p->p_buffer_size = 8192 * 8;
         benchmarkNDSPBlock<complex_t>(p, 10, "FIR New RRC, 361 taps, omega 2.0");
     }
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/exception.h"
 #include "dsp/block.h"
 #include "dsp/block_helpers.h"
 #include <mutex>
@@ -100,6 +101,17 @@ namespace satdump
                             (outputs.begin() + i)->fifo->wait_enqueue((outputs.begin() + i)->fifo->newBufferTerminator());
                         outputs.erase(outputs.begin() + i);
                     }
+            }
+
+            BlockIO &get_output_by_id(std::string id)
+            {
+                std::lock_guard<std::mutex> lock_mtx(vfos_mtx);
+
+                for (auto &o : outputs)
+                    if (((IOInfo *)o.blkdata.get())->id == id)
+                        return o;
+
+                throw satdump_exception("Couldn't find splitter output with id " + id);
             }
         };
     } // namespace ndsp

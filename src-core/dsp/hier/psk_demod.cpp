@@ -5,7 +5,11 @@ namespace satdump
 {
     namespace ndsp
     {
-        PSKDemodHierBlock::PSKDemodHierBlock() : Block("psk_demod_cc", {}, {}) {}
+        PSKDemodHierBlock::PSKDemodHierBlock() : Block("psk_demod_cc", {}, {})
+        {
+            const_split_blk.add_output("main");
+            const_split_blk.add_output("snr");
+        }
 
         PSKDemodHierBlock::~PSKDemodHierBlock() {}
     } // namespace ndsp
