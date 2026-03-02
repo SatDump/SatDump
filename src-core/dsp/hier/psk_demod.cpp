@@ -9,6 +9,8 @@ namespace satdump
         {
             const_split_blk.add_output("main");
             const_split_blk.add_output("snr");
+
+            agc_blk.set_cfg("reference", 0.6);
         }
 
         PSKDemodHierBlock::~PSKDemodHierBlock() {}

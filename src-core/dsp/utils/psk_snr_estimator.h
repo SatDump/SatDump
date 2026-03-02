@@ -46,8 +46,14 @@ namespace satdump
 
             cfg_res_t set_cfg(std::string key, nlohmann::json v)
             {
-
-                throw satdump_exception(key);
+                if (key == "snr")
+                    ;
+                else if (key == "noise")
+                    ;
+                else if (key == "signal")
+                    ;
+                else
+                    throw satdump_exception(key);
                 return RES_OK;
             }
         };

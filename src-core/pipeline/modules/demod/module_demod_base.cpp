@@ -359,8 +359,6 @@ namespace satdump
                         ImGui::SetTooltip("This Abort button will simulate the \ndemodulation being finished. \nProcessing will carry on!");
                 }
             }
-
-            // TODOREWORK    std::vector<std::string> BaseDemodModule::getParameters() { return {"samplerate", "symbolrate", "agc_rate", "iq_swap", "buffer_size", "dc_block", "baseband_format"}; }
         } // namespace demod
     } // namespace pipeline
 } // namespace satdump

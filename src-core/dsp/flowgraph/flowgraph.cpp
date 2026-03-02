@@ -2,6 +2,7 @@
 #include "common/widgets/CircularProgressBar.h"
 #include "core/exception.h"
 #include <chrono>
+#include <cstdint>
 #include <limits>
 
 #include "core/style.h"
@@ -46,8 +47,6 @@ namespace satdump
             for (int i = 0; i < std::numeric_limits<int>::max(); i++)
             {
                 bool already_contained = false;
-                printf("%d\n", (int)nodes.size());
-                return 0;
                 for (auto &n : nodes)
                     for (auto &io : n->node_io)
                         if (io.id == i)

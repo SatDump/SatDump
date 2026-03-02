@@ -79,7 +79,7 @@ namespace satdump
                 Node(Flowgraph *f, std::string id, std::shared_ptr<NodeInternal> i) : _f(f), id(f->getNewNodeID()), internal_id(id), title(i->blk->d_id), internal(i) { updateIO(); }
 
                 Node(Flowgraph *f, nlohmann::json j, std::shared_ptr<NodeInternal> i)
-                    : id(j["id"]), internal_id(j["int_id"]), title(i->blk->d_id), node_io(j["io"].get<std::vector<InOut>>()), internal(i)
+                    : _f(f), id(j["id"]), internal_id(j["int_id"]), title(i->blk->d_id), node_io(j["io"].get<std::vector<InOut>>()), internal(i)
                 {
                     if (j.contains("int_cfg"))
                         internal->setP(j["int_cfg"]);

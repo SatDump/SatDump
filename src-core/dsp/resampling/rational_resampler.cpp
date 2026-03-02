@@ -62,7 +62,7 @@ namespace satdump
             // Automatically grow buffer
             if (buffer_size < in_buffer + nsamples)
             {
-                buffer.resize(buffer_size * 2);
+                buffer.resize((buffer_size + nsamples) * 2);
                 buffer_size = buffer.size();
             }
 

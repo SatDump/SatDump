@@ -1,9 +1,10 @@
+#include "pipeline/modules/demod/module_demod_ndsp.h"
 #define SATDUMP_DLL_EXPORT 1
 
-#include "module.h"
 #include "core/exception.h"
 #include "core/plugin.h"
 #include "logger.h"
+#include "module.h"
 
 ///////////////////////////
 
@@ -110,6 +111,9 @@ namespace satdump
 
             // Generic
             REGISTER_MODULE(generic::Soft2HardModule);
+
+            // WIP
+            REGISTER_MODULE(demod::NdspDemodModule);
 
             // Plugin modules
             satdump::eventBus->fire_event<RegisterModulesEvent>({modules_registry});

@@ -152,7 +152,7 @@ namespace satdump
             float f = 15;
             ImGui::SetNextWindowPos({-f / ctx.scale(), -f / ctx.scale()});
             ImGui::SetNextWindowSize({(float)(win_size.x / ctx.scale()) + 2 * (f / ctx.scale()), (float)(win_size.y / ctx.scale()) + 2 * (f / ctx.scale())});
-            ImGui::Begin("SatDump UI", nullptr, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse);
+            ImGui::Begin("FlowGraph", nullptr, NOWINDOW_FLAGS | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse);
             flowgraph.render();
             ImGui::End();
 

@@ -198,8 +198,6 @@ namespace satdump
                 {
                     constellation = v;
 
-                    init();
-
                     if (v == "bpsk")
                         return pll_blk.set_cfg("order", 2);
                     else
