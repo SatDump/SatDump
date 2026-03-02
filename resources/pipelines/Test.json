@@ -106,5 +106,19 @@
                 "module": "orb_decoder_test"
             }
         }
+    },
+    "ndsp_demod_test": {
+        "name": "NDSP Demod",
+        "live": [
+            1
+        ],
+        "frequencies": [],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "ndsp_demod",
+                "parameters": {}
+            }
+        }
     }
 }
