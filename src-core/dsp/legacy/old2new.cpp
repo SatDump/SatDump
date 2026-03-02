@@ -32,12 +32,15 @@ namespace satdump
             {
                 int nsamples = old_stream->read();
 
-                auto oblk = outputs[0].fifo->newBufferSamples(nsamples, sizeof(T));
+                if (nsamples > 0)
+                {
+                    auto oblk = outputs[0].fifo->newBufferSamples(nsamples, sizeof(T));
 
-                memcpy(oblk.template getSamples<T>(), old_stream->readBuf, nsamples * sizeof(T));
+                    memcpy(oblk.template getSamples<T>(), old_stream->readBuf, nsamples * sizeof(T));
 
-                oblk.size = nsamples;
-                outputs[0].fifo->wait_enqueue(oblk);
+                    oblk.size = nsamples;
+                    outputs[0].fifo->wait_enqueue(oblk);
+                }
 
                 old_stream->flush();
                 return false;
