@@ -1,6 +1,8 @@
 #include "module_demod_ndsp.h"
 #include "imgui/imgui.h"
 #include "pipeline/module.h"
+#include <chrono>
+#include <thread>
 #include <unistd.h>
 
 namespace satdump
@@ -41,7 +43,7 @@ namespace satdump
                 const_block->start();
 
                 while (!old2new_block->old_stream_exit)
-                    sleep(1);
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
                 old2new_block->stop();
                 demod_block->stop(false, false);
