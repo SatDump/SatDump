@@ -3,7 +3,6 @@
 #include "pipeline/module.h"
 #include <chrono>
 #include <thread>
-#include <unistd.h>
 
 namespace satdump
 {
