@@ -19,10 +19,12 @@
 #include "recorder/recorder.h"
 #include "satdump_vars.h"
 #include <GLFW/glfw3.h>
+#include <chrono>
 #include <exception>
 #include <filesystem>
 #include <signal.h>
 #include <string>
+#include <thread>
 #include <vector>
 
 GLFWwindow *window;
@@ -274,6 +276,28 @@ int main(int argc, char *argv[])
         satdump::renderMainUI();
     } while (!glfwWindowShouldClose(window) && !signal_caught);
 
+    // Avoid getting stuck
+    bool killThread_cancel = false;
+    std::thread killThread(
+        [&]()
+        {
+            size_t runs = 0;
+            while (1)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+                if (runs > 5e3) // Wait 5s
+                {
+                    logger->error("Something seems to be hanging on exit. Terminating! Please report.");
+                    exit(1);
+                }
+                else if (killThread_cancel)
+                    return;
+
+                runs++;
+            }
+        });
+
     satdump::exitMainUI();
 
     // Cleanup
@@ -301,6 +325,10 @@ int main(int argc, char *argv[])
 
     logger->info("Exiting!");
     satdump::exitSatDump();
+
+    killThread_cancel = true;
+    if (killThread.joinable())
+        killThread.join();
 
 #ifdef __APPLE__
     exit(0);
