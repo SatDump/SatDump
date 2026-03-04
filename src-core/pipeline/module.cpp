@@ -1,5 +1,6 @@
-#include "pipeline/modules/demod/module_demod_ndsp.h"
 #define SATDUMP_DLL_EXPORT 1
+
+#include "pipeline/modules/demod/module_demod_ndsp.h"
 
 #include "core/exception.h"
 #include "core/plugin.h"
