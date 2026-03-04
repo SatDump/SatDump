@@ -76,12 +76,12 @@ namespace satdump
 
             if (running)
             {
-                if (widgets::MenuItemTooltip("\ufc62", "Stop flowgraph"))
+                if (widgets::MenuItemTooltip(u8"\ufc62", "Stop flowgraph"))
                     flowgraph.stop();
             }
             else
             {
-                if (widgets::MenuItemTooltip("\uf909", "Start flowgraph"))
+                if (widgets::MenuItemTooltip(u8"\uf909", "Start flowgraph"))
                 {
                     if (flow_thread.joinable())
                         flow_thread.join();
@@ -91,8 +91,8 @@ namespace satdump
             }
 
             bool is_save_as = false;
-            if (widgets::MenuItemTooltip("\ueb4b", "Save file", NULL, false, current_file != "") || //
-                (is_save_as = widgets::MenuItemTooltip("\ueb4a", "Save file as")) ||                //
+            if (widgets::MenuItemTooltip(u8"\ueb4b", "Save file", NULL, false, current_file != "") || //
+                (is_save_as = widgets::MenuItemTooltip(u8"\ueb4a", "Save file as")) ||                //
                 (ImGui::IsKeyDown(ImGuiKey_ReservedForModCtrl) && ImGui::IsKeyPressed(ImGuiKey_S)))
             {
                 auto fun = [this, is_save_as]()
@@ -109,7 +109,7 @@ namespace satdump
                 tq.push(fun);
             }
 
-            if (widgets::MenuItemTooltip("\uea7f", "Load a file"))
+            if (widgets::MenuItemTooltip(u8"\uea7f", "Load a file"))
             {
                 auto fun = [this]()
                 {

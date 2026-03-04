@@ -126,7 +126,7 @@ namespace satdump
             if (ImGui::BeginMenuBar())
             {
                 // Show/Hide explorer sidebar
-                if (ImGui::MenuItem("\uf85b", NULL, explorer_app->show_panel))
+                if (ImGui::MenuItem(u8"\uf85b", NULL, explorer_app->show_panel))
                     explorer_app->show_panel = !explorer_app->show_panel;
 
                 if (ImGui::BeginMenu("File"))
