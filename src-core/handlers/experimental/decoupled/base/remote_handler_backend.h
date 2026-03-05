@@ -97,6 +97,15 @@ namespace satdump
             }
 
         public:
+            virtual nlohmann::ordered_json handleCommand(nlohmann::json cmd)
+            {
+                nlohmann::ordered_json r;
+                r["res"] = false;
+                r["error"] = "Unknown command!";
+                return r;
+            }
+
+        public:
             RemoteHandlerBackend() {}
             ~RemoteHandlerBackend() {}
 

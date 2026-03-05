@@ -72,10 +72,15 @@ namespace satdump
                         v.h = nullptr;
                 });
 
-            // Load if the day if we can, "randomly"
-            if (resources::resourceExists("tod.txt"))
+// Load tip of the day if we can, "randomly"
+#ifdef BUILD_IS_DEBUG
+            std::string tod_res = "todd.txt";
+#else
+            std::string tod_res = "tod.txt";
+#endif
+            if (resources::resourceExists(tod_res))
             {
-                std::ifstream message_of_the_day_f(resources::getResourcePath("tod.txt"));
+                std::ifstream message_of_the_day_f(resources::getResourcePath(tod_res));
                 std::vector<std::string> lines;
                 std::string l;
                 while (std::getline(message_of_the_day_f, l))
@@ -361,7 +366,11 @@ namespace satdump
                         ImVec2 line_size = ImGui::CalcTextSize(line.c_str());
                         last_pos = ((float)dims.second / 2) + ((80 + i * 20) * scale);
                         ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), last_pos});
+#ifdef BUILD_IS_DEBUG
+                        ImGui::TextColored(ImColor(255, 0, 0), "%s", line.c_str());
+#else
                         ImGui::TextDisabled("%s", line.c_str());
+#endif
                         p += line.size();
                         i++;
                     }

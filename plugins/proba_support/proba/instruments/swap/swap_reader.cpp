@@ -69,7 +69,7 @@ namespace proba
         void SWAPReader::save()
         {
             // This is temporary code until a resource system is implemented everywhere.
-            image::Image adc_mask, ffc_mask;
+            /*image::Image adc_mask, ffc_mask;
             bool masks_found = false;
             if (resources::resourceExists("proba/swap/adc_mask.png") && resources::resourceExists("proba/swap/ffc_mask.png"))
             {
@@ -80,7 +80,7 @@ namespace proba
             else
             {
                 logger->error("Necessary resources were not found, no correction will be applied!");
-            }
+            }*/
 
             for (std::pair<const time_t, std::pair<int, std::pair<std::string, std::vector<uint8_t>>>> &currentPair : currentOuts)
             {
@@ -98,7 +98,7 @@ namespace proba
                     continue;
                 }
 
-                if (masks_found)
+                /*if (masks_found)
                 {
                     for (size_t i = 0; i < img.height() * img.width(); i++)
                     {
@@ -106,7 +106,7 @@ namespace proba
                         img.setf(i, std::max<float>(0, img.getf(i) - adc_mask.getf(i) * 2.8)); // ADC Bias correction
                         img.setf(i, std::max<float>(0, img.getf(i) - ffc_mask.getf(i) * 2.8)); // Flat field correction
                     }
-                }
+                }*/
 
                 // Despeckle
                 image::simple_despeckle(img, 20);

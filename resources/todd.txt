@@ -1,0 +1,7 @@
+Tip of the day : This SatDump is in DEBUG mode, don't complain if it's unusually slow... :-)
+So... You like wasting CPU cycles don't you? Otherwise why would you be running SatDump in debug mode?
+This instance of SatDump was built in Debug mode. Expect degraded performance!
+Before you complain about weird drops in your images, think about re-building SatDump in release mode.
+Debug mode isn't much use outside of debugging. Maybe you shouldn't be using it?
+Note : SatDump was built in Debug. Unless you're a developer, you likely don't want this.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque elementum feugiat tristique. Oh, sorry for wasting you're time... But since you're wasting performance in debug mode, that's probably fair! :-)

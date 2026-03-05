@@ -1,4 +1,5 @@
 #include "cli.h"
+#include "core/cli/experimental/hserver.h"
 #include "core/plugin.h"
 #include "libs/CLI11.hpp"
 #include "logger.h"
@@ -47,6 +48,7 @@ namespace satdump
                 cmd_handlers.push_back(std::make_shared<satdump::ModuleCmdHandler>());
                 cmd_handlers.push_back(std::make_shared<satdump::ProbeCmdHandler>());
                 cmd_handlers.push_back(std::make_shared<satdump::ProcessCmdHandler>());
+                cmd_handlers.push_back(std::make_shared<satdump::HServerCmdHandler>());
             }
 
             eventBus->fire_event<RegisterSubcommandEvent>({cmd_handlers, is_gui});
