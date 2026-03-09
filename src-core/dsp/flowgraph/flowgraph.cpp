@@ -8,7 +8,9 @@
 #include "core/style.h"
 #include "dsp/block.h"
 #include "imgui/imgui.h"
+#include "imgui/imgui_internal.h"
 #include "imgui/imnodes/imnodes.h"
+#include "libs/muparser/muParser.h"
 #include "logger.h"
 
 #include "utils/string.h"
@@ -322,6 +324,102 @@ namespace satdump
                     ImGui::EndPopup();
                 }
             }
+
+            if (!is_running)
+            {
+                int id = 0;
+                if (ImNodes::IsNodeHovered(&id) && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+                {
+                    for (auto &n : nodes)
+                    {
+                        if (n->id == id)
+                        {
+                            logger->info("Node " + n->internal->blk->d_id);
+                            n->show_vars_win = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        void Flowgraph::render2()
+        {
+            std::lock_guard<std::mutex> lg(flow_mtx);
+
+            for (auto &n : nodes)
+            {
+                if (n->show_vars_win)
+                {
+                    std::string name = n->internal->blk->d_id + "##nodevarspopup";
+                    ImGui::Begin(name.c_str(), &n->show_vars_win, ImGuiWindowFlags_AlwaysAutoResize);
+                    for (auto &v : n->vars)
+                    {
+                        ImGui::Text("%s", v.first.c_str());
+                        ImGui::SameLine();
+                        ImGui::InputText(std::string("##" + v.first).c_str(), &v.second);
+                        ImGui::SameLine();
+                        if (ImGui::Button(("Delete##" + name).c_str()))
+                        {
+                            n->vars.erase(v.first);
+                            break;
+                        }
+                    }
+
+                    for (auto &v : n->internal->blk->get_cfg().items())
+                    {
+                        bool found = false;
+                        for (auto &v2 : n->vars)
+                            if (v2.first == v.key())
+                                found = true;
+                        if (found)
+                            continue;
+
+                        // ImGui::Text("%s : ", v.key().c_str());
+                        // ImGui::SameLine();
+                        std::string bname = v.key() + "##nodeaddbtn";
+                        if (ImGui::Button(bname.c_str()))
+                        {
+                            n->vars.emplace(v.key(), "");
+                        }
+                    }
+
+                    ImGui::End();
+                }
+            }
+        }
+
+        void Flowgraph::updateVars()
+        {
+            std::lock_guard<std::mutex> lg(flow_mtx);
+
+            for (auto &n : nodes)
+            {
+                for (auto &v : n->vars)
+                {
+                    try
+                    {
+                        mu::Parser equParser;
+                        equParser.SetExpr(v.second);
+
+                        for (auto &var : variables)
+                            equParser.DefineConst(var.first, var.second);
+
+                        int nout = 0;
+                        double *out = equParser.Eval(nout);
+
+                        nlohmann::json sv;
+                        sv[v.first] = *out;
+
+                        if (nout == 1)
+                            n->internal->setP(sv);
+                        else
+                            logger->error("Error parsing expression for %s!", v.first.c_str());
+                    }
+                    catch (mu::ParserError &)
+                    {
+                    }
+                }
+            }
         }
 
         void Flowgraph::run()
@@ -330,6 +428,9 @@ namespace satdump
 
             try
             {
+                // Update variables
+                updateVars();
+
                 // Hold all input IDs that will be connected
                 std::vector<int> all_connected_inputs;
 
@@ -342,6 +443,9 @@ namespace satdump
                 {
                     if (n->disabled)
                         continue;
+
+                    // UI Stuff, safety
+                    n->show_vars_win = false;
 
                     //                    n->internal->applyP(); // TODOREWORK?
                     auto &blk = n->internal->blk;
@@ -386,7 +490,7 @@ namespace satdump
                                             {
                                                 // n2->internal->blk->inputs[b2] = blk->outputs[o];
                                                 inputs_to_feed.push_back({n2->internal->blk, b2}); //  &n2->internal->blk->get_output(b2, 16 /*TODOREWORK*/));
-                                                logger->trace("Assigned to : " + n2->internal->blk->d_id);
+                                                // logger->trace("Assigned to : " + n2->internal->blk->d_id);
                                                 all_connected_inputs.push_back(l.end);
                                             }
 
@@ -412,7 +516,7 @@ namespace satdump
                                             {
                                                 // n2->internal->blk->inputs[b2] = blk->outputs[o];
                                                 inputs_to_feed.push_back({n2->internal->blk, b2}); // inputs_to_feed.push_back(&n2->internal->blk->get_output(b2, 16 /*TODOREWORK*/));
-                                                logger->trace("Assigned to : " + n2->internal->blk->d_id);
+                                                // logger->trace("Assigned to : " + n2->internal->blk->d_id);
                                                 all_connected_inputs.push_back(l.start);
                                             }
 
@@ -429,7 +533,7 @@ namespace satdump
                         }
                         else if (inputs_to_feed.size() > 1)
                         {
-                            logger->error("More than one to connect! Adding splitter");
+                            // logger->error("More than one to connect! Adding splitter");
 
                             std::shared_ptr<ndsp::Block> ptr;
                             if (blk->get_output(o, 0).type == ndsp::BlockIOType::DSP_SAMPLE_TYPE_CF32)

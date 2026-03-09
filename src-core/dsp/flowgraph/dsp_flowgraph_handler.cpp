@@ -40,17 +40,17 @@ namespace satdump
         {
             bool running = flowgraph.is_running;
 
-            if (ImGui::CollapsingHeader("Variables"))
+            if (ImGui::CollapsingHeader("Variables", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                if (running)
-                    style::beginDisabled();
-
                 for (auto &v : flowgraph.variables)
                 {
                     ImGui::Text("%s", v.first.c_str());
                     ImGui::SameLine();
                     ImGui::InputDouble(std::string("##" + v.first).c_str(), &v.second);
                 }
+
+                if (running)
+                    style::beginDisabled();
 
                 ImGui::InputText("##addvarname", &to_add_var_name);
                 ImGui::SameLine();
@@ -62,6 +62,9 @@ namespace satdump
 
                 if (running)
                     style::endDisabled();
+
+                if (ImGui::Button("Update"))
+                    flowgraph.updateVars();
             }
 
             if (ImGui::CollapsingHeader("Flowgraph"))
@@ -95,6 +98,9 @@ namespace satdump
                 (is_save_as = widgets::MenuItemTooltip(u8"\ueb4a", "Save file as")) ||                //
                 (ImGui::IsKeyDown(ImGuiKey_ReservedForModCtrl) && ImGui::IsKeyPressed(ImGuiKey_S)))
             {
+                if (current_file == "")
+                    is_save_as = true;
+
                 auto fun = [this, is_save_as]()
                 {
                     std::string save_at = is_save_as ? backend::saveFileDialog({{"SatDump DSP Flowgraph", "satdump_dsp_flowgraph"}}, "", "flowgraph.satdump_dsp_flowgraph") : current_file;
@@ -157,6 +163,8 @@ namespace satdump
             ImGui::End();
 
             ctx.end();
+
+            flowgraph.render2();
         }
     } // namespace handlers
 } // namespace satdump

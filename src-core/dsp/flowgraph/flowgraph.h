@@ -53,6 +53,10 @@ namespace satdump
 
                 bool disabled = false;
 
+                // Variable assigment
+                bool show_vars_win = false;
+                std::map<std::string, std::string> vars;
+
                 struct InOut
                 {
                     int id;
@@ -76,10 +80,10 @@ namespace satdump
                 }
 
             public:
-                Node(Flowgraph *f, std::string id, std::shared_ptr<NodeInternal> i) : _f(f), id(f->getNewNodeID()), internal_id(id), title(i->blk->d_id), internal(i) { updateIO(); }
+                Node(Flowgraph *f, std::string id, std::shared_ptr<NodeInternal> i) : _f(f), id(f->getNewNodeID()), title(i->blk->d_id), internal_id(id), internal(i) { updateIO(); }
 
                 Node(Flowgraph *f, nlohmann::json j, std::shared_ptr<NodeInternal> i)
-                    : _f(f), id(j["id"]), internal_id(j["int_id"]), title(i->blk->d_id), node_io(j["io"].get<std::vector<InOut>>()), internal(i)
+                    : _f(f), id(j["id"]), title(i->blk->d_id), internal_id(j["int_id"]), internal(i), node_io(j["io"].get<std::vector<InOut>>())
                 {
                     if (j.contains("int_cfg"))
                         internal->setP(j["int_cfg"]);
@@ -89,6 +93,9 @@ namespace satdump
 
                     if (j.contains("disabled"))
                         disabled = j["disabled"];
+
+                    if (j.contains("vars"))
+                        vars = j["vars"];
                 }
 
                 nlohmann::json getJSON()
@@ -101,6 +108,7 @@ namespace satdump
                     j["pos_x"] = pos_x;
                     j["pos_y"] = pos_y;
                     j["disabled"] = disabled;
+                    j["vars"] = vars;
                     return j;
                 }
             };
@@ -143,6 +151,9 @@ namespace satdump
             }
 
             void render();
+            void render2();
+
+            void updateVars();
 
             nlohmann::json getJSON()
             {
