@@ -256,7 +256,7 @@ namespace satdump
                             ImGui::SameLine();
                             ImGui::InputText(std::string("##" + v.first).c_str(), &v.second);
                             ImGui::SameLine();
-                            if (ImGui::Button(("Delete##" + name).c_str()))
+                            if (ImGui::Button(("Delete##" + name + v.first).c_str()))
                             {
                                 n->vars.erase(v.first);
                                 break;
