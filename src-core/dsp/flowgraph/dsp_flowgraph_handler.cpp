@@ -41,13 +41,22 @@ namespace satdump
             {
                 for (auto &v : flowgraph.variables)
                 {
-                    ImGui::Text("%s", v.first.c_str());
-                    ImGui::SameLine();
+                    ImGui::SeparatorText(v.first.c_str());
                     ImGui::InputDouble(std::string("##" + v.first).c_str(), &v.second);
+                    ImGui::SameLine();
+
+                    if (ImGui::Button(("Delete##" + v.first).c_str()))
+                    {
+                        flowgraph.variables.erase(v.first);
+                        break;
+                    }
                 }
 
                 if (running)
                     style::beginDisabled();
+
+                if (flowgraph.variables.size())
+                    ImGui::SeparatorText("Add/Update");
 
                 ImGui::InputText("##addvarname", &to_add_var_name);
                 ImGui::SameLine();
