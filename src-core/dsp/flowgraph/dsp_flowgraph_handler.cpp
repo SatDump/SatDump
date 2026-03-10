@@ -1,16 +1,13 @@
 #include "dsp_flowgraph_handler.h"
 #include "common/widgets/menuitem_tooltip.h"
 #include "core/backend.h"
-
 #include "dsp/flowgraph/dsp_flowgraph_register.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_flags.h"
 #include "imgui/imnodes/imnodes.h"
 #include "logger.h"
-
 #include "nlohmann/json_utils.h"
 #include <complex.h>
-#include <fstream>
 
 namespace satdump
 {
@@ -20,7 +17,7 @@ namespace satdump
         {
             handler_tree_icon = u8"\uf92f";
 
-            ndsp::registerNodesInFlowgraph(flowgraph);
+            ndsp::flowgraph::registerNodesInFlowgraph(flowgraph);
 
             if (file != "")
                 flowgraph.setJSON(loadCborFile(file));
@@ -38,7 +35,7 @@ namespace satdump
 
         void DSPFlowGraphHandler::drawMenu()
         {
-            bool running = flowgraph.is_running;
+            bool running = flowgraph.isRunning();
 
             if (ImGui::CollapsingHeader("Variables", ImGuiTreeNodeFlags_DefaultOpen))
             {
@@ -75,7 +72,7 @@ namespace satdump
 
         void DSPFlowGraphHandler::drawMenuBar()
         {
-            bool running = flowgraph.is_running;
+            bool running = flowgraph.isRunning();
 
             if (running)
             {
@@ -129,20 +126,6 @@ namespace satdump
                 };
                 tq.push(fun);
             }
-
-#if 0
-            if (ImGui::MenuItem("To Clipboard"))
-            {
-                std::string json = flowgraph.getJSON().dump(4);
-                ImGui::SetClipboardText(json.c_str());
-            }
-
-            if (ImGui::MenuItem("From Clipboard"))
-            {
-                nlohmann::json v = nlohmann::json::parse(ImGui::GetClipboardText());
-                flowgraph.setJSON(v);
-            }
-#endif
         }
 
         void DSPFlowGraphHandler::drawContents(ImVec2 win_size)
@@ -164,7 +147,7 @@ namespace satdump
 
             ctx.end();
 
-            flowgraph.render2();
+            flowgraph.renderWindows();
         }
     } // namespace handlers
 } // namespace satdump

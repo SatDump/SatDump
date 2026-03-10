@@ -1,9 +1,11 @@
 #include "dsp_flowgraph_register.h"
 #include "common/dsp_source_sink/format_notated.h"
 #include "core/plugin.h"
+#include <cstdint>
 
 #include "dsp/agc/agc.h"
 #include "dsp/agc/blk_agc.h"
+#include "dsp/clock_recovery/clock_recovery_mm.h"
 #include "dsp/clock_recovery/clock_recovery_mm_fast.h"
 #include "dsp/conv/char_to_float.h"
 #include "dsp/conv/complex_to_float.h"
@@ -18,10 +20,10 @@
 #include "dsp/conv/real_to_complex.h"
 #include "dsp/conv/short_to_float.h"
 #include "dsp/conv/uchar_to_float.h"
-#include "dsp/device/dev.h"
+#include "dsp/displays/const_disp.h"
+#include "dsp/displays/hist_disp.h"
 #include "dsp/fft/fft_pan.h"
 #include "dsp/filter/rrc.h"
-#include "dsp/flowgraph/dsp_flowgraph_handler.h"
 #include "dsp/flowgraph/flowgraph.h"
 #include "dsp/hier/psk_demod.h"
 #include "dsp/io/file_sink.h"
@@ -30,221 +32,212 @@
 #include "dsp/io/iq_source.h"
 #include "dsp/io/nng_sink.h"
 #include "dsp/io/waveform.h"
-#include "dsp/legacy/module_wrapper.h"
 #include "dsp/path/splitter.h"
+#include "dsp/pll/costas.h"
 #include "dsp/pll/pll_carrier_tracking.h"
 #include "dsp/resampling/rational_resampler.h"
 #include "dsp/utils/add.h"
 #include "dsp/utils/blanker.h"
 #include "dsp/utils/correct_iq.h"
+#include "dsp/utils/cyclostationary_analysis.h"
+#include "dsp/utils/delay_one_imag.h"
 #include "dsp/utils/exponentiate.h"
+#include "dsp/utils/freq_shift.h"
+#include "dsp/utils/hilbert.h"
 #include "dsp/utils/multiply.h"
 #include "dsp/utils/psk_snr_estimator.h"
+#include "dsp/utils/quadrature_demod.h"
 #include "dsp/utils/samplerate_meter.h"
 #include "dsp/utils/subtract.h"
 #include "dsp/utils/throttle.h"
+#include "dsp/utils/vco.h"
 
 #include "common/widgets/fft_plot.h"
-
-#include "common/dsp/filter/firdes.h"
-#include "dsp/filter/fir.h"
-
-#include "dsp/clock_recovery/clock_recovery_mm.h"
-#include "dsp/displays/const_disp.h"
-#include "dsp/displays/hist_disp.h"
-#include "dsp/pll/costas.h"
-
-#include "dsp/utils/correct_iq.h"
-#include "dsp/utils/cyclostationary_analysis.h"
-#include "dsp/utils/delay_one_imag.h"
-#include "dsp/utils/freq_shift.h"
-#include "dsp/utils/hilbert.h"
-#include "dsp/utils/quadrature_demod.h"
-#include "dsp/utils/vco.h"
-#include <cstdint>
 
 namespace satdump
 {
     namespace ndsp
     {
-        class NodeTestIQSource : public ndsp::NodeInternal
+        namespace flowgraph
         {
-        public:
-            NodeTestIQSource(const ndsp::Flowgraph *f) : ndsp::NodeInternal(f, std::make_shared<ndsp::IQSourceBlock>()) {}
-
-            virtual bool render()
+            class NodeTestIQSource : public NodeInternal
             {
-                ndsp::NodeInternal::render();
-                float prog = double(((ndsp::IQSourceBlock *)blk.get())->d_progress) / double(((ndsp::IQSourceBlock *)blk.get())->d_filesize);
-                ImGui::ProgressBar(prog, {100, 20});
-                return false;
-            }
-        };
+            public:
+                NodeTestIQSource(const Flowgraph *f) : NodeInternal(f, std::make_shared<ndsp::IQSourceBlock>()) {}
 
-        class NodeTestConst : public ndsp::NodeInternal
-        {
-        public:
-            NodeTestConst(const ndsp::Flowgraph *f) : ndsp::NodeInternal(f, std::make_shared<ndsp::ConstellationDisplayBlock>()) {}
+                virtual bool render()
+                {
+                    NodeInternal::render();
+                    float prog = double(((ndsp::IQSourceBlock *)blk.get())->d_progress) / double(((ndsp::IQSourceBlock *)blk.get())->d_filesize);
+                    ImGui::ProgressBar(prog, {100, 20});
+                    return false;
+                }
+            };
 
-            virtual bool render()
+            class NodeTestConst : public NodeInternal
             {
-                ndsp::NodeInternal::render();
-                ((ndsp::ConstellationDisplayBlock *)blk.get())->constel.draw();
-                return false;
-            }
-        };
+            public:
+                NodeTestConst(const Flowgraph *f) : NodeInternal(f, std::make_shared<ndsp::ConstellationDisplayBlock>()) {}
 
-        template <typename T>
-        class NodeSamplerateMeter : public ndsp::NodeInternal
-        {
-        public:
-            NodeSamplerateMeter(const ndsp::Flowgraph *f) : ndsp::NodeInternal(f, std::make_shared<ndsp::SamplerateMeterBlock<T>>()) {}
+                virtual bool render()
+                {
+                    NodeInternal::render();
+                    ((ndsp::ConstellationDisplayBlock *)blk.get())->constel.draw();
+                    return false;
+                }
+            };
 
-            virtual bool render()
+            template <typename T>
+            class NodeSamplerateMeter : public NodeInternal
             {
-                ndsp::NodeInternal::render();
-                ImGui::Text("%s", format_notated(((ndsp::SamplerateMeterBlock<T> *)blk.get())->measured_samplerate, "SPS", 4).c_str());
-                return false;
-            }
-        };
+            public:
+                NodeSamplerateMeter(const Flowgraph *f) : NodeInternal(f, std::make_shared<ndsp::SamplerateMeterBlock<T>>()) {}
 
-        class NodeTestFFT : public ndsp::NodeInternal
-        {
-        private:
-            widgets::FFTPlot fft;
+                virtual bool render()
+                {
+                    NodeInternal::render();
+                    ImGui::Text("%s", format_notated(((ndsp::SamplerateMeterBlock<T> *)blk.get())->measured_samplerate, "SPS", 4).c_str());
+                    return false;
+                }
+            };
 
-        public:
-            NodeTestFFT(const ndsp::Flowgraph *f) : ndsp::NodeInternal(f, std::make_shared<ndsp::FFTPanBlock>()), fft(((ndsp::FFTPanBlock *)blk.get())->output_fft_buff, 8192, -150, 150)
+            class NodeTestFFT : public NodeInternal
             {
-                ((ndsp::FFTPanBlock *)blk.get())->set_fft_settings(8192, 6e6);
-            }
+            private:
+                widgets::FFTPlot fft;
 
-            virtual bool render()
+            public:
+                NodeTestFFT(const Flowgraph *f) : NodeInternal(f, std::make_shared<ndsp::FFTPanBlock>()), fft(((ndsp::FFTPanBlock *)blk.get())->output_fft_buff, 8192, -150, 150)
+                {
+                    ((ndsp::FFTPanBlock *)blk.get())->set_fft_settings(8192, 6e6);
+                }
+
+                virtual bool render()
+                {
+                    NodeInternal::render();
+                    fft.draw({500, 500});
+                    return false;
+                }
+            };
+
+            class NodeTestHisto : public NodeInternal
             {
-                ndsp::NodeInternal::render();
-                fft.draw({500, 500});
-                return false;
-            }
-        };
+            public:
+                NodeTestHisto(const Flowgraph *f) : NodeInternal(f, std::make_shared<ndsp::HistogramDisplayBlock>()) {}
 
-        class NodeTestHisto : public ndsp::NodeInternal
-        {
-        public:
-            NodeTestHisto(const ndsp::Flowgraph *f) : ndsp::NodeInternal(f, std::make_shared<ndsp::HistogramDisplayBlock>()) {}
+                virtual bool render()
+                {
+                    NodeInternal::render();
+                    ((ndsp::HistogramDisplayBlock *)blk.get())->histo.draw();
+                    return false;
+                }
+            };
 
-            virtual bool render()
+            void registerNodesInFlowgraph(Flowgraph &flowgraph)
             {
-                ndsp::NodeInternal::render();
-                ((ndsp::HistogramDisplayBlock *)blk.get())->histo.draw();
-                return false;
-            }
-        };
+                registerNode<NodeTestIQSource>(flowgraph, "IO/IQ Source");
 
-        void registerNodesInFlowgraph(ndsp::Flowgraph &flowgraph)
-        {
-            registerNode<NodeTestIQSource>(flowgraph, "IO/IQ Source");
+                registerNode<NodeSamplerateMeter<complex_t>>(flowgraph, "Utils/Samplerate Meter CC");
+                registerNode<NodeSamplerateMeter<float>>(flowgraph, "Utils/Samplerate Meter FF");
 
-            registerNode<ndsp::NodeSamplerateMeter<complex_t>>(flowgraph, "Utils/Samplerate Meter CC");
-            registerNode<ndsp::NodeSamplerateMeter<float>>(flowgraph, "Utils/Samplerate Meter FF");
+                registerNodeSimple<ndsp::IQSinkBlock>(flowgraph, "IO/IQ Sink");
 
-            registerNodeSimple<ndsp::IQSinkBlock>(flowgraph, "IO/IQ Sink");
+                registerNode<NodeTestFFT>(flowgraph, "FFT/FFT Pan");
+                registerNode<NodeTestConst>(flowgraph, "View/Constellation Display");
+                registerNode<NodeTestHisto>(flowgraph, "View/Histogram Display");
 
-            registerNode<NodeTestFFT>(flowgraph, "FFT/FFT Pan");
-            registerNode<NodeTestConst>(flowgraph, "View/Constellation Display");
-            registerNode<NodeTestHisto>(flowgraph, "View/Histogram Display");
+                registerNodeSimple<ndsp::AGCBlock<complex_t>>(flowgraph, "AGC/Agc CC");
+                registerNodeSimple<ndsp::AGCBlock<float>>(flowgraph, "AGC/Agc FF");
 
-            registerNodeSimple<ndsp::AGCBlock<complex_t>>(flowgraph, "AGC/Agc CC");
-            registerNodeSimple<ndsp::AGCBlock<float>>(flowgraph, "AGC/Agc FF");
+                registerNodeSimple<ndsp::BlkAGCBlock<complex_t>>(flowgraph, "AGC/Block Agc CC");
+                registerNodeSimple<ndsp::BlkAGCBlock<float>>(flowgraph, "AGC/Block Agc FF");
 
-            registerNodeSimple<ndsp::BlkAGCBlock<complex_t>>(flowgraph, "AGC/Block Agc CC");
-            registerNodeSimple<ndsp::BlkAGCBlock<float>>(flowgraph, "AGC/Block Agc FF");
+                registerNodeSimple<ndsp::MultiplyBlock<float>>(flowgraph, "Utils/Multiply FF");
+                registerNodeSimple<ndsp::MultiplyBlock<complex_t>>(flowgraph, "Utils/Multiply CC");
 
-            registerNodeSimple<ndsp::MultiplyBlock<float>>(flowgraph, "Utils/Multiply FF");
-            registerNodeSimple<ndsp::MultiplyBlock<complex_t>>(flowgraph, "Utils/Multiply CC");
+                registerNodeSimple<ndsp::SubtractBlock<float>>(flowgraph, "Utils/Subtract FF");
+                registerNodeSimple<ndsp::SubtractBlock<complex_t>>(flowgraph, "Utils/Subtract CC");
 
-            registerNodeSimple<ndsp::SubtractBlock<float>>(flowgraph, "Utils/Subtract FF");
-            registerNodeSimple<ndsp::SubtractBlock<complex_t>>(flowgraph, "Utils/Subtract CC");
+                registerNodeSimple<ndsp::AddBlock<float>>(flowgraph, "Utils/Add FF");
+                registerNodeSimple<ndsp::AddBlock<complex_t>>(flowgraph, "Utils/Add CC");
 
-            registerNodeSimple<ndsp::AddBlock<float>>(flowgraph, "Utils/Add FF");
-            registerNodeSimple<ndsp::AddBlock<complex_t>>(flowgraph, "Utils/Add CC");
+                registerNodeSimple<ndsp::CostasBlock>(flowgraph, "PLL/Costas Loop");
+                registerNodeSimple<ndsp::PLLCarrierTrackingBlock>(flowgraph, "PLL/PLL Carrier Tracking");
 
-            registerNodeSimple<ndsp::CostasBlock>(flowgraph, "PLL/Costas Loop");
-            registerNodeSimple<ndsp::PLLCarrierTrackingBlock>(flowgraph, "PLL/PLL Carrier Tracking");
+                registerNodeSimple<ndsp::MMClockRecoveryBlock<complex_t>>(flowgraph, "Timing/Clock Recovery MM CC");
+                registerNodeSimple<ndsp::MMClockRecoveryBlock<float>>(flowgraph, "Timing/Clock Recovery MM FF");
 
-            registerNodeSimple<ndsp::MMClockRecoveryBlock<complex_t>>(flowgraph, "Timing/Clock Recovery MM CC");
-            registerNodeSimple<ndsp::MMClockRecoveryBlock<float>>(flowgraph, "Timing/Clock Recovery MM FF");
+                registerNodeSimple<ndsp::MMClockRecoveryFastBlock<complex_t>>(flowgraph, "Timing/Clock Recovery Fast MM CC");
+                registerNodeSimple<ndsp::MMClockRecoveryFastBlock<float>>(flowgraph, "Timing/Clock Recovery Fast MM FF");
 
-            registerNodeSimple<ndsp::MMClockRecoveryFastBlock<complex_t>>(flowgraph, "Timing/Clock Recovery Fast MM CC");
-            registerNodeSimple<ndsp::MMClockRecoveryFastBlock<float>>(flowgraph, "Timing/Clock Recovery Fast MM FF");
+                registerNodeSimple<ndsp::RationalResamplerBlock<complex_t>>(flowgraph, "Resampling/Rational Resampler CC");
+                registerNodeSimple<ndsp::RationalResamplerBlock<float>>(flowgraph, "Resampling/Rational Resampler FF");
 
-            registerNodeSimple<ndsp::RationalResamplerBlock<complex_t>>(flowgraph, "Resampling/Rational Resampler CC");
-            registerNodeSimple<ndsp::RationalResamplerBlock<float>>(flowgraph, "Resampling/Rational Resampler FF");
+                registerNodeSimple<ndsp::RRC_FIRBlock<complex_t>>(flowgraph, "Filter/RRC FIR CC");
 
-            registerNodeSimple<ndsp::RRC_FIRBlock<complex_t>>(flowgraph, "Filter/RRC FIR CC");
+                registerNodeSimple<ndsp::CyclostationaryAnalysis>(flowgraph, "Utils/Cyclostationary Analysis");
 
-            registerNodeSimple<ndsp::CyclostationaryAnalysis>(flowgraph, "Utils/Cyclostationary Analysis");
+                registerNodeSimple<ndsp::DelayOneImagBlock>(flowgraph, "Utils/Delay One Imag");
 
-            registerNodeSimple<ndsp::DelayOneImagBlock>(flowgraph, "Utils/Delay One Imag");
+                registerNodeSimple<ndsp::CorrectIQBlock<complex_t>>(flowgraph, "Utils/Correct IQ");
 
-            registerNodeSimple<ndsp::CorrectIQBlock<complex_t>>(flowgraph, "Utils/Correct IQ");
+                registerNodeSimple<ndsp::FreqShiftBlock>(flowgraph, "Utils/Frequency Shift");
 
-            registerNodeSimple<ndsp::FreqShiftBlock>(flowgraph, "Utils/Frequency Shift");
+                registerNodeSimple<ndsp::QuadratureDemodBlock>(flowgraph, "Utils/Quadrature Demod");
+                registerNodeSimple<ndsp::HilbertBlock>(flowgraph, "Utils/Hilbert Transform");
+                registerNodeSimple<ndsp::VCOBlock>(flowgraph, "Utils/VCO");
 
-            registerNodeSimple<ndsp::QuadratureDemodBlock>(flowgraph, "Utils/Quadrature Demod");
-            registerNodeSimple<ndsp::HilbertBlock>(flowgraph, "Utils/Hilbert Transform");
-            registerNodeSimple<ndsp::VCOBlock>(flowgraph, "Utils/VCO");
+                registerNodeSimple<ndsp::SplitterBlock<complex_t>>(flowgraph, "Utils/Splitter CC");
+                registerNodeSimple<ndsp::SplitterBlock<float>>(flowgraph, "Utils/Splitter FF");
 
-            registerNodeSimple<ndsp::SplitterBlock<complex_t>>(flowgraph, "Utils/Splitter CC");
-            registerNodeSimple<ndsp::SplitterBlock<float>>(flowgraph, "Utils/Splitter FF");
+                registerNodeSimple<ndsp::ThrottleBlock<complex_t>>(flowgraph, "Utils/Throttle CC");
+                registerNodeSimple<ndsp::ThrottleBlock<float>>(flowgraph, "Utils/Throttle FF");
 
-            registerNodeSimple<ndsp::ThrottleBlock<complex_t>>(flowgraph, "Utils/Throttle CC");
-            registerNodeSimple<ndsp::ThrottleBlock<float>>(flowgraph, "Utils/Throttle FF");
+                registerNodeSimple<ndsp::BlankerBlock<complex_t>>(flowgraph, "Utils/Blanker CC");
+                registerNodeSimple<ndsp::BlankerBlock<float>>(flowgraph, "Utils/Blanker FF");
 
-            registerNodeSimple<ndsp::BlankerBlock<complex_t>>(flowgraph, "Utils/Blanker CC");
-            registerNodeSimple<ndsp::BlankerBlock<float>>(flowgraph, "Utils/Blanker FF");
+                registerNodeSimple<ndsp::ExponentiateBlock>(flowgraph, "Utils/Exponentiate CC");
 
-            registerNodeSimple<ndsp::ExponentiateBlock>(flowgraph, "Utils/Exponentiate CC");
+                registerNodeSimple<ndsp::NNGSinkBlock<complex_t>>(flowgraph, "IO/NNG Sink C");
 
-            registerNodeSimple<ndsp::NNGSinkBlock<complex_t>>(flowgraph, "IO/NNG Sink C");
+                registerNodeSimple<ndsp::WaveformBlock<float>>(flowgraph, "IO/Waveform F");
+                registerNodeSimple<ndsp::WaveformBlock<complex_t>>(flowgraph, "IO/Waveform C");
 
-            registerNodeSimple<ndsp::WaveformBlock<float>>(flowgraph, "IO/Waveform F");
-            registerNodeSimple<ndsp::WaveformBlock<complex_t>>(flowgraph, "IO/Waveform C");
+                registerNodeSimple<ndsp::FileSourceBlock<complex_t>>(flowgraph, "IO/File Source C");
+                registerNodeSimple<ndsp::FileSourceBlock<float>>(flowgraph, "IO/File Source F");
+                registerNodeSimple<ndsp::FileSourceBlock<int16_t>>(flowgraph, "IO/File Source S");
+                registerNodeSimple<ndsp::FileSourceBlock<int8_t>>(flowgraph, "IO/File Source H");
+                registerNodeSimple<ndsp::FileSourceBlock<uint8_t>>(flowgraph, "IO/File Source B");
 
-            registerNodeSimple<ndsp::FileSourceBlock<complex_t>>(flowgraph, "IO/File Source C");
-            registerNodeSimple<ndsp::FileSourceBlock<float>>(flowgraph, "IO/File Source F");
-            registerNodeSimple<ndsp::FileSourceBlock<int16_t>>(flowgraph, "IO/File Source S");
-            registerNodeSimple<ndsp::FileSourceBlock<int8_t>>(flowgraph, "IO/File Source H");
-            registerNodeSimple<ndsp::FileSourceBlock<uint8_t>>(flowgraph, "IO/File Source B");
+                registerNodeSimple<ndsp::FileSinkBlock<complex_t>>(flowgraph, "IO/File Sink C");
+                registerNodeSimple<ndsp::FileSinkBlock<float>>(flowgraph, "IO/File Sink F");
+                registerNodeSimple<ndsp::FileSinkBlock<int16_t>>(flowgraph, "IO/File Sink S");
+                registerNodeSimple<ndsp::FileSinkBlock<int8_t>>(flowgraph, "IO/File Sink H");
+                registerNodeSimple<ndsp::FileSinkBlock<uint8_t>>(flowgraph, "IO/File Sink B");
 
-            registerNodeSimple<ndsp::FileSinkBlock<complex_t>>(flowgraph, "IO/File Sink C");
-            registerNodeSimple<ndsp::FileSinkBlock<float>>(flowgraph, "IO/File Sink F");
-            registerNodeSimple<ndsp::FileSinkBlock<int16_t>>(flowgraph, "IO/File Sink S");
-            registerNodeSimple<ndsp::FileSinkBlock<int8_t>>(flowgraph, "IO/File Sink H");
-            registerNodeSimple<ndsp::FileSinkBlock<uint8_t>>(flowgraph, "IO/File Sink B");
+                registerNodeSimple<ndsp::UCharToFloatBlock>(flowgraph, "Conv/UChar To Float");
+                registerNodeSimple<ndsp::CharToFloatBlock>(flowgraph, "Conv/Char To Float");
+                registerNodeSimple<ndsp::ShortToFloatBlock>(flowgraph, "Conv/Short To Float");
 
-            registerNodeSimple<ndsp::UCharToFloatBlock>(flowgraph, "Conv/UChar To Float");
-            registerNodeSimple<ndsp::CharToFloatBlock>(flowgraph, "Conv/Char To Float");
-            registerNodeSimple<ndsp::ShortToFloatBlock>(flowgraph, "Conv/Short To Float");
+                registerNodeSimple<ndsp::FloatToCharBlock>(flowgraph, "Conv/Float To Char");
 
-            registerNodeSimple<ndsp::FloatToCharBlock>(flowgraph, "Conv/Float To Char");
+                registerNodeSimple<ndsp::IFloatToComplexBlock>(flowgraph, "Conv/IFloat To Complex");
+                registerNodeSimple<ndsp::ComplexToIFloatBlock>(flowgraph, "Conv/Complex To IFloat");
 
-            registerNodeSimple<ndsp::IFloatToComplexBlock>(flowgraph, "Conv/IFloat To Complex");
-            registerNodeSimple<ndsp::ComplexToIFloatBlock>(flowgraph, "Conv/Complex To IFloat");
+                registerNodeSimple<ndsp::RealToComplexBlock>(flowgraph, "Conv/Real To Complex");
 
-            registerNodeSimple<ndsp::RealToComplexBlock>(flowgraph, "Conv/Real To Complex");
+                registerNodeSimple<ndsp::ComplexToFloatBlock>(flowgraph, "Conv/Complex To Float");
+                registerNodeSimple<ndsp::FloatToComplexBlock>(flowgraph, "Conv/Float To Complex");
+                registerNodeSimple<ndsp::ComplexToImagBlock>(flowgraph, "Conv/Complex To Imag");
+                registerNodeSimple<ndsp::ComplexToRealBlock>(flowgraph, "Conv/Complex To Real");
+                registerNodeSimple<ndsp::ComplexToMagBlock>(flowgraph, "Conv/Complex To Mag");
+                registerNodeSimple<ndsp::ComplexToMagSquaredBlock>(flowgraph, "Conv/Complex To Mag²");
 
-            registerNodeSimple<ndsp::ComplexToFloatBlock>(flowgraph, "Conv/Complex To Float");
-            registerNodeSimple<ndsp::FloatToComplexBlock>(flowgraph, "Conv/Float To Complex");
-            registerNodeSimple<ndsp::ComplexToImagBlock>(flowgraph, "Conv/Complex To Imag");
-            registerNodeSimple<ndsp::ComplexToRealBlock>(flowgraph, "Conv/Complex To Real");
-            registerNodeSimple<ndsp::ComplexToMagBlock>(flowgraph, "Conv/Complex To Mag");
-            registerNodeSimple<ndsp::ComplexToMagSquaredBlock>(flowgraph, "Conv/Complex To Mag²");
+                registerNodeSimple<ndsp::PSKDemodHierBlock>(flowgraph, "Modem/PSK Demod");
 
-            registerNodeSimple<ndsp::PSKDemodHierBlock>(flowgraph, "Modem/PSK Demod");
+                registerNodeSimple<ndsp::PSKSnrEstimatorBlock>(flowgraph, "Utils/PSK SNR Estimator");
 
-            registerNodeSimple<ndsp::PSKSnrEstimatorBlock>(flowgraph, "Utils/PSK SNR Estimator");
-
-            eventBus->fire_event<RegisterNodesEvent>({flowgraph.node_internal_registry});
+                eventBus->fire_event<RegisterNodesEvent>({flowgraph.node_internal_registry});
 
 #if 0
             // Local devices!!
@@ -252,10 +245,11 @@ namespace satdump
             for (auto &dev : found_devices)
             {
                 flowgraph.node_internal_registry.insert({"idk_dev_cc",
-                                                         {"Local Devs/" + dev.name, [dev](const ndsp::Flowgraph *f)
-                                                          { return std::make_shared<ndsp::NodeInternal>(f, ndsp::getDeviceInstanceFromInfo(dev, ndsp::DeviceBlock::MODE_NORMAL)); }}});
+                                                         {"Local Devs/" + dev.name, [dev](const Flowgraph *f)
+                                                          { return std::make_shared<NodeInternal>(f, ndsp::getDeviceInstanceFromInfo(dev, ndsp::DeviceBlock::MODE_NORMAL)); }}});
             }
 #endif
-        }
+            }
+        } // namespace flowgraph
     } // namespace ndsp
 } // namespace satdump

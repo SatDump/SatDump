@@ -16,7 +16,7 @@ public:
         satdump::eventBus->register_handler<satdump::ndsp::RequestDeviceListEvent>(registerDevs);
         satdump::eventBus->register_handler<satdump::ndsp::RequestDeviceInstanceEvent>(provideDeviceInstance);
 
-        satdump::eventBus->register_handler<satdump::ndsp::RegisterNodesEvent>(registerNodes);
+        satdump::eventBus->register_handler<satdump::ndsp::flowgraph::RegisterNodesEvent>(registerNodes);
     }
 
     static void registerSources(const dsp::RegisterDSPSampleSourcesEvent &evt)
@@ -39,11 +39,11 @@ public:
             evt.i.push_back(std::make_shared<satdump::ndsp::HydraSDRDevBlock>());
     }
 
-    static void registerNodes(const satdump::ndsp::RegisterNodesEvent &evt)
+    static void registerNodes(const satdump::ndsp::flowgraph::RegisterNodesEvent &evt)
     {
-        evt.r.insert(
-            {"hydrasdr_cc",
-             {"Device/HydraSDR Dev", [](const satdump::ndsp::Flowgraph *f) { return std::make_shared<satdump::ndsp::NodeInternal>(f, std::make_shared<satdump::ndsp::HydraSDRDevBlock>()); }}});
+        evt.r.insert({"hydrasdr_cc",
+                      {"Device/HydraSDR Dev",
+                       [](const satdump::ndsp::flowgraph::Flowgraph *f) { return std::make_shared<satdump::ndsp::flowgraph::NodeInternal>(f, std::make_shared<satdump::ndsp::HydraSDRDevBlock>()); }}});
     }
 };
 

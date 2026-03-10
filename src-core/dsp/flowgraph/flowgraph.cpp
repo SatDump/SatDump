@@ -1,663 +1,206 @@
 #include "flowgraph.h"
-#include "common/widgets/CircularProgressBar.h"
 #include "core/exception.h"
-#include <chrono>
-#include <cstdint>
-#include <limits>
-
-#include "core/style.h"
-#include "dsp/block.h"
-#include "imgui/imgui.h"
-#include "imgui/imgui_internal.h"
-#include "imgui/imnodes/imnodes.h"
 #include "libs/muparser/muParser.h"
 #include "logger.h"
-
-#include "utils/string.h"
-
-#include "dsp/path/splitter.h"
-
+#include <limits>
 #include <mutex>
-#include <thread>
 
 namespace satdump
 {
     namespace ndsp
     {
-        Flowgraph::Flowgraph() {}
-
-        Flowgraph::~Flowgraph() {}
-
-        int Flowgraph::getNewNodeID()
+        namespace flowgraph
         {
-            for (int i = 0; i < std::numeric_limits<int>::max(); i++)
+            int Flowgraph::getNewNodeID()
             {
-                bool already_contained = false;
-                for (auto &n : nodes)
-                    if (n->id == i)
-                        already_contained = true;
-                if (already_contained)
-                    continue;
-                return i;
-            }
-
-            throw satdump_exception("No valid ID found for new node ID!");
-        }
-
-        int Flowgraph::getNewNodeIOID(std::vector<Node::InOut> *ptr)
-        {
-            for (int i = 0; i < std::numeric_limits<int>::max(); i++)
-            {
-                bool already_contained = false;
-                for (auto &n : nodes)
-                    for (auto &io : n->node_io)
-                        if (io.id == i)
+                for (int i = 0; i < std::numeric_limits<int>::max(); i++)
+                {
+                    bool already_contained = false;
+                    for (auto &n : nodes)
+                        if (n->id == i)
                             already_contained = true;
-                if (ptr != nullptr)
-                    for (auto &io : *ptr)
-                        if (io.id == i)
+                    if (already_contained)
+                        continue;
+                    return i;
+                }
+
+                throw satdump_exception("No valid ID found for new node ID!");
+            }
+
+            int Flowgraph::getNewNodeIOID(std::vector<Node::InOut> *ptr)
+            {
+                for (int i = 0; i < std::numeric_limits<int>::max(); i++)
+                {
+                    bool already_contained = false;
+                    for (auto &n : nodes) // Check all nodes currently in flowgraph
+                        for (auto &io : n->node_io)
+                            if (io.id == i)
+                                already_contained = true;
+                    if (ptr != nullptr)
+                        for (auto &io : *ptr) // Check in node being added if required (on creation!)
+                            if (io.id == i)
+                                already_contained = true;
+                    if (already_contained)
+                        continue;
+                    return i;
+                }
+
+                throw satdump_exception("No valid ID found for new node IO ID!");
+            }
+
+            int Flowgraph::getNewLinkID()
+            {
+                for (int i = 0; i < std::numeric_limits<int>::max(); i++)
+                {
+                    bool already_contained = false;
+                    for (auto &l : links) // Check all links
+                        if (l.id == i)
                             already_contained = true;
-                if (already_contained)
-                    continue;
-                return i;
-            }
-
-            throw satdump_exception("No valid ID found for new node IO ID!");
-        }
-
-        int Flowgraph::getNewLinkID()
-        {
-            for (int i = 0; i < std::numeric_limits<int>::max(); i++)
-            {
-                bool already_contained = false;
-                for (auto &l : links)
-                    if (l.id == i)
-                        already_contained = true;
-                if (already_contained)
-                    continue;
-                return i;
-            }
-
-            throw satdump_exception("No valid ID found for new link ID!");
-        }
-
-        void Flowgraph::renderAddMenu(std::pair<const std::string, NodeInternalReg> &opt, std::vector<std::string> cats, int pos)
-        {
-            if (pos == (cats.size() - 1))
-            {
-                if (ImGui::MenuItem(cats[pos].c_str()))
-                {
-                    auto mpos = ImGui::GetMousePos();
-                    auto ptr = addNode(opt.first, opt.second.func(this));
-                    ptr->pos_was_set = true;
-                    ImNodes::SetNodeScreenSpacePos(ptr->id, mpos);
+                    if (already_contained)
+                        continue;
+                    return i;
                 }
+
+                throw satdump_exception("No valid ID found for new link ID!");
             }
-            else
+
+            void Flowgraph::updateVars()
             {
-                if (ImGui::BeginMenu(cats[pos].c_str()))
+                std::lock_guard<std::mutex> lg(flow_mtx);
+
+                // For each node, check variables that have an expression set, parse it & set them.
+                for (auto &n : nodes)
                 {
-                    renderAddMenu(opt, cats, pos + 1);
-                    ImGui::EndMenu();
-                }
-            }
-        }
-
-        // TODOREWORKFLOWGRAPH
-        std::map<BlockIOType, ImColor> iotypes_colors = {
-            {DSP_SAMPLE_TYPE_CF32, ImColor(5, 150, 255)}, //
-            {DSP_SAMPLE_TYPE_F32, ImColor(252, 116, 0)},  //
-            {DSP_SAMPLE_TYPE_S16, ImColor(244, 240, 5)},  //
-            {DSP_SAMPLE_TYPE_S8, ImColor(200, 5, 252)},   //
-            {DSP_SAMPLE_TYPE_U8, ImColor(5, 252, 87)},    //
-        };
-
-        ImColor getColorFromDSPType(BlockIOType t)
-        {
-            if (iotypes_colors.count(t))
-                return iotypes_colors[t];
-            else
-                return ImColor(255, 0, 0);
-        }
-
-        void Flowgraph::render()
-        {
-            std::lock_guard<std::mutex> lg(flow_mtx);
-
-            ImNodes::PushStyleVar(ImNodesStyleVar_PinCircleRadius, 6);
-            ImNodes::PushStyleVar(ImNodesStyleVar_LinkThickness, 4);
-            ImNodes::PushAttributeFlag(ImNodesAttributeFlags_EnableLinkDetachWithDragClick);
-
-            ImNodes::BeginNodeEditor();
-            ImNodes::MiniMap();
-
-            //        ImNodes::PushColorStyle(ImNodesCol_TitleBar, 0xc01c28FF);
-
-            for (auto &n : nodes)
-            {
-                if (n->disabled)
-                    style::beginDisabled();
-
-                ImNodes::BeginNode(n->id);
-                ImNodes::BeginNodeTitleBar();
-                ImGui::Text("%s", n->title.c_str());
-                ImNodes::EndNodeTitleBar();
-
-                if (n->internal->render())
-                    n->updateIO(); // TODOREWORK!
-
-                int in_pos = 0;
-                for (auto &io : n->node_io)
-                {
-                    ImNodes::PushColorStyle(ImNodesCol_Pin, getColorFromDSPType(io.type));
-                    if (io.is_out)
+                    for (auto &v : n->vars)
                     {
-                        ImNodes::BeginOutputAttribute(io.id);
-                        const float node_width = ImNodes::GetNodeDimensions(n->id).x;
-                        const float label_width = ImGui::CalcTextSize(io.name.c_str()).x;
-                        ImGui::Indent(node_width - label_width - 20 * ui_scale);
-                        ImGui::Text("%s", io.name.c_str());
-                        ImNodes::EndOutputAttribute();
+                        try
+                        {
+                            mu::Parser equParser;
+                            equParser.SetExpr(v.second);
+
+                            for (auto &var : variables)
+                                equParser.DefineConst(var.first, var.second);
+
+                            int nout = 0;
+                            double *out = equParser.Eval(nout);
+
+                            nlohmann::json sv;
+                            sv[v.first] = *out;
+
+                            if (nout == 1)
+                                n->internal->setP(sv);
+                            else
+                                logger->error("Error parsing expression for %s!", v.first.c_str());
+                        }
+                        catch (mu::ParserError &e)
+                        {
+                            logger->error("Error parsing expression for %s (%s)!", v.first.c_str(), e.GetMsg().c_str());
+                        }
+                    }
+                }
+            }
+
+            std::shared_ptr<Flowgraph::Node> Flowgraph::addNode(std::string id, std::shared_ptr<NodeInternal> i)
+            {
+                auto ptr = std::make_shared<Node>(this, id, i);
+                nodes.push_back(ptr);
+                return ptr;
+            }
+
+            nlohmann::json Flowgraph::getJSON()
+            {
+                std::lock_guard<std::mutex> lg(flow_mtx);
+
+                nlohmann::json j;
+
+                for (auto &n : nodes)
+                    j["nodes"][n->id] = n->getJSON();
+                j["links"] = links;
+                j["vars"] = variables;
+
+                return j;
+            }
+
+            void Flowgraph::setJSON(nlohmann::json j)
+            {
+                std::lock_guard<std::mutex> lg(flow_mtx);
+
+                if (j.contains("vars"))
+                    variables = j["vars"];
+
+                nodes.clear();
+                links.clear();
+
+                for (auto &n : j["nodes"].items())
+                {
+                    if (n.value().contains("int_id"))
+                    {
+                        if (node_internal_registry.count(n.value()["int_id"]))
+                        {
+                            try
+                            {
+                                auto i = node_internal_registry[n.value()["int_id"]].func(this);
+                                auto nn = std::make_shared<Node>(this, n.value(), i);
+                                nodes.push_back(nn);
+                            }
+                            catch (std::exception &e)
+                            {
+                                logger->error("Error adding node with ID : " + n.value()["int_id"].get<std::string>() + ", Error : %s", e.what());
+                            }
+                        }
+                        else
+                        {
+                            logger->error("Could not find node with ID : " + n.value()["int_id"].get<std::string>());
+                        }
                     }
                     else
                     {
-                        ImNodes::BeginInputAttribute(io.id);
-                        ImGui::Text("%s", io.name.c_str());
-
-                        if (is_running && debug_mode)
-                        {
-                            if (in_pos < n->internal->blk->get_inputs().size())
-                            {
-                                auto f = n->internal->blk->get_inputs()[in_pos];
-
-                                if (f.fifo)
-                                {
-                                    float v = (float)f.fifo->size_approx() / (float)f.fifo->max_capacity();
-                                    ImGui::SameLine();
-                                    if (v > 1)
-                                        v = 1;
-                                    if (v < 0)
-                                        v = 0;
-                                    CircularProgressBar(f.name.c_str(), v, {20, 20}, style::theme.green);
-                                }
-                            }
-                        }
-
-                        ImNodes::EndInputAttribute();
-                        in_pos++;
-                    }
-                    ImNodes::PopColorStyle();
-                }
-
-                ImNodes::EndNode();
-
-                if (!n->pos_was_set)
-                {
-                    ImNodes::SetNodeGridSpacePos(n->id, {n->pos_x, n->pos_y});
-                    n->pos_was_set = true;
-                }
-
-                auto pos = ImNodes::GetNodeGridSpacePos(n->id);
-                n->pos_x = pos.x;
-                n->pos_y = pos.y;
-
-                if (n->disabled)
-                    style::endDisabled();
-            }
-
-            //        ImNodes::PopColorStyle();
-
-            for (auto &l : links)
-            {
-                bool disabled = false;
-
-                BlockIOType type;
-                for (auto &n : nodes)
-                    for (auto &io : n->node_io)
-                    {
-                        if (io.id == l.start)
-                        {
-                            type = io.type;
-                            if (n->disabled)
-                                disabled = true;
-                        }
-                        else if (io.id == l.end)
-                        {
-                            if (n->disabled)
-                                disabled = true;
-                        }
-                    }
-
-                ImNodes::PushColorStyle(ImNodesCol_Link, disabled ? (ImColor)ImGui::GetColorU32(ImGuiCol_TextDisabled) : getColorFromDSPType(type));
-                ImNodes::Link(l.id, l.start, l.end);
-                ImNodes::PopColorStyle();
-            }
-
-            ImNodes::EndNodeEditor();
-
-            ImNodes::PopAttributeFlag();
-            ImNodes::PopStyleVar();
-            ImNodes::PopStyleVar();
-
-            // Lock down edition when running!
-            if (!is_running)
-            {
-                int start_att, end_att;
-                if (ImNodes::IsLinkCreated(&start_att, &end_att))
-                {
-                    links.push_back({getNewLinkID(), start_att, end_att});
-                    logger->trace("LINK CREATE %d %d", start_att, end_att);
-                }
-
-                int link_id;
-                if (ImNodes::IsLinkDestroyed(&link_id))
-                {
-                    auto iter = std::find_if(links.begin(), links.end(), [link_id](const Link &link) -> bool { return link.id == link_id; });
-                    logger->trace("LINK DELETE %d %d", iter->start, iter->end);
-                    links.erase(iter);
-                }
-
-                ///////////////////// Node Key Handlers
-                if (!ImGui::IsAnyItemActive() && ImGui::IsKeyPressed(ImGuiKey_Delete))
-                {
-                    int node_s = ImNodes::NumSelectedNodes();
-
-                    if (node_s > 0)
-                    {
-                        std::vector<int> nodes_ids(node_s);
-                        ImNodes::GetSelectedNodes(nodes_ids.data());
-
-                        for (auto &id : nodes_ids)
-                        {
-                            auto iter = std::find_if(nodes.begin(), nodes.end(), [id](const std::shared_ptr<Node> &node) -> bool { return node->id == id; });
-                            logger->trace("NODE DELETE %d", id);
-                            for (auto &linkid : iter->get()->node_io)
-                            {
-                                auto liter = std::find_if(links.begin(), links.end(), [linkid](const Link &link) -> bool { return link.start == linkid.id || link.end == linkid.id; });
-                                if (liter != links.end())
-                                    links.erase(liter);
-                            }
-                            nodes.erase(iter);
-                        }
+                        logger->error("Node is missing int_id!");
                     }
                 }
 
-                if (!ImGui::IsAnyItemActive() && ImGui::IsKeyPressed(ImGuiKey_D))
+                // Links need to be filtered in case some blocks are missing!
+                std::vector<Link> tmp_links = j["links"];
+
+                for (auto &link : tmp_links)
                 {
-                    int node_s = ImNodes::NumSelectedNodes();
-
-                    if (node_s > 0)
-                    {
-                        std::vector<int> nodes_ids(node_s);
-                        ImNodes::GetSelectedNodes(nodes_ids.data());
-
-                        for (auto &id : nodes_ids)
-                        {
-                            auto iter = std::find_if(nodes.begin(), nodes.end(), [id](const std::shared_ptr<Node> &node) -> bool { return node->id == id; });
-                            logger->trace("NODE DISABLE %d", id);
-                            for (auto &linkid : iter->get()->node_io)
-                            {
-                                auto liter = std::find_if(links.begin(), links.end(), [linkid](const Link &link) -> bool { return link.start == linkid.id || link.end == linkid.id; });
-                                // if (liter != links.end())
-                                //     links->disabled = true;
-                            }
-                            iter->get()->disabled = !iter->get()->disabled;
-                        }
-                    }
-                }
-                ///////////////////// Node Key Handlers end
-
-                if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-                    ImGui::OpenPopup("##popuprightclickflowgraph");
-                if (ImGui::BeginPopup("##popuprightclickflowgraph"))
-                {
-                    if (ImGui::BeginMenu("Add Node"))
-                    {
-                        for (auto &opt : node_internal_registry)
-                        {
-                            std::vector<std::string> cats = splitString(opt.second.menuname, '/');
-                            renderAddMenu(opt, cats, 0);
-                        }
-                        ImGui::EndMenu();
-                    }
-
-                    ImGui::EndPopup();
-                }
-            }
-
-            if (!is_running)
-            {
-                int id = 0;
-                if (ImNodes::IsNodeHovered(&id) && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-                {
+                    bool got_in = false, got_ou = false;
                     for (auto &n : nodes)
                     {
-                        if (n->id == id)
+                        for (auto &io : n->node_io)
                         {
-                            logger->info("Node " + n->internal->blk->d_id);
-                            n->show_vars_win = true;
+                            if (io.id == link.start)
+                                got_in = true;
+                            if (io.id == link.end)
+                                got_ou = true;
                         }
                     }
+
+                    if (got_in && got_ou)
+                        links.push_back(link);
                 }
-            }
-        }
 
-        void Flowgraph::render2()
-        {
-            std::lock_guard<std::mutex> lg(flow_mtx);
-
-            for (auto &n : nodes)
-            {
-                if (n->show_vars_win)
+                // Update node IOs to reflect the proper types on links
+                for (auto &n : nodes)
                 {
-                    std::string name = n->internal->blk->d_id + "##nodevarspopup";
-                    ImGui::Begin(name.c_str(), &n->show_vars_win, ImGuiWindowFlags_AlwaysAutoResize);
-                    for (auto &v : n->vars)
+                    size_t ic = 0, oc = 0;
+                    for (auto &io : n->node_io)
                     {
-                        ImGui::Text("%s", v.first.c_str());
-                        ImGui::SameLine();
-                        ImGui::InputText(std::string("##" + v.first).c_str(), &v.second);
-                        ImGui::SameLine();
-                        if (ImGui::Button(("Delete##" + name).c_str()))
+                        if (io.is_out)
                         {
-                            n->vars.erase(v.first);
-                            break;
+                            if (n->internal->blk->get_outputs().size() > oc)
+                                io.type = n->internal->blk->get_outputs()[oc].type;
+                            oc++;
                         }
-                    }
-
-                    for (auto &v : n->internal->blk->get_cfg().items())
-                    {
-                        bool found = false;
-                        for (auto &v2 : n->vars)
-                            if (v2.first == v.key())
-                                found = true;
-                        if (found)
-                            continue;
-
-                        // ImGui::Text("%s : ", v.key().c_str());
-                        // ImGui::SameLine();
-                        std::string bname = v.key() + "##nodeaddbtn";
-                        if (ImGui::Button(bname.c_str()))
-                        {
-                            n->vars.emplace(v.key(), "");
-                        }
-                    }
-
-                    ImGui::End();
-                }
-            }
-        }
-
-        void Flowgraph::updateVars()
-        {
-            std::lock_guard<std::mutex> lg(flow_mtx);
-
-            for (auto &n : nodes)
-            {
-                for (auto &v : n->vars)
-                {
-                    try
-                    {
-                        mu::Parser equParser;
-                        equParser.SetExpr(v.second);
-
-                        for (auto &var : variables)
-                            equParser.DefineConst(var.first, var.second);
-
-                        int nout = 0;
-                        double *out = equParser.Eval(nout);
-
-                        nlohmann::json sv;
-                        sv[v.first] = *out;
-
-                        if (nout == 1)
-                            n->internal->setP(sv);
                         else
-                            logger->error("Error parsing expression for %s!", v.first.c_str());
-                    }
-                    catch (mu::ParserError &)
-                    {
-                    }
-                }
-            }
-        }
-
-        void Flowgraph::run()
-        {
-            is_running = true;
-
-            try
-            {
-                // Update variables
-                updateVars();
-
-                // Hold all input IDs that will be connected
-                std::vector<int> all_connected_inputs;
-
-                // Holds stuff such as splitters when one output goes to more than
-                // one input
-                std::vector<std::shared_ptr<ndsp::Block>> additional_blocks;
-
-                // Iterate through all nodes
-                for (auto &n : nodes)
-                {
-                    if (n->disabled)
-                        continue;
-
-                    // UI Stuff, safety
-                    n->show_vars_win = false;
-
-                    //                    n->internal->applyP(); // TODOREWORK?
-                    auto &blk = n->internal->blk;
-
-                    // Iterate through outputs
-                    for (int o = 0; o < blk->get_outputs().size(); o++)
-                    {
-                        // Get output ID
-                        int o_id = -1;
-                        for (int c = 0, oc = 0; c < n->node_io.size(); c++)
                         {
-                            if (n->node_io[c].is_out)
-                            {
-                                if (oc == o)
-                                    o_id = n->node_io[c].id;
-                                oc++;
-                            }
-                        }
-
-                        // Iterate through links, to asign outputs to applicable inputs
-                        struct InputH
-                        {
-                            std::shared_ptr<ndsp::Block> blk;
-                            int idx;
-                        };
-                        std::vector<InputH> inputs_to_feed;
-                        for (auto &l : links)
-                        {
-                            if (l.start == o_id)
-                            {
-                                // Iterate through nodes to find valid inputs
-                                for (auto &n2 : nodes)
-                                {
-                                    if (n2->disabled)
-                                        continue;
-
-                                    for (int b = 0, b2 = 0; b < n2->node_io.size(); b++)
-                                    {
-                                        if (!n2->node_io[b].is_out)
-                                        {
-                                            if (n2->node_io[b].id == l.end)
-                                            {
-                                                // n2->internal->blk->inputs[b2] = blk->outputs[o];
-                                                inputs_to_feed.push_back({n2->internal->blk, b2}); //  &n2->internal->blk->get_output(b2, 16 /*TODOREWORK*/));
-                                                // logger->trace("Assigned to : " + n2->internal->blk->d_id);
-                                                all_connected_inputs.push_back(l.end);
-                                            }
-
-                                            b2++;
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (l.end == o_id)
-                            {
-                                // Iterate through nodes to find valid inputs
-                                for (auto &n2 : nodes)
-                                {
-                                    if (n2->disabled)
-                                        continue;
-
-                                    for (int b = 0, b2 = 0; b < n2->node_io.size(); b++)
-                                    {
-                                        if (!n2->node_io[b].is_out)
-                                        {
-                                            if (n2->node_io[b].id == l.start)
-                                            {
-                                                // n2->internal->blk->inputs[b2] = blk->outputs[o];
-                                                inputs_to_feed.push_back({n2->internal->blk, b2}); // inputs_to_feed.push_back(&n2->internal->blk->get_output(b2, 16 /*TODOREWORK*/));
-                                                // logger->trace("Assigned to : " + n2->internal->blk->d_id);
-                                                all_connected_inputs.push_back(l.start);
-                                            }
-
-                                            b2++;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        if (inputs_to_feed.size() == 1)
-                        {
-                            inputs_to_feed[0].blk->link(blk.get(), o, inputs_to_feed[0].idx, 16 /*TODOREWORK*/); // = blk->get_output(o, 16 /*TODOREWORK*/);
-                        }
-                        else if (inputs_to_feed.size() > 1)
-                        {
-                            // logger->error("More than one to connect! Adding splitter");
-
-                            std::shared_ptr<ndsp::Block> ptr;
-                            if (blk->get_output(o, 0).type == ndsp::BlockIOType::DSP_SAMPLE_TYPE_CF32)
-                                ptr = std::make_shared<ndsp::SplitterBlock<complex_t>>();
-                            else if (blk->get_output(o, 0).type == ndsp::BlockIOType::DSP_SAMPLE_TYPE_F32)
-                                ptr = std::make_shared<ndsp::SplitterBlock<float>>();
-                            else if (blk->get_output(o, 0).type == ndsp::BlockIOType::DSP_SAMPLE_TYPE_S16)
-                                ptr = std::make_shared<ndsp::SplitterBlock<int16_t>>();
-                            else if (blk->get_output(o, 0).type == ndsp::BlockIOType::DSP_SAMPLE_TYPE_S8)
-                                ptr = std::make_shared<ndsp::SplitterBlock<int8_t>>();
-                            else if (blk->get_output(o, 0).type == ndsp::BlockIOType::DSP_SAMPLE_TYPE_U8)
-                                ptr = std::make_shared<ndsp::SplitterBlock<uint8_t>>();
-                            else
-                                throw satdump_exception("Unsupported splitter block IO type");
-
-                            nlohmann::json p;
-                            p["noutputs"] = inputs_to_feed.size();
-                            ptr->set_cfg(p);
-
-                            ptr->link(blk.get(), o, 0, 16 /*TODOREWORK*/); // ptr->inputs[0] = blk->outputs[o];
-                            for (int v = 0; v < inputs_to_feed.size(); v++)
-                                inputs_to_feed[v].blk->link(ptr.get(), v, inputs_to_feed[v].idx, 16 /*TODOREWORK*/); //(*inputs_to_feed[v]) = ptr->outputs[v];
-
-                            additional_blocks.push_back(ptr);
-                        }
-                        else if (inputs_to_feed.size() == 0)
-                        {
-                            throw satdump_exception("Block has unconnected output!");
+                            if (n->internal->blk->get_inputs().size() > ic)
+                                io.type = n->internal->blk->get_inputs()[ic++].type;
+                            ic++;
                         }
                     }
                 }
-
-                // Iterate through all nodes, check all inputs are connected
-                for (auto &n : nodes)
-                {
-                    if (n->disabled)
-                        continue;
-
-                    for (auto &i : n->node_io)
-                    {
-                        if (i.is_out)
-                            continue;
-
-                        bool missing = true;
-                        for (auto &c : all_connected_inputs)
-                            if (i.id == c)
-                                missing = false;
-
-                        if (missing)
-                            throw satdump_exception("Block (" + n->title + ") has unconnected input!");
-                    }
-                }
-
-                // Start them all
-                for (auto &n : nodes)
-                    if (!n->disabled)
-                        n->internal->blk->start();
-                for (auto &b : additional_blocks)
-                    b->start();
-                for (auto &n : nodes)
-                    if (!n->disabled)
-                        n->internal->upd_state();
-
-                // And then wait for them to exit
-                for (auto &n : nodes)
-                    if (!n->disabled && !n->internal->blk->is_async())
-                        n->internal->blk->stop();
-                for (auto &b : additional_blocks)
-                    b->stop();
-
-                // TODOREWORK investigate this
-                std::this_thread::sleep_for(std::chrono::seconds(2));
-
-                // Restop them all, including async ones
-                for (auto &n : nodes)
-                    if (!n->disabled)
-                        n->internal->blk->stop();
-
-                for (auto &n : nodes)
-                    if (!n->disabled)
-                        n->internal->upd_state();
             }
-            catch (std::exception &e)
-            {
-                logger->error("Error running flowgraph : %s", e.what());
-            }
-
-            is_running = false;
-        }
-
-        void Flowgraph::stop()
-        {
-            try
-            {
-                std::vector<std::thread> all_th;
-
-                // Iterate through all nodes
-                for (auto &n : nodes)
-                {
-                    if (n->disabled)
-                        continue;
-
-                    // Stop only those that are sources
-                    if (n->internal->blk->is_async())
-                    {
-                        auto v = [&]
-                        {
-                            logger->trace("Stopping source " + n->internal->blk->d_id);
-                            n->internal->blk->stop(true);
-                            logger->trace("Stopped source " + n->internal->blk->d_id);
-                        };
-                        all_th.push_back(std::thread(v));
-                    }
-                }
-
-                // Wait
-                for (auto &v : all_th)
-                    if (v.joinable())
-                        v.join();
-            }
-            catch (std::exception &e)
-            {
-                logger->error("Error running flowgraph : %s", e.what());
-            }
-        }
+        } // namespace flowgraph
     } // namespace ndsp
 } // namespace satdump

@@ -1,5 +1,10 @@
 #pragma once
 
+/**
+ * @file node_int.h
+ * @brief DSP Flowgraph NodeInternal implementation (the "guts" of nodes)
+ */
+
 #include "dsp/block.h"
 #include "dsp/device/options_displayer_warper.h"
 #include "nlohmann/json.hpp"
@@ -8,28 +13,68 @@ namespace satdump
 {
     namespace ndsp
     {
-        // TODOREWORK proper sub-namespace?
-        class Flowgraph;
-
-        class NodeInternal
+        namespace flowgraph
         {
-        protected:
-            Flowgraph *f;
+            // Must be declared already...
+            class Flowgraph;
 
-            std::shared_ptr<ndsp::OptDisplayerWarper> optdisp;
+            /**
+             * @brief Class holding the actual guts
+             * of a node. This was made to avoid
+             * having the entire node class be overloaded
+             * as DSP Nodes should not have access to
+             * internal flowgraph logic.
+             *
+             * This therefore by default only handles a simple
+             * block, showing basic options/stats and IO. More
+             * advanced displays require overloading this class
+             * and adding custom rendering (or more?) logic.
+             */
+            class NodeInternal
+            {
+            protected:
+                //! @brief the flowgraph this node belongs to
+                Flowgraph *f;
 
-        public:
-            std::shared_ptr<ndsp::Block> blk;
+                //! @brief OptDisplayer to display block configurations
+                std::shared_ptr<ndsp::OptDisplayerWarper> optdisp;
 
-        public:
-            NodeInternal(const Flowgraph *f, std::shared_ptr<ndsp::Block> b);
+            public:
+                //! @brief the actual dsp Block
+                std::shared_ptr<ndsp::Block> blk;
 
-            virtual bool render();
+            public:
+                /**
+                 * @brief Constructor of a NodeInternal
+                 * @param f flowgrapgh the node will belong to
+                 * @param b actual DSP block
+                 */
+                NodeInternal(const Flowgraph *f, std::shared_ptr<ndsp::Block> b);
 
-            virtual void upd_state() { optdisp->update(); }
+                /**
+                 * @brief Render the node's GUI
+                 */
+                virtual bool render();
 
-            virtual nlohmann::json getP();
-            virtual void setP(nlohmann::json p);
-        };
+                /**
+                 * @brief Update optional displayer state, to
+                 * update the display accordingly after starting/stopping
+                 * the node/block.
+                 */
+                virtual void upd_state() { optdisp->update(); }
+
+                /**
+                 * @brief get block parameter(s)
+                 * @return the parameter(s)
+                 */
+                virtual nlohmann::json getP();
+
+                /**
+                 * @brief set block parameter(s) (and update the GUI)
+                 * @param p the parameter(s)
+                 */
+                virtual void setP(nlohmann::json p);
+            };
+        } // namespace flowgraph
     } // namespace ndsp
 } // namespace satdump
