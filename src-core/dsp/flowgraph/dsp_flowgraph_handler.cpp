@@ -37,6 +37,11 @@ namespace satdump
         {
             bool running = flowgraph.isRunning();
 
+            if (ImGui::CollapsingHeader("Flowgraph"))
+            {
+                ImGui::Checkbox("Debug Mode", &flowgraph.debug_mode);
+            }
+
             if (ImGui::CollapsingHeader("Variables", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 for (auto &v : flowgraph.variables)
@@ -73,9 +78,9 @@ namespace satdump
                     flowgraph.updateVars();
             }
 
-            if (ImGui::CollapsingHeader("Flowgraph"))
+            if (ImGui::CollapsingHeader("Blocks"))
             {
-                ImGui::Checkbox("Debug Mode", &flowgraph.debug_mode);
+              //  flowgraph.renderAddMenuList();
             }
         }
 

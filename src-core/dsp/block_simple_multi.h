@@ -2,6 +2,7 @@
 
 /**
  * @file block_simple_multi.h
+ * @brief Simplified DSP block class, with one or more input and one or more output
  */
 
 #include "dsp/block.h"

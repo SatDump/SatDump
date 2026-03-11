@@ -36,6 +36,37 @@ namespace satdump
                 }
             }
 
+            void Flowgraph::renderAddMenuList(std::pair<const std::string, NodeInternalReg> &opt, std::vector<std::string> cats, int pos)
+            {
+                if (pos == (cats.size() - 1))
+                {
+                    if (ImGui::TreeNode("%s", cats[pos].c_str(), ImGuiTreeNodeFlags_Leaf))
+                    {
+                        addNode(opt.first, opt.second.func(this));
+                        ImGui::TreePop();
+                    }
+                }
+                else
+                {
+                    if (ImGui::TreeNode("%s", cats[pos].c_str()))
+                    {
+                        renderAddMenuList(opt, cats, pos + 1);
+                        ImGui::TreePop();
+                    }
+                }
+            }
+
+            void Flowgraph::renderAddMenuList()
+            {
+                std::lock_guard<std::mutex> lg(flow_mtx);
+
+                for (auto &opt : node_internal_registry)
+                {
+                    std::vector<std::string> cats = splitString(opt.second.menuname, '/');
+                    renderAddMenuList(opt, cats, 0);
+                }
+            }
+
             void Flowgraph::render()
             {
                 std::lock_guard<std::mutex> lg(flow_mtx);
@@ -252,10 +283,10 @@ namespace satdump
                         ImGui::Begin(name.c_str(), &n->show_vars_win, ImGuiWindowFlags_AlwaysAutoResize);
                         for (auto &v : n->vars)
                         {
-                            ImGui::Text("%s", v.first.c_str());
-                            ImGui::SameLine();
+                            ImGui::SeparatorText(v.first.c_str());
                             ImGui::InputText(std::string("##" + v.first).c_str(), &v.second);
                             ImGui::SameLine();
+
                             if (ImGui::Button(("Delete##" + name + v.first).c_str()))
                             {
                                 n->vars.erase(v.first);
@@ -263,6 +294,9 @@ namespace satdump
                             }
                         }
 
+                        ImGui::SeparatorText("Add others");
+
+                        int nl = 1;
                         for (auto &v : n->internal->blk->get_cfg().items())
                         {
                             bool found = false;
@@ -277,6 +311,10 @@ namespace satdump
                             {
                                 n->vars.emplace(v.key(), "");
                             }
+
+                            if (nl && !(nl % 3 == 0))
+                                ImGui::SameLine();
+                            nl++;
                         }
 
                         ImGui::End();

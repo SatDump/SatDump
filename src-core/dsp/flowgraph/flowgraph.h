@@ -243,6 +243,21 @@ namespace satdump
                  */
                 void renderAddMenu(std::pair<const std::string, NodeInternalReg> &opt, std::vector<std::string> cats, int pos);
 
+                /**
+                 * @brief Render block list menu (right sidebar version).
+                 * @param opt Node list to draw (as it can be recursive!)
+                 * @param cats categories of block (eg, Filters/LPF)
+                 * @param pos position of category (at most cats.size() - 1)
+                 * at current recursive depth
+                 */
+                void renderAddMenuList(std::pair<const std::string, NodeInternalReg> &opt, std::vector<std::string> cats, int pos);
+
+            public:
+                /**
+                 * @brief Render block list menu (right sidebar version).
+                 */
+                void renderAddMenuList();
+
             public:
                 /**
                  * @brief Whether to enable debug mode or not.

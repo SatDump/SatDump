@@ -2,6 +2,7 @@
 
 /**
  * @file block.h
+ * @brief Base DSP block class, more cumbersome to use. Prefer wrappers if possible
  */
 
 #include "base/dsp_buffer.h"
@@ -14,7 +15,7 @@
 
 namespace satdump
 {
-    namespace ndsp // TODOREWORK back to normal DSP!
+    namespace ndsp
     {
         /**
          * @brief Block IO types.
@@ -195,7 +196,10 @@ namespace satdump
              */
             virtual bool work() = 0;
 
-            // TODOREWORK
+            /**
+             * @brief Check if the work function is running.
+             * @return true if running
+             */
             bool is_work_running() { return blk_should_run; }
 
         public:
