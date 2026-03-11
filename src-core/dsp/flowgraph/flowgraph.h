@@ -243,20 +243,31 @@ namespace satdump
                  */
                 void renderAddMenu(std::pair<const std::string, NodeInternalReg> &opt, std::vector<std::string> cats, int pos);
 
+            private:
                 /**
-                 * @brief Render block list menu (right sidebar version).
-                 * @param opt Node list to draw (as it can be recursive!)
-                 * @param cats categories of block (eg, Filters/LPF)
-                 * @param pos position of category (at most cats.size() - 1)
-                 * at current recursive depth
+                 * @brief Helper struct to build a TreeNode menu for node lists
+                 * @param cats sub-categories
+                 * @param sub the actual nodes
                  */
-                void renderAddMenuList(std::pair<const std::string, NodeInternalReg> &opt, std::vector<std::string> cats, int pos);
+                struct CatT
+                {
+                    std::map<std::string, CatT> cats;
+                    std::map<std::string, NodeInternalReg> sub;
+                };
+
+                /**
+                 * @brief Render a CatT and sub-elements as a TreeNode
+                 * @param cats CatT to start with
+                 * @param searching must be true if search is in use
+                 */
+                void renderCatT(CatT &cats, bool searching);
 
             public:
                 /**
                  * @brief Render block list menu (right sidebar version).
+                 * @param search string to filter the list by
                  */
-                void renderAddMenuList();
+                void renderAddMenuList(std::string search);
 
             public:
                 /**

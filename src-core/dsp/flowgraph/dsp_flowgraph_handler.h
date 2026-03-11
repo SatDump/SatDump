@@ -53,6 +53,9 @@ namespace satdump
             //! @brief Task queue for async save/load etc
             TaskQueue tq;
 
+            //! @brief Node search string
+            std::string node_search = "";
+
         private:
             //! @brief Name of variable to add
             std::string to_add_var_name;

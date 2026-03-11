@@ -80,7 +80,9 @@ namespace satdump
 
             if (ImGui::CollapsingHeader("Blocks"))
             {
-              //  flowgraph.renderAddMenuList();
+                ImGui::SetNextItemWidth(ImGui::GetWindowSize().x);
+                ImGui::InputTextWithHint("##SearchBlocks", "Search Blocks", &node_search);
+                flowgraph.renderAddMenuList(node_search);
             }
         }
 

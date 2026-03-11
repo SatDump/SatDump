@@ -36,35 +36,70 @@ namespace satdump
                 }
             }
 
-            void Flowgraph::renderAddMenuList(std::pair<const std::string, NodeInternalReg> &opt, std::vector<std::string> cats, int pos)
+            void Flowgraph::renderCatT(CatT &cats, bool searching)
             {
-                if (pos == (cats.size() - 1))
+                for (auto &c : cats.cats)
                 {
-                    if (ImGui::TreeNode("%s", cats[pos].c_str(), ImGuiTreeNodeFlags_Leaf))
+                    if (searching)
+                        ImGui::SetNextItemOpen(true);
+
+                    if (ImGui::TreeNode(c.first.c_str()))
                     {
-                        addNode(opt.first, opt.second.func(this));
+                        renderCatT(c.second, searching);
                         ImGui::TreePop();
                     }
                 }
-                else
+
+                for (auto &c : cats.sub)
                 {
-                    if (ImGui::TreeNode("%s", cats[pos].c_str()))
-                    {
-                        renderAddMenuList(opt, cats, pos + 1);
+                    if (ImGui::TreeNodeEx(c.first.c_str(), ImGuiTreeNodeFlags_Leaf))
                         ImGui::TreePop();
-                    }
+                    if (ImGui::IsItemClicked())
+                        addNode(c.first, c.second.func(this));
                 }
             }
 
-            void Flowgraph::renderAddMenuList()
+            void Flowgraph::renderAddMenuList(std::string search)
             {
                 std::lock_guard<std::mutex> lg(flow_mtx);
 
+                // Extract categories
+                std::vector<NodeInternalReg> regs;
+                std::vector<std::vector<std::string>> categs;
                 for (auto &opt : node_internal_registry)
                 {
-                    std::vector<std::string> cats = splitString(opt.second.menuname, '/');
-                    renderAddMenuList(opt, cats, 0);
+                    if (search.size() && !isStringPresent(opt.second.menuname, search))
+                        continue;
+
+                    regs.push_back(opt.second);
+                    categs.push_back(splitString(opt.second.menuname, '/'));
                 }
+
+                CatT cats;
+
+                // Organize in a recursive fashion
+                for (int i = 0; i < regs.size(); i++)
+                {
+                    CatT *cCats = &cats;
+                    for (int c = 0; c < categs[i].size(); c++)
+                    {
+                        std::string cat = categs[i][c];
+
+                        if (c == categs[i].size() - 1)
+                        {
+                            cCats->sub.emplace(cat, regs[i]);
+                        }
+                        else
+                        {
+                            if (!cCats->cats.count(cat))
+                                cCats->cats.emplace(cat, CatT());
+                            cCats = &cCats->cats[cat];
+                        }
+                    }
+                }
+
+                // Render
+                renderCatT(cats, search.size());
             }
 
             void Flowgraph::render()
