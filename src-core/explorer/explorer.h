@@ -5,6 +5,7 @@
 #include "utils/task_queue.h"
 
 #include <cstdint>
+#include <filesystem>
 #include <memory>
 
 namespace satdump
@@ -25,6 +26,12 @@ namespace satdump
         {
             std::string type;
             std::shared_ptr<handlers::Handler> &h;
+        };
+
+        struct GetAllOfTypeEvent
+        {
+            std::string type;
+            std::vector<std::shared_ptr<handlers::Handler>> &hs;
         };
 
         struct ExplorerAddHandlerEvent
@@ -50,6 +57,9 @@ namespace satdump
 
         protected:
             const std::string app_id;
+
+            // TODOREWORK Remove
+            const bool lego_debug_mode = std::filesystem::exists("/legodebugmode");
 
             float panel_ratio = 0.23;
             float last_width = -1.0f;

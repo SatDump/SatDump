@@ -1,38 +1,29 @@
 #include "image_handler.h"
-
+#include "../vector/shapefile_handler.h"
+#include "common/widgets/menuitem_tooltip.h"
+#include "core/config.h"
 #include "core/plugin.h"
 #include "core/style.h"
+#include "explorer/explorer.h"
 #include "handlers/projection/projection_handler.h"
 #include "handlers/vector/addmenu.h"
-#include "image/hue_saturation.h"
-#include "image/image_background.h"
-#include "image/meta.h"
-#include "imgui/imgui.h"
-#include "imgui/imgui_stdlib.h"
-#include "logger.h"
-
+#include "handlers/vector/shapefile_handler.h"
 #include "image/brightness_contrast.h"
 #include "image/earth_curvature.h"
-#include "image/io.h" // TODOREWORK
+#include "image/hue_saturation.h"
+#include "image/image_background.h"
+#include "image/io.h"
+#include "image/meta.h"
 #include "image/processing.h"
-
+#include "imgui/imgui.h"
+#include "logger.h"
 #include "nlohmann/json_utils.h"
-
-#include "../vector/shapefile_handler.h"
-
-#include "core/config.h"
-#include "imgui/dialogs/pfd_utils.h" // TODOREWORK
-#include "utils/string.h"
-
-// TODOREWORK!
-#include "handlers/vector/shapefile_handler.h"
 #include "products/image/channel_transform.h"
+#include "utils/string.h"
 #include <exception>
 #include <memory>
+#include <string>
 #include <utility>
-
-// TODOREWORK
-#include "explorer/explorer.h"
 
 namespace satdump
 {
@@ -43,7 +34,7 @@ namespace satdump
             handler_tree_icon = u8"\uf7e8";
             setCanSubBeReorgTo(true);
 
-            // TODOREWORK experimental?
+            // Image crop feature
             image_view.cropCallback = [this](int x1, int y1, int x2, int y2)
             {
                 if (is_processing)
@@ -216,7 +207,8 @@ namespace satdump
         {
             drawSaveMenu();
 
-            renderVectorOverlayMenu(this);
+            if (renderVectorOverlayMenu(this))
+                asyncProcess();
         }
 
         void ImageHandler::drawContents(ImVec2 win_size)
@@ -263,6 +255,11 @@ namespace satdump
 
             if (ImGui::BeginMenuBar())
             {
+                // Refresh button
+                if (widgets::MenuItemTooltip(u8"\uf01e", "Refresh (Image Only)"))
+                    asyncProcess();
+
+                // Basic controls
                 image_view.zoom_in_next |= ImGui::MenuItem(u8"\ueb81");
                 image_view.zoom_out_next |= ImGui::MenuItem(u8"\ueb82");
                 image_view.autoFitNextFrame |= ImGui::MenuItem("Fit");
@@ -270,21 +267,36 @@ namespace satdump
 
                 if (image_proj_valid)
                 {
-                    if (rotate180_image)
+                    if (rotate180_image) // Projs do not work with rotated imagery
                         style::beginDisabled();
-                    if (ImGui::MenuItem("Add To Proj"))
-                    { // TODOREWORK
-                        std::shared_ptr<Handler> h;
-                        eventBus->fire_event<explorer::GetLastSelectedOfTypeEvent>({"projection_handler", h});
-                        if (h)
-                            h->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()), true);
-                        else
+
+                    // Show a menu that allows putting this image on an existing or new projection
+                    if (widgets::BeginMenuTooltip(u8"\uf484", "Add to projection"))
+                    {
+                        std::vector<std::shared_ptr<Handler>> hs;
+                        eventBus->fire_event<explorer::GetAllOfTypeEvent>({"projection_handler", hs});
+
+                        int n = 0;
+                        for (auto &h : hs)
+                        {
+                            std::string id = h->getName() + " (" + std::to_string(++n) + ")" + "##addtoproj";
+                            if (ImGui::MenuItem(id.c_str()))
+                                h->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()), true);
+                        }
+
+                        if (n > 0)
+                            ImGui::Separator();
+
+                        if (ImGui::MenuItem("New Projection"))
                         {
                             auto p = std::make_shared<ProjectionHandler>();
                             p->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()), true);
                             eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({p});
                         }
+
+                        ImGui::EndMenu();
                     }
+
                     if (rotate180_image)
                         style::endDisabled();
                 }

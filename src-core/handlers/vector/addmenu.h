@@ -12,19 +12,30 @@ namespace satdump
     namespace handlers
     {
         // TODORERWORK this is extremely temporary!!!!!!!!!
-        inline void renderVectorOverlayMenu(handlers::Handler *h)
+        inline bool renderVectorOverlayMenu(handlers::Handler *h)
         {
+            bool added = false;
+
             // TODOREWORK move out?!
             if (ImGui::BeginMenu("Add Overlay"))
             {
                 if (ImGui::MenuItem("Shores"))
+                {
                     h->addSubHandler(std::make_shared<handlers::ShapefileHandler>(resources::getResourcePath("maps/ne_10m_coastline.shp")), true);
+                    added = true;
+                }
 
                 if (ImGui::MenuItem("Borders"))
+                {
                     h->addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")), true);
+                    added = true;
+                }
 
                 if (ImGui::MenuItem("Cities"))
+                {
                     h->addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_populated_places_simple.shp")), true);
+                    added = true;
+                }
 
                 if (ImGui::MenuItem("Lat/Lon Grid"))
                 {
@@ -55,6 +66,7 @@ namespace satdump
                     h2->file->polyline_records.push_back(r);
 
                     h->addSubHandler(h2, true);
+                    added = true;
                 }
 
                 if (ImGui::MenuItem("QTH"))
@@ -77,6 +89,8 @@ namespace satdump
 
                 ImGui::EndMenu();
             }
+
+            return added;
         }
     } // namespace handlers
 } // namespace satdump
