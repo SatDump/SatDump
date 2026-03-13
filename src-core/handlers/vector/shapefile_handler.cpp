@@ -42,6 +42,7 @@ namespace satdump
             if (ImGui::CollapsingHeader("Settings", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::ColorEdit3("Draw Color##shapefilecolor", (float *)&color_to_draw, ImGuiColorEditFlags_NoInputs /*| ImGuiColorEditFlags_NoLabel*/);
+                ImGui::Checkbox("Anti-Alias", &antialias);
                 ImGui::InputInt("Font Size", &font_size);
                 if (has_dbf)
                     ImGui::InputInt("Scale Rank (Cities Only)", &scalerank_filter);
@@ -119,6 +120,8 @@ namespace satdump
                 color_to_draw.z = c[2];
                 color_to_draw.w = c[3];
             }
+            if (p.contains("antialias"))
+                antialias = p["antialias"];
             if (p.contains("font_size"))
                 font_size = p["font_size"];
             if (p.contains("scalerank_filter"))
@@ -129,6 +132,7 @@ namespace satdump
         {
             nlohmann::json p;
             p["color"] = {color_to_draw.x, color_to_draw.y, color_to_draw.z, color_to_draw.w};
+            p["antialias"] = antialias;
             p["font_size"] = font_size;
             p["scalerank_filter"] = scalerank_filter;
             return p;
@@ -146,7 +150,8 @@ namespace satdump
             text_drawer.init_font(resources::getResourcePath("fonts/font.ttf"));
 
             {
-                std::function<void(std::vector<std::vector<shapefile::point_t>>, int num)> polylineDraw = [color, &img, &projectionFunc](std::vector<std::vector<shapefile::point_t>> parts, int num)
+                std::function<void(std::vector<std::vector<shapefile::point_t>>, int num)> polylineDraw =
+                    [this, color, &img, &projectionFunc](std::vector<std::vector<shapefile::point_t>> parts, int num)
                 {
                     int width = img.width();
                     int height = img.height();
@@ -158,7 +163,12 @@ namespace satdump
                         {
                             std::pair<double, double> end = projectionFunc(coordinates[i].y, coordinates[i].x, height, width);
                             if (start.first != -1 && start.second != -1 && end.first != -1 && end.second != -1)
-                                img.draw_line(start.first, start.second, end.first, end.second, color);
+                            {
+                                if (antialias)
+                                    img.draw_aa_line(start.first, start.second, end.first, end.second, color);
+                                else
+                                    img.draw_line(start.first, start.second, end.first, end.second, color);
+                            }
 
                             start = end;
                         }
@@ -182,8 +192,16 @@ namespace satdump
 #if 0
                      img.draw_pixel(cc.first, cc.second, color);
 #else
-                    img.draw_line(cc.first - font_size * 0.3, cc.second - font_size * 0.3, cc.first + font_size * 0.3, cc.second + font_size * 0.3, color);
-                    img.draw_line(cc.first + font_size * 0.3, cc.second - font_size * 0.3, cc.first - font_size * 0.3, cc.second + font_size * 0.3, color);
+                    if (antialias)
+                    {
+                        img.draw_aa_line(cc.first - font_size * 0.3, cc.second - font_size * 0.3, cc.first + font_size * 0.3, cc.second + font_size * 0.3, color);
+                        img.draw_aa_line(cc.first + font_size * 0.3, cc.second - font_size * 0.3, cc.first - font_size * 0.3, cc.second + font_size * 0.3, color);
+                    }
+                    else
+                    {
+                        img.draw_line(cc.first - font_size * 0.3, cc.second - font_size * 0.3, cc.first + font_size * 0.3, cc.second + font_size * 0.3, color);
+                        img.draw_line(cc.first + font_size * 0.3, cc.second - font_size * 0.3, cc.first - font_size * 0.3, cc.second + font_size * 0.3, color);
+                    }
                     img.draw_circle(cc.first, cc.second, 0.15 * font_size, color, true);
 
                     std::string shapeID;

@@ -125,6 +125,14 @@ namespace satdump
             void draw_pixel(size_t x, size_t y, std::vector<double> color);
 
             /**
+             * @brief Get a pixel's color
+             * @param x position
+             * @param y position
+             * @return color of the pixel
+             */
+            std::vector<double> get_pixel_color(size_t x, size_t y);
+
+            /**
              * @brief Draw a line with Bresenham's algorithm
              * @param x0 line start X position
              * @param y0 line start Y position
@@ -133,6 +141,16 @@ namespace satdump
              * @param color of the line
              */
             void draw_line(int x0, int y0, int x1, int y1, std::vector<double> color);
+
+            /**
+             * @brief Draw an anti-aliased line
+             * @param x0 line start X position
+             * @param y0 line start Y position
+             * @param x1 line stop X position
+             * @param y1 line stop Y position
+             * @param color of the line
+             */
+            void draw_aa_line(float x0, float y0, float x1, float y1, std::vector<double> color);
 
             /**
              * @brief Draw a circle with Bresenham's Midpoint algorithm

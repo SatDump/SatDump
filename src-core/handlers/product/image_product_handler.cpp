@@ -403,6 +403,10 @@ namespace satdump
                         image::set_metadata_proj_cfg(img, product->get_proj_cfg(product->images[channel_selection_curr_id].abs_index));
                     }
 
+                    // Set name again!
+                    product_internal_name = "Image";
+                    img_handler->setName(generateFileName());
+
                     img_handler->setImage(img);
                 }
             }

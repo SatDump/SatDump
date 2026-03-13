@@ -1,5 +1,6 @@
 #include "core/exception.h"
 #include "image.h"
+#include <cmath>
 
 namespace satdump
 {
@@ -93,6 +94,14 @@ namespace satdump
                 setf(c, x, y, color[c]);
         }
 
+        std::vector<double> Image::get_pixel_color(size_t x, size_t y)
+        {
+            std::vector<double> color;
+            for (int c = 0; c < d_channels; c++)
+                color.push_back(getf(c, x, y));
+            return color;
+        }
+
         void Image::draw_line(int x0, int y0, int x1, int y1, std::vector<double> color)
         {
             if (x0 < 0 || x0 >= (int)d_width)
@@ -124,6 +133,92 @@ namespace satdump
                 {
                     err += dx;
                     y0 += sy;
+                }
+            }
+        }
+
+        void Image::draw_aa_line(float x0, float y0, float x1, float y1, std::vector<double> color)
+        {
+            if (x0 < 0 || x0 >= (int)d_width)
+                return;
+            if (x1 < 0 || x1 >= (int)d_width)
+                return;
+            if (y0 < 0 || y0 >= (int)d_height)
+                return;
+            if (y1 < 0 || y1 >= (int)d_height)
+                return;
+
+            float steep = fabs(y1 - y0) > fabs(x1 - x0);
+
+            if (steep)
+            {
+                std::swap(x0, y0);
+                std::swap(x1, y1);
+            }
+            if (x0 > x1)
+            {
+                std::swap(x0, x1);
+                std::swap(y0, y1);
+            }
+
+            // compute the slope
+            float dx = x1 - x0;
+            float dy = y1 - y0;
+            float gradient = dy / dx;
+            if (dx == 0.0)
+                gradient = 1;
+
+            int xpxl1 = x0;
+            int xpxl2 = x1;
+            float intersectY = y0;
+
+            // main loop
+            if (steep)
+            {
+                int x;
+                for (x = xpxl1; x <= xpxl2; x++)
+                {
+                    // pixel coverage is determined by fractional
+                    // part of y co-ordinate
+
+                    auto rcolor1 = get_pixel_color(x, floor(intersectY));
+                    auto rcolor2 = get_pixel_color(x, floor(intersectY) - 1);
+
+                    auto color_l1 = color;
+                    for (int i = 0; i < std::min<int>(rcolor1.size(), color_l1.size()); i++)
+                        color_l1[i] = color_l1[i] * fmod(intersectY, 1) + rcolor1[i] * (1 - fmod(intersectY, 1));
+
+                    auto color_l2 = color;
+                    for (int i = 0; i < std::min<int>(rcolor2.size(), color_l2.size()); i++)
+                        color_l2[i] = color_l2[i] * (1 - fmod(intersectY, 1)) + rcolor2[i] * (fmod(intersectY, 1));
+
+                    draw_pixel(floor(intersectY), x, color_l1);
+                    draw_pixel(floor(intersectY) - 1, x, color_l2);
+                    intersectY += gradient;
+                }
+            }
+            else
+            {
+                int x;
+                for (x = xpxl1; x <= xpxl2; x++)
+                {
+                    // pixel coverage is determined by fractional
+                    // part of y co-ordinate
+
+                    auto rcolor1 = get_pixel_color(x, floor(intersectY));
+                    auto rcolor2 = get_pixel_color(x, floor(intersectY) - 1);
+
+                    auto color_l1 = color;
+                    for (int i = 0; i < std::min<int>(rcolor1.size(), color_l1.size()); i++)
+                        color_l1[i] = color_l1[i] * fmod(intersectY, 1) + rcolor1[i] * (1 - fmod(intersectY, 1));
+
+                    auto color_l2 = color;
+                    for (int i = 0; i < std::min<int>(rcolor2.size(), color_l2.size()); i++)
+                        color_l2[i] = color_l2[i] * (1 - fmod(intersectY, 1)) + rcolor2[i] * (fmod(intersectY, 1));
+
+                    draw_pixel(x, floor(intersectY), color_l1);
+                    draw_pixel(x, floor(intersectY) - 1, color_l2);
+                    intersectY += gradient;
                 }
             }
         }

@@ -250,7 +250,7 @@ int main(int argc, char *argv[])
     if (argc > 1)
     {
         int v = cli_handler.parse(argc, argv);
-        if (v != 0)
+        if (cli_handler.has_command() && v != 0)
             exit(v);
     }
 

@@ -27,6 +27,7 @@ namespace satdump
         public:
             CommandHandler(bool is_gui = false);
             int parse(int argc, char *argv[]);
+            bool has_command();
             bool run();
         };
     } // namespace cli

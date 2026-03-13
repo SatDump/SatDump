@@ -22,6 +22,7 @@ namespace satdump
             bool has_dbf = false;
 
             ImVec4 color_to_draw = {0, 1, 0, 1};
+            bool antialias = false;
             int font_size = 20;
             int scalerank_filter = 3;
 

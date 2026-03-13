@@ -63,6 +63,8 @@ namespace satdump
             return 0;
         }
 
+        bool CommandHandler::has_command() { return app.get_subcommands().size(); }
+
         bool CommandHandler::run()
         {
             for (auto *subcom : app.get_subcommands())
