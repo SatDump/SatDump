@@ -1,5 +1,6 @@
 #include "archive_loader.h"
 
+#include "explorer/explorer.h"
 #include "handlers/processing/processing.h"
 #include "logger.h"
 #include "main_ui.h"
@@ -298,8 +299,7 @@ namespace satdump
                                                        std::filesystem::path(l_download_path).stem().string();
 
                             if (success)
-                                eventBus->fire_event<explorer::ExplorerAddHandlerEvent>(
-                                    {std::make_shared<handlers::OffProcessingHandler>("off2pro", "file", l_download_path, process_path, nlohmann::json()), true, true});
+                                eventBus->fire_event<explorer::ExplorerLoadFileEvent>({l_download_path});
                         }
                         catch (std::exception &e)
                         {

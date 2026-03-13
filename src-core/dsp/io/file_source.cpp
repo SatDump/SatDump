@@ -22,7 +22,7 @@ namespace satdump
         template <typename T>
         bool FileSourceBlock<T>::work()
         {
-            if (!file_reader.eof() && !work_should_exit)
+            if (!d_eof && !file_reader.eof() && !work_should_exit)
             {
                 auto oblk = outputs[0].fifo->newBufferSamples(d_buffer_size, sizeof(T));
                 T *obuf = oblk.template getSamples<T>();

@@ -1,5 +1,5 @@
 {
-    "type": "normal_si1ngle_line",
+    "type": "normal_single_line",
     "scan_angle": 110.12, //110.2,
     "roll_offset": -0.075, //-0.1, //-0.2,
     "pitch_offset": 0,

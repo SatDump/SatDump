@@ -2,6 +2,7 @@
 
 #include "common/utils.h"
 #include "dsp/block.h"
+#include "logger.h"
 #include <fstream>
 
 namespace satdump
@@ -38,10 +39,12 @@ namespace satdump
                 d_buffer_size = p_buffer_size;
 
                 file_reader = std::ifstream(p_file, std::ios::binary);
+                if (!file_reader.good())
+                    logger->error("Invalid file " + p_file);
 
                 d_filesize = getFilesize(p_file);
                 d_progress = 0;
-                d_eof = false;
+                d_eof = !file_reader.good();
             }
 
             nlohmann::ordered_json get_cfg_list()

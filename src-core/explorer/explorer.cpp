@@ -94,6 +94,9 @@ namespace satdump
                     recf(master_handler);
                 });
 
+            // Returns all handlers of a specific type if available
+            eventBus->register_handler<ExplorerLoadFileEvent>([this](const ExplorerLoadFileEvent &v) { tryOpenFileInExplorer(v.path); });
+
 // Load tip of the day if we can, "randomly"
 #ifdef BUILD_IS_DEBUG
             std::string tod_res = "todd.txt";
@@ -410,6 +413,8 @@ namespace satdump
                             if (tip_of_the_day[pp] == ' ')
                                 break;
                         }
+                        if (tip_of_the_day[p + cutLength] == '.' || tip_of_the_day[p + cutLength] == '?' || tip_of_the_day[p + cutLength] == '!')
+                            cutLength++;
                         std::string line = tip_of_the_day.substr(p, cutLength - p);
                         ImVec2 line_size = ImGui::CalcTextSize(line.c_str());
                         last_pos = ((float)dims.second / 2) + ((80 + i * 20) * scale);
@@ -435,7 +440,8 @@ namespace satdump
                         ImVec2 line_size = ImGui::CalcTextSize("Add New Recorder");
                         ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), last_pos + (26 * 2) * scale});
                         if (ImGui::Button("Add Buggy Recorder"))
-                            addHandler(std::make_shared<handlers::RecFrontendHandler>(std::make_shared<handlers::TestHttpBackend>(std::make_shared<handlers::RecBackend>())));
+                            addHandler(std::make_shared<handlers::NewRecHandler>());
+                        //   addHandler(std::make_shared<handlers::RecFrontendHandler>(std::make_shared<handlers::TestHttpBackend>(std::make_shared<handlers::RecBackend>())));
                     }
                     else
                     {

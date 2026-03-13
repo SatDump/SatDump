@@ -17,6 +17,7 @@ namespace satdump
         std::string id;
         bool is_hdf;
         bool is_single_hdf;
+        bool legacy;
     };
 
     std::vector<EumetSatProductItem> eumetsat_products = {
@@ -25,16 +26,19 @@ namespace satdump
             "EO%3AEUM%3ADAT%3A0662",
             true,
             false,
+            false,
         },
         {
             "MTG FCI 0 deg Full Resolution",
             "EO%3AEUM%3ADAT%3A0665",
             true,
             false,
+            false,
         },
         {
             "MSG SEVIRI 0 deg",
             "EO%3AEUM%3ADAT%3AMSG%3AHRSEVIRI",
+            false,
             false,
             false,
         },
@@ -43,10 +47,12 @@ namespace satdump
             "EO%3AEUM%3ADAT%3AMSG%3AMSG15-RSS",
             false,
             false,
+            false,
         },
         {
             "MSG SEVIRI IODC",
             "EO%3AEUM%3ADAT%3AMSG%3AHRSEVIRI-IODC",
+            false,
             false,
             false,
         },
@@ -55,10 +61,12 @@ namespace satdump
             "EO%3AEUM%3ADAT%3AMETOP%3AAVHRRL1",
             false,
             false,
+            false,
         },
         {
             "MetOp MHS",
             "EO%3AEUM%3ADAT%3AMETOP%3AMHSL1",
+            false,
             false,
             false,
         },
@@ -67,10 +75,12 @@ namespace satdump
             "EO%3AEUM%3ADAT%3AMETOP%3AAMSUL1",
             false,
             false,
+            false,
         },
         {
             "MetOp HIRS",
             "EO%3AEUM%3ADAT%3AMETOP%3AHIRSL1",
+            false,
             false,
             false,
         },
@@ -79,18 +89,21 @@ namespace satdump
             "EO%3AEUM%3ADAT%3A0905",
             true,
             true,
+            false,
         },
         {
             "Sentinel-3 OLCI Full Resolution",
             "EO%3AEUM%3ADAT%3A0409",
             true,
             false,
+            true,
         },
         {
             "Sentinel-3 SLSTR",
             "EO%3AEUM%3ADAT%3A0411",
             true,
             false,
+            true,
         },
     };
 
@@ -258,8 +271,9 @@ namespace satdump
                         std::string download_path = products_download_and_process_directory + "/" + file_name;
                         std::string process_path = (download_location && output_selection.isValid() ? output_selection.getPath() : products_download_and_process_directory) + "/" +
                                                    std::filesystem::path(file_name).stem().string();
+                        bool is_legacy = eumetsat_products[eumetsat_selected_dataset].legacy;
 
-                        auto func = [this, nat_link, download_path, process_path](int)
+                        auto func = [this, nat_link, download_path, process_path, is_legacy](int)
                         {
                             try
                             {
@@ -284,8 +298,11 @@ namespace satdump
                                         }
                                     }
 
-                                    eventBus->fire_event<explorer::ExplorerAddHandlerEvent>(
-                                        {std::make_shared<handlers::OffProcessingHandler>("off2pro", "file", download_path, process_path, nlohmann::json()), true, true});
+                                    if (is_legacy)
+                                        eventBus->fire_event<explorer::ExplorerAddHandlerEvent>(
+                                            {std::make_shared<handlers::OffProcessingHandler>("off2pro", "file", download_path, process_path, nlohmann::json()), true, true});
+                                    else
+                                        eventBus->fire_event<explorer::ExplorerLoadFileEvent>({download_path});
                                 }
                             }
                             catch (std::exception &e)

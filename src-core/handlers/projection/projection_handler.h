@@ -14,6 +14,8 @@ namespace satdump
             ProjectionHandler();
             ~ProjectionHandler();
 
+            std::string proj_name = "Projection";
+
             ImageHandler img_handler;
 
             proj::ProjectionConfigUI projui;
@@ -32,19 +34,9 @@ namespace satdump
             void setConfig(nlohmann::json p);
             nlohmann::json getConfig();
 
-            void delSubHandler(std::shared_ptr<Handler> handler, bool now = false)
-            {
-                //  img_handler.delSubHandler(handler, true);
-                Handler::delSubHandler(handler, now);
-            }
+            void delSubHandler(std::shared_ptr<Handler> handler, bool now = false) { Handler::delSubHandler(handler, now); }
 
-            // void drawTreeMenu(std::shared_ptr<Handler> &h)
-            // {
-            //     img_handler.drawTreeMenu(h);
-            //     Handler::drawTreeMenu(h);
-            // }
-
-            std::string getName() { return "Projection"; } // TODOREWORK allow renaming?
+            std::string getName() { return proj_name; }
             std::string getID() { return "projection_handler"; }
         };
     } // namespace handlers

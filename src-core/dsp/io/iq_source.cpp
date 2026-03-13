@@ -10,7 +10,7 @@ namespace satdump
 
         bool IQSourceBlock::work()
         {
-            if (!baseband_reader.is_eof() && !work_should_exit)
+            if (!d_eof && !baseband_reader.is_eof() && !work_should_exit)
             {
                 auto oblk = outputs[0].fifo->newBufferSamples(d_buffer_size, sizeof(complex_t));
                 complex_t *obuf = oblk.getSamples<complex_t>();

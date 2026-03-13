@@ -2,6 +2,8 @@
 
 #include "common/dsp/io/baseband_interface.h"
 #include "dsp/block.h"
+#include "logger.h"
+#include <filesystem>
 
 namespace satdump
 {
@@ -43,9 +45,12 @@ namespace satdump
 
                 baseband_reader.set_file(p_file, p_type);
 
+                if (!std::filesystem::exists(p_file))
+                    logger->error("Invalid file " + p_file);
+
                 d_filesize = baseband_reader.filesize;
                 d_progress = 0;
-                d_eof = false;
+                d_eof = !std::filesystem::exists(p_file);
             }
 
             nlohmann::ordered_json get_cfg_list()

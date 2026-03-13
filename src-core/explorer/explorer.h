@@ -47,6 +47,11 @@ namespace satdump
             std::vector<std::pair<std::string, std::function<void(std::string, ExplorerApplication *)>>> &loaders;
         };
 
+        struct ExplorerLoadFileEvent
+        {
+            std::string path;
+        };
+
         // Actual explorer
         class ExplorerApplication
         {
