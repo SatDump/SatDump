@@ -215,7 +215,8 @@ else()
     endif()
 
     # VOLK
-    pkg_check_modules(VOLK REQUIRED volk)
+    pkg_check_modules(volk REQUIRED volk)
+    set(CMAKE_REQUIRED_INCLUDES ${volk_INCLUDE_DIRS})
     check_cxx_source_compiles("#include <volk/volk_alloc.hh>\n int main() { return 0; }" VOLK_HAS_ALLOC)
 
     if(NOT VOLK_HAS_ALLOC)
@@ -224,8 +225,8 @@ else()
     endif()
 
     target_include_directories(satdump_core PUBLIC ${volk_INCLUDE_DIRS})
-    target_link_libraries(satdump_core PUBLIC volk)
-    set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} volk) # We need to test stuff in volk later
+    target_link_libraries(satdump_core PUBLIC ${volk_LDFLAGS})
+    set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${volk_LIBRARIES}) # We need to test stuff in volk later
     set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${volk_INCLUDE_DIRS}) # We need to test stuff in volk later
 
     # LibPNG
