@@ -1,9 +1,12 @@
 #include "common/dsp/path/splitter.h"
 #include "common/dsp_source_sink/format_notated.h"
 #include "common/utils.h"
+#include "dsp/agc/agc_fast.h"
 #include "dsp/clock_recovery/clock_recovery_mm.h"
 #include "dsp/clock_recovery/clock_recovery_mm_fast.h"
 #include "dsp/path/splitter.h"
+#include "dsp/pll/costas.h"
+#include "dsp/pll/costas_fast.h"
 #include "dsp/utils/freq_shift.h"
 #include "init.h"
 #include "logger.h"
@@ -158,17 +161,41 @@ int main(int argc, char *argv[])
         p->p_max_gain = 65535;
         benchmarkNDSPBlock<complex_t>(p, 10, "AGC, New");
     }
+    {
+        auto p = std::make_shared<satdump::ndsp::AGCFastBlock<complex_t>>();
+        p->p_rate = 0.01;
+        p->p_reference = 1.0;
+        p->p_gain = 1.0;
+        p->p_max_gain = 65535;
+        benchmarkNDSPBlock<complex_t>(p, 10, "AGC Fast, New");
+    }
 
     logger->debug("Benchmarking Costas Loop...");
     benchmarkBlock(complex_t, complex_t, dsp::CostasLoopBlock, 10, "Costas Loop, Order 2", 1.0, /**/ 0.02, 2);
     benchmarkBlock(complex_t, complex_t, dsp::CostasLoopBlock, 10, "Costas Loop, Order 4", 1.0, /**/ 0.02, 4);
     benchmarkBlock(complex_t, complex_t, dsp::CostasLoopBlock, 10, "Costas Loop, Order 8", 1.0, /**/ 0.02, 8);
 
+    for (int v : {2, 4, 8})
+    {
+        auto p = std::make_shared<satdump::ndsp::CostasBlock>();
+        p->set_cfg("order", v);
+        benchmarkNDSPBlock<complex_t>(p, 10, "Costas Loop New, Order " + std::to_string(v));
+    }
+
+    for (int v : {2, 4, 8})
+    {
+        auto p = std::make_shared<satdump::ndsp::CostasFastBlock>();
+        p->set_cfg("order", v);
+        benchmarkNDSPBlock<complex_t>(p, 10, "Costas Loop Fast New, Order " + std::to_string(v));
+    }
+
     logger->debug("Benchmarking FIR RRC...");
-    // benchmarkBlock(complex_t, complex_t, dsp::FIRBlock<complex_t>, 10, "FIR RRC, 31 taps, omega 1.2", 1.0, /**/ dsp::firdes::root_raised_cosine(1.0, 1.2e6, 1e6, 0.35, 31));
     benchmarkBlock(complex_t, complex_t, dsp::FIRBlock<complex_t>, 10, "FIR RRC, 31 taps, omega 2.0", 1.0, /**/ dsp::firdes::root_raised_cosine(1.0, 2, 1, 0.35, 31));
-    // benchmarkBlock(complex_t, complex_t, dsp::FIRBlock<complex_t>, 10, "FIR RRC, 31 taps, omega 3.0", 1.0, /**/ dsp::firdes::root_raised_cosine(1.0, 3, 1, 0.35, 31));
     benchmarkBlock(complex_t, complex_t, dsp::FIRBlock<complex_t>, 10, "FIR RRC, 361 taps, omega 2.0", 1.0, /**/ dsp::firdes::root_raised_cosine(1.0, 2, 1, 0.35, 361));
+
+    benchmarkBlock(complex_t, complex_t, dsp::FFTFilterBlock<complex_t>, 10, "FFT RRC, 31 taps, omega 2.0", 1.0, /**/ dsp::firdes::root_raised_cosine(1.0, 2, 1, 0.35, 31));
+    benchmarkBlock(complex_t, complex_t, dsp::FFTFilterBlock<complex_t>, 10, "FFT RRC, 361 taps, omega 2.0", 1.0, /**/ dsp::firdes::root_raised_cosine(1.0, 2, 1, 0.35, 361));
+
     {
         auto p = std::make_shared<satdump::ndsp::FIRBlock<complex_t>>();
         p->p_taps = dsp::firdes::root_raised_cosine(1.0, 2, 1, 0.35, 31);
