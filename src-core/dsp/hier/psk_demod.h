@@ -21,7 +21,7 @@ namespace satdump
         class PSKDemodHierBlock : public Block
         {
         private:
-            RRC_FIRBlock<complex_t> rrc_blk;
+            RRC_Block<FIRBlock<complex_t>> rrc_blk;
             AGCBlock<complex_t> agc_blk;
             MMClockRecoveryBlock<complex_t> rec_blk;
             CostasBlock pll_blk;

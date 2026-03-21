@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include "dsp/agc/agc.h"
+#include "dsp/agc/agc_fast.h"
 #include "dsp/agc/blk_agc.h"
 #include "dsp/clock_recovery/clock_recovery_mm.h"
 #include "dsp/clock_recovery/clock_recovery_mm_fast.h"
@@ -23,6 +24,7 @@
 #include "dsp/displays/const_disp.h"
 #include "dsp/displays/hist_disp.h"
 #include "dsp/fft/fft_pan.h"
+#include "dsp/filter/fft.h"
 #include "dsp/filter/rrc.h"
 #include "dsp/flowgraph/flowgraph.h"
 #include "dsp/hier/psk_demod.h"
@@ -34,6 +36,7 @@
 #include "dsp/io/waveform.h"
 #include "dsp/path/splitter.h"
 #include "dsp/pll/costas.h"
+#include "dsp/pll/costas_fast.h"
 #include "dsp/pll/pll_carrier_tracking.h"
 #include "dsp/resampling/rational_resampler.h"
 #include "dsp/utils/add.h"
@@ -149,6 +152,9 @@ namespace satdump
                 registerNodeSimple<ndsp::AGCBlock<complex_t>>(flowgraph, "AGC/Agc CC");
                 registerNodeSimple<ndsp::AGCBlock<float>>(flowgraph, "AGC/Agc FF");
 
+                registerNodeSimple<ndsp::AGCFastBlock<complex_t>>(flowgraph, "AGC/Agc Fast CC");
+                registerNodeSimple<ndsp::AGCFastBlock<float>>(flowgraph, "AGC/Agc Fast FF");
+
                 registerNodeSimple<ndsp::BlkAGCBlock<complex_t>>(flowgraph, "AGC/Block Agc CC");
                 registerNodeSimple<ndsp::BlkAGCBlock<float>>(flowgraph, "AGC/Block Agc FF");
 
@@ -162,6 +168,7 @@ namespace satdump
                 registerNodeSimple<ndsp::AddBlock<complex_t>>(flowgraph, "Utils/Add CC");
 
                 registerNodeSimple<ndsp::CostasBlock>(flowgraph, "PLL/Costas Loop");
+                registerNodeSimple<ndsp::CostasFastBlock>(flowgraph, "PLL/Costas Loop Fast");
                 registerNodeSimple<ndsp::PLLCarrierTrackingBlock>(flowgraph, "PLL/PLL Carrier Tracking");
 
                 registerNodeSimple<ndsp::MMClockRecoveryBlock<complex_t>>(flowgraph, "Timing/Clock Recovery MM CC");
@@ -173,7 +180,8 @@ namespace satdump
                 registerNodeSimple<ndsp::RationalResamplerBlock<complex_t>>(flowgraph, "Resampling/Rational Resampler CC");
                 registerNodeSimple<ndsp::RationalResamplerBlock<float>>(flowgraph, "Resampling/Rational Resampler FF");
 
-                registerNodeSimple<ndsp::RRC_FIRBlock<complex_t>>(flowgraph, "Filter/RRC FIR CC");
+                registerNodeSimple<ndsp::RRC_Block<FIRBlock<complex_t>>>(flowgraph, "Filter/RRC FIR CC");
+                registerNodeSimple<ndsp::RRC_Block<FFTFilterBlock<complex_t>>>(flowgraph, "Filter/RRC FFT CC");
 
                 registerNodeSimple<ndsp::CyclostationaryAnalysis>(flowgraph, "Utils/Cyclostationary Analysis");
 

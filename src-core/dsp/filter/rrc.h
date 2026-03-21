@@ -2,6 +2,7 @@
 
 #include "common/dsp/filter/firdes.h"
 #include "dsp/block.h"
+#include "dsp/filter/fft.h"
 #include "dsp/filter/fir.h"
 
 namespace satdump
@@ -9,7 +10,7 @@ namespace satdump
     namespace ndsp
     {
         template <typename T>
-        class RRC_FIRBlock : public FIRBlock<T>
+        class RRC_Block : public T
         {
         private:
             double gain = 1;
@@ -43,7 +44,7 @@ namespace satdump
                 else if (key == "ntaps")
                     return ntaps;
                 else
-                    return FIRBlock<T>::get_cfg(key);
+                    return T::get_cfg(key);
             }
 
             Block::cfg_res_t set_cfg(std::string key, nlohmann::json v)
@@ -60,11 +61,11 @@ namespace satdump
                     ntaps = v;
 
                 if (key == "buffer_size")
-                    return FIRBlock<T>::set_cfg(key, v);
+                    return T::set_cfg(key, v);
                 else
                 {
                     auto taps = dsp::firdes::root_raised_cosine(gain, samplerate, symbolrate, alpha, ntaps);
-                    return FIRBlock<T>::set_cfg("taps", taps);
+                    return T::set_cfg("taps", taps);
                 }
             }
         };

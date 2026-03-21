@@ -23,6 +23,41 @@ namespace satdump
         }
 
         template <typename T>
+        void FIRBlock<T>::init()
+        {
+            // Free if needed
+            if (taps != nullptr)
+            {
+                for (int i = 0; i < aligned_tap_count; i++)
+                    volk_free(taps[i]);
+                volk_free(taps);
+            }
+
+            // Init buffer
+            buffer.resize(8192);
+            buffer_size = buffer.size();
+            in_buffer = 0;
+
+            // Get alignement parameters
+            align = volk_get_alignment();
+            aligned_tap_count = std::max<int>(1, align / sizeof(T));
+
+            // Set taps
+            ntaps = p_taps.size();
+
+            // Init taps
+            this->taps = (float **)volk_malloc(aligned_tap_count * sizeof(float *), align);
+            for (int i = 0; i < aligned_tap_count; i++)
+            {
+                this->taps[i] = (float *)volk_malloc((ntaps + aligned_tap_count - 1) * sizeof(float), align);
+                for (int y = 0; y < ntaps + aligned_tap_count - 1; y++)
+                    this->taps[i][y] = 0;
+                for (int j = 0; j < ntaps; j++)
+                    this->taps[i][i + j] = p_taps[(ntaps - 1) - j]; // Reverse taps
+            }
+        }
+
+        template <typename T>
         uint32_t FIRBlock<T>::process(T *input, uint32_t nsamples, T *output)
         {
             if (needs_reinit)

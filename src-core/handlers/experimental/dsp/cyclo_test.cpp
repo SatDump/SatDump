@@ -2,6 +2,7 @@
 #include "common/dsp/filter/firdes.h"
 #include "common/widgets/stepped_slider.h"
 #include "dsp/device/options_displayer_warper.h"
+#include "dsp/filter/fir.h"
 #include "imgui/imgui.h"
 #include <memory>
 
@@ -15,7 +16,7 @@ namespace satdump
             splitter = std::make_shared<ndsp::SplitterBlock<complex_t>>();
             fft = std::make_shared<ndsp::FFTPanBlock>();
             agc = std::make_shared<ndsp::AGCBlock<complex_t>>();
-            rrc = std::make_shared<ndsp::RRC_FIRBlock<complex_t>>();
+            rrc = std::make_shared<ndsp::RRC_Block<ndsp::FIRBlock<complex_t>>>();
             splitter2 = std::make_shared<ndsp::SplitterBlock<complex_t>>();
             fft2 = std::make_shared<ndsp::FFTPanBlock>();
             costas = std::make_shared<ndsp::CostasBlock>();

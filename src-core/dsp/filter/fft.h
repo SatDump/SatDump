@@ -4,6 +4,7 @@
 #include "common/dsp/complex.h"
 #include "dsp/block.h"
 #include "dsp/block_simple.h"
+#include <fftw3.h>
 #include <volk/volk_alloc.hh>
 
 namespace satdump
@@ -11,7 +12,7 @@ namespace satdump
     namespace ndsp
     {
         template <typename T>
-        class FIRBlock : public BlockSimple<T, T>
+        class FFTFilterBlock : public Block
         {
         public:
             bool needs_reinit = false;
@@ -20,19 +21,27 @@ namespace satdump
         private:
             int buffer_size = 0;
             volk::vector<T> buffer;
-            float **taps = nullptr;
-            int ntaps;
-            int align;
-            int aligned_tap_count;
+
+            T *tail = nullptr;
+            T *ffttaps_buffer = nullptr;
 
             size_t in_buffer;
 
-        public:
-            uint32_t process(T *input, uint32_t nsamples, T *output);
+            int d_ntaps = 0;
+            int d_fftsize = 0;
+            int d_nsamples = 0;
+
+            fftwf_complex *fft_fwd_in = nullptr, *fft_fwd_out = nullptr;
+            fftwf_plan fft_fwd;
+            fftwf_complex *fft_inv_in = nullptr, *fft_inv_out = nullptr;
+            fftwf_plan fft_inv;
+
+        private:
+            bool work();
 
         public:
-            FIRBlock();
-            ~FIRBlock();
+            FFTFilterBlock();
+            ~FFTFilterBlock();
 
             void init();
 
