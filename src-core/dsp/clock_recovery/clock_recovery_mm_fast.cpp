@@ -48,10 +48,6 @@ namespace satdump
             // Omega setup
             omega_mid = omega;
             omega_limit = omega_relative_limit * omega;
-
-            // Init interpolator
-            pfb.init(dsp::windowed_sinc(p_nfilt * p_ntaps, hz_to_rad(0.5 / (double)p_nfilt, 1.0), dsp::window::nuttall, p_nfilt),
-                     p_nfilt); // TODOREWORK do this in main loop? TODODSP
         }
 
         template <typename T>
@@ -87,16 +83,12 @@ namespace satdump
             int nsamples = iblk.size;
 
             // Copy NTAPS samples in the buffer from input, as that's required for the last samples
-#if MM_DO_BRANCH
-            memcpy(&buffer[pfb.ntaps - 1], Block<T, T>::input_stream->readBuf, (pfb.ntaps - 1) * sizeof(T));
-#else
-            memcpy(&buffer[pfb.ntaps - 1], ibuf, nsamples * sizeof(T));
-#endif
+            memcpy(&buffer[ntaps - 1], ibuf, nsamples * sizeof(T));
             ouc = 0;
 
             for (; inc < nsamples && ouc < nsamples * 2 /* TODO THIS PROBABLY SUCKS!!!!*/;)
             {
-                //  if constexpr (std::is_same_v<T, complex_t>)
+                if constexpr (std::is_same_v<T, complex_t>)
                 {
                     // Propagate delay
                     p_2T = p_1T;
@@ -105,23 +97,10 @@ namespace satdump
                     c_1T = c_0T;
                 }
 
-                // Compute output
-                // int imu = (int)rint(mu * pfb.nfilt);
-                // if (imu < 0) // If we're out of bounds, clamp
-                //     imu = 0;
-                // if (imu >= pfb.nfilt)
-                //     imu = pfb.nfilt - 1;
-
                 if constexpr (std::is_same_v<T, float>)
                 {
-#if MM_DO_BRANCH
-                    if (inc < (pfb.ntaps - 1))
-                        volk_32f_x2_dot_prod_32f(&sample, &buffer[inc], pfb.taps[imu], pfb.ntaps);
-                    else
-                        volk_32f_x2_dot_prod_32f(&sample, &Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1)], pfb.taps[imu], pfb.ntaps);
-#else
                     // volk_32f_x2_dot_prod_32f(&sample, &buffer[inc], pfb.taps[imu], pfb.ntaps);
-#endif
+                    sample = buffer[inc] * (1.0 - mu) + buffer[inc + 1] * mu;
 
                     // Phase error
                     phase_error = (last_sample < 0 ? -1.0f : 1.0f) * sample - (sample < 0 ? -1.0f : 1.0f) * last_sample;
@@ -133,15 +112,8 @@ namespace satdump
                 }
                 if constexpr (std::is_same_v<T, complex_t>)
                 {
-#if MM_DO_BRANCH
-                    if (inc < (pfb.ntaps - 1))
-                        volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[inc], pfb.taps[imu], pfb.ntaps);
-                    else
-                        volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&Block<T, T>::input_stream->readBuf[inc - (pfb.ntaps - 1)], pfb.taps[imu], pfb.ntaps);
-#else
                     // volk_32fc_32f_dot_prod_32fc((lv_32fc_t *)&p_0T, (lv_32fc_t *)&buffer[inc], pfb.taps[imu], pfb.ntaps);
                     p_0T = buffer[inc] * (1.0 - mu) + buffer[inc + 1] * mu;
-#endif
 
                     // Slice it
                     c_0T = complex_t(p_0T.real > 0.0f ? 1.0f : 0.0f, p_0T.imag > 0.0f ? 1.0f : 0.0f);
@@ -154,8 +126,10 @@ namespace satdump
                     obuf[ouc++] = p_0T;
                 }
 
-                if (ouc % 4 == 0)
+                if (omega_upd_cnt++ == 4)
                 {
+                    omega_upd_cnt = 0;
+
                     // Adjust omega
                     omega = omega + omega_gain * phase_error;
                     omega = omega_mid + dsp::branched_clip((omega - omega_mid), omega_limit);
@@ -175,11 +149,7 @@ namespace satdump
                 inc = 0;
 
             // We need some history for the next run, so copy it over into our buffer
-#if MM_DO_BRANCH
-            memcpy(buffer, &Block<T, T>::input_stream->readBuf[nsamples - pfb.ntaps + 1], (pfb.ntaps - 1) * sizeof(T));
-#else
-            memmove(&buffer[0], &buffer[nsamples], pfb.ntaps * sizeof(T));
-#endif
+            memmove(&buffer[0], &buffer[nsamples], ntaps * sizeof(T));
 
             oblk.size = ouc;
             outputs[0].fifo->wait_enqueue(oblk);

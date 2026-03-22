@@ -9,6 +9,7 @@
 #include "core/exception.h"
 #include "dsp/base/stream.h"
 #include "nlohmann/json.hpp"
+#include <exception>
 #include <mutex>
 #include <thread>
 #include <vector>
@@ -315,9 +316,16 @@ namespace satdump
                 cfg_res_t r = RES_OK;
                 for (auto &i : v.items())
                 {
-                    cfg_res_t r2 = set_cfg(i.key(), i.value());
-                    if (r2 > r)
-                        r = r2;
+                    try
+                    {
+                        cfg_res_t r2 = set_cfg(i.key(), i.value());
+                        if (r2 > r)
+                            r = r2;
+                    }
+                    catch (std::exception &e)
+                    {
+                        r = RES_ERR;
+                    }
                 }
                 return r;
             }

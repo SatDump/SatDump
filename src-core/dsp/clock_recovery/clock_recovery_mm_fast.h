@@ -17,8 +17,6 @@ namespace satdump
             float p_mu = 0.5f;
             float p_muGain = 8.7e-3;
             float p_omegaLimit = 0.005;
-            int p_nfilt = 128;
-            int p_ntaps = 8;
 
             bool needs_reinit = false;
 
@@ -41,7 +39,9 @@ namespace satdump
             complex_t p_2T, p_1T, p_0T;
             complex_t c_2T, c_1T, c_0T;
 
-            dsp::PolyphaseBank pfb;
+            const int ntaps = 8;
+
+            uint32_t omega_upd_cnt = 0;
 
             float phase_error = 0;
 
@@ -64,8 +64,6 @@ namespace satdump
                 add_param_simple(p, "mu", "float");
                 add_param_simple(p, "muGain", "float");
                 add_param_simple(p, "omegaLimit", "float");
-                add_param_simple(p, "nfilt", "int");
-                add_param_simple(p, "ntaps", "int");
                 return p;
             }
 
@@ -81,10 +79,6 @@ namespace satdump
                     return p_muGain;
                 else if (key == "omegaLimit")
                     return p_omegaLimit;
-                else if (key == "nfilt")
-                    return p_nfilt;
-                else if (key == "ntaps")
-                    return p_ntaps;
                 else
                     throw satdump_exception(key);
             }
@@ -114,16 +108,6 @@ namespace satdump
                 else if (key == "omegaLimit")
                 {
                     p_omegaLimit = v;
-                    needs_reinit = true;
-                }
-                else if (key == "nfilt")
-                {
-                    p_nfilt = v;
-                    needs_reinit = true;
-                }
-                else if (key == "ntaps")
-                {
-                    p_ntaps = v;
                     needs_reinit = true;
                 }
                 else
