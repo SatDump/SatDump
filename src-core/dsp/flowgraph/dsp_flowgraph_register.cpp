@@ -20,6 +20,9 @@
 #include "dsp/conv/real_to_complex.h"
 #include "dsp/conv/short_to_float.h"
 #include "dsp/conv/uchar_to_float.h"
+#include "dsp/digital/binary_slicer.h"
+#include "dsp/digital/cadu_deframer.h"
+#include "dsp/digital/differential_decoder.h"
 #include "dsp/displays/const_disp.h"
 #include "dsp/displays/hist_disp.h"
 #include "dsp/fft/fft_pan.h"
@@ -240,6 +243,10 @@ namespace satdump
                 registerNodeSimple<ndsp::PSKDemodHierBlock>(flowgraph, "Modem/PSK Demod");
 
                 registerNodeSimple<ndsp::PSKSnrEstimatorBlock>(flowgraph, "Utils/PSK SNR Estimator");
+
+                registerNodeSimple<ndsp::BinarySlicerBlock>(flowgraph, "Digital/Binary Slicer");
+                registerNodeSimple<ndsp::DifferentialDecoderBlock>(flowgraph, "Digital/Differential Decoder");
+                registerNodeSimple<ndsp::CADUDeframerBlock>(flowgraph, "Digital/CADU Deframer");
 
                 eventBus->fire_event<RegisterNodesEvent>({flowgraph.node_internal_registry});
 

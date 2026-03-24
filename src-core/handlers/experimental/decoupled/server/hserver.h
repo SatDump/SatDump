@@ -7,6 +7,13 @@ namespace satdump
 {
     namespace handlers
     {
+        namespace hbackend_server_pkts
+        {
+            struct HandlerList
+            {
+            };
+        } // namespace hbackend_server_pkts
+
         class HBackendServer
         {
         private:

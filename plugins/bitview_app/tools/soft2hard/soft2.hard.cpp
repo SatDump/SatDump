@@ -1,4 +1,5 @@
 #include "core/style.h"
+#include "imgui/imgui.h"
 #include "logger.h"
 #include "soft2hard.h"
 #include <fstream>
@@ -11,6 +12,8 @@ namespace satdump
     {
         if (is_busy)
             style::beginDisabled();
+
+        ImGui::Checkbox("Bits Mode", &bits_mode);
 
         if (ImGui::Button("Soft To Hard"))
             should_process = true;
@@ -45,7 +48,7 @@ namespace satdump
 
             for (int i = 0; i < csize; i++)
             {
-                tmp_buf = tmp_buf << 1 | (ptr_pos[i] >= 0);
+                tmp_buf = tmp_buf << 1 | (bits_mode ? ptr_pos[i] : (ptr_pos[i] >= 0));
                 bitpos++;
 
                 if (bitpos == 8)

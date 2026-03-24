@@ -8,6 +8,7 @@ namespace satdump
     {
     private:
         int diff_mode = 0;
+        bool bits_mode = false;
         bool should_process = false;
 
     public:
