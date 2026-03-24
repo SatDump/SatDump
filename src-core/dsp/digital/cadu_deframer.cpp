@@ -36,8 +36,11 @@ namespace satdump
 
             def_state = def->getState();
 
-            oblk.size = n_frm * cadu_size;
-            outputs[0].fifo->wait_enqueue(oblk);
+            oblk.size = n_frm * (cadu_size / 8);
+            if (oblk.size > 0)
+                outputs[0].fifo->wait_enqueue(oblk);
+            else
+                outputs[0].fifo->free(oblk);
             inputs[0].fifo->free(iblk);
 
             return false;
