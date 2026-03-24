@@ -319,7 +319,7 @@ namespace satdump
                             if (this_tle.has_value())
                                 name = this_tle->name;
                             name += " - " + format_notated(dl.frequency, "Hz");
-                            // TODOPIPELINE           add_vfo_live(id, name, dl.frequency, dl.pipeline_selector->selected_pipeline, dl.pipeline_selector->getParameters());
+                            add_vfo_live(id, name, dl.frequency, dl.pipeline_selector->selected_pipeline, dl.pipeline_selector->getParameters());
                         }
 
                         if (dl.record)
