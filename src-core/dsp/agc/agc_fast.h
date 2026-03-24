@@ -18,10 +18,10 @@ namespace satdump
             float p_max_gain = 65536;
 
         private:
-            float rate;
-            float reference;
-            float gain;
-            float max_gain;
+            float rate = 0;
+            float reference = 0;
+            float gain = 0;
+            float max_gain = 0;
 
             // Mag buf
             volk::vector<float> mag_buf;

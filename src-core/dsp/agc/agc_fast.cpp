@@ -28,29 +28,30 @@ namespace satdump
                 mag_buf_size = mag_buf.size();
             }
 
-            // Multiply by gain and compute mags
+            // Compute mags
             if constexpr (std::is_same_v<T, complex_t>)
             {
-                volk_32f_s32f_multiply_32f((float *)out, (float *)in, gain, nsamples * 2);
-                volk_32fc_magnitude_32f(mag_buf.data(), (const lv_32fc_t *)out, nsamples);
+                volk_32fc_magnitude_32f(mag_buf.data(), (const lv_32fc_t *)in, nsamples);
             }
             else if constexpr (std::is_same_v<T, float>)
             {
-                volk_32f_s32f_multiply_32f(out, in, gain, nsamples);
                 for (uint32_t i = 0; i < nsamples; i++)
                     mag_buf[i] = fabsf(out[i]);
             }
 
-            // Update gain. Copying to consts seems faster here too...
-            const float lrate = rate;
-            const float lref = reference;
-            float lgain = gain;
-
+            // Calculate with gain
             for (uint32_t i = 0; i < nsamples; i++)
-                lgain += lrate * (lref - mag_buf[i]);
+            {
+                out[i] = in[i] * gain;
 
-            // Clamp gain
-            gain = fminf(lgain, max_gain);
+                if constexpr (std::is_same_v<T, float>)
+                    gain += rate * (reference - (mag_buf[i] * gain));
+                if constexpr (std::is_same_v<T, complex_t>)
+                    gain += rate * (reference - (mag_buf[i] * gain));
+
+                if (max_gain > 0.0 && gain > max_gain)
+                    gain = max_gain;
+            }
 
             return nsamples;
         }

@@ -5,7 +5,6 @@
 
 #include "dsp/agc/agc.h"
 #include "dsp/agc/agc_fast.h"
-#include "dsp/agc/blk_agc.h"
 #include "dsp/clock_recovery/clock_recovery_mm.h"
 #include "dsp/clock_recovery/clock_recovery_mm_fast.h"
 #include "dsp/conv/char_to_float.h"
@@ -154,9 +153,6 @@ namespace satdump
 
                 registerNodeSimple<ndsp::AGCFastBlock<complex_t>>(flowgraph, "AGC/Agc Fast CC");
                 registerNodeSimple<ndsp::AGCFastBlock<float>>(flowgraph, "AGC/Agc Fast FF");
-
-                registerNodeSimple<ndsp::BlkAGCBlock<complex_t>>(flowgraph, "AGC/Block Agc CC");
-                registerNodeSimple<ndsp::BlkAGCBlock<float>>(flowgraph, "AGC/Block Agc FF");
 
                 registerNodeSimple<ndsp::MultiplyBlock<float>>(flowgraph, "Utils/Multiply FF");
                 registerNodeSimple<ndsp::MultiplyBlock<complex_t>>(flowgraph, "Utils/Multiply CC");
