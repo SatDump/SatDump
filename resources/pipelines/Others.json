@@ -211,33 +211,6 @@
             }
         }
     },
-    "syracuse3b_tlm": {
-        "name": "Syracuse 3B TLM",
-        "live": [
-            1
-        ],
-        "frequencies": [
-            [
-                "Telemetry",
-                7705e6
-            ]
-        ],
-        "work": {
-            "baseband": {},
-            "soft": {
-                "module": "pm_demod",
-                "parameters": {
-                    "symbolrate": 156e3,
-                    "pll_bw": 0.005,
-                    "pll_max_offset": 0.5,
-                    "rrc_alpha": 0.25,
-                    "rrc_taps": 31,
-                    "costas_bw": 0.005,
-                    "clock_omega_relative_limit": 0.005
-                }
-            }
-        }
-    },
     "scisat1_dump": {
         "name": "SciSat-1 Dump",
         "live": [

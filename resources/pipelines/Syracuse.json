@@ -1,0 +1,41 @@
+{
+    "syracuse3_tlm": {
+        "name": "Syracuse 3 TLM",
+        "live": [
+            1
+        ],
+        "frequencies": [
+            [
+                "Syracuse-3A",
+                7720e6
+            ],
+            [
+                "Syracuse-3B",
+                770e56
+            ],
+            [
+                "Syracuse-4A",
+                7729e6
+            ],
+            [
+                "Syracuse-4B",
+                7749e6
+            ]
+        ],
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "pm_demod",
+                "parameters": {
+                    "symbolrate": 156e3,
+                    "pll_bw": 0.005,
+                    "pll_max_offset": 0.5,
+                    "rrc_alpha": 0.25,
+                    "rrc_taps": 31,
+                    "costas_bw": 0.005,
+                    "clock_omega_relative_limit": 0.005
+                }
+            }
+        }
+    }
+}
