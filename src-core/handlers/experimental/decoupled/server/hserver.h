@@ -1,6 +1,7 @@
 #pragma once
 
 #include "handlers/experimental/decoupled/base/remote_handler.h"
+#include <exception>
 #include <memory>
 
 namespace satdump
@@ -26,6 +27,17 @@ namespace satdump
         public:
             HBackendServer() {}
             ~HBackendServer() {}
+
+            nlohmann::json command(nlohmann::json c)
+            {
+                try
+                {
+                    std::string type = c["type"];
+                }
+                catch (std::exception &e)
+                {
+                }
+            }
         };
     } // namespace handlers
 } // namespace satdump

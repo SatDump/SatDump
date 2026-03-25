@@ -249,12 +249,30 @@ namespace satdump
                         if (product->has_calibration() && ImGui::BeginTabItem("Calib"))
                         {
                             widgets::JSONTreeEditor(product->contents["calibration"], "##calibcfgeditor");
+
+                            ImGui::Separator();
+
+                            if (ImGui::Button("Copy JSON##copycalib"))
+                            {
+                                std::string str = product->contents["calibration"].dump(4);
+                                ImGui::SetClipboardText(str.c_str());
+                            }
+
                             ImGui::EndTabItem();
                         }
 
                         if (product->has_proj_cfg() && ImGui::BeginTabItem("Proj"))
                         {
                             widgets::JSONTreeEditor(product->contents["projection_cfg"], "##projcfgeditor");
+
+                            ImGui::Separator();
+
+                            if (ImGui::Button("Copy JSON##copyproject"))
+                            {
+                                std::string str = product->contents["projection_cfg"].dump(4);
+                                ImGui::SetClipboardText(str.c_str());
+                            }
+
                             ImGui::EndTabItem();
                         }
 
@@ -264,6 +282,15 @@ namespace satdump
                             if (ImGui::BeginTabItem(id.c_str()))
                             {
                                 ch.ch_transform.render();
+
+                                ImGui::Separator();
+
+                                if (ImGui::Button("Copy JSON##copychanneltransform"))
+                                {
+                                    std::string str = nlohmann::json(ch.ch_transform).dump(4);
+                                    ImGui::SetClipboardText(str.c_str());
+                                }
+
                                 ImGui::EndTabItem();
                             }
                         }
