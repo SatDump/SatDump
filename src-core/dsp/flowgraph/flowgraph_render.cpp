@@ -118,6 +118,11 @@ namespace satdump
                     if (n->disabled)
                         style::beginDisabled();
 
+                    // Make it red on error
+                    bool is_error = n->internal->is_errored();
+                    if (is_error)
+                        ImNodes::PushColorStyle(ImNodesCol_NodeBackground, ImColor(255, 0, 0));
+
                     ImNodes::BeginNode(n->id);
                     ImNodes::BeginNodeTitleBar();
                     ImGui::Text("%s", n->title.c_str());
@@ -171,6 +176,9 @@ namespace satdump
                     }
 
                     ImNodes::EndNode();
+
+                    if (is_error)
+                        ImNodes::PopColorStyle();
 
                     if (!n->pos_was_set)
                     {

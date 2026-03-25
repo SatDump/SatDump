@@ -35,6 +35,9 @@ namespace satdump
                         if (n->disabled)
                             continue;
 
+                        if (n->internal->is_errored())
+                            throw satdump_exception("A node has an error. Abort.");
+
                         // UI Stuff, safety
                         n->show_vars_win = false;
 

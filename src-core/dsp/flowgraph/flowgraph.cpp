@@ -1,5 +1,6 @@
 #include "flowgraph.h"
 #include "core/exception.h"
+#include "dsp/flowgraph/missing_node.h"
 #include "libs/muparser/muParser.h"
 #include "logger.h"
 #include <limits>
@@ -151,6 +152,24 @@ namespace satdump
                         else
                         {
                             logger->error("Could not find node with ID : " + n.value()["int_id"].get<std::string>());
+
+                            try
+                            {
+                                int ni = 0, no = 0;
+                                for (auto &io : n.value()["io"])
+                                    if (io["is_out"].get<bool>())
+                                        no++;
+                                    else
+                                        ni++;
+
+                                auto i = std::make_shared<NodeMissing>(this, ni, no);
+                                auto nn = std::make_shared<Node>(this, n.value(), i);
+                                nodes.push_back(nn);
+                            }
+                            catch (std::exception &e)
+                            {
+                                logger->error("Error adding missing node with ID : " + n.value()["int_id"].get<std::string>() + ", Error : %s", e.what());
+                            }
                         }
                     }
                     else

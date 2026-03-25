@@ -39,6 +39,9 @@ namespace satdump
                 //! @brief OptDisplayer to display block configurations
                 std::shared_ptr<ndsp::OptDisplayerWarper> optdisp;
 
+                //! @brief if true, consider this node as having some kind of error to show
+                bool is_error = false;
+
             public:
                 //! @brief the actual dsp Block
                 std::shared_ptr<ndsp::Block> blk;
@@ -74,6 +77,12 @@ namespace satdump
                  * @param p the parameter(s)
                  */
                 virtual void setP(nlohmann::json p);
+
+                /**
+                 * @brief get if a node has an error
+                 * @return true on error
+                 */
+                virtual bool is_errored() { return is_error; }
             };
         } // namespace flowgraph
     } // namespace ndsp
