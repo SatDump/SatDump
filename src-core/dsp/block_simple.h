@@ -45,6 +45,8 @@ namespace satdump
 
                 if (oblk.size > 0)
                     outputs[0].fifo->wait_enqueue(oblk);
+                else
+                    outputs[0].fifo->free(oblk);
 
                 inputs[0].fifo->free(iblk);
 

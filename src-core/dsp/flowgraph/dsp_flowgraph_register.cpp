@@ -22,6 +22,7 @@
 #include "dsp/conv/uchar_to_float.h"
 #include "dsp/digital/binary_slicer.h"
 #include "dsp/digital/cadu_deframer.h"
+#include "dsp/digital/cadu_derand.h"
 #include "dsp/digital/differential_decoder.h"
 #include "dsp/displays/const_disp.h"
 #include "dsp/displays/hist_disp.h"
@@ -247,6 +248,7 @@ namespace satdump
                 registerNodeSimple<ndsp::BinarySlicerBlock>(flowgraph, "Digital/Binary Slicer");
                 registerNodeSimple<ndsp::DifferentialDecoderBlock>(flowgraph, "Digital/Differential Decoder");
                 registerNodeSimple<ndsp::CADUDeframerBlock>(flowgraph, "Digital/CADU Deframer");
+                registerNodeSimple<ndsp::CADUDerandBlock>(flowgraph, "Digital/CADU Derand");
 
                 eventBus->fire_event<RegisterNodesEvent>({flowgraph.node_internal_registry});
 
