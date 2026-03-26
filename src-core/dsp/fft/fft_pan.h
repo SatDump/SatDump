@@ -38,6 +38,11 @@ namespace satdump
             int reshape_buffer_size = 0;
 
         public:
+            int p_size = 65536;
+            uint64_t p_samplerate = 10e6;
+            int p_rate = 20;
+
+        public:
             FFTPanBlock();
             ~FFTPanBlock();
             void set_fft_settings(int size, uint64_t samplerate, int rate = 60);
@@ -48,20 +53,49 @@ namespace satdump
 
             float avg_num = 10;
 
+            void init() { set_fft_settings(p_size, p_samplerate, p_rate); }
+
+            nlohmann::ordered_json get_cfg_list()
+            {
+                nlohmann::ordered_json p;
+                add_param_list(p, "size", "int", {8192, 16384, 32768, 65536, 131072}, "FFT Size");
+                add_param_simple(p, "samplerate", "float");
+                add_param_simple(p, "rate", "int", "FFT Rate");
+                add_param_simple(p, "avg_num", "float", "Avg Num");
+                return p;
+            }
+
             nlohmann::json get_cfg(std::string key)
             {
-                // if (key == "max_gain")
-                //     return p_max_gain;
-                // else
-                throw satdump_exception(key);
+                if (key == "size")
+                    return fft_size;
+                else if (key == "samplerate")
+                    return p_samplerate;
+                else if (key == "rate")
+                    return p_rate;
+                else if (key == "avg_num")
+                    return avg_num;
+                else
+                    throw satdump_exception(key);
             }
 
             cfg_res_t set_cfg(std::string key, nlohmann::json v)
             {
-                // if (key == "max_gain")
-                //     p_max_gain = v;
-                // else
-                throw satdump_exception(key);
+                if (key == "size" || key == "samplerate" || key == "rate")
+                {
+                    if (key == "size")
+                        p_size = v;
+                    else if (key == "samplerate")
+                        p_samplerate = v;
+                    else if (key == "rate")
+                        p_rate = v;
+
+                    set_fft_settings(p_size, p_samplerate, p_rate);
+                }
+                else if (key == "avg_num")
+                    avg_num = v;
+                else
+                    throw satdump_exception(key);
                 return RES_OK;
             }
         };

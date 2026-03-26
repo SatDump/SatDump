@@ -1,0 +1,48 @@
+{
+    "msu_vis_1": {
+        "1": {
+            "type": 1
+        },
+        "2": {
+            "ax": 1.0,
+            "ay": 1.0,
+            "bx": -13.0,
+            "by": -3592.0,
+            "slantx_ampli": -0.0065,
+            "slantx_center": 6004.0,
+            "type": 3
+        },
+        "3": {
+            "ax": 1.0005,
+            "ay": 1.0,
+            "bx": -13.0,
+            "by": -1791.0,
+            "slantx_ampli": -0.0035,
+            "slantx_center": 6002.0,
+            "type": 3
+        }
+    },
+    "msu_vis_2": {
+        "1": {
+            "type": 1
+        },
+        "2": {
+            "ax": 0.999,
+            "ay": 1.0,
+            "bx": 8.0,
+            "by": -3588.0,
+            "slantx_ampli": 0.0076,
+            "slantx_center": 0.0,
+            "type": 3
+        },
+        "3": {
+            "ax": 1.0009,
+            "ay": 1.0,
+            "bx": -3.0,
+            "by": -1794.0,
+            "slantx_ampli": 0.0038,
+            "slantx_center": 0.0,
+            "type": 3
+        }
+    }
+}

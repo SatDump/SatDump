@@ -9,6 +9,20 @@
             ]
         ],
         "parameters": {
+            "satellite_number": {
+                "type": "options",
+                "value": "0",
+                "name": "ELEKTRO Satellite",
+                "options": [
+                    "0",
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5"
+                ],
+                "description": "Select the satellite for further processing"
+            },
             "apply_correction": {
                 "type": "bool",
                 "value": false,
@@ -53,6 +67,19 @@
             ]
         ],
         "parameters": {
+            "satellite_number": {
+                "type": "options",
+                "value": "0",
+                "name": "ARKTIKA Satellite",
+                "options": [
+                    "0",
+                    "1",
+                    "2",
+                    "3",
+                    "4"
+                ],
+                "description": "Select the satellite for further processing"
+            },
             "apply_correction": {
                 "type": "bool",
                 "value": false,
@@ -83,7 +110,9 @@
             },
             "products": {
                 "module": "elektro_arktika_msugs",
-                "parameters": {}
+                "parameters": {
+                    "is_arktika": true
+                }
             }
         }
     },

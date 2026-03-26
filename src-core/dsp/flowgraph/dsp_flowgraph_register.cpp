@@ -1,8 +1,10 @@
 #include "dsp_flowgraph_register.h"
 #include "common/dsp_source_sink/format_notated.h"
+#include "common/widgets/waterfall_plot.h"
 #include "core/plugin.h"
 #include <cstdint>
 
+#include "core/resources.h"
 #include "dsp/agc/agc.h"
 #include "dsp/agc/agc_fast.h"
 #include "dsp/clock_recovery/clock_recovery_mm.h"
@@ -30,6 +32,7 @@
 #include "dsp/filter/fft.h"
 #include "dsp/filter/rrc.h"
 #include "dsp/flowgraph/flowgraph.h"
+#include "dsp/flowgraph/node_int.h"
 #include "dsp/hier/psk_demod.h"
 #include "dsp/io/file_sink.h"
 #include "dsp/io/file_source.h"
@@ -59,6 +62,7 @@
 #include "dsp/utils/vco.h"
 
 #include "common/widgets/fft_plot.h"
+#include "imgui/imgui.h"
 
 namespace satdump
 {
@@ -111,18 +115,90 @@ namespace satdump
             {
             private:
                 widgets::FFTPlot fft;
+                widgets::WaterfallPlot waterfall;
+                int last_fft_size = 0;
+                int wat_rate = 1;
 
             public:
-                NodeTestFFT(const Flowgraph *f) : NodeInternal(f, std::make_shared<ndsp::FFTPanBlock>()), fft(((ndsp::FFTPanBlock *)blk.get())->output_fft_buff, 8192, -150, 150)
+                NodeTestFFT(const Flowgraph *f)
+                    : NodeInternal(f, std::make_shared<ndsp::FFTPanBlock>()), fft(((ndsp::FFTPanBlock *)blk.get())->output_fft_buff, 8192, -150, 150), waterfall(131072, 400)
                 {
-                    ((ndsp::FFTPanBlock *)blk.get())->set_fft_settings(8192, 6e6);
+                    waterfall.set_rate(30, wat_rate);
+                    waterfall.set_palette(colormaps::loadMap(resources::getResourcePath("waterfall/classic.json")));
+
+                    ((ndsp::FFTPanBlock *)blk.get())->on_fft = [this](float *b, int size)
+                    {
+                        if (size != last_fft_size)
+                        {
+                            fft.set_size(size);
+                            waterfall.set_size(size);
+                            last_fft_size = size;
+                        }
+
+                        waterfall.push_fft(b);
+                    };
                 }
 
                 virtual bool render()
                 {
-                    NodeInternal::render();
-                    fft.draw({500, 500});
-                    return false;
+                    fft.draw({500, 100});
+                    waterfall.draw({500, 300});
+
+                    bool v = NodeInternal::render();
+                    ImGui::SetNextItemWidth(200);
+                    ImGui::SliderFloat("FFT Min", &fft.scale_min, -200, 200);
+                    ImGui::SetNextItemWidth(200);
+                    ImGui::SliderFloat("FFT Max", &fft.scale_max, -200, 200);
+
+                    updateW();
+
+                    if (v)
+                    {
+                        int rate = blk->get_cfg("rate");
+                        waterfall.set_rate(rate, wat_rate);
+                    }
+
+                    return v;
+                }
+
+                void updateW()
+                {
+                    if (fft.scale_max < fft.scale_min)
+                    {
+                        fft.scale_min = waterfall.scale_min;
+                        fft.scale_max = waterfall.scale_max;
+                    }
+                    else if (fft.scale_min > fft.scale_max)
+                    {
+                        fft.scale_min = waterfall.scale_min;
+                        fft.scale_max = waterfall.scale_max;
+                    }
+                    else
+                    {
+                        waterfall.scale_min = fft.scale_min;
+                        waterfall.scale_max = fft.scale_max;
+                    }
+                }
+
+                nlohmann::json getP()
+                {
+                    auto v = NodeInternal::getP();
+                    v["fft_min"] = fft.scale_min;
+                    v["fft_max"] = fft.scale_max;
+                    return v;
+                }
+
+                void setP(nlohmann::json p)
+                {
+                    NodeInternal::setP(p);
+                    if (p.contains("fft_min"))
+                        fft.scale_min = p["fft_min"];
+                    if (p.contains("fft_max"))
+                        fft.scale_max = p["fft_max"];
+                    updateW();
+
+                    int rate = blk->get_cfg("rate");
+                    waterfall.set_rate(rate, wat_rate);
                 }
             };
 

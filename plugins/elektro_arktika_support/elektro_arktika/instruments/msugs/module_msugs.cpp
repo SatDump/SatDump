@@ -4,6 +4,7 @@
 #include "image/io.h"
 #include "imgui/imgui.h"
 #include "logger.h"
+#include "products/image/channel_transform.h"
 #include "utils/stats.h"
 #include <cstdint>
 #include <filesystem>
@@ -25,6 +26,12 @@ namespace elektro_arktika
         {
             fsfsm_enable_output = false;
             apply_correction = parameters.contains("apply_correction") ? parameters["apply_correction"].get<bool>() : false;
+
+            is_arktika = parameters.contains("is_arktika") ? parameters["is_arktika"].get<bool>() : false;
+            if (parameters.contains("satellite_number"))
+                sat_num = parameters["satellite_number"].is_string() ? std::stoi(parameters["satellite_number"].get<std::string>()) : parameters["satellite_number"].get<int>();
+            else
+                sat_num = 0;
         }
 
         void MSUGSDecoderModule::process()
@@ -114,6 +121,14 @@ namespace elektro_arktika
             if (!std::filesystem::exists(directory))
                 std::filesystem::create_directory(directory);
 
+            nlohmann::json sat_cfg;
+            if (is_arktika && resources::resourceExists("elektro/m" + std::to_string(sat_num) + "_cfg.json"))
+                sat_cfg = loadJsonFile(resources::getResourcePath("elektro/m" + std::to_string(sat_num) + "_cfg.json"));
+            else if (resources::resourceExists("elektro/l" + std::to_string(sat_num) + "_cfg.json"))
+                sat_cfg = loadJsonFile(resources::getResourcePath("elektro/l" + std::to_string(sat_num) + "_cfg.json"));
+            else
+                logger->error("No further MSU-GS processing will be performed for this ELEKTRO sat!");
+
             // MSUVIS1 TODOREWORK
             {
                 ////////////////////////////////////////// mtvza_status = SAVING;
@@ -132,9 +147,18 @@ namespace elektro_arktika
                 //                    msuvis_products.set_timestamps(timestamps);
                 //     msuvis_product.set_proj_cfg(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_kmss_msu100_1.json")));
 
-                msuvis_product.images.push_back({0, "MSUGS-VIS-1", "1", vis1_reader.getImage1(), 10, satdump::ChannelTransform().init_none()});
-                msuvis_product.images.push_back({1, "MSUGS-VIS-2", "2", vis2_reader.getImage1(), 10, satdump::ChannelTransform().init_none()});
-                msuvis_product.images.push_back({2, "MSUGS-VIS-3", "3", vis3_reader.getImage1(), 10, satdump::ChannelTransform().init_none()});
+                satdump::ChannelTransform t1, t2, t3;
+                t1.init_none(), t2.init_none(), t3.init_none();
+                if (!sat_cfg["msu_vis_1"]["1"].is_null())
+                    t1 = sat_cfg["msu_vis_1"]["1"];
+                if (!sat_cfg["msu_vis_1"]["2"].is_null())
+                    t2 = sat_cfg["msu_vis_1"]["2"];
+                if (!sat_cfg["msu_vis_1"]["3"].is_null())
+                    t3 = sat_cfg["msu_vis_1"]["3"];
+
+                msuvis_product.images.push_back({0, "MSUGS-VIS-1", "1", vis1_reader.getImage1(), 10, t1});
+                msuvis_product.images.push_back({1, "MSUGS-VIS-2", "2", vis2_reader.getImage1(), 10, t2});
+                msuvis_product.images.push_back({2, "MSUGS-VIS-3", "3", vis3_reader.getImage1(), 10, t3});
 
                 msuvis_product.save(directory);
                 dataset.products_list.push_back("MSUGS_VIS1");
@@ -161,9 +185,18 @@ namespace elektro_arktika
                 // msuvis_product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/elektro_l3_msugs_vis2.json")),
                 //                                            satdump::db_tle->get_from_norad(44903), vis1_reader.timestamps);
 
-                msuvis_product.images.push_back({0, "MSUGS-VIS-1", "1", vis1_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});
-                msuvis_product.images.push_back({1, "MSUGS-VIS-2", "2", vis2_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});
-                msuvis_product.images.push_back({2, "MSUGS-VIS-3", "3", vis3_reader.getImage2(), 10, satdump::ChannelTransform().init_none()});
+                satdump::ChannelTransform t1, t2, t3;
+                t1.init_none(), t2.init_none(), t3.init_none();
+                if (!sat_cfg["msu_vis_2"]["1"].is_null())
+                    t1 = sat_cfg["msu_vis_2"]["1"];
+                if (!sat_cfg["msu_vis_2"]["2"].is_null())
+                    t2 = sat_cfg["msu_vis_2"]["2"];
+                if (!sat_cfg["msu_vis_2"]["3"].is_null())
+                    t3 = sat_cfg["msu_vis_2"]["3"];
+
+                msuvis_product.images.push_back({0, "MSUGS-VIS-1", "1", vis1_reader.getImage2(), 10, t1});
+                msuvis_product.images.push_back({1, "MSUGS-VIS-2", "2", vis2_reader.getImage2(), 10, t2});
+                msuvis_product.images.push_back({2, "MSUGS-VIS-3", "3", vis3_reader.getImage2(), 10, t3});
 
                 msuvis_product.save(directory);
                 dataset.products_list.push_back("MSUGS_VIS2");

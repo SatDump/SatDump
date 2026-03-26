@@ -254,6 +254,10 @@ namespace satdump
                             {
                                 auto iter = std::find_if(nodes.begin(), nodes.end(), [id](const std::shared_ptr<Node> &node) -> bool { return node->id == id; });
 
+                                // ImNodes still holds delete selected nodes until a new one is selected. Avoid a crash
+                                if (iter == nodes.end())
+                                    continue;
+
                                 for (auto &linkid : iter->get()->node_io)
                                 {
                                     auto liter = std::find_if(links.begin(), links.end(), [linkid](const Link &link) -> bool { return link.start == linkid.id || link.end == linkid.id; });

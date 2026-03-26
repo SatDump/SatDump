@@ -24,6 +24,9 @@ namespace elektro_arktika
             // For counter correction
             bool apply_correction;
 
+            bool is_arktika = false;
+            int sat_num = 0;
+
         public:
             MSUGSDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
             void process();
