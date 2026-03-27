@@ -71,6 +71,15 @@ namespace satdump
             }
         }
 
+        void BladeRFDevBlock::set_bw()
+        {
+            if (is_open)
+            {
+                bladerf_set_bandwidth(bladerf_dev_obj, BLADERF_CHANNEL_RX(0), manual_bw ? bandwidth : samplerate, NULL);
+                logger->debug("Set BladeRF Bandwidth to %f", manual_bw ? bandwidth : samplerate);
+            }
+        }
+
         void BladeRFDevBlock::set_others()
         {
             if (is_open)
@@ -98,6 +107,7 @@ namespace satdump
         {
             set_frequency();
             set_gains();
+            set_bw();
             set_others();
         }
 
@@ -164,7 +174,7 @@ namespace satdump
             }
 #endif
 
-            bladerf_set_bandwidth(bladerf_dev_obj, BLADERF_CHANNEL_RX(0), samplerate, NULL);
+            set_bw();
 
             sample_buffer_size = std::min<int>(samplerate / 250, 1e6);
             if (is_8bit && bladerf_model == 2)
@@ -342,13 +352,15 @@ namespace satdump
                     }
 #endif
 
-                    //                    add_param_list(c, "samplerate", "uint", available_samplerates, "Samplerate");
-                    //                    add_param_range(c, "samplerate", "uint", bladerf_range_samplerate->min, bladerf_range_samplerate->max, bladerf_range_samplerate->step, "Samplerate");
-                    //                    c["samplerate"]["range_noslider"] = true;
                     c["samplerate"]["type"] = "samplerate";
                     c["samplerate"]["name"] = "Samplerate";
                     c["samplerate"]["list"] = available_samplerates;
                     c["samplerate"]["allow_manual"] = true;
+
+                    c["bandwidth"]["type"] = "samplerate";
+                    c["bandwidth"]["name"] = "Bandwidth";
+                    c["bandwidth"]["list"] = available_samplerates;
+                    c["bandwidth"]["allow_manual"] = true;
 
                     add_param_range(c, "rx1_gain", "int", bladerf_range_gain_rx->min, bladerf_range_gain_rx->max, bladerf_range_gain_rx->step, "RX1 Gain");
                     if (bladerf_model == 2)

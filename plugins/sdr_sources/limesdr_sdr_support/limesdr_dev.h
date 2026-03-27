@@ -6,10 +6,12 @@
 
 #include <cstdint>
 #include <cstdio>
-#include <libbladeRF.h>
+#include <lime/lms7_device.h>
 #include <string>
+#include <vector>
 
 #include "common/dsp/complex.h"
+#include "logger.h"
 #include "nlohmann/json.hpp"
 
 // TODOREWORK Change the namespace?
@@ -17,10 +19,9 @@ namespace satdump
 {
     namespace ndsp
     {
-        class BladeRFDevBlock : public DeviceBlock
+        class LimeSDRDevBlock : public DeviceBlock
         {
         public:
-            int bladerf_model = 0;
             std::string dev_serial = "";
 
             // Only one samplerate for all channels
@@ -37,129 +38,94 @@ namespace satdump
             int rx_ch_id = 0;
             int tx_ch_id = 0;
 
-            // Gains are actually split
-            int rx_gain[2] = {10, 10};
-            int tx_gain[2] = {10, 10};
-
-            // It seems bias-tees are linked together too on the blade
-            bool rx_bias = false;
-            bool tx_bias = false;
-
-            bool extclock = false;
+            // Per-channel configs
+            struct ChannelCfg
+            {
+                bool gain_mode_manual = false;
+                int gain_lna = 0, gain_tia = 0, gain_pga = 0;
+                int gain = 0;
+                std::string path = "Auto";
+            };
+            std::vector<ChannelCfg> rx_channel_cfgs = {ChannelCfg()};
+            std::vector<ChannelCfg> tx_channel_cfgs;
 
             // Bandwidth config
             bool manual_bw = false;
             double bandwidth = 6e6;
 
         private:
-            int sample_buffer_size = 8192; // TODOREWORK
-            bool is_8bit = false;
-
             std::thread work_thread_rx;
             bool thread_should_run_rx = false;
             void mainThread_rx()
             {
-                int16_t *sample_buffer;
-                bladerf_metadata meta;
+                int sample_buffer_size = std::min<int>(samplerate / 250, 1e6);
 
+                while (thread_should_run_rx)
                 {
-                    sample_buffer = new int16_t[sample_buffer_size * 2 * rx_ch_number];
-
-                    while (thread_should_run_rx)
+                    int ch = 0;
+                    for (auto &s : rx_streams)
                     {
-                        if (bladerf_sync_rx(bladerf_dev_obj, sample_buffer, sample_buffer_size, &meta, 4000) != 0)
-                            break;
+                        lime::StreamChannel::Metadata md;
 
-                        if (rx_ch_number == 1)
-                        {
-                            DSPBuffer oblk = outputs[0].fifo->newBufferSamples(sample_buffer_size, sizeof(complex_t));
-                            if (is_8bit)
-                                volk_8i_s32f_convert_32f((float *)oblk.getSamples<complex_t>(), (int8_t *)sample_buffer, 127.0f, sample_buffer_size * 2);
-                            else
-                                volk_16i_s32f_convert_32f((float *)oblk.getSamples<complex_t>(), sample_buffer, 4096.0f, sample_buffer_size * 2);
-                            oblk.size = meta.actual_count;
-                            outputs[0].fifo->wait_enqueue(oblk);
-                        }
-                        else if (rx_ch_number == 2)
-                        {
-                            int nsam = meta.actual_count / 2;
-                            for (int s = 0; s < 2; s++)
-                            {
-                                DSPBuffer oblk = outputs[s].fifo->newBufferSamples(sample_buffer_size, sizeof(complex_t));
-                                auto c = oblk.getSamples<complex_t>();
-                                if (is_8bit)
-                                {
-                                    for (int i = 0; i < nsam; i++)
-                                    {
-                                        c[i].real = ((int8_t *)sample_buffer)[(i * 2 + s) * 2 + 0] / 127.0f;
-                                        c[i].imag = ((int8_t *)sample_buffer)[(i * 2 + s) * 2 + 1] / 127.0f;
-                                    }
-                                }
-                                else
-                                {
-                                    for (int i = 0; i < nsam; i++)
-                                    {
-                                        c[i].real = sample_buffer[(i * 2 + s) * 2 + 0] / 4096.0f;
-                                        c[i].imag = sample_buffer[(i * 2 + s) * 2 + 1] / 4096.0f;
-                                    }
-                                }
-                                oblk.size = nsam;
-                                outputs[s].fifo->wait_enqueue(oblk);
-                            }
-                        }
+                        DSPBuffer oblk = outputs[ch].fifo->newBufferSamples(sample_buffer_size, sizeof(complex_t));
+
+                        int v = s->Read(oblk.getSamples<complex_t>(), sample_buffer_size, &md);
+
+                        oblk.size = v;
+                        if (v > 0)
+                            outputs[ch].fifo->wait_enqueue(oblk);
                         else
-                            throw satdump_exception("BladeRX RX can't have more than 2 channels!");
+                            outputs[ch].fifo->free(oblk);
+                        ch++;
                     }
-
-                    delete[] sample_buffer;
                 }
             }
 
             std::thread work_thread_tx;
             void mainThread_tx()
             {
-                int16_t *sample_buffer;
-                bladerf_metadata meta;
+                bool terminate = false;
 
+                while (1)
                 {
-                    sample_buffer = new int16_t[sample_buffer_size * 2 * tx_ch_number];
+                    if (terminate)
+                        break;
 
-                    while (1)
+                    int ch = 0;
+                    for (auto &s : tx_streams)
                     {
-                        if (tx_ch_number == 1)
+                        DSPBuffer iblk = inputs[ch].fifo->wait_dequeue();
+
+                        if (iblk.isTerminator())
                         {
-                            DSPBuffer iblk = inputs[0].fifo->wait_dequeue();
-
-                            if (iblk.isTerminator())
-                            {
-                                inputs[0].fifo->free(iblk);
-                                break;
-                            }
-
-                            if (is_8bit)
-                                volk_32f_s32f_convert_8i((int8_t *)sample_buffer, (float *)iblk.getSamples<complex_t>(), 127.0f, iblk.size * 2);
-                            else
-                                volk_32f_s32f_convert_16i(sample_buffer, (float *)iblk.getSamples<complex_t>(), 4096.0f, iblk.size * 2);
-                            if (bladerf_sync_tx(bladerf_dev_obj, sample_buffer, iblk.size, &meta, 4000) != 0)
-                                break;
-
-                            inputs[0].fifo->free(iblk);
+                            inputs[ch].fifo->free(iblk);
+                            terminate = true;
+                            break;
                         }
-                        else
-                            throw satdump_exception("BladeRX TX can't have more than one channel (YET)!");
-                    }
 
-                    delete[] sample_buffer;
+                        lime::StreamChannel::Metadata md;
+
+                        int status = s->Write(iblk.getSamples<complex_t>(), iblk.size, &md);
+                        if (status == 0)
+                            logger->error("LimeSDR TX Timeout!");
+                        else if (status <= 0)
+                            logger->error("LimeSDR TX Error! %d", status);
+
+                        inputs[ch].fifo->free(iblk);
+                        ch++;
+                    }
                 }
             }
 
         private:
             bool is_open = false, is_started = false;
-            bladerf *bladerf_dev_obj;
+            std::shared_ptr<lime::LMS7_Device> limesdr_dev_obj;
+            std::vector<lime::StreamChannel *> rx_streams;
+            std::vector<lime::StreamChannel *> tx_streams;
 
         public:
-            BladeRFDevBlock();
-            ~BladeRFDevBlock();
+            LimeSDRDevBlock();
+            ~LimeSDRDevBlock();
 
             void init();
 
@@ -237,42 +203,60 @@ namespace satdump
                     p["tx_channel_id"]["disable"] = is_started;
                 }
 
-                if (rx_ch_number >= 1 && rx_ch_id == 0)
+                for (int chn = 0; chn < rx_channel_cfgs.size(); chn++)
                 {
-                    if (op.contains("rx1_gain"))
-                        p["rx1_gain"] = op["rx1_gain"];
+                    std::string name = "rx" + std::to_string(chn + 1) + "_";
+
+                    if (op.contains(name + "path"))
+                        p[name + "path"] = op[name + "path"];
                     else
-                        add_param_simple(p, "rx1_gain", "int", "RX1 Gain");
-                }
-                if (rx_ch_number >= 2 || rx_ch_id == 1)
-                {
-                    if (op.contains("rx2_gain"))
-                        p["rx2_gain"] = op["rx2_gain"];
+                        add_param_list(p, name + "path", "string", {"NONE", "LNAH", "LNAL", "LNAL_NC", "LNAW", "Auto"}, "RX" + std::to_string(chn + 1) + " Path");
+
+                    if (op.contains(name + "manual_gain"))
+                        p[name + "manual_gain"] = op[name + "manual_gain"];
                     else
-                        add_param_simple(p, "rx2_gain", "int", "RX2 Gain");
-                }
-                if (tx_ch_number >= 1 && tx_ch_id == 0)
-                {
-                    if (op.contains("tx1_gain"))
-                        p["tx1_gain"] = op["tx1_gain"];
+                        add_param_simple(p, name + "manual_gain", "bool", "RX" + std::to_string(chn + 1) + " Manual Gain");
+
+                    if (rx_channel_cfgs[chn].gain_mode_manual)
+                    {
+                        if (op.contains(name + "lna_gain"))
+                            p[name + "lna_gain"] = op[name + "lna_gain"];
+                        else
+                            add_param_range(p, name + "lna_gain", "int", 0, 30, 1, "RX" + std::to_string(chn + 1) + " LNA Gain");
+
+                        if (op.contains(name + "tia_gain"))
+                            p[name + "tia_gain"] = op[name + "tia_gain"];
+                        else
+                            add_param_range(p, name + "tia_gain", "int", 0, 12, 1, "RX" + std::to_string(chn + 1) + " TIA Gain");
+
+                        if (op.contains(name + "pga_gain"))
+                            p[name + "pga_gain"] = op[name + "pga_gain"];
+                        else
+                            add_param_range(p, name + "pga_gain", "int", -12, 19, 1, "RX" + std::to_string(chn + 1) + " PGA Gain");
+                    }
                     else
-                        add_param_simple(p, "tx1_gain", "float", "TX1 Gain");
-                }
-                if (tx_ch_number >= 2 || tx_ch_id == 1)
-                {
-                    if (op.contains("tx2_gain"))
-                        p["tx2_gain"] = op["tx2_gain"];
-                    else
-                        add_param_simple(p, "tx2_gain", "float", "TX2 Gain");
+                    {
+                        if (op.contains(name + "gain"))
+                            p[name + "gain"] = op[name + "gain"];
+                        else
+                            add_param_range(p, name + "gain", "int", 0, 73, 1, "RX" + std::to_string(chn + 1) + " Gain");
+                    }
                 }
 
-                if (rx_ch_number > 0)
-                    add_param_simple(p, "rx_bias", "bool", "RX Bias");
-                if (tx_ch_number > 0)
-                    add_param_simple(p, "tx_bias", "bool", "TX Bias");
+                for (int chn = 0; chn < tx_channel_cfgs.size(); chn++)
+                {
+                    std::string name = "tx" + std::to_string(chn + 1) + "_";
 
-                add_param_simple(p, "extclock", "bool", "External Clock");
-                p["extclock"]["disable"] = is_started;
+                    if (op.contains(name + "path"))
+                        p[name + "path"] = op[name + "path"];
+                    else
+                        add_param_list(p, name + "path", "string", {"NONE", "BAND1", "BAND2", "Auto"}, "TX" + std::to_string(chn + 1) + " Path");
+
+                    if (op.contains(name + "gain"))
+                        p[name + "gain"] = op[name + "gain"];
+                    else
+                        add_param_range(p, name + "gain", "int", 0, 73, 1, "TX" + std::to_string(chn + 1) + " Gain");
+                }
 
                 return p;
             }
@@ -299,28 +283,46 @@ namespace satdump
                     return rx_ch_id;
                 else if (key == "tx_channel_id")
                     return tx_ch_id;
-                else if (key == "rx1_gain")
-                    return rx_gain[0];
-                else if (key == "rx2_gain")
-                    return rx_gain[1];
-                else if (key == "tx1_gain")
-                    return tx_gain[0];
-                else if (key == "tx2_gain")
-                    return tx_gain[1];
-                else if (key == "rx_bias")
-                    return rx_bias;
-                else if (key == "tx_bias")
-                    return tx_bias;
-                else if (key == "extclock")
-                    return extclock;
                 else
+                {
+                    // Handle RX Gain settings
+                    for (int chn = 0; chn < rx_channel_cfgs.size(); chn++)
+                    {
+                        std::string name = "rx" + std::to_string(chn + 1) + "_";
+
+                        if (key == (name + "path"))
+                            return rx_channel_cfgs[chn].path;
+                        else if (key == (name + "manual_gain"))
+                            return rx_channel_cfgs[chn].gain_mode_manual;
+                        else if (key == (name + "lna_gain"))
+                            return rx_channel_cfgs[chn].gain_lna;
+                        else if (key == (name + "tia_gain"))
+                            return rx_channel_cfgs[chn].gain_tia;
+                        else if (key == (name + "pga_gain"))
+                            return rx_channel_cfgs[chn].gain_pga;
+                        else if (key == (name + "gain"))
+                            return rx_channel_cfgs[chn].gain;
+                    }
+
+                    // Handle TX Gain settings
+                    for (int chn = 0; chn < tx_channel_cfgs.size(); chn++)
+                    {
+                        std::string name = "tx" + std::to_string(chn + 1) + "_";
+
+                        if (key == (name + "path"))
+                            return tx_channel_cfgs[chn].path;
+                        else if (key == (name + "gain"))
+                            return tx_channel_cfgs[chn].gain;
+                    }
+
                     throw satdump_exception(key);
+                }
             }
 
             void set_frequency();
             void set_gains();
+            void set_paths();
             void set_bw();
-            void set_others();
 
             cfg_res_t set_cfg(std::string key, nlohmann::json v)
             {
@@ -365,14 +367,19 @@ namespace satdump
                     if (diff != 0)
                     {
                         outputs.clear();
+                        rx_channel_cfgs.clear();
                         if (rx_ch_number == 1)
                         {
                             outputs.push_back({"RX", DSP_SAMPLE_TYPE_CF32});
+                            rx_channel_cfgs.push_back(ChannelCfg());
                         }
-                        else if (rx_ch_number == 2)
+                        else
                         {
-                            outputs.push_back({"RX1", DSP_SAMPLE_TYPE_CF32});
-                            outputs.push_back({"RX2", DSP_SAMPLE_TYPE_CF32});
+                            for (int i = 0; i < rx_ch_number; i++)
+                            {
+                                outputs.push_back({"RX" + std::to_string(i), DSP_SAMPLE_TYPE_CF32});
+                                rx_channel_cfgs.push_back(ChannelCfg());
+                            }
                         }
                     }
 
@@ -392,14 +399,19 @@ namespace satdump
                     if (diff != 0)
                     {
                         inputs.clear();
+                        tx_channel_cfgs.clear();
                         if (tx_ch_number == 1)
                         {
                             inputs.push_back({"TX", DSP_SAMPLE_TYPE_CF32});
+                            tx_channel_cfgs.push_back(ChannelCfg());
                         }
-                        else if (tx_ch_number == 2)
+                        else
                         {
-                            inputs.push_back({"TX1", DSP_SAMPLE_TYPE_CF32});
-                            inputs.push_back({"TX2", DSP_SAMPLE_TYPE_CF32});
+                            for (int i = 0; i < tx_ch_number; i++)
+                            {
+                                inputs.push_back({"TX" + std::to_string(i), DSP_SAMPLE_TYPE_CF32});
+                                tx_channel_cfgs.push_back(ChannelCfg());
+                            }
                         }
                     }
 
@@ -421,43 +433,78 @@ namespace satdump
                     if (tx_ch_id > 1)
                         tx_ch_id = 1;
                 }
-                else if (key == "rx1_gain")
-                {
-                    rx_gain[0] = v;
-                    set_gains();
-                }
-                else if (key == "rx2_gain")
-                {
-                    rx_gain[1] = v;
-                    set_gains();
-                }
-                else if (key == "tx1_gain")
-                {
-                    tx_gain[0] = v;
-                    set_gains();
-                }
-                else if (key == "tx2_gain")
-                {
-                    tx_gain[1] = v;
-                    set_gains();
-                }
-                else if (key == "rx_bias")
-                {
-                    rx_bias = v;
-                    set_others();
-                }
-                else if (key == "tx_bias")
-                {
-                    tx_bias = v;
-                    set_others();
-                }
-                else if (key == "extclock")
-                {
-                    set_others();
-                    extclock = v;
-                }
                 else
-                    throw satdump_exception(key);
+                {
+                    bool invalid = true;
+
+                    // Handle RX Gain settings
+                    for (int chn = 0; chn < rx_channel_cfgs.size(); chn++)
+                    {
+                        std::string name = "rx" + std::to_string(chn + 1) + "_";
+
+                        if (key == (name + "path"))
+                        {
+                            rx_channel_cfgs[chn].path = v;
+                            set_paths();
+                            invalid = false;
+                            r = RES_LISTUPD;
+                        }
+                        else if (key == (name + "manual_gain"))
+                        {
+                            rx_channel_cfgs[chn].gain_mode_manual = v;
+                            set_gains();
+                            invalid = false;
+                            r = RES_LISTUPD;
+                        }
+                        else if (key == (name + "lna_gain"))
+                        {
+                            rx_channel_cfgs[chn].gain_lna = v;
+                            set_gains();
+                            invalid = false;
+                        }
+                        else if (key == (name + "tia_gain"))
+                        {
+                            rx_channel_cfgs[chn].gain_tia = v;
+                            set_gains();
+                            invalid = false;
+                        }
+                        else if (key == (name + "pga_gain"))
+                        {
+                            rx_channel_cfgs[chn].gain_pga = v;
+                            set_gains();
+                            invalid = false;
+                        }
+                        else if (key == (name + "gain"))
+                        {
+                            rx_channel_cfgs[chn].gain = v;
+                            set_gains();
+                            invalid = false;
+                        }
+                    }
+
+                    // Handle TX Gain settings
+                    for (int chn = 0; chn < tx_channel_cfgs.size(); chn++)
+                    {
+                        std::string name = "tx" + std::to_string(chn + 1) + "_";
+
+                        if (key == (name + "path"))
+                        {
+                            tx_channel_cfgs[chn].path = v;
+                            set_paths();
+                            invalid = false;
+                            r = RES_LISTUPD;
+                        }
+                        else if (key == (name + "gain"))
+                        {
+                            tx_channel_cfgs[chn].gain = v;
+                            set_gains();
+                            invalid = false;
+                        }
+                    }
+
+                    if (invalid)
+                        throw satdump_exception(key);
+                }
                 return r;
             }
 

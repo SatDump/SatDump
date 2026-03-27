@@ -27,6 +27,10 @@ namespace satdump
             if (rate < 1)
                 rate = 1;
 
+            p_size = size;
+            p_samplerate = samplerate;
+            p_rate = rate;
+
             fft_size = size;
 
             if (fft_output_buffer != nullptr)
