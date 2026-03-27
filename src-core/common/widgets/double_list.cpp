@@ -59,11 +59,14 @@ namespace widgets
 
     bool DoubleList::set_value(double v, double manual_max)
     {
+        bool was_manual = allow_manual && (selected_value == ((int)available_values.size() - 1));
+
         for (int i = 0; i < (int)available_values.size(); i++)
         {
             if (v == available_values[i])
             {
-                selected_value = i;
+                if (!was_manual)
+                    selected_value = i;
                 current_value->set(v);
                 return true;
             }
