@@ -137,7 +137,7 @@ namespace satdump
             lime::ConnectionHandle handle;
             handle.serial = dev_serial;
             limesdr_dev_obj.reset();
-            limesdr_dev_obj = std::shared_ptr<lime::LMS7_Device>(lime::LMS7_Device::CreateDevice(handle), [](auto &i) { delete i; });
+            limesdr_dev_obj = std::shared_ptr<lime::LMS7_Device>(lime::LMS7_Device::CreateDevice(handle), [](auto *i) { delete i; });
 
             if (!limesdr_dev_obj)
             {
