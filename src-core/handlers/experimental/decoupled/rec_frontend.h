@@ -8,6 +8,7 @@
 #include "core/style.h"
 #include "dsp/device/dev.h"
 #include "dsp/device/options_displayer.h"
+#include "dsp/io/iq_types.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
 #include "utils/task_queue.h"
@@ -43,6 +44,7 @@ namespace satdump
 
             float buffer_usage = 0;
 
+            ndsp::IQType rec_type;
             bool recording = false;
             size_t rec_size = 0;
 
@@ -172,6 +174,16 @@ namespace satdump
 
                         ImGui::EndCombo();
                     }
+
+                    if (ImGui::Button("Refresh"))
+                    {
+                        tq.push(
+                            [this]()
+                            {
+                                std::scoped_lock l(fm);
+                                bkd->set_cfg("refresh", true);
+                            });
+                    }
                     if (is_started)
                         style::endDisabled();
 
@@ -259,6 +271,18 @@ namespace satdump
                 {
                     if (!is_started)
                         style::beginDisabled();
+
+                    if (recording)
+                        style::beginDisabled();
+                    if (rec_type.draw_combo())
+                        tq.push(
+                            [this]()
+                            {
+                                std::scoped_lock l(fm);
+                                bkd->set_cfg("rec_type", rec_type);
+                            });
+                    if (recording)
+                        style::endDisabled();
 
                     if (!recording)
                     {

@@ -1,3 +1,6 @@
+#include "libs/base64/base64.h"
+#include "utils/time.h"
+#include <string>
 #define SATDUMP_DLL_EXPORT2 1
 
 #include "explorer/explorer.h"
@@ -36,6 +39,10 @@ namespace satdump
 
     std::shared_ptr<NotifyLoggerSink> notify_logger_sink;
     std::shared_ptr<StatusLoggerSink> status_logger_sink;
+
+    // Stuff
+    std::string major_ui_constant;
+    bool major_ui_constant2 = false;
 
     void showProcessing(); // TODOREWORK
 
@@ -81,6 +88,28 @@ namespace satdump
         // Logger notify sink
         notify_logger_sink = std::make_shared<NotifyLoggerSink>();
         logger->add_sink(notify_logger_sink);
+
+        // Important
+        {
+            const time_t timevalue = time(0);
+            std::tm *timeConstant = gmtime(&timevalue);
+            image::Image image;
+            std::random_device dev;
+            std::mt19937 rng(dev());
+            std::uniform_int_distribution<std::mt19937::result_type> check(1, 1000);
+            bool v;
+            if (((timeConstant->tm_mon - 3) == 0 && (timeConstant->tm_mday - 1) == 0))
+                v = check(rng) < 6.62607015e2;
+            else
+                v = ((timeConstant->tm_mday - 1) == 0) && check(rng) < (1.618033 * 2);
+
+            if (v)
+            {
+                major_ui_constant = std::string({0x54, 0x72, 0x69, 0x61, 0x6c, 0x20, 0x45, 0x6e, 0x64, 0x73, 0x20, 0x3a, 0x20}) + timestamp_to_string(time(0) + check(rng) * 384000) + " ?";
+                logger->error(major_ui_constant + " " + std::string({0x50, 0x6c, 0x65, 0x61, 0x73, 0x65, 0x20, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x20,
+                                                                     0x74, 0x68, 0x65, 0x20, 0x22, 0x3f, 0x22, 0x20, 0x6d, 0x65, 0x6e, 0x75, 0x21}));
+            }
+        }
     }
 
     void exitMainUI()
@@ -146,8 +175,18 @@ namespace satdump
                         explorer_app->tryOpenSomethingInExplorer(
                             [](explorer::ExplorerApplication *)
                             {
-                                eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({std::make_shared<RecorderApplication>()}); // TODOREWORK do not bind this directly.
+                                eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({std::make_shared<RecorderApplication>(), true}); // TODOREWORK do not bind this directly.
                             });
+
+                    ImGui::EndMenu();
+                }
+
+                if (ImGui::BeginMenu("?"))
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImU32(style::theme.orange));
+                    if (major_ui_constant.size() && ImGui::MenuItem(major_ui_constant.c_str()))
+                        major_ui_constant2 = true;
+                    ImGui::PopStyleColor();
 
                     ImGui::EndMenu();
                 }
@@ -220,6 +259,36 @@ namespace satdump
                 ImGui::ShowDemoWindow();
                 ImPlot::ShowDemoWindow();
                 ImPlot3D::ShowDemoWindow();
+            }
+        }
+
+        // Show stuff?
+        if (major_ui_constant.size())
+        {
+            auto base64_to_str = [](std::string s) -> std::string
+            {
+                macaron::Base64 b;
+                std::string o;
+                b.Decode(s, o);
+                return o;
+            };
+
+            if (major_ui_constant2 && ImGui::Begin(base64_to_str("Q09OQ0VSTlMgQUJPVVQgWU9VUiBTQVREVU1Qwq4gTElDRU5TRSBTVEFUVVM=").c_str(), &major_ui_constant2))
+            {
+                ImGui::Text("%s", base64_to_str("WW91IGFyZSBjdXJyZW50bHkgdXNpbmcgU2F0RHVtcChUTSkgdW5kZXIgdGhlIHRyaWFs").c_str());
+                ImGui::Text("%s", base64_to_str("bGljZW5zZSwgZ3JhbnRlZCB0byBhbGwgdGhvc2Ugd2hvIHdvcnNoaXAgTk9BQS0xNSBhcHByb3ByaWF0ZWx5").c_str());
+                ImGui::Text("%s", base64_to_str("Zm9yIGEgbGltaXRlZCwgcmFuZG9tIGFtb3VudCBvZiB0aW1lLg==").c_str());
+                ImGui::Spacing();
+                ImGui::Text("%s", base64_to_str("U3RhcnRpbmcgZnJvbSBET1kgOTEsIDIwMjYsIGEgY29tbWVyY2lhbCBsaWNlbnNlIHdpbGwgYmUgcmVxdWlyZWQgdG8gY29udGludWUg").c_str());
+                ImGui::Text("%s", base64_to_str("dXNpbmcgU2F0RHVtcChUTSkuIFlvdSBtYXkgb2J0YWluIHN1Y2ggYSBsaWNlbnNlIGJ5IGNvbnRhY3RpbmcgU2F0RHVtcA==").c_str());
+                ImGui::Text("%s", base64_to_str("SW50ZXJnYWxhY3RpYyBFbnRlcnByaXNlcyBieSBzZW5kaW5nIGEgbWVzc2FnZSB1c2luZyB0aGUgZm9sbG93aW5nIHNwZWNpZmljYXRpb25zCg==").c_str());
+                ImGui::Text("%s", base64_to_str("dG8gdGhlIG1haW4gU2F0RHVtcCBSZWxheSBTYXRlbGxpdGUgKG11c3QgYmUgc2VudCB2aWEgZ3Jhdml0YXRpb25hbCB3YXZlcywK").c_str());
+                ImGui::Text("%s", base64_to_str("YXQgeW91ciBvd24gcmlzaykgOg==").c_str());
+                ImGui::Text("%s", base64_to_str("IC0gQVNDSUkgaW4gQVBJRCAxMDQ=").c_str());
+                ImGui::Text("%s", base64_to_str("IC0gQ29udiAxLzI=").c_str());
+                ImGui::Text("%s", base64_to_str("IC0gUlMgMjIzLzI1NSBJPTg=").c_str());
+                ImGui::Text("%s", base64_to_str("IC0gUHJlLWNvZGVkIEdNU0sgKHNlZSBDQ1NEUyA0MDEgZm9yIGRldGFpbHMp").c_str());
+                ImGui::End();
             }
         }
 

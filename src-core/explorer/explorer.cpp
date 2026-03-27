@@ -407,19 +407,23 @@ namespace satdump
                     for (int p = 0, i = 0; p < tip_of_the_day.length();)
                     {
                         int cutLength = 0;
+
                         for (int pp = p + std::min<int>(50, tip_of_the_day.length() - p); pp < tip_of_the_day.length(); pp++)
                         {
                             cutLength = pp;
                             if (tip_of_the_day[pp] == ' ')
                                 break;
                         }
+
                         if (tip_of_the_day.size() > (p + cutLength))
                         {
                             if (tip_of_the_day[p + cutLength] == '.' || tip_of_the_day[p + cutLength] == '?' || tip_of_the_day[p + cutLength] == '!')
                                 cutLength++;
                         }
-                        else
-                            cutLength = 0;
+
+                        if (cutLength == 0)
+                            cutLength = tip_of_the_day.length();
+
                         std::string line = tip_of_the_day.substr(p, cutLength - p);
                         ImVec2 line_size = ImGui::CalcTextSize(line.c_str());
                         last_pos = ((float)dims.second / 2) + ((80 + i * 20) * scale);
@@ -431,6 +435,10 @@ namespace satdump
 #endif
                         p += line.size();
                         i++;
+
+                        // Avoid getting stuck in a loop, just in case
+                        if (i > 20)
+                            break;
                     }
 
                     {

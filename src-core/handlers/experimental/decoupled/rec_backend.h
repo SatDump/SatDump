@@ -179,7 +179,9 @@ namespace satdump
 
             nlohmann::ordered_json _get_cfg(std::string key)
             {
-                if (key == "available_devices")
+                if (key == "refresh")
+                    return false;
+                else if (key == "available_devices")
                     return (nlohmann::json)available_devices;
                 else if (key == "current_device")
                     return (nlohmann::json)current_device;
@@ -209,7 +211,12 @@ namespace satdump
 
             cfg_res_t _set_cfg(std::string key, nlohmann::ordered_json v)
             {
-                if (!is_started && key == "current_device")
+                if (!is_started && key == "refresh")
+                {
+                    if(v == true)
+                    available_devices = ndsp::getDeviceList(ndsp::DeviceBlock::MODE_SINGLE_RX);
+                }
+                else if (!is_started && key == "current_device")
                 {
                     bool found = false;
                     for (auto &d : available_devices)
