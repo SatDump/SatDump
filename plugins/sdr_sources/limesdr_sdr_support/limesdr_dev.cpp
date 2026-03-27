@@ -80,8 +80,6 @@ namespace satdump
         {
             if (is_open)
             {
-                logger->critical(nlohmann::json().dump());
-
                 // Set path. Auto by default (end of the list)
                 auto rx_paths = limesdr_dev_obj->GetPathNames(false);
                 for (int ch = 0; ch < rx_ch_number; ch++)
