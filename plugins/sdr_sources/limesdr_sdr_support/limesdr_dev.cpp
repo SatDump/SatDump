@@ -4,6 +4,7 @@
 #include "nlohmann/json.hpp"
 #include <lime/ConnectionHandle.h>
 #include <lime/ConnectionRegistry.h>
+#include <lime/LimeSuite.h>
 #include <lime/Streamer.h>
 #include <lime/lms7_device.h>
 #include <logger.h>
@@ -28,15 +29,17 @@ namespace satdump
                 // In current Lime devices, the RX and TX freq is the same on all channels
                 if (rx_ch_number > 0)
                 {
-                    limesdr_dev_obj->SetFrequency(false, 0, rx_frequency);
-                    double actual = limesdr_dev_obj->GetFrequency(false, 0);
+                    LMS_SetLOFrequency(limesdr_dev_obj, false, 0, rx_frequency);
+                    double actual = 0;
+                    LMS_GetLOFrequency(limesdr_dev_obj, false, 0, &actual);
                     logger->debug("Set LimeSDR RX frequency to %f, actual %f", rx_frequency, (double)actual);
                 }
 
                 if (tx_ch_number > 0)
                 {
-                    limesdr_dev_obj->SetFrequency(true, 0, tx_frequency);
-                    double actual = limesdr_dev_obj->GetFrequency(true, 0);
+                    LMS_SetLOFrequency(limesdr_dev_obj, true, 0, tx_frequency);
+                    double actual = 0;
+                    LMS_GetLOFrequency(limesdr_dev_obj, true, 0, &actual);
                     logger->debug("Set LimeSDR TX frequency to %f, actual %f", tx_frequency, (double)actual);
                 }
             }
@@ -46,30 +49,50 @@ namespace satdump
         {
             if (is_open)
             {
-                for (int chn = 0; chn < rx_channel_cfgs.size(); chn++)
+                lime::LMS7_Device *lms = (lime::LMS7_Device *)limesdr_dev_obj;
+
+                for (int chn = 0; chn < rx_ch_number; chn++)
                 {
                     if (rx_channel_cfgs[chn].gain_mode_manual)
                     {
-                        limesdr_dev_obj->SetGain(false, rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_lna, "LNA");
-                        limesdr_dev_obj->SetGain(false, rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_tia, "TIA");
-                        limesdr_dev_obj->SetGain(false, rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_pga, "PGA");
+                        lms->SetGain(false, rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_lna, "LNA");
+                        lms->SetGain(false, rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_tia, "TIA");
+                        lms->SetGain(false, rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_pga, "PGA");
                         logger->debug("Set LimeSDR RX%d (LNA) Gain to %d", rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_lna);
                         logger->debug("Set LimeSDR RX%d (TIA) Gain to %d", rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_tia);
                         logger->debug("Set LimeSDR RX%d (PGA) Gain to %d", rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_pga);
                     }
                     else
                     {
-                        limesdr_dev_obj->SetGain(false, rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain, "");
+                        lms->SetGain(false, rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain, "");
                         logger->debug("Set LimeSDR RX%d (auto) Gain to %d", rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain);
                     }
                 }
 
-                for (int chn = 0; chn < tx_channel_cfgs.size(); chn++)
+                for (int chn = 0; chn < tx_ch_number; chn++)
                 {
-                    limesdr_dev_obj->SetGain(true, tx_ch_number == 1 ? tx_ch_id : chn, tx_channel_cfgs[chn].gain, "");
+                    lms->SetGain(true, tx_ch_number == 1 ? tx_ch_id : chn, tx_channel_cfgs[chn].gain, "");
                     logger->debug("Set LimeSDR TX%d (auto) Gain to %d", tx_ch_number == 1 ? tx_ch_id : chn, tx_channel_cfgs[chn].gain);
                 }
             }
+        }
+
+        int antFromStr(std::string ant_str)
+        {
+            if (ant_str == "NONE")
+                return LMS_PATH_NONE;
+            else if (ant_str == "LNAH")
+                return LMS_PATH_LNAH;
+            else if (ant_str == "LNAL")
+                return LMS_PATH_LNAL;
+            else if (ant_str == "LNAW")
+                return LMS_PATH_LNAW;
+            else if (ant_str == "BAND1")
+                return LMS_PATH_TX1;
+            else if (ant_str == "BAND2")
+                return LMS_PATH_TX2;
+            else
+                return LMS_PATH_AUTO;
         }
 
         void LimeSDRDevBlock::set_paths()
@@ -77,25 +100,19 @@ namespace satdump
             if (is_open)
             {
                 // Set path. Auto by default (end of the list)
-                auto rx_paths = limesdr_dev_obj->GetPathNames(false);
                 for (int ch = 0; ch < rx_ch_number; ch++)
                 {
-                    limesdr_dev_obj->SetPath(false, ch, rx_paths.size() - 1);
-                    for (int p = 0; p < rx_paths.size(); p++)
-                        if (rx_paths[p] == rx_channel_cfgs[ch].path)
-                            limesdr_dev_obj->SetPath(false, ch, p);
-                    logger->info("Set LimeSDR RX%d path to %s", ch, rx_paths[limesdr_dev_obj->GetPath(false, ch)].c_str());
+                    int a = antFromStr(rx_channel_cfgs[ch].path);
+                    LMS_SetAntenna(limesdr_dev_obj, false, ch, a);
+                    logger->info("Set LimeSDR RX%d path to %d", ch, a);
                 }
 
                 // Set path. Auto by default (end of the list)
-                auto tx_paths = limesdr_dev_obj->GetPathNames(true);
                 for (int ch = 0; ch < tx_ch_number; ch++)
                 {
-                    limesdr_dev_obj->SetPath(true, ch, tx_paths.size() - 1);
-                    for (int p = 0; p < tx_paths.size(); p++)
-                        if (tx_paths[p] == tx_channel_cfgs[ch].path)
-                            limesdr_dev_obj->SetPath(true, ch, p);
-                    logger->info("Set LimeSDR TX%d path to %s", ch, tx_paths[limesdr_dev_obj->GetPath(true, ch)].c_str());
+                    int a = antFromStr(tx_channel_cfgs[ch].path);
+                    LMS_SetAntenna(limesdr_dev_obj, true, ch, a);
+                    logger->info("Set LimeSDR TX%d path to %d", ch, a);
                 }
             }
         }
@@ -106,12 +123,14 @@ namespace satdump
             {
                 for (int ch = 0; ch < rx_ch_number; ch++)
                 {
-                    limesdr_dev_obj->SetLPF(false, ch, true, manual_bw ? bandwidth : samplerate);
+                    LMS_SetLPFBW(limesdr_dev_obj, false, ch, manual_bw ? bandwidth : samplerate);
+                    LMS_SetLPF(limesdr_dev_obj, false, ch, true);
                     logger->info("Set LimeSDR RX%d BW to %f", ch, manual_bw ? bandwidth : samplerate);
                 }
                 for (int ch = 0; ch < tx_ch_number; ch++)
                 {
-                    limesdr_dev_obj->SetLPF(true, ch, true, manual_bw ? bandwidth : samplerate);
+                    LMS_SetLPFBW(limesdr_dev_obj, true, ch, manual_bw ? bandwidth : samplerate);
+                    LMS_SetLPF(limesdr_dev_obj, true, ch, true);
                     logger->info("Set LimeSDR TX%d BW to %f", ch, manual_bw ? bandwidth : samplerate);
                 }
             }
@@ -128,75 +147,75 @@ namespace satdump
         void LimeSDRDevBlock::start()
         {
             // Open device
-            lime::ConnectionHandle handle;
-            handle.serial = dev_serial;
-            limesdr_dev_obj.reset();
-            limesdr_dev_obj = std::shared_ptr<lime::LMS7_Device>(lime::LMS7_Device::CreateDevice(handle), [](auto *i) { delete i; });
+            limesdr_dev_obj = NULL;
+            LMS_Open(&limesdr_dev_obj, dev_serial.c_str(), NULL);
+            int err = LMS_Init(limesdr_dev_obj);
 
-            if (!limesdr_dev_obj)
+            // LimeSuite Bug
+            if (err)
+            {
+                LMS_Close(limesdr_dev_obj);
+                LMS_Open(&limesdr_dev_obj, dev_serial.c_str(), NULL);
+                err = LMS_Init(limesdr_dev_obj);
+            }
+
+            if (!limesdr_dev_obj || err)
             {
                 logger->error("Could not open LimeSDR '" + std::string(dev_serial) + "' device! ");
+                LMS_Close(limesdr_dev_obj);
                 return;
             }
             is_open = true;
 
             // Init
-            limesdr_dev_obj->Init();
+            LMS_Init(limesdr_dev_obj);
 
-            // Enable all channels
-            for (size_t i = 0; i < limesdr_dev_obj->GetNumChannels(); i++)
-            {
-                limesdr_dev_obj->EnableChannel(true, i, true);
-                limesdr_dev_obj->EnableChannel(false, i, true);
-            }
+            // Set samplerate, no oversample
+            LMS_SetSampleRate(limesdr_dev_obj, samplerate, 0);
 
             // Setup & start streams
-            rx_streams.clear();
             for (int ch = 0; ch < rx_ch_number; ch++)
             {
-                lime::StreamConfig stream_cfg;
+                LMS_EnableChannel(limesdr_dev_obj, false, ch, true);
+                LMS_Calibrate(limesdr_dev_obj, LMS_CH_RX, ch, samplerate, 0);
+
+                lms_stream_t stream_cfg;
                 stream_cfg.isTx = false;
-                stream_cfg.performanceLatency = 0.5;
-                stream_cfg.bufferLength = 8192 * 10; // auto
-                stream_cfg.channelID = rx_ch_number == 1 ? rx_ch_id : ch;
-                stream_cfg.format = lime::StreamConfig::FMT_FLOAT32;
-                auto nch = limesdr_dev_obj->SetupStream(stream_cfg);
-                if (!nch)
+                stream_cfg.throughputVsLatency = 0.5;
+                stream_cfg.fifoSize = 8192 * 10; // auto
+                stream_cfg.channel = rx_ch_number == 1 ? rx_ch_id : ch;
+                stream_cfg.dataFmt = stream_cfg.LMS_FMT_F32;
+                if (LMS_SetupStream(limesdr_dev_obj, &stream_cfg) == -1)
                     logger->error("Error setting up stream!");
-                rx_streams.push_back(nch);
+                rx_streams[ch] = stream_cfg;
             }
 
-            tx_streams.clear();
             for (int ch = 0; ch < tx_ch_number; ch++)
             {
-                lime::StreamConfig stream_cfg;
+                LMS_EnableChannel(limesdr_dev_obj, true, ch, true);
+                LMS_Calibrate(limesdr_dev_obj, LMS_CH_TX, ch, samplerate, 0);
+
+                lms_stream_t stream_cfg;
                 stream_cfg.isTx = true;
-                stream_cfg.performanceLatency = 0.5;
-                stream_cfg.bufferLength = 8192 * 10; // auto
-                stream_cfg.channelID = tx_ch_number == 1 ? tx_ch_id : ch;
-                stream_cfg.format = lime::StreamConfig::FMT_FLOAT32;
-                auto nch = limesdr_dev_obj->SetupStream(stream_cfg);
-                if (!nch)
+                stream_cfg.throughputVsLatency = 0.5;
+                stream_cfg.fifoSize = 8192 * 10; // auto
+                stream_cfg.channel = tx_ch_number == 1 ? tx_ch_id : ch;
+                stream_cfg.dataFmt = stream_cfg.LMS_FMT_F32;
+                if (LMS_SetupStream(limesdr_dev_obj, &stream_cfg) == -1)
                     logger->error("Error setting up stream!");
-                tx_streams.push_back(nch);
+                tx_streams[ch] = stream_cfg;
             }
 
             // Final settings
             init();
 
-            // Set samplerate, no oversample
-            if (rx_ch_number > 0)
-                limesdr_dev_obj->SetRate(false, samplerate, 0);
-            if (tx_ch_number > 0)
-                limesdr_dev_obj->SetRate(true, samplerate, 0);
-
             // Start streams
-            for (auto &s : rx_streams)
-                if (s->Start() != 0)
+            for (int ch = 0; ch < rx_ch_number; ch++)
+                if (LMS_StartStream(&rx_streams[ch]) == -1)
                     logger->error("Error starting RX stream!");
 
-            for (auto &s : tx_streams)
-                if (s->Start() != 0)
+            for (int ch = 0; ch < tx_ch_number; ch++)
+                if (LMS_StartStream(&tx_streams[ch]) == -1)
                     logger->error("Error starting TX stream!");
 
             // Start threads
@@ -239,28 +258,23 @@ namespace satdump
                     logger->info("TX Thread stopped");
                 }
 
-                for (auto &s : rx_streams)
+                for (int ch = 0; ch < rx_ch_number; ch++)
                 {
-                    if (s->Stop() != 0)
+                    if (LMS_StopStream(&rx_streams[ch]) == -1)
                         logger->error("Error stopping stream!");
-                    limesdr_dev_obj->DestroyStream(s);
+                    LMS_DestroyStream(limesdr_dev_obj, &rx_streams[ch]);
+                    LMS_EnableChannel(limesdr_dev_obj, false, ch, false);
                 }
 
-                for (auto &s : tx_streams)
+                for (int ch = 0; ch < tx_ch_number; ch++)
                 {
-                    if (s->Stop() != 0)
+                    if (LMS_StopStream(&tx_streams[ch]) == -1)
                         logger->error("Error stopping stream!");
-                    limesdr_dev_obj->DestroyStream(s);
+                    LMS_DestroyStream(limesdr_dev_obj, &tx_streams[ch]);
+                    LMS_EnableChannel(limesdr_dev_obj, true, ch, false);
                 }
 
-                // Disable all channels
-                for (size_t i = 0; i < limesdr_dev_obj->GetNumChannels(); i++)
-                {
-                    limesdr_dev_obj->EnableChannel(true, i, false);
-                    limesdr_dev_obj->EnableChannel(false, i, false);
-                }
-
-                limesdr_dev_obj.reset();
+                LMS_Close(limesdr_dev_obj);
 
                 is_started = false;
                 is_open = false;
@@ -305,12 +319,6 @@ namespace satdump
                     c["bandwidth"]["list"] = samplerates;
                     c["bandwidth"]["allow_manual"] = true;
 
-                    // Get channels paths
-                    for (int chn = 0; chn < op_dev->GetNumChannels(false); chn++)
-                        add_param_list(c, "rx" + std::to_string(chn + 1) + "_path", "string", op_dev->GetPathNames(false), "RX" + std::to_string(chn + 1) + " Path");
-                    for (int chn = 0; chn < op_dev->GetNumChannels(true); chn++)
-                        add_param_list(c, "tx" + std::to_string(chn + 1) + "_path", "string", op_dev->GetPathNames(true), "TX" + std::to_string(chn + 1) + " Path");
-
                     delete op_dev;
                 }
                 else
@@ -321,7 +329,7 @@ namespace satdump
                 std::string name = dev.name + " " + dev.serial;
 
                 nlohmann::json p;
-                p["serial"] = std::string(dev.serial);
+                p["serial"] = dev.serialize(); // std::string(dev.serial);
                 r.push_back({"limesdr", name, p, c});
             }
 

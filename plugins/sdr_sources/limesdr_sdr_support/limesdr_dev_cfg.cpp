@@ -87,59 +87,31 @@ namespace satdump
                 p["tx_channel_id"]["disable"] = is_started;
             }
 
-            for (int chn = 0; chn < rx_channel_cfgs.size(); chn++)
+            for (int chn = 0; chn < rx_ch_number; chn++)
             {
                 std::string name = "rx" + std::to_string(chn + 1) + "_";
 
-                if (op.contains(name + "path"))
-                    p[name + "path"] = op[name + "path"];
-                else
-                    add_param_list(p, name + "path", "string", {"NONE", "LNAH", "LNAL", "LNAL_NC", "LNAW", "Auto"}, "RX" + std::to_string(chn + 1) + " Path");
-
-                if (op.contains(name + "manual_gain"))
-                    p[name + "manual_gain"] = op[name + "manual_gain"];
-                else
-                    add_param_simple(p, name + "manual_gain", "bool", "RX" + std::to_string(chn + 1) + " Manual Gain");
+                add_param_list(p, name + "path", "string", {"NONE", "LNAH", "LNAL", "LNAW", "Auto"}, "RX" + std::to_string(chn + 1) + " Path");
+                add_param_simple(p, name + "manual_gain", "bool", "RX" + std::to_string(chn + 1) + " Manual Gain");
 
                 if (rx_channel_cfgs[chn].gain_mode_manual)
                 {
-                    if (op.contains(name + "lna_gain"))
-                        p[name + "lna_gain"] = op[name + "lna_gain"];
-                    else
-                        add_param_range(p, name + "lna_gain", "int", 0, 30, 1, "RX" + std::to_string(chn + 1) + " LNA Gain");
-
-                    if (op.contains(name + "tia_gain"))
-                        p[name + "tia_gain"] = op[name + "tia_gain"];
-                    else
-                        add_param_range(p, name + "tia_gain", "int", 0, 12, 1, "RX" + std::to_string(chn + 1) + " TIA Gain");
-
-                    if (op.contains(name + "pga_gain"))
-                        p[name + "pga_gain"] = op[name + "pga_gain"];
-                    else
-                        add_param_range(p, name + "pga_gain", "int", -12, 19, 1, "RX" + std::to_string(chn + 1) + " PGA Gain");
+                    add_param_range(p, name + "lna_gain", "int", 0, 30, 1, "RX" + std::to_string(chn + 1) + " LNA Gain");
+                    add_param_range(p, name + "tia_gain", "int", 0, 12, 1, "RX" + std::to_string(chn + 1) + " TIA Gain");
+                    add_param_range(p, name + "pga_gain", "int", -12, 19, 1, "RX" + std::to_string(chn + 1) + " PGA Gain");
                 }
                 else
                 {
-                    if (op.contains(name + "gain"))
-                        p[name + "gain"] = op[name + "gain"];
-                    else
-                        add_param_range(p, name + "gain", "int", 0, 73, 1, "RX" + std::to_string(chn + 1) + " Gain");
+                    add_param_range(p, name + "gain", "int", 0, 73, 1, "RX" + std::to_string(chn + 1) + " Gain");
                 }
             }
 
-            for (int chn = 0; chn < tx_channel_cfgs.size(); chn++)
+            for (int chn = 0; chn < tx_ch_number; chn++)
             {
                 std::string name = "tx" + std::to_string(chn + 1) + "_";
 
-                if (op.contains(name + "path"))
-                    p[name + "path"] = op[name + "path"];
-                else
-                    add_param_list(p, name + "path", "string", {"NONE", "BAND1", "BAND2", "Auto"}, "TX" + std::to_string(chn + 1) + " Path");
-
-                if (op.contains(name + "gain"))
-                    p[name + "gain"] = op[name + "gain"];
-                else
-                    add_param_range(p, name + "gain", "int", 0, 73, 1, "TX" + std::to_string(chn + 1) + " Gain");
+                add_param_list(p, name + "path", "string", {"NONE", "BAND1", "BAND2", "Auto"}, "TX" + std::to_string(chn + 1) + " Path");
+                add_param_range(p, name + "gain", "int", 0, 73, 1, "TX" + std::to_string(chn + 1) + " Gain");
             }
 
             return p;
@@ -170,7 +142,7 @@ namespace satdump
             else
             {
                 // Handle RX Gain settings
-                for (int chn = 0; chn < rx_channel_cfgs.size(); chn++)
+                for (int chn = 0; chn < MAX_CHANNELS; chn++)
                 {
                     std::string name = "rx" + std::to_string(chn + 1) + "_";
 
@@ -189,7 +161,7 @@ namespace satdump
                 }
 
                 // Handle TX Gain settings
-                for (int chn = 0; chn < tx_channel_cfgs.size(); chn++)
+                for (int chn = 0; chn < MAX_CHANNELS; chn++)
                 {
                     std::string name = "tx" + std::to_string(chn + 1) + "_";
 
@@ -238,26 +210,23 @@ namespace satdump
                 rx_ch_number = v;
                 if (rx_ch_number < 0)
                     rx_ch_number = 0;
-                if (rx_ch_number > 2)
-                    rx_ch_number = 2;
+                if (rx_ch_number > MAX_CHANNELS)
+                    rx_ch_number = MAX_CHANNELS;
 
                 int diff = rx_ch_number - rx_ch_number_old;
 
                 if (diff != 0)
                 {
                     outputs.clear();
-                    rx_channel_cfgs.clear();
                     if (rx_ch_number == 1)
                     {
                         outputs.push_back({"RX", DSP_SAMPLE_TYPE_CF32});
-                        rx_channel_cfgs.push_back(ChannelCfg());
                     }
                     else
                     {
                         for (int i = 0; i < rx_ch_number; i++)
                         {
                             outputs.push_back({"RX" + std::to_string(i), DSP_SAMPLE_TYPE_CF32});
-                            rx_channel_cfgs.push_back(ChannelCfg());
                         }
                     }
                 }
@@ -270,26 +239,23 @@ namespace satdump
                 tx_ch_number = v;
                 if (tx_ch_number < 0)
                     tx_ch_number = 0;
-                if (tx_ch_number > 2)
-                    tx_ch_number = 2;
+                if (tx_ch_number > MAX_CHANNELS)
+                    tx_ch_number = MAX_CHANNELS;
 
                 int diff = tx_ch_number - tx_ch_number_old;
 
                 if (diff != 0)
                 {
                     inputs.clear();
-                    tx_channel_cfgs.clear();
                     if (tx_ch_number == 1)
                     {
                         inputs.push_back({"TX", DSP_SAMPLE_TYPE_CF32});
-                        tx_channel_cfgs.push_back(ChannelCfg());
                     }
                     else
                     {
                         for (int i = 0; i < tx_ch_number; i++)
                         {
                             inputs.push_back({"TX" + std::to_string(i), DSP_SAMPLE_TYPE_CF32});
-                            tx_channel_cfgs.push_back(ChannelCfg());
                         }
                     }
                 }
@@ -317,7 +283,7 @@ namespace satdump
                 bool invalid = true;
 
                 // Handle RX Gain settings
-                for (int chn = 0; chn < rx_channel_cfgs.size(); chn++)
+                for (int chn = 0; chn < MAX_CHANNELS; chn++)
                 {
                     std::string name = "rx" + std::to_string(chn + 1) + "_";
 
@@ -362,7 +328,7 @@ namespace satdump
                 }
 
                 // Handle TX Gain settings
-                for (int chn = 0; chn < tx_channel_cfgs.size(); chn++)
+                for (int chn = 0; chn < MAX_CHANNELS; chn++)
                 {
                     std::string name = "tx" + std::to_string(chn + 1) + "_";
 

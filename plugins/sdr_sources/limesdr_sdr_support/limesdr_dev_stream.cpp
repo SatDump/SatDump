@@ -1,6 +1,7 @@
 #include "limesdr_dev.h"
 #include <lime/ConnectionHandle.h>
 #include <lime/ConnectionRegistry.h>
+#include <lime/LimeSuite.h>
 #include <lime/Streamer.h>
 #include <lime/lms7_device.h>
 #include <logger.h>
@@ -16,21 +17,17 @@ namespace satdump
 
             while (thread_should_run_rx)
             {
-                int ch = 0;
-                for (auto &s : rx_streams)
+                for (int ch = 0; ch < rx_ch_number; ch++)
                 {
-                    lime::StreamChannel::Metadata md;
-
                     DSPBuffer oblk = outputs[ch].fifo->newBufferSamples(sample_buffer_size, sizeof(complex_t));
 
-                    int v = s->Read(oblk.getSamples<complex_t>(), sample_buffer_size, &md);
+                    int v = LMS_RecvStream(&rx_streams[ch], oblk.getSamples<complex_t>(), sample_buffer_size, nullptr, 1000);
 
                     oblk.size = v;
                     if (v > 0)
                         outputs[ch].fifo->wait_enqueue(oblk);
                     else
                         outputs[ch].fifo->free(oblk);
-                    ch++;
                 }
             }
         }
@@ -44,8 +41,7 @@ namespace satdump
                 if (terminate)
                     break;
 
-                int ch = 0;
-                for (auto &s : tx_streams)
+                for (int ch = 0; ch < rx_ch_number; ch++)
                 {
                     DSPBuffer iblk = inputs[ch].fifo->wait_dequeue();
 
@@ -56,9 +52,7 @@ namespace satdump
                         break;
                     }
 
-                    lime::StreamChannel::Metadata md;
-
-                    int status = s->Write(iblk.getSamples<complex_t>(), iblk.size, &md);
+                    int status = LMS_SendStream(&tx_streams[ch], iblk.getSamples<complex_t>(), iblk.size, nullptr, 1000);
                     if (status == 0)
                         logger->error("LimeSDR TX Timeout!");
                     else if (status <= 0)
@@ -67,7 +61,6 @@ namespace satdump
                         logger->error("LimeSDR Stream dropped!");
 
                     inputs[ch].fifo->free(iblk);
-                    ch++;
                 }
             }
         }

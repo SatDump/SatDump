@@ -38,6 +38,8 @@ namespace satdump
             int rx_ch_id = 0;
             int tx_ch_id = 0;
 
+            static const int MAX_CHANNELS = 2;
+
             // Per-channel configs
             struct ChannelCfg
             {
@@ -46,8 +48,8 @@ namespace satdump
                 int gain = 0;
                 std::string path = "Auto";
             };
-            std::vector<ChannelCfg> rx_channel_cfgs = {ChannelCfg()};
-            std::vector<ChannelCfg> tx_channel_cfgs;
+            ChannelCfg rx_channel_cfgs[MAX_CHANNELS];
+            ChannelCfg tx_channel_cfgs[MAX_CHANNELS];
 
             // Bandwidth config
             bool manual_bw = false;
@@ -63,9 +65,9 @@ namespace satdump
 
         private:
             bool is_open = false, is_started = false;
-            std::shared_ptr<lime::LMS7_Device> limesdr_dev_obj;
-            std::vector<lime::StreamChannel *> rx_streams;
-            std::vector<lime::StreamChannel *> tx_streams;
+            lms_device_t *limesdr_dev_obj;
+            lms_stream_t rx_streams[MAX_CHANNELS];
+            lms_stream_t tx_streams[MAX_CHANNELS];
 
         public:
             LimeSDRDevBlock();
