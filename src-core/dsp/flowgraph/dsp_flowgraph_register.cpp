@@ -117,7 +117,7 @@ namespace satdump
                 widgets::FFTPlot fft;
                 widgets::WaterfallPlot waterfall;
                 int last_fft_size = 0;
-                int wat_rate = 1;
+                int wat_rate = 5;
 
             public:
                 NodeTestFFT(const Flowgraph *f)
