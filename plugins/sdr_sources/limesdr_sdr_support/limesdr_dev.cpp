@@ -1,5 +1,4 @@
 #include "limesdr_dev.h"
-#include "common/dsp/complex.h"
 #include "core/exception.h"
 #include "dsp/block.h"
 #include "nlohmann/json.hpp"
@@ -47,31 +46,28 @@ namespace satdump
         {
             if (is_open)
             {
-                for (int i = 0; i < 2; i++)
+                for (int chn = 0; chn < rx_channel_cfgs.size(); chn++)
                 {
-                    for (int chn = 0; chn < rx_channel_cfgs.size(); chn++)
+                    if (rx_channel_cfgs[chn].gain_mode_manual)
                     {
-                        if (rx_channel_cfgs[chn].gain_mode_manual)
-                        {
-                            limesdr_dev_obj->SetGain(false, rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_lna, "LNA");
-                            limesdr_dev_obj->SetGain(false, rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_tia, "TIA");
-                            limesdr_dev_obj->SetGain(false, rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_pga, "PGA");
-                            logger->debug("Set LimeSDR RX%d (LNA) Gain to %d", rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_lna);
-                            logger->debug("Set LimeSDR RX%d (TIA) Gain to %d", rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_tia);
-                            logger->debug("Set LimeSDR RX%d (PGA) Gain to %d", rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_pga);
-                        }
-                        else
-                        {
-                            limesdr_dev_obj->SetGain(false, rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain, "");
-                            logger->debug("Set LimeSDR RX%d (auto) Gain to %d", rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain);
-                        }
+                        limesdr_dev_obj->SetGain(false, rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_lna, "LNA");
+                        limesdr_dev_obj->SetGain(false, rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_tia, "TIA");
+                        limesdr_dev_obj->SetGain(false, rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_pga, "PGA");
+                        logger->debug("Set LimeSDR RX%d (LNA) Gain to %d", rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_lna);
+                        logger->debug("Set LimeSDR RX%d (TIA) Gain to %d", rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_tia);
+                        logger->debug("Set LimeSDR RX%d (PGA) Gain to %d", rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_pga);
                     }
+                    else
+                    {
+                        limesdr_dev_obj->SetGain(false, rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain, "");
+                        logger->debug("Set LimeSDR RX%d (auto) Gain to %d", rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain);
+                    }
+                }
 
-                    for (int chn = 0; chn < tx_channel_cfgs.size(); chn++)
-                    {
-                        limesdr_dev_obj->SetGain(true, rx_ch_number == 1 ? rx_ch_id : chn, tx_channel_cfgs[chn].gain, "");
-                        logger->debug("Set LimeSDR TX%d (auto) Gain to %d", rx_ch_number == 1 ? rx_ch_id : chn, tx_channel_cfgs[chn].gain);
-                    }
+                for (int chn = 0; chn < tx_channel_cfgs.size(); chn++)
+                {
+                    limesdr_dev_obj->SetGain(true, tx_ch_number == 1 ? tx_ch_id : chn, tx_channel_cfgs[chn].gain, "");
+                    logger->debug("Set LimeSDR TX%d (auto) Gain to %d", tx_ch_number == 1 ? tx_ch_id : chn, tx_channel_cfgs[chn].gain);
                 }
             }
         }
@@ -99,7 +95,7 @@ namespace satdump
                     for (int p = 0; p < tx_paths.size(); p++)
                         if (tx_paths[p] == tx_channel_cfgs[ch].path)
                             limesdr_dev_obj->SetPath(true, ch, p);
-                    logger->info("Set LimeSDR TX%d path to %s", ch, rx_paths[limesdr_dev_obj->GetPath(true, ch)].c_str());
+                    logger->info("Set LimeSDR TX%d path to %s", ch, tx_paths[limesdr_dev_obj->GetPath(true, ch)].c_str());
                 }
             }
         }
@@ -147,17 +143,12 @@ namespace satdump
             // Init
             limesdr_dev_obj->Init();
 
-            // Set samplerate, no oversample
-            if (rx_ch_number > 0)
-                limesdr_dev_obj->SetRate(false, samplerate, 0);
-            if (tx_ch_number > 0)
-                limesdr_dev_obj->SetRate(true, samplerate, 0);
-
-            // Enable channels
-            for (int ch = 0; ch < rx_ch_number; ch++)
-                limesdr_dev_obj->EnableChannel(false, ch, true);
-            for (int ch = 0; ch < tx_ch_number; ch++)
-                limesdr_dev_obj->EnableChannel(true, ch, true);
+            // Enable all channels
+            for (size_t i = 0; i < limesdr_dev_obj->GetNumChannels(); i++)
+            {
+                limesdr_dev_obj->EnableChannel(true, i, true);
+                limesdr_dev_obj->EnableChannel(false, i, true);
+            }
 
             // Setup & start streams
             rx_streams.clear();
@@ -171,7 +162,7 @@ namespace satdump
                 stream_cfg.format = lime::StreamConfig::FMT_FLOAT32;
                 auto nch = limesdr_dev_obj->SetupStream(stream_cfg);
                 if (!nch)
-                    throw satdump_exception("Error setting up stream!");
+                    logger->error("Error setting up stream!");
                 rx_streams.push_back(nch);
             }
 
@@ -186,21 +177,27 @@ namespace satdump
                 stream_cfg.format = lime::StreamConfig::FMT_FLOAT32;
                 auto nch = limesdr_dev_obj->SetupStream(stream_cfg);
                 if (!nch)
-                    throw satdump_exception("Error setting up stream!");
+                    logger->error("Error setting up stream!");
                 tx_streams.push_back(nch);
             }
 
             // Final settings
             init();
 
+            // Set samplerate, no oversample
+            if (rx_ch_number > 0)
+                limesdr_dev_obj->SetRate(false, samplerate, 0);
+            if (tx_ch_number > 0)
+                limesdr_dev_obj->SetRate(true, samplerate, 0);
+
             // Start streams
             for (auto &s : rx_streams)
                 if (s->Start() != 0)
-                    throw satdump_exception("Error starting RX stream!");
+                    logger->error("Error starting RX stream!");
 
             for (auto &s : tx_streams)
                 if (s->Start() != 0)
-                    throw satdump_exception("Error starting TX stream!");
+                    logger->error("Error starting TX stream!");
 
             // Start threads
             if (rx_ch_number > 0)
@@ -256,10 +253,12 @@ namespace satdump
                     limesdr_dev_obj->DestroyStream(s);
                 }
 
-                for (int ch = 0; ch < rx_ch_number; ch++)
-                    limesdr_dev_obj->EnableChannel(false, ch, false);
-                for (int ch = 0; ch < tx_ch_number; ch++)
-                    limesdr_dev_obj->EnableChannel(true, ch, false);
+                // Disable all channels
+                for (size_t i = 0; i < limesdr_dev_obj->GetNumChannels(); i++)
+                {
+                    limesdr_dev_obj->EnableChannel(true, i, false);
+                    limesdr_dev_obj->EnableChannel(false, i, false);
+                }
 
                 limesdr_dev_obj.reset();
 
@@ -310,7 +309,7 @@ namespace satdump
                     for (int chn = 0; chn < op_dev->GetNumChannels(false); chn++)
                         add_param_list(c, "rx" + std::to_string(chn + 1) + "_path", "string", op_dev->GetPathNames(false), "RX" + std::to_string(chn + 1) + " Path");
                     for (int chn = 0; chn < op_dev->GetNumChannels(true); chn++)
-                        add_param_list(c, "tx" + std::to_string(chn + 1) + "_path", "string", op_dev->GetPathNames(false), "TX" + std::to_string(chn + 1) + " Path");
+                        add_param_list(c, "tx" + std::to_string(chn + 1) + "_path", "string", op_dev->GetPathNames(true), "TX" + std::to_string(chn + 1) + " Path");
 
                     delete op_dev;
                 }
