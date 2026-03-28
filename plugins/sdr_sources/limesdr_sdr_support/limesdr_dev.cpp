@@ -148,14 +148,14 @@ namespace satdump
         {
             // Open device
             limesdr_dev_obj = NULL;
-            LMS_Open(&limesdr_dev_obj, dev_serial.c_str(), NULL);
+            LMS_Open(&limesdr_dev_obj, dev_serial == "" ? NULL : dev_serial.c_str(), NULL);
             int err = LMS_Init(limesdr_dev_obj);
 
             // LimeSuite Bug
             if (err)
             {
                 LMS_Close(limesdr_dev_obj);
-                LMS_Open(&limesdr_dev_obj, dev_serial.c_str(), NULL);
+                LMS_Open(&limesdr_dev_obj, dev_serial == "" ? NULL : dev_serial.c_str(), NULL);
                 err = LMS_Init(limesdr_dev_obj);
             }
 
