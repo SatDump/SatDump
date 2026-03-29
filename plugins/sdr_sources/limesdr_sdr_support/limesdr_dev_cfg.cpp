@@ -2,10 +2,7 @@
 #include "dsp/block.h"
 #include "limesdr_dev.h"
 #include "nlohmann/json.hpp"
-#include <lime/ConnectionHandle.h>
-#include <lime/ConnectionRegistry.h>
-#include <lime/Streamer.h>
-#include <lime/lms7_device.h>
+#include <lime/LimeSuite.h>
 #include <logger.h>
 #include <string>
 
@@ -92,6 +89,7 @@ namespace satdump
                 std::string name = "rx" + std::to_string(chn + 1) + "_";
 
                 add_param_list(p, name + "path", "string", {"NONE", "LNAH", "LNAL", "LNAW", "Auto"}, "RX" + std::to_string(chn + 1) + " Path");
+#if !LIMESUITENG
                 add_param_simple(p, name + "manual_gain", "bool", "RX" + std::to_string(chn + 1) + " Manual Gain");
 
                 if (rx_channel_cfgs[chn].gain_mode_manual)
@@ -101,6 +99,7 @@ namespace satdump
                     add_param_range(p, name + "pga_gain", "int", -12, 19, 1, "RX" + std::to_string(chn + 1) + " PGA Gain");
                 }
                 else
+#endif
                 {
                     add_param_range(p, name + "gain", "int", 0, 73, 1, "RX" + std::to_string(chn + 1) + " Gain");
                 }

@@ -1,18 +1,11 @@
 #pragma once
 
-#include "core/exception.h"
 #include "dsp/block.h"
 #include "dsp/device/dev.h"
-
-#include <cstdint>
-#include <cstdio>
-#include <lime/lms7_device.h>
+#include "nlohmann/json.hpp"
+#include <lime/LimeSuite.h>
 #include <string>
 #include <vector>
-
-#include "common/dsp/complex.h"
-#include "logger.h"
-#include "nlohmann/json.hpp"
 
 // TODOREWORK Change the namespace?
 namespace satdump

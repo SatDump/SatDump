@@ -1,12 +1,17 @@
 #include "limesdr_dev.h"
-#include "core/exception.h"
 #include "dsp/block.h"
 #include "nlohmann/json.hpp"
+#if LIMESUITENG
+#include <limesuiteng/DeviceRegistry.h>
+#include <limesuiteng/SDRDevice.h>
+#include <limesuiteng/limesuiteng.hpp>
+#include <limesuiteng/types.h>
+#else
 #include <lime/ConnectionHandle.h>
 #include <lime/ConnectionRegistry.h>
-#include <lime/LimeSuite.h>
-#include <lime/Streamer.h>
 #include <lime/lms7_device.h>
+#endif
+#include <lime/LimeSuite.h>
 #include <logger.h>
 #include <memory>
 #include <string>
@@ -15,7 +20,7 @@ namespace satdump
 {
     namespace ndsp
     {
-        LimeSDRDevBlock::LimeSDRDevBlock() : DeviceBlock("limesdr_dev_cc", {}, {{"RX", DSP_SAMPLE_TYPE_CF32}})
+        LimeSDRDevBlock::LimeSDRDevBlock() : DeviceBlock(LIMESUITENG ? "limesdrng_dev_cc" : "limesdr_dev_cc", {}, {{"RX", DSP_SAMPLE_TYPE_CF32}})
         {
             outputs[0].fifo = std::make_shared<DSPStream>(16); // TODOREWORK
         }
@@ -49,10 +54,13 @@ namespace satdump
         {
             if (is_open)
             {
+#if !LIMESUITENG
                 lime::LMS7_Device *lms = (lime::LMS7_Device *)limesdr_dev_obj;
+#endif
 
                 for (int chn = 0; chn < rx_ch_number; chn++)
                 {
+#if !LIMESUITENG
                     if (rx_channel_cfgs[chn].gain_mode_manual)
                     {
                         lms->SetGain(false, rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_lna, "LNA");
@@ -63,15 +71,16 @@ namespace satdump
                         logger->debug("Set LimeSDR RX%d (PGA) Gain to %d", rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain_pga);
                     }
                     else
+#endif
                     {
-                        lms->SetGain(false, rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain, "");
+                        LMS_SetGaindB(limesdr_dev_obj, false, rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain);
                         logger->debug("Set LimeSDR RX%d (auto) Gain to %d", rx_ch_number == 1 ? rx_ch_id : chn, rx_channel_cfgs[chn].gain);
                     }
                 }
 
                 for (int chn = 0; chn < tx_ch_number; chn++)
                 {
-                    lms->SetGain(true, tx_ch_number == 1 ? tx_ch_id : chn, tx_channel_cfgs[chn].gain, "");
+                    LMS_SetGaindB(limesdr_dev_obj, true, tx_ch_number == 1 ? tx_ch_id : chn, tx_channel_cfgs[chn].gain);
                     logger->debug("Set LimeSDR TX%d (auto) Gain to %d", tx_ch_number == 1 ? tx_ch_id : chn, tx_channel_cfgs[chn].gain);
                 }
             }
@@ -285,6 +294,55 @@ namespace satdump
         {
             std::vector<DeviceInfo> r;
 
+#if LIMESUITENG
+            auto conns = lime::DeviceRegistry::enumerate();
+
+            for (auto &dev : conns)
+            {
+                nlohmann::ordered_json c;
+
+                lime::SDRDevice *op_dev = lime::DeviceRegistry::makeDevice(dev);
+
+                if (op_dev)
+                {
+                    // Get samplerates
+                    // auto samplerates_r = op_dev->Ra  GetRateRange();
+
+                    std::vector<double> samplerates;
+                    samplerates.push_back(1e6);
+                    for (double s = 1e6; s < 150e6; s += 1e6)
+                    {
+                        double sv = s - fmod(s, 1e6);
+                        if (sv > 0)
+                            samplerates.push_back(sv);
+                    }
+                    samplerates.push_back(150e6);
+
+                    c["samplerate"]["type"] = "samplerate";
+                    c["samplerate"]["name"] = "Samplerate";
+                    c["samplerate"]["list"] = samplerates;
+                    c["samplerate"]["allow_manual"] = true;
+
+                    // Also cover bandwidth
+                    c["bandwidth"]["type"] = "samplerate";
+                    c["bandwidth"]["name"] = "Bandwidth";
+                    c["bandwidth"]["list"] = samplerates;
+                    c["bandwidth"]["allow_manual"] = true;
+
+                    delete op_dev;
+                }
+                else
+                {
+                    logger->error("Error opening LimeSDR device!");
+                }
+
+                std::string name = dev.name + " (NG) " + dev.serial;
+
+                nlohmann::json p;
+                p["serial"] = dev.Serialize(); // std::string(dev.serial);
+                r.push_back({"limesdrng", name, p, c});
+            }
+#else
             auto conns = lime::ConnectionRegistry::findConnections();
 
             for (auto &dev : conns)
@@ -332,6 +390,7 @@ namespace satdump
                 p["serial"] = dev.serialize(); // std::string(dev.serial);
                 r.push_back({"limesdr", name, p, c});
             }
+#endif
 
             return r;
         }

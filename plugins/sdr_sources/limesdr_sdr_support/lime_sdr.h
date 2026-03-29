@@ -6,12 +6,11 @@
 #include "lime/LimeSuite.h"
 #else
 #include <lime/LimeSuite.h>
-#include <lime/lms7_device.h>
 #endif
-#include <thread>
-#include "logger.h"
 #include "common/rimgui.h"
 #include "common/widgets/double_list.h"
+#include "logger.h"
+#include <thread>
 
 class LimeSDRSource : public dsp::DSPSampleSource
 {
@@ -57,9 +56,7 @@ protected:
     }
 
 public:
-    LimeSDRSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate"), bandwidth_widget("Bandwidth")
-    {
-    }
+    LimeSDRSource(dsp::SourceDescriptor source) : DSPSampleSource(source), samplerate_widget("Samplerate"), bandwidth_widget("Bandwidth") {}
 
     ~LimeSDRSource()
     {
@@ -82,7 +79,7 @@ public:
     void set_samplerate(uint64_t samplerate);
     uint64_t get_samplerate();
 
-    static std::string getID() { return "limesdr"; }
+    static std::string getID() { return LIMESUITENG ? "limesdrng" : "limesdr"; }
     static std::shared_ptr<dsp::DSPSampleSource> getInstance(dsp::SourceDescriptor source) { return std::make_shared<LimeSDRSource>(source); }
     static std::vector<dsp::SourceDescriptor> getAvailableSources();
 };

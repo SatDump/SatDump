@@ -1,12 +1,24 @@
 #include "lime_sdr.h"
 
+#if LIMESUITENG
+#include <limesuiteng/limesuiteng.hpp>
+#else
+#include <lime/ConnectionHandle.h>
+#include <lime/ConnectionRegistry.h>
+#include <lime/Streamer.h>
+#include <lime/lms7_device.h>
+#endif
+
 void LimeSDRSource::set_gains()
 {
     if (!is_started)
         return;
 
+#if !LIMESUITENG
     lime::LMS7_Device *lms = (lime::LMS7_Device *)limeDevice;
+#endif
 
+#if !LIMESUITENG
     if (gain_mode_manual)
     {
         lms->SetGain(false, channel_id, gain_lna, "LNA");
@@ -17,8 +29,9 @@ void LimeSDRSource::set_gains()
         logger->debug("Set LimeSDR (PGA) Gain to %d", gain_pga);
     }
     else
+#endif
     {
-        lms->SetGain(false, channel_id, gain, "");
+        LMS_SetGaindB(limeDevice, false, channel_id, gain);
         logger->debug("Set LimeSDR (auto) Gain to %d", gain);
     }
 }
@@ -27,8 +40,6 @@ void LimeSDRSource::set_others()
 {
     if (!is_started)
         return;
-
-    // lime::LMS7_Device *lms = (lime::LMS7_Device *)limeDevice;
 
     if (manual_bandwidth)
     {
@@ -165,10 +176,7 @@ void LimeSDRSource::stop()
     is_started = false;
 }
 
-void LimeSDRSource::close()
-{
-    is_open = false;
-}
+void LimeSDRSource::close() { is_open = false; }
 
 void LimeSDRSource::set_frequency(uint64_t frequency)
 {
@@ -190,13 +198,15 @@ void LimeSDRSource::drawControlUI()
     samplerate_widget.render();
 
     // Channel setting
-    RImGui::Combo("Channel####limesdrchannel", &channel_id, "Channel 1\0"
-                                                            "Channel 2\0");
+    RImGui::Combo("Channel####limesdrchannel", &channel_id,
+                  "Channel 1\0"
+                  "Channel 2\0");
 
-    RImGui::Combo("Path####limesdrpath", &path_id, "NONE\0"
-                                                   "LNAH\0"
-                                                   "LNAL\0"
-                                                   "LNAW\0");
+    RImGui::Combo("Path####limesdrpath", &path_id,
+                  "NONE\0"
+                  "LNAH\0"
+                  "LNAL\0"
+                  "LNAW\0");
 
     if (is_started)
         RImGui::endDisabled();
@@ -204,6 +214,7 @@ void LimeSDRSource::drawControlUI()
     // Gain settings
     bool gain_changed = false;
 
+#if !LIMESUITENG
     if (RImGui::RadioButton("Auto", !gain_mode_manual))
     {
         gain_mode_manual = false;
@@ -223,6 +234,7 @@ void LimeSDRSource::drawControlUI()
         gain_changed |= RImGui::SteppedSliderInt("PGA Gain", &gain_pga, -12, 19);
     }
     else
+#endif
     {
         gain_changed |= RImGui::SteppedSliderInt("Gain", &gain, 0, 73);
     }
@@ -243,10 +255,7 @@ void LimeSDRSource::set_samplerate(uint64_t samplerate)
         throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
-uint64_t LimeSDRSource::get_samplerate()
-{
-    return samplerate_widget.get_value();
-}
+uint64_t LimeSDRSource::get_samplerate() { return samplerate_widget.get_value(); }
 
 std::vector<dsp::SourceDescriptor> LimeSDRSource::getAvailableSources()
 {
@@ -264,7 +273,11 @@ std::vector<dsp::SourceDescriptor> LimeSDRSource::getAvailableSources()
         std::stringstream ss;
         ss << std::hex << device_info->boardSerialNumber;
         LMS_Close(device);
+#if LIMESUITENG
+        results.push_back({"limesdrng", "LimeSDR-NG " + ss.str(), std::to_string(i)});
+#else
         results.push_back({"limesdr", "LimeSDR " + ss.str(), std::to_string(i)});
+#endif
     }
 
     return results;

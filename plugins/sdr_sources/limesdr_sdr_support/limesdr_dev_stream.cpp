@@ -1,9 +1,6 @@
+#include "common/dsp/complex.h"
 #include "limesdr_dev.h"
-#include <lime/ConnectionHandle.h>
-#include <lime/ConnectionRegistry.h>
 #include <lime/LimeSuite.h>
-#include <lime/Streamer.h>
-#include <lime/lms7_device.h>
 #include <logger.h>
 #include <string>
 
