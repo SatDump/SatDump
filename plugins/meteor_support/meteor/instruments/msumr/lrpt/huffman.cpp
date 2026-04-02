@@ -14,7 +14,7 @@ namespace meteor
             {
                 std::array<int64_t, 64> table;
 
-                if (qf > 20 && qf < 50)
+                if (qf >= 20 && qf < 50)
                     qf = 5000.0f / qf;
                 else
                     qf = 200.0f - (2.0f * qf);
