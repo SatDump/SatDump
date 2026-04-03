@@ -51,7 +51,7 @@ namespace satdump
                 if (ImGui::Button("++"))
                     for (int i = 0; i < 10; i++)
                         lut.push_back(current_col);
-                
+
                 ImGui::Text("Mode:");
                 ImGui::SameLine();
                 if (ImGui::RadioButton("Fill", mouse_mode == 0))
@@ -127,8 +127,8 @@ namespace satdump
 
         void LutGeneratorHandler::drawMenuBar()
         {
-            file_save_menu.render("Save LUT", "lut", ".", "Save Image", true);
-            file_open_menu.render("Load LUT", "Select Image", resources::getResourcePath("lut"), {{"All Files", "*"}});
+            file_open_menu.render(u8"\uea7f", "Select Image", resources::getResourcePath("lut"), {{"All Files", "*"}});
+            file_save_menu.render(u8"\ueb4b", "lut", ".", "Save Image", true);
         }
 
         void LutGeneratorHandler::drawContents(ImVec2 win_size)
