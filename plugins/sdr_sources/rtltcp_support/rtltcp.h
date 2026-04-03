@@ -14,8 +14,8 @@ protected:
     bool is_open = false, is_started = false;
     RTLTCPClient client;
 
-    widgets::DoubleList samplerate_widget;
-    widgets::NotatedNum<int> ppm_widget;
+    satdump::widgets::DoubleList samplerate_widget;
+    satdump::widgets::NotatedNum<int> ppm_widget;
 
     std::string ip_address = "0.0.0.0";
     int port = 1234;

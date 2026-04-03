@@ -1,11 +1,11 @@
 #pragma once
 
 #include "common/dsp_source_sink/dsp_sample_source.h"
-#include "common/widgets/notated_num.h"
-#include "logger.h"
-#include "imgui/imgui.h"
-#include "core/style.h"
 #include "common/net/udp.h"
+#include "common/widgets/notated_num.h"
+#include "core/style.h"
+#include "imgui/imgui.h"
+#include "logger.h"
 #include <thread>
 
 #include <nng/nng.h>
@@ -31,7 +31,7 @@ protected:
     nng_socket n_sock;
     nng_dialer n_dialer;
 
-    widgets::NotatedNum<uint64_t> current_samplerate = widgets::NotatedNum<uint64_t>("Samplerate##net", 0, "sps");
+    satdump::widgets::NotatedNum<uint64_t> current_samplerate = satdump::widgets::NotatedNum<uint64_t>("Samplerate##net", 0, "sps");
 
     std::string error;
 

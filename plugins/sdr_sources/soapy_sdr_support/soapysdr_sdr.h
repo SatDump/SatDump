@@ -29,8 +29,8 @@ protected:
     std::vector<float> gain_list_vals;
 
     bool manual_bandwidth = false;
-    widgets::DoubleList bandwidth_widget;
-    widgets::DoubleList samplerate_widget;
+    satdump::widgets::DoubleList bandwidth_widget;
+    satdump::widgets::DoubleList samplerate_widget;
 
     std::vector<std::string> list_options_bool;
     std::vector<std::string> list_options_bool_ids;

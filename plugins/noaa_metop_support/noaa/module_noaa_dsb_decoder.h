@@ -17,7 +17,7 @@ namespace noaa
         int frame_count = 0;
 
         // UI Stuff
-        widgets::ConstellationViewer constellation;
+        satdump::widgets::ConstellationViewer constellation;
 
     public:
         NOAADSBDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "common/dsp_source_sink/dsp_sample_source.h"
-#include "imgui/imgui.h"
-#include <fstream>
 #include "common/dsp/io/baseband_interface.h"
-#include <thread>
-#include "imgui/dialogs/widget.h"
+#include "common/dsp_source_sink/dsp_sample_source.h"
 #include "common/widgets/notated_num.h"
+#include "imgui/dialogs/widget.h"
+#include "imgui/imgui.h"
 #include <chrono>
+#include <fstream>
+#include <thread>
 
 class FileSource : public dsp::DSPSampleSource
 {
@@ -23,7 +23,7 @@ protected:
     unsigned long long total_samples = 0;
 
     FileSelectWidget file_input = FileSelectWidget("Select", "Select Input Baseband");
-    widgets::NotatedNum<int> samplerate_input = widgets::NotatedNum("Samplerate", 0, "sps");
+    satdump::widgets::NotatedNum<int> samplerate_input = satdump::widgets::NotatedNum("Samplerate", 0, "sps");
     dsp::BasebandType baseband_type = "cf32";
 
     bool should_run = true;

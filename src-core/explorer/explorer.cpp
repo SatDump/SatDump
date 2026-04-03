@@ -492,7 +492,7 @@ namespace satdump
                         panel_ratio = left_width / explorer_size.x;
                     last_width = left_width;
 
-                    ImGui::BeginChild("ExplorerChildPanel", {left_width, float(explorer_size.y - 10)}, false);
+                    ImGui::BeginChild("ExplorerChildPanel", {left_width, float(explorer_size.y)}, false);
                     drawPanel();
                     ImGui::EndChild();
 

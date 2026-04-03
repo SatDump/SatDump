@@ -64,7 +64,7 @@ private:
     float fft_min = -150, fft_max = 150;
     int fft_size = 8192, fft_rate = 30;
     std::unique_ptr<dsp::FFTPanBlock> fft;
-    std::unique_ptr<widgets::FFTPlot> fft_plot;
+    std::unique_ptr<satdump::widgets::FFTPlot> fft_plot;
 
 private:
     std::mutex live_pipeline_mtx;

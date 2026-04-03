@@ -20,7 +20,7 @@ protected:
     int bit_depth = 32;
     bool compression = false;
 
-    widgets::TimedMessage error;
+    satdump::widgets::TimedMessage error;
 
     std::shared_ptr<dsp::stream<uint8_t>> client_output_stream;
 

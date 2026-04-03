@@ -17,7 +17,7 @@ namespace meteor
         int8_t *soft_buffer;
 
         // UI Stuff
-        widgets::ConstellationViewer constellation;
+        satdump::widgets::ConstellationViewer constellation;
 
     public:
         METEORHRPTDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

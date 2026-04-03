@@ -5,46 +5,49 @@
 #include <mutex>
 #include <string>
 
-namespace widgets
+namespace satdump
 {
-    class FFTPlot
+    namespace widgets
     {
-    private:
-        float *values;
-        int values_size;
-        std::mutex work_mutex;
-
-    public:
-        float scale_min, scale_max;
-        float scale_resolution;
-
-        double bandwidth = 0;
-        double frequency = 0;
-
-        bool enable_freq_scale = true;
-
-        double actual_sdr_freq = -1;
-
-    public:
-        FFTPlot(float *v, int size, float min, float max, float scale_res = 20);
-
-        void draw(ImVec2 size);
-        image::Image drawImg(int size_x, int size_y);
-
-        void set_size(int size)
+        class FFTPlot
         {
-            work_mutex.lock();
-            values_size = size;
-            work_mutex.unlock();
-        }
+        private:
+            float *values;
+            int values_size;
+            std::mutex work_mutex;
 
-        void set_ptr(float *v)
-        {
-            work_mutex.lock();
-            values = v;
-            work_mutex.unlock();
-        }
+        public:
+            float scale_min, scale_max;
+            float scale_resolution;
 
-        std::vector<std::pair<std::string, double>> vfo_freqs;
-    };
-} // namespace widgets
+            double bandwidth = 0;
+            double frequency = 0;
+
+            bool enable_freq_scale = true;
+
+            double actual_sdr_freq = -1;
+
+        public:
+            FFTPlot(float *v, int size, float min, float max, float scale_res = 20);
+
+            void draw(ImVec2 size);
+            image::Image drawImg(int size_x, int size_y);
+
+            void set_size(int size)
+            {
+                work_mutex.lock();
+                values_size = size;
+                work_mutex.unlock();
+            }
+
+            void set_ptr(float *v)
+            {
+                work_mutex.lock();
+                values = v;
+                work_mutex.unlock();
+            }
+
+            std::vector<std::pair<std::string, double>> vfo_freqs;
+        };
+    } // namespace widgets
+} // namespace satdump

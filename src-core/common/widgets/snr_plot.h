@@ -1,16 +1,19 @@
 #pragma once
 
-#include "imgui/imgui.h"
 #include "complex"
+#include "imgui/imgui.h"
 
-namespace widgets
+namespace satdump
 {
-    class SNRPlotViewer
+    namespace widgets
     {
-    private:
-        float snr_history[200];
+        class SNRPlotViewer
+        {
+        private:
+            float snr_history[200];
 
-    public:
-        void draw(float snr = 1, float peak_snr = 1);
-    };
-}
+        public:
+            void draw(float snr = 1, float peak_snr = 1);
+        };
+    } // namespace widgets
+} // namespace satdump

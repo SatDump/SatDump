@@ -35,7 +35,7 @@ namespace satdump
 
     SATDUMP_DLL2 bool update_ui = true;
 
-    ::widgets::MarkdownHelper credits_md;
+    widgets::MarkdownHelper credits_md;
 
     std::shared_ptr<NotifyLoggerSink> notify_logger_sink;
     std::shared_ptr<StatusLoggerSink> status_logger_sink;

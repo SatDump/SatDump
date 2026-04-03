@@ -105,7 +105,7 @@ AutoTrackApp::AutoTrackApp(nlohmann::json settings, nlohmann::json parameters, s
         if (parameters.contains("fft_avgn"))
             fft->avg_num = parameters["fft_avgn"].get<float>();
 
-        fft_plot = std::make_unique<widgets::FFTPlot>(fft->output_stream->writeBuf, fft_size, fft_min, fft_max, 40);
+        fft_plot = std::make_unique<satdump::widgets::FFTPlot>(fft->output_stream->writeBuf, fft_size, fft_min, fft_max, 40);
         logger->critical("FFT GOOD!");
         fft->start();
     }

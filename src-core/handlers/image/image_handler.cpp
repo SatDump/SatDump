@@ -172,7 +172,7 @@ namespace satdump
             if (needs_to_be_disabled)
                 style::beginDisabled();
 
-            if (ImGui::MenuItem("Save Image"))
+            if (widgets::MenuItemTooltip(u8"\ueb4b", "Save Image"))
             {
                 auto fun = [this]()
                 {
@@ -209,11 +209,61 @@ namespace satdump
 
             if (renderVectorOverlayMenu(this))
                 asyncProcess();
+
+            /////////////
+            // Image Controls
+            /////////////
+
+            // Refresh button
+            if (widgets::MenuItemTooltip(u8"\uf01e", "Refresh (Image Only)"))
+                asyncProcess();
+
+            // Basic controls
+            image_view.zoom_in_next |= widgets::MenuItemTooltip(u8"\ueb81", "Zoom In");
+            image_view.zoom_out_next |= widgets::MenuItemTooltip(u8"\ueb82", "Zoom Out");
+            image_view.autoFitNextFrame |= widgets::MenuItemTooltip(u8"\uF69E", "Fit");
+            image_view.select_crop_next |= widgets::MenuItemTooltip(u8"\uF69D", "Crop");
+
+            if (image_proj_valid)
+            {
+                if (rotate180_image) // Projs do not work with rotated imagery
+                    style::beginDisabled();
+
+                // Show a menu that allows putting this image on an existing or new projection
+                if (widgets::BeginMenuTooltip(u8"\uf484", "Add to projection"))
+                {
+                    std::vector<std::shared_ptr<Handler>> hs;
+                    eventBus->fire_event<explorer::GetAllOfTypeEvent>({"projection_handler", hs});
+
+                    int n = 0;
+                    for (auto &h : hs)
+                    {
+                        std::string id = h->getName() + " (" + std::to_string(++n) + ")" + "##addtoproj";
+                        if (ImGui::MenuItem(id.c_str()))
+                            h->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()), true);
+                    }
+
+                    if (n > 0)
+                        ImGui::Separator();
+
+                    if (ImGui::MenuItem("New Projection"))
+                    {
+                        auto p = std::make_shared<ProjectionHandler>();
+                        p->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()), true);
+                        eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({p});
+                    }
+
+                    ImGui::EndMenu();
+                }
+
+                if (rotate180_image)
+                    style::endDisabled();
+            }
         }
 
         void ImageHandler::drawContents(ImVec2 win_size)
         {
-            ImGui::BeginChild("ContentChild", win_size, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_MenuBar);
+            ImGui::BeginChild("ContentChild", win_size, false, ImGuiWindowFlags_NoScrollbar);
 
             if (imgview_needs_update)
             {
@@ -253,58 +303,7 @@ namespace satdump
                 };
             }
 
-            if (ImGui::BeginMenuBar())
-            {
-                // Refresh button
-                if (widgets::MenuItemTooltip(u8"\uf01e", "Refresh (Image Only)"))
-                    asyncProcess();
-
-                // Basic controls
-                image_view.zoom_in_next |= ImGui::MenuItem(u8"\ueb81");
-                image_view.zoom_out_next |= ImGui::MenuItem(u8"\ueb82");
-                image_view.autoFitNextFrame |= ImGui::MenuItem("Fit");
-                image_view.select_crop_next |= ImGui::MenuItem("Crop");
-
-                if (image_proj_valid)
-                {
-                    if (rotate180_image) // Projs do not work with rotated imagery
-                        style::beginDisabled();
-
-                    // Show a menu that allows putting this image on an existing or new projection
-                    if (widgets::BeginMenuTooltip(u8"\uf484", "Add to projection"))
-                    {
-                        std::vector<std::shared_ptr<Handler>> hs;
-                        eventBus->fire_event<explorer::GetAllOfTypeEvent>({"projection_handler", hs});
-
-                        int n = 0;
-                        for (auto &h : hs)
-                        {
-                            std::string id = h->getName() + " (" + std::to_string(++n) + ")" + "##addtoproj";
-                            if (ImGui::MenuItem(id.c_str()))
-                                h->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()), true);
-                        }
-
-                        if (n > 0)
-                            ImGui::Separator();
-
-                        if (ImGui::MenuItem("New Projection"))
-                        {
-                            auto p = std::make_shared<ProjectionHandler>();
-                            p->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()), true);
-                            eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({p});
-                        }
-
-                        ImGui::EndMenu();
-                    }
-
-                    if (rotate180_image)
-                        style::endDisabled();
-                }
-
-                ImGui::EndMenuBar();
-            }
-
-            image_view.draw(ImGui::GetContentRegionMax());
+            image_view.draw({ImGui::GetWindowSize().x, ImGui::GetWindowSize().y + 14 * ui_scale});
 
             ImGui::EndChild();
         }

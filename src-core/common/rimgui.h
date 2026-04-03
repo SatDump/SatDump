@@ -1,14 +1,14 @@
 #pragma once
 
+#include "common/widgets/stepped_slider.h"
+#include "core/style.h"
+#include "dll_export.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
 #include "utils/format.h"
-#include <vector>
-#include <string>
 #include <cstdint>
-#include "core/style.h"
-#include "dll_export.h"
-#include "common/widgets/stepped_slider.h"
+#include <string>
+#include <vector>
 
 /*
 Super Basic & Crappy remote ImGui Scheme,
@@ -58,17 +58,7 @@ namespace RImGui
 
         bool operator==(UiElem a)
         {
-            return t == a.t &&
-                   id == a.id &&
-                   size_x == a.size_x &&
-                   size_y == a.size_y &&
-                   sv == a.sv &&
-                   iv == a.iv &&
-                   bv == a.bv &&
-                   fv == a.fv &&
-                   min == a.min &&
-                   max == a.max &&
-                   sv2 == a.sv2 &&
+            return t == a.t && id == a.id && size_x == a.size_x && size_y == a.size_y && sv == a.sv && iv == a.iv && bv == a.bv && fv == a.fv && min == a.min && max == a.max && sv2 == a.sv2 &&
                    clicked == a.clicked;
         }
 
@@ -233,10 +223,7 @@ namespace RImGui
         return elems;
     }
 
-    inline void set_feedback(std::vector<UiElem> fbk)
-    {
-        current_instance->ui_elems_fbk = fbk;
-    }
+    inline void set_feedback(std::vector<UiElem> fbk) { current_instance->ui_elems_fbk = fbk; }
 
     // Drawing function "client"
     inline std::vector<UiElem> draw(RImGui *inst, std::vector<UiElem> elems)
@@ -255,11 +242,9 @@ namespace RImGui
             else if (el.t == UI_ELEMENT_RADIOBUTTON)
                 el.clicked = ImGui::RadioButton(el.sv.c_str(), el.bv);
             else if (el.t == UI_ELEMENT_STEPPEDSLIDERINT)
-                el.clicked = widgets::SteppedSliderInt(el.sv.c_str(), &el.iv, el.min, el.max, (int)(el.size_x == 0.0f ? 1.0f : el.size_x),
-                    el.sv2.c_str(), (ImGuiSliderFlags)el.size_y);
+                el.clicked = satdump::widgets::SteppedSliderInt(el.sv.c_str(), &el.iv, el.min, el.max, (int)(el.size_x == 0.0f ? 1.0f : el.size_x), el.sv2.c_str(), (ImGuiSliderFlags)el.size_y);
             else if (el.t == UI_ELEMENT_STEPPEDSLIDERFLOAT)
-                el.clicked = widgets::SteppedSliderFloat(el.sv.c_str(), &el.fv, el.min, el.max, (el.size_x == 0.0f ? 1.0f : el.size_x),
-                    el.sv2.c_str(), (ImGuiSliderFlags)el.size_y);
+                el.clicked = satdump::widgets::SteppedSliderFloat(el.sv.c_str(), &el.fv, el.min, el.max, (el.size_x == 0.0f ? 1.0f : el.size_x), el.sv2.c_str(), (ImGuiSliderFlags)el.size_y);
             else if (el.t == UI_ELEMENT_CHECKBOX)
                 el.clicked = ImGui::Checkbox(el.sv.c_str(), &el.bv);
             else if (el.t == UI_ELEMENT_COMBO)
@@ -296,9 +281,7 @@ namespace RImGui
         if (is_local)
             ImGui::Text(fmt, args...);
         else
-            current_instance->ui_elements.push_back({UI_ELEMENT_TEXT,
-                                                     current_instance->current_id++,
-                                                     0, 0, satdump::svformat(fmt, args...)});
+            current_instance->ui_elements.push_back({UI_ELEMENT_TEXT, current_instance->current_id++, 0, 0, satdump::svformat(fmt, args...)});
     }
 
     inline bool Button(const char *label, ImVec2 size = ImVec2(0, 0))
@@ -309,9 +292,7 @@ namespace RImGui
         }
         else
         {
-            current_instance->ui_elements.push_back({UI_ELEMENT_BUTTON,
-                                                     current_instance->current_id++,
-                                                     size.x, size.y, std::string(label)});
+            current_instance->ui_elements.push_back({UI_ELEMENT_BUTTON, current_instance->current_id++, size.x, size.y, std::string(label)});
             for (auto &el : current_instance->ui_elems_fbk)
                 if (el.t == UI_ELEMENT_BUTTON)
                     if (el.sv == std::string(label))
@@ -329,9 +310,7 @@ namespace RImGui
         }
         else
         {
-            current_instance->ui_elements.push_back({UI_ELEMENT_RADIOBUTTON,
-                                                     current_instance->current_id++,
-                                                     0, 0, std::string(label), 0, active});
+            current_instance->ui_elements.push_back({UI_ELEMENT_RADIOBUTTON, current_instance->current_id++, 0, 0, std::string(label), 0, active});
             for (auto &el : current_instance->ui_elems_fbk)
                 if (el.t == UI_ELEMENT_RADIOBUTTON)
                     if (el.sv == std::string(label))
@@ -341,21 +320,19 @@ namespace RImGui
         }
     }
 
-    inline bool SteppedSliderInt(const char* label, int* v, int v_min, int v_max, int v_rate = 1, const char* format = "%d", ImGuiSliderFlags flags = 0)
+    inline bool SteppedSliderInt(const char *label, int *v, int v_min, int v_max, int v_rate = 1, const char *format = "%d", ImGuiSliderFlags flags = 0)
     {
         if (is_local)
-            return widgets::SteppedSliderInt(label, v, v_min, v_max, v_rate, format, flags);
+            return satdump::widgets::SteppedSliderInt(label, v, v_min, v_max, v_rate, format, flags);
         else
         {
-            for (auto& el : current_instance->ui_elems_fbk)
+            for (auto &el : current_instance->ui_elems_fbk)
                 if (el.t == UI_ELEMENT_STEPPEDSLIDERINT)
                     if (el.sv == std::string(label))
                         if (el.id == current_instance->current_id)
                             *v = el.iv;
-            current_instance->ui_elements.push_back({ UI_ELEMENT_STEPPEDSLIDERINT,
-                                                     current_instance->current_id++,
-                                                     (float)v_rate, (float)flags, std::string(label), *v, false, 0,
-                                                     (double)v_min, (double)v_max, format});
+            current_instance->ui_elements.push_back(
+                {UI_ELEMENT_STEPPEDSLIDERINT, current_instance->current_id++, (float)v_rate, (float)flags, std::string(label), *v, false, 0, (double)v_min, (double)v_max, format});
             for (auto &el : current_instance->ui_elems_fbk)
                 if (el.t == UI_ELEMENT_STEPPEDSLIDERINT)
                     if (el.sv == std::string(label))
@@ -369,7 +346,7 @@ namespace RImGui
     {
         if (is_local)
         {
-            return widgets::SteppedSliderFloat(label, v, v_min, v_max, v_rate, format, flags);
+            return satdump::widgets::SteppedSliderFloat(label, v, v_min, v_max, v_rate, format, flags);
         }
         else
         {
@@ -378,10 +355,7 @@ namespace RImGui
                     if (el.sv == std::string(label))
                         if (el.id == current_instance->current_id)
                             *v = el.fv;
-            current_instance->ui_elements.push_back({UI_ELEMENT_STEPPEDSLIDERFLOAT,
-                                                     current_instance->current_id++,
-                                                     v_rate, (float)flags, std::string(label), 0,
-                                                     false, *v, v_min, v_max, format});
+            current_instance->ui_elements.push_back({UI_ELEMENT_STEPPEDSLIDERFLOAT, current_instance->current_id++, v_rate, (float)flags, std::string(label), 0, false, *v, v_min, v_max, format});
             for (auto &el : current_instance->ui_elems_fbk)
                 if (el.t == UI_ELEMENT_STEPPEDSLIDERFLOAT)
                     if (el.sv == std::string(label))
@@ -404,9 +378,7 @@ namespace RImGui
                     if (el.sv == std::string(label))
                         if (el.id == current_instance->current_id)
                             *v = el.bv;
-            current_instance->ui_elements.push_back({UI_ELEMENT_CHECKBOX,
-                                                     current_instance->current_id++,
-                                                     0, 0, std::string(label), 0, *v});
+            current_instance->ui_elements.push_back({UI_ELEMENT_CHECKBOX, current_instance->current_id++, 0, 0, std::string(label), 0, *v});
             for (auto &el : current_instance->ui_elems_fbk)
                 if (el.t == UI_ELEMENT_CHECKBOX)
                     if (el.sv == std::string(label))
@@ -436,11 +408,7 @@ namespace RImGui
                     p += strlen(p) + 1;
                 separated_elems.insert(separated_elems.end(), items_separated_by_zeros, p);
             }
-            current_instance->ui_elements.push_back({UI_ELEMENT_COMBO,
-                                                     current_instance->current_id++,
-                                                     0, 0, std::string(label), *current_item,
-                                                     false, 0, 0, 0, 
-                                                     separated_elems});
+            current_instance->ui_elements.push_back({UI_ELEMENT_COMBO, current_instance->current_id++, 0, 0, std::string(label), *current_item, false, 0, 0, 0, separated_elems});
             for (auto &el : current_instance->ui_elems_fbk)
                 if (el.t == UI_ELEMENT_COMBO)
                     if (el.sv == std::string(label))
@@ -463,10 +431,7 @@ namespace RImGui
                     if (el.sv == std::string(label))
                         if (el.id == current_instance->current_id)
                             *v = el.min;
-            current_instance->ui_elements.push_back({UI_ELEMENT_INPUTDOUBLE,
-                                                     current_instance->current_id++,
-                                                     0, 0, std::string(label), 0,
-                                                     false, (float)step, *v, step_fast, std::string(format)});
+            current_instance->ui_elements.push_back({UI_ELEMENT_INPUTDOUBLE, current_instance->current_id++, 0, 0, std::string(label), 0, false, (float)step, *v, step_fast, std::string(format)});
             for (auto &el : current_instance->ui_elems_fbk)
                 if (el.t == UI_ELEMENT_INPUTDOUBLE)
                     if (el.sv == std::string(label))
@@ -481,9 +446,7 @@ namespace RImGui
         if (is_local)
             ImGui::Separator();
         else
-            current_instance->ui_elements.push_back({UI_ELEMENT_SEPARATOR,
-                                                     current_instance->current_id++,
-                                                     0, 0, "##noid"});
+            current_instance->ui_elements.push_back({UI_ELEMENT_SEPARATOR, current_instance->current_id++, 0, 0, "##noid"});
     }
 
     inline bool InputText(const char *label, std::string *str, ImGuiInputTextFlags flags = 0)
@@ -499,10 +462,7 @@ namespace RImGui
                     if (el.sv == std::string(label))
                         if (el.id == current_instance->current_id)
                             *str = el.sv2;
-            current_instance->ui_elements.push_back({UI_ELEMENT_INPUTTEXT,
-                                                     current_instance->current_id++,
-                                                     0, 0, std::string(label), flags,
-                                                     false, 0, 0, 0, std::string(*str)});
+            current_instance->ui_elements.push_back({UI_ELEMENT_INPUTTEXT, current_instance->current_id++, 0, 0, std::string(label), flags, false, 0, 0, 0, std::string(*str)});
             for (auto &el : current_instance->ui_elems_fbk)
                 if (el.t == UI_ELEMENT_INPUTTEXT)
                     if (el.sv == std::string(label))
@@ -520,10 +480,7 @@ namespace RImGui
         }
         else
         {
-            current_instance->ui_elements.push_back({UI_ELEMENT_ISITEMDEACTIVATEDAFTEREDIT,
-                                                     current_instance->current_id++,
-                                                     0, 0, "##nolabelisitemdeactivatedafteredit", 0,
-                                                     false, 0, 0, 0, ""});
+            current_instance->ui_elements.push_back({UI_ELEMENT_ISITEMDEACTIVATEDAFTEREDIT, current_instance->current_id++, 0, 0, "##nolabelisitemdeactivatedafteredit", 0, false, 0, 0, 0, ""});
             for (auto &el : current_instance->ui_elems_fbk)
                 if (el.t == UI_ELEMENT_ISITEMDEACTIVATEDAFTEREDIT)
                     if (el.sv == "##nolabelisitemdeactivatedafteredit")
@@ -538,9 +495,7 @@ namespace RImGui
         if (is_local)
             ImGui::SameLine();
         else
-            current_instance->ui_elements.push_back({UI_ELEMENT_SAMELINE,
-                                                     current_instance->current_id++,
-                                                     0, 0, "##noid"});
+            current_instance->ui_elements.push_back({UI_ELEMENT_SAMELINE, current_instance->current_id++, 0, 0, "##noid"});
     }
 
     inline void beginDisabled()
@@ -548,8 +503,7 @@ namespace RImGui
         if (is_local)
             style::beginDisabled();
         else
-            current_instance->ui_elements.push_back({UI_ELEMENT_BEGINDISABLED,
-                                                     current_instance->current_id++});
+            current_instance->ui_elements.push_back({UI_ELEMENT_BEGINDISABLED, current_instance->current_id++});
     }
 
     inline void endDisabled()
@@ -557,7 +511,6 @@ namespace RImGui
         if (is_local)
             style::endDisabled();
         else
-            current_instance->ui_elements.push_back({UI_ELEMENT_ENDDISABLED,
-                                                     current_instance->current_id++});
+            current_instance->ui_elements.push_back({UI_ELEMENT_ENDDISABLED, current_instance->current_id++});
     }
-};
+}; // namespace RImGui

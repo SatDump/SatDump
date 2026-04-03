@@ -113,7 +113,7 @@ namespace goes
                     std::memmove(&cor_history_ca[0], &cor_history_ca[1], (200 - 1) * sizeof(float));
                     cor_history_ca[200 - 1] = cadu_cor;
 
-                    widgets::ThemedPlotLines(style::theme.plot_bg.Value, "##caducor", cor_history_ca, IM_ARRAYSIZE(cor_history_ca), 0, "", 40.0f, 4.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
+                    satdump::widgets::ThemedPlotLines(style::theme.plot_bg.Value, "##caducor", cor_history_ca, IM_ARRAYSIZE(cor_history_ca), 0, "", 40.0f, 4.0f, ImVec2(200 * ui_scale, 50 * ui_scale));
                 }
             }
             ImGui::EndGroup();

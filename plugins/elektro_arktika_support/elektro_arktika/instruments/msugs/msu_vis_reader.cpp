@@ -1,5 +1,6 @@
 #include "msu_vis_reader.h"
 #include "logger.h"
+#include "utils/binary.h"
 #include <string>
 
 namespace elektro_arktika
@@ -97,6 +98,22 @@ namespace elektro_arktika
             timestamp += 1735204808.2837029;
             timestamp -= 1800 + 88;
             timestamps[counter] = timestamp;
+
+            uint8_t vals[7];
+            for (int i = 0; i < 7; i++)
+                vals[6 - i] = satdump::reverseBits(data[15200 + i]);
+            for (int i = 0; i < 7; i++)
+                data[15200 + i] = vals[i];
+
+            data[15208] = satdump::reverseBits(data[15208]);
+
+            double val = (uint64_t)data[12] << 16 | (uint64_t)data[13] << 8 | (uint64_t)data[14]; // (uint64_t)data[15202] << 16 | (uint64_t)data[15203] << 8 | (uint64_t)data[15204];
+            // val = (val / 16777215.0) * 360;
+
+            if (val > 1)
+            {
+                angle_points.push_back({counter, val});
+            }
 
             frames++;
         }

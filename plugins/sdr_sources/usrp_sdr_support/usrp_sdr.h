@@ -20,7 +20,7 @@ protected:
 
     bool use_device_rates = false;
 
-    widgets::DoubleList samplerate_widget;
+    satdump::widgets::DoubleList samplerate_widget;
 
     std::string channel_option_str;
     std::vector<std::string> usrp_antennas;

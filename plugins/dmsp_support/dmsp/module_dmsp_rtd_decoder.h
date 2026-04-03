@@ -16,7 +16,7 @@ namespace dmsp
         uint8_t *output_frames;
 
         // UI Stuff
-        widgets::ConstellationViewer constellation;
+        satdump::widgets::ConstellationViewer constellation;
 
     public:
         DMSPRTDDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);

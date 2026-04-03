@@ -17,7 +17,7 @@ protected:
     airspy_device *airspy_dev_obj;
     static int _rx_callback(airspy_transfer *t);
 
-    widgets::DoubleList samplerate_widget;
+    satdump::widgets::DoubleList samplerate_widget;
 
     int gain_type = 0;
     int general_gain = 0;

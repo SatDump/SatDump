@@ -1,4 +1,5 @@
 #include "image_product_handler.h"
+#include "common/widgets/menuitem_tooltip.h"
 #include "imgui/imgui.h"
 #include "nlohmann/json_utils.h"
 
@@ -448,7 +449,7 @@ namespace satdump
         void ImageProductHandler::drawMenuBar()
         {
             img_handler->drawMenuBar();
-            if (ImGui::MenuItem("Image To Handler"))
+            if (widgets::MenuItemTooltip(u8"\uF706", "Image To Handler"))
             {
                 std::shared_ptr<ImageHandler> a = std::make_shared<ImageHandler>();
                 a->setConfig(img_handler->getConfig());
@@ -456,8 +457,13 @@ namespace satdump
                 a->setName(img_handler->getName());
                 addSubHandler(a);
             }
-            if (ImGui::MenuItem("Advanced Mode", NULL, enabled_advanced_menus))
-                enabled_advanced_menus = !enabled_advanced_menus;
+
+            if (ImGui::BeginMenu("Handler"))
+            {
+                if (ImGui::MenuItem("Advanced Mode", NULL, enabled_advanced_menus))
+                    enabled_advanced_menus = !enabled_advanced_menus;
+                ImGui::EndMenu();
+            }
         }
 
         void ImageProductHandler::drawContents(ImVec2 win_size) { img_handler->drawContents(win_size); }

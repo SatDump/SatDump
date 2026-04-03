@@ -1,7 +1,8 @@
 #pragma once
+#include <cstdint>
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 namespace colormaps
 {
@@ -16,4 +17,4 @@ namespace colormaps
     Map loadMap(std::string path);
 
     std::vector<uint32_t> generatePalette(Map map, int resolution);
-}
+} // namespace colormaps

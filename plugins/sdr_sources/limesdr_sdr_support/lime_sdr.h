@@ -20,8 +20,8 @@ protected:
     lms_device_t *limeDevice;
     lms_stream_t limeStream;
 
-    widgets::DoubleList samplerate_widget;
-    widgets::DoubleList bandwidth_widget;
+    satdump::widgets::DoubleList samplerate_widget;
+    satdump::widgets::DoubleList bandwidth_widget;
 
     int channel_id = 0;
 

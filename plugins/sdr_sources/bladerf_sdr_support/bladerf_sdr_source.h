@@ -22,8 +22,8 @@ protected:
     int selected_dev_id = 0;
     bladerf_devinfo *devs_list = NULL;
 
-    widgets::DoubleList samplerate_widget;
-    widgets::DoubleList bandwidth_widget;
+    satdump::widgets::DoubleList samplerate_widget;
+    satdump::widgets::DoubleList bandwidth_widget;
 
     int channel_id = 0;
     int gain_mode = 1;

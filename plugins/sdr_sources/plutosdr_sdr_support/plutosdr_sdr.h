@@ -22,8 +22,8 @@ protected:
     iio_device *phy = NULL;
     iio_device *dev = NULL;
 
-    widgets::DoubleList samplerate_widget;
-    widgets::DoubleList bandwidth_widget;
+    satdump::widgets::DoubleList samplerate_widget;
+    satdump::widgets::DoubleList bandwidth_widget;
 
     bool is_usb = false;
     bool manual_bandwidth = false;

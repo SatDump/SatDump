@@ -32,7 +32,7 @@ protected:
 
     int max_gain;
 
-    widgets::DoubleList samplerate_widget;
+    satdump::widgets::DoubleList samplerate_widget;
 
     int lna_gain = 0;
     int if_gain = 20;

@@ -5,8 +5,10 @@
 #include "imgui/imgui.h"
 #include "logger.h"
 #include "products/image/channel_transform.h"
+#include "utils/binary.h"
 #include "utils/stats.h"
 #include <cstdint>
+#include <cstdio>
 #include <filesystem>
 #include <fstream>
 
@@ -47,9 +49,11 @@ namespace elektro_arktika
             def::SimpleDeframer deframerIR(0x0218a7a392dd9abf, 64, 14560, 10, true);
             // def::SimpleDeframer deframerUnknown(0xa6007c, 24, 1680, 0, false);
 
-            // std::ofstream data_unknown(directory + "/data_unknown.bin", std::ios::binary);
+            std::ofstream data_unknown(directory + "/data_unknown.bin", std::ios::binary);
 
             logger->info("Demultiplexing and deframing...");
+
+            double last_val = 0;
 
             while (should_run())
             {
@@ -63,7 +67,24 @@ namespace elektro_arktika
                 {
                     std::vector<std::vector<uint8_t>> frames = deframerVIS1.work(&cadu[24], 1024 - 24);
                     for (std::vector<uint8_t> &frame : frames)
+                    {
                         vis1_reader.pushFrame(&frame[0], apply_correction);
+
+                        uint8_t vals[7];
+                        for (int i = 0; i < 7; i++)
+                            vals[6 - i] = satdump::reverseBits(frame[15200 + i]);
+                        for (int i = 0; i < 7; i++)
+                            frame[15200 + i] = vals[i];
+
+#if 0
+                        double val = (uint64_t)frame[15202] << 16 | (uint64_t)frame[15203] << 8 | (uint64_t)frame[15204];
+                        val = (val / 16777215.0) * 360;
+                        printf("%4.4f %4.4f\n", val, val - last_val);
+                        last_val = val;
+#endif
+
+                        data_unknown.write((char *)frame.data(), frame.size());
+                    }
                 }
                 else if ((vcid == 5) || (vcid_2 == 5))
                 {
@@ -128,6 +149,62 @@ namespace elektro_arktika
                 sat_cfg = loadJsonFile(resources::getResourcePath("elektro/l" + std::to_string(sat_num) + "_cfg.json"));
             else
                 logger->error("No further MSU-GS processing will be performed for this ELEKTRO sat!");
+
+            {
+                std::vector<std::pair<double, double>> points;
+
+                int is = 0;
+                for (auto &p : vis2_reader.angle_points)
+                {
+                    // printf("%d %4.4f\n", p.first, p.second);
+
+                    double orign = p.second;
+                    p.second -= 60509 + 15597568 - (5391439.4372 / (17200. / 44065.)); // 51686860;
+                    p.second *= 17200. / 44065.;                                       // 17200. / 20.;
+                    //  p.second =
+
+                    // if (p.first < 1000)
+                    //     printf("%d %f %d\n", (int)p.first, orign, (int)p.second);
+
+                    if (is++ % 10 == 0)
+                        points.push_back({(double)p.first, p.second});
+
+                    printf("%4.4f, %4.4f\n", (double)p.first, p.second);
+                }
+
+                logger->critical(points.size());
+
+                auto img_o = vis2_reader.getImage2();
+                auto img_m = img_o;
+                img_m.fill(0);
+
+                logger->info("Calculating!");
+
+                satdump::ChannelTransform t;
+                t = t.init_affine_interpx(1, 1, 0, 0, points);
+
+                logger->info("Done calculating!");
+
+                for (int x = 0; x < 6004; x++)
+                {
+                    printf("%d\n", x);
+                    fflush(stdout);
+
+                    for (int y = 0; y < 17200; y++)
+                    {
+                        double xx = 0, yy = y;
+
+                        t.reverse(&yy, &xx);
+
+                        // printf("%d %d %d %d\n", x, y, (int)xx, (int)yy);
+
+                        if (yy >= 0 && yy < 17200)
+                            img_m.set(0, x, y, img_o.get_pixel_bilinear(0, x, yy));
+                    }
+                }
+
+                image::save_png(img_m, "/home/alan/Downloads/msugs_l2_test_2.png");
+            }
 
             // MSUVIS1 TODOREWORK
             {

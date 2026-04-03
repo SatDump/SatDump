@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/map/shapefile.h"
+#include "common/widgets/menuitem_tooltip.h"
 #include "core/config.h"
 #include "core/resources.h"
 #include "handlers/handler.h"
@@ -17,7 +18,7 @@ namespace satdump
             bool added = false;
 
             // TODOREWORK move out?!
-            if (ImGui::BeginMenu("Add Overlay"))
+            if (widgets::BeginMenuTooltip(u8"\uf53E", "Add Overlay"))
             {
                 if (ImGui::MenuItem("Shores"))
                 {

@@ -18,8 +18,8 @@ protected:
     rtlsdr_dev *rtlsdr_dev_obj;
     static void _rx_callback(unsigned char *buf, uint32_t len, void *ctx);
 
-    widgets::DoubleList samplerate_widget;
-    widgets::NotatedNum<int> ppm_widget;
+    satdump::widgets::DoubleList samplerate_widget;
+    satdump::widgets::NotatedNum<int> ppm_widget;
 
     int gain = 0;
     int last_ppm = 0;

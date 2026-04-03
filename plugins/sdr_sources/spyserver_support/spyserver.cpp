@@ -177,8 +177,8 @@ void SpyServerSource::drawControlUI()
     if (is_connected)
     {
         bool gain_changed = false;
-        gain_changed |= widgets::SteppedSliderInt("Gain", &gain, 0, client->devInfo.MaximumGainIndex);
-        gain_changed |= widgets::SteppedSliderInt("Digital Gain", &digital_gain, 0, client->devInfo.MaximumGainIndex);
+        gain_changed |= satdump::widgets::SteppedSliderInt("Gain", &gain, 0, client->devInfo.MaximumGainIndex);
+        gain_changed |= satdump::widgets::SteppedSliderInt("Digital Gain", &digital_gain, 0, client->devInfo.MaximumGainIndex);
         if (gain_changed)
             set_gains();
     }

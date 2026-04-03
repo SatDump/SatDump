@@ -17,8 +17,8 @@ protected:
     hackrf_device *hackrf_dev_obj;
     static int _rx_callback(hackrf_transfer *t);
 
-    widgets::DoubleList samplerate_widget;
-    widgets::DoubleList bandwidth_widget;
+    satdump::widgets::DoubleList samplerate_widget;
+    satdump::widgets::DoubleList bandwidth_widget;
 
     int lna_gain = 0;
     int vga_gain = 0;

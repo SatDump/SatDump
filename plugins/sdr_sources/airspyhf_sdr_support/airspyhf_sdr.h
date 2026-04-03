@@ -17,7 +17,7 @@ protected:
     airspyhf_device *airspyhf_dev_obj;
     static int _rx_callback(airspyhf_transfer_t *t);
 
-    widgets::DoubleList samplerate_widget;
+    satdump::widgets::DoubleList samplerate_widget;
 
     int agc_mode = 0;
     int attenuation = 0;

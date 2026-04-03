@@ -19,7 +19,7 @@ protected:
     static void _rx_callback_8(unsigned char *buf, uint32_t len, void *ctx);
     static void _rx_callback_16(unsigned char *buf, uint32_t len, void *ctx);
 
-    widgets::DoubleList samplerate_widget;
+    satdump::widgets::DoubleList samplerate_widget;
 
     int bit_depth = 12;
     int gain = 0;

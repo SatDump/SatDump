@@ -17,6 +17,8 @@ namespace elektro_arktika
             int frames;
             std::vector<double> timestamps;
 
+            std::vector<std::pair<int, double>> angle_points;
+
             // Related to counter correction
             int global_counter;
             bool counter_locked = false;
