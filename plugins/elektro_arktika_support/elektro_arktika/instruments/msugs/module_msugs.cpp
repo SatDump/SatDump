@@ -150,62 +150,6 @@ namespace elektro_arktika
             else
                 logger->error("No further MSU-GS processing will be performed for this ELEKTRO sat!");
 
-            {
-                std::vector<std::pair<double, double>> points;
-
-                int is = 0;
-                for (auto &p : vis2_reader.angle_points)
-                {
-                    // printf("%d %4.4f\n", p.first, p.second);
-
-                    double orign = p.second;
-                    p.second -= 60509 + 15597568 - (5391439.4372 / (17200. / 44065.)); // 51686860;
-                    p.second *= 17200. / 44065.;                                       // 17200. / 20.;
-                    //  p.second =
-
-                    // if (p.first < 1000)
-                    //     printf("%d %f %d\n", (int)p.first, orign, (int)p.second);
-
-                    if (is++ % 10 == 0)
-                        points.push_back({(double)p.first, p.second});
-
-                    printf("%4.4f, %4.4f\n", (double)p.first, p.second);
-                }
-
-                logger->critical(points.size());
-
-                auto img_o = vis2_reader.getImage2();
-                auto img_m = img_o;
-                img_m.fill(0);
-
-                logger->info("Calculating!");
-
-                satdump::ChannelTransform t;
-                t = t.init_affine_interpx(1, 1, 0, 0, points);
-
-                logger->info("Done calculating!");
-
-                for (int x = 0; x < 6004; x++)
-                {
-                    printf("%d\n", x);
-                    fflush(stdout);
-
-                    for (int y = 0; y < 17200; y++)
-                    {
-                        double xx = 0, yy = y;
-
-                        t.reverse(&yy, &xx);
-
-                        // printf("%d %d %d %d\n", x, y, (int)xx, (int)yy);
-
-                        if (yy >= 0 && yy < 17200)
-                            img_m.set(0, x, y, img_o.get_pixel_bilinear(0, x, yy));
-                    }
-                }
-
-                image::save_png(img_m, "/home/alan/Downloads/msugs_l2_test_2.png");
-            }
-
             // MSUVIS1 TODOREWORK
             {
                 ////////////////////////////////////////// mtvza_status = SAVING;
