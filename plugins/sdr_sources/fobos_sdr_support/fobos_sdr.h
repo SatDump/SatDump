@@ -18,7 +18,7 @@ protected:
     fobos_dev_t *fobos_dev_ovj;
     // static int _rx_callback(airspy_transfer *t);
 
-    widgets::DoubleList samplerate_widget;
+    satdump::widgets::DoubleList samplerate_widget;
 
     std::shared_ptr<dsp::stream<complex_t>> output_stream_local;
     std::shared_ptr<dsp::RationalResamplerBlock<complex_t>> decimator;
