@@ -71,6 +71,7 @@ namespace satdump
                 auto sh = std::make_shared<ImageHandler>(img);
                 sh->image_name = image_name + " Crop";
                 addSubHandler(sh);
+                eventBus->fire_event<explorer::ExplorerSelectHandlerEvent>({sh});
             };
         }
 
