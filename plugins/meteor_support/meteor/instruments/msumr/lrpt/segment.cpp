@@ -38,7 +38,7 @@ namespace meteor
 
                     MCUN = data[8];
                     QT = data[9];
-                    DC = data[10] & 0xF0 >> 4;
+                    DC = (data[10] & 0xF0) >> 4;
                     AC = data[10] & 0x0F;
                     QFM = data[11] << 8 | data[12];
                     QF = data[13];
