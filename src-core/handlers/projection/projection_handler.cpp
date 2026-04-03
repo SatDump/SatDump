@@ -1,6 +1,8 @@
 #include "projection_handler.h"
 #include "core/config.h"
+#include "core/plugin.h"
 #include "core/style.h"
+#include "explorer/explorer.h"
 #include "handlers/vector/addmenu.h"
 #include "image/image.h"
 #include "image/meta.h"
@@ -27,6 +29,8 @@ namespace satdump
         {
             handler_tree_icon = u8"\uf6e6";
             setCanSubBeReorgTo(true);
+
+            img_handler.enableOverlayMenu = false;
 
             setConfig(satdump::db->get_user_json("projection_defaults"));
         }
@@ -457,17 +461,18 @@ namespace satdump
 
         void ProjectionHandler::drawMenuBar()
         {
-            img_handler.drawSaveMenu(); // TODOREWORK remove this
-                                        /*if (ImGui::MenuItem("Image To Handler"))
-                                        {
-                                            std::shared_ptr<ImageHandler> a = std::make_shared<ImageHandler>();
-                                            a->setConfig(img_handler.getConfig());
-                                            a->updateImage(img_handler.image);
-                                            addSubHandler(a);
-                                        }*/
-                                        // TODOREWORK
-
             renderVectorOverlayMenu(this);
+
+            img_handler.drawMenuBar();
+
+            if (widgets::MenuItemTooltip(u8"\uF706", "Image To Handler"))
+            {
+                std::shared_ptr<ImageHandler> a = std::make_shared<ImageHandler>();
+                a->setConfig(img_handler.getConfig());
+                a->setImage(img_handler.getImage(false));
+                a->setName(img_handler.getName());
+                eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({a});
+            }
         }
 
         void ProjectionHandler::drawContents(ImVec2 win_size) { img_handler.drawContents(win_size); }

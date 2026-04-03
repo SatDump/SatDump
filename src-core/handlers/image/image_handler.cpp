@@ -207,7 +207,7 @@ namespace satdump
         {
             drawSaveMenu();
 
-            if (renderVectorOverlayMenu(this))
+            if (enableOverlayMenu && renderVectorOverlayMenu(this))
                 asyncProcess();
 
             /////////////

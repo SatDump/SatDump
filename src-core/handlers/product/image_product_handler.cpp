@@ -449,6 +449,7 @@ namespace satdump
         void ImageProductHandler::drawMenuBar()
         {
             img_handler->drawMenuBar();
+
             if (widgets::MenuItemTooltip(u8"\uF706", "Image To Handler"))
             {
                 std::shared_ptr<ImageHandler> a = std::make_shared<ImageHandler>();

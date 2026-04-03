@@ -128,6 +128,10 @@ namespace satdump
             bool wasMenuTriggered = false;
 
         public:
+            // Allow disabling overlay menu, eg, for projections where they are separate
+            bool enableOverlayMenu = true;
+
+        public:
             /**
              * @brief Return a sane image name for saving
              * @return cleaned-up name. TODOREWORK generalize?
