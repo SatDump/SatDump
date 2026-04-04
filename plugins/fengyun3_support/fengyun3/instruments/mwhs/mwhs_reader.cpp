@@ -21,6 +21,8 @@ namespace fengyun3
             if (packet.payload.size() < 1018)
                 return;
 
+            packet.payload.resize(1352);
+
             double currentTime = ccsds::parseCCSDSTimeFull(packet, 10957) + 12 * 3600;
             int marker = packet.payload[350] & 2;
 

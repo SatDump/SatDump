@@ -280,9 +280,11 @@ void ImageViewWidget::draw(ImVec2 win_size)
                 select_crop_next = false;
             }
 
+            if (select_crop_next || isSelectingCrop)
+                ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+
             if (isSelectingCrop)
             {
-                ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
 
                 if (!ImGui::IsMouseReleased(ImGuiMouseButton_Left))
                 {

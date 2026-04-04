@@ -1,5 +1,4 @@
 #include "bladerf_dev.h"
-#include "common/dsp/complex.h"
 #include "dsp/block.h"
 #include "nlohmann/json.hpp"
 #include <bladeRF2.h>
@@ -16,10 +15,7 @@ namespace satdump
             outputs[0].fifo = std::make_shared<DSPStream>(16); // TODOREWORK
         }
 
-        BladeRFDevBlock::~BladeRFDevBlock()
-        {
-            stop(); // TODOREWORK (make sure to close device)
-        }
+        BladeRFDevBlock::~BladeRFDevBlock() { stop(); }
 
         void BladeRFDevBlock::set_frequency()
         {

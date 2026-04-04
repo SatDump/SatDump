@@ -223,7 +223,7 @@ namespace satdump
             image_view.zoom_in_next |= widgets::MenuItemTooltip(u8"\ueb81", "Zoom In");
             image_view.zoom_out_next |= widgets::MenuItemTooltip(u8"\ueb82", "Zoom Out");
             image_view.autoFitNextFrame |= widgets::MenuItemTooltip(u8"\uF69E", "Fit");
-            image_view.select_crop_next |= widgets::MenuItemTooltip(u8"\uF69D", "Crop");
+            image_view.select_crop_next |= widgets::MenuItemTooltip(u8"\uF69D", "Crop", NULL, image_view.select_crop_next);
 
             if (image_proj_valid)
             {
