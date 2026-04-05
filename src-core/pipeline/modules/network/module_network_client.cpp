@@ -4,6 +4,7 @@
 #include "core/exception.h"
 #include "imgui/imgui.h"
 #include "logger.h"
+#include "pipeline/module.h"
 #include <nng/nng.h>
 #include <nng/protocol/pubsub0/sub.h>
 
@@ -39,9 +40,9 @@ namespace satdump
                 buffer = new uint8_t[pkt_size * 10];
             }
 
-            std::vector<ModuleDataType> NetworkClientModule::getInputTypes() { return {DATA_FILE, DATA_STREAM}; }
+            std::vector<ModuleDataType> NetworkClientModule::getInputTypes() { return {DATA_FILE}; }
 
-            std::vector<ModuleDataType> NetworkClientModule::getOutputTypes() { return {DATA_FILE}; }
+            std::vector<ModuleDataType> NetworkClientModule::getOutputTypes() { return {DATA_FILE, DATA_STREAM}; }
 
             NetworkClientModule::~NetworkClientModule() { delete[] buffer; }
 
