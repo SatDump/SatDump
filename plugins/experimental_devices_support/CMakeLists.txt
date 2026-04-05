@@ -9,6 +9,10 @@ if(NOT ANDROID)
 
   install(TARGETS experimental_devices_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
 
+  if(MSVC)
+    target_link_libraries(${PROJECT_NAME} PRIVATE setupapi)
+  endif()
+
   if(APPLE)
     find_library(IOKIT_LIBRARY IOKit REQUIRED)
     find_library(FOUNDATION_LIBRARY Foundation REQUIRED)
