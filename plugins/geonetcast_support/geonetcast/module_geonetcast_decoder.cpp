@@ -13,8 +13,6 @@
 #include <filesystem>
 #include <fstream>
 
-#include "goes_abi.h"
-
 #include "utils/thread_priority.h"
 
 namespace geonetcast
@@ -101,35 +99,6 @@ namespace geonetcast
 
                                 if (!std::filesystem::exists(directory + "/PROCESSED"))
                                     std::filesystem::create_directories(directory + "/PROCESSED");
-
-                                // Try to process as GOES ABI
-                                if (this->d_parameters["process_goes_abi"].get<bool>())
-                                {
-#ifdef ENABLE_HDF5_PARSING
-                                    int mode = 0;
-                                    int channel = 0;
-                                    int satellite = 0;
-                                    uint64_t tstart = 0;
-                                    uint64_t tend = 0;
-                                    uint64_t tfile = 0;
-                                    uint64_t tidk = 0;
-
-                                    if (sscanf(file.name.c_str(), "OR_ABI-L2-CMIPF-M%1dC%2d_G%2d_s%lu_e%lu_c%lu-%lu_0.nc", &mode, &channel, &satellite, &tstart, &tend, &tfile, &tidk) == 7)
-                                    {
-                                        logger->info("Mode %d Channel %d Satellite %d", mode, channel, satellite);
-
-                                        int bit_depth = 12;
-
-                                        if (channel == 7)
-                                            bit_depth = 14;
-
-                                        image::Image final_image = parse_goesr_abi_netcdf_fulldisk_CMI(file.data, bit_depth);
-
-                                        image::save_img(final_image, directory + "/PROCESSED/" + file.name);
-                                        // return;
-                                    }
-#endif
-                                }
 
                                 logger->debug("Saving complete " + file.name + " size " + filesize_str);
 
