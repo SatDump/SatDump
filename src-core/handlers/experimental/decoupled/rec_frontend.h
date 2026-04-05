@@ -302,36 +302,62 @@ namespace satdump
                 float wf_size = win_size.y;
                 bool show_waterfall = true;
                 float waterfall_ratio = 0.3;
-                float left_width = ImGui::GetCursorPosX() - 9;
 
                 ImGui::BeginChild("RecorderFFT", {right_width, wf_size}, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
                 {
                     float fft_height = wf_size * (show_waterfall ? waterfall_ratio : 1.0);
                     float wf_height = wf_size * (1 - waterfall_ratio) + 15 * ui_scale;
-                    float wfft_widht = right_width - 9 * ui_scale;
-                    bool t = true;
-#ifdef __ANDROID__
-                    int offset = 8;
-#else
-                    int offset = 30;
-#endif
-                    ImGui::SetNextWindowSizeConstraints(ImVec2((right_width + offset * ui_scale), 50), ImVec2((right_width + offset * ui_scale), wf_size));
-                    ImGui::SetNextWindowSize(ImVec2((right_width + offset * ui_scale), show_waterfall ? waterfall_ratio * wf_size : wf_size));
-                    ImGui::SetNextWindowPos(ImVec2(left_width, 25 * ui_scale));
-                    if (ImGui::Begin("#fft", &t,
-                                     ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoScrollbar |
-                                         ImGuiWindowFlags_NoScrollWithMouse))
+                    float wfft_widht = right_width; // - 9 * ui_scale;
+
+                    fft_plot->draw({float(wfft_widht), fft_height});
+                    if (show_waterfall && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                        waterfall_ratio = ImGui::GetWindowHeight() / wf_size;
+
                     {
-                        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 9 * ui_scale);
-                        fft_plot->draw({float(wfft_widht), fft_height});
-                        if (show_waterfall && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
-                            waterfall_ratio = ImGui::GetWindowHeight() / wf_size;
+                        ImGui::GetWindowDrawList()->AddRectFilled(                                            //
+                            {ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y},                   //
+                            {ImGui::GetCursorScreenPos().x + wfft_widht, ImGui::GetCursorScreenPos().y + 20}, //
+                            /*ImColor(ImGui::GetStyle().Colors[ImGuiCol_Button])*/ ImColor(0, 0, 0));
+
+                        // ImGui::GetWindowDrawList()->AddRectFilled(                                            //
+                        //     {ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y + 19},              //
+                        //     {ImGui::GetCursorScreenPos().x + wfft_widht, ImGui::GetCursorScreenPos().y + 20}, //
+                        //     /*ImColor(ImGui::GetStyle().Colors[ImGuiCol_Button])*/ ImColor(255, 255, 255));
+
+                        // ImGui::SetWindowFontScale(0.8);
+
+                        // Start
+                        {
+
+                            std::string cfreq = " " + (std::string) "95 MHz";
+                            auto size = ImGui::CalcTextSize(cfreq.c_str());
+                            ImGui::GetWindowDrawList()->AddText({ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y + (20.f - size.y) / 2.f},
+                                                                ImColor(ImGui::GetStyle().Colors[ImGuiCol_Text]), cfreq.c_str());
+                        }
+
+                        // Center
+                        {
+                            std::string cfreq = "98 MHz";
+                            auto size = ImGui::CalcTextSize(cfreq.c_str());
+                            ImGui::GetWindowDrawList()->AddText({ImGui::GetCursorScreenPos().x + (wfft_widht / 2) - (size.x / 2), ImGui::GetCursorScreenPos().y + (20.f - size.y) / 2.f},
+                                                                ImColor(ImGui::GetStyle().Colors[ImGuiCol_Text]), cfreq.c_str());
+                        }
+
+                        // End
+                        {
+                            std::string cfreq = (std::string) "101 MHz" + " ";
+                            auto size = ImGui::CalcTextSize(cfreq.c_str());
+                            ImGui::GetWindowDrawList()->AddText({ImGui::GetCursorScreenPos().x + wfft_widht - size.x, ImGui::GetCursorScreenPos().y + (20.f - size.y) / 2.f},
+                                                                ImColor(ImGui::GetStyle().Colors[ImGuiCol_Text]), cfreq.c_str());
+                        }
+
+                        // ImGui::SetWindowFontScale(1);
+
+                        ImGui::Dummy({wfft_widht, 20});
                     }
-                    ImGui::EndChild();
+
                     if (show_waterfall)
                     {
-                        ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 15 * ui_scale);
-                        ImGui::SetCursorPosX(9 * ui_scale);
                         waterfall_plot->draw({wfft_widht, wf_height}, true);
                     }
                 }
