@@ -105,11 +105,11 @@ namespace satdump
                         catch (std::exception &)
                         {
                             newPipeline.live_cfg.normal_live = pipelineConfig.value()["live"]["default"].get<std::vector<int>>();
-                            if (pipelineConfig.value()["live_cfg"].contains("server"))
+                            if (pipelineConfig.value()["live"].contains("server"))
                                 newPipeline.live_cfg.server_live = pipelineConfig.value()["live"]["server"].get<std::vector<int>>();
-                            if (pipelineConfig.value()["live_cfg"].contains("client"))
+                            if (pipelineConfig.value()["live"].contains("client"))
                                 newPipeline.live_cfg.client_live = pipelineConfig.value()["live"]["client"].get<std::vector<int>>();
-                            if (pipelineConfig.value()["live_cfg"].contains("pkt_size"))
+                            if (pipelineConfig.value()["live"].contains("pkt_size"))
                                 newPipeline.live_cfg.pkt_size = pipelineConfig.value()["live_cfg"]["pkt_size"].get<int>();
                         }
                     }
