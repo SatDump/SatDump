@@ -483,6 +483,12 @@ if(PLUGIN_BOCHUM_SUPPORT)
   add_subdirectory(bochum_support)
 endif()
 
+option(PLUGIN_EXPERIMENTAL_DEVICES_SUPPORT "Enable Experimental Devices support (SatDump DC and more later)" ON)
+
+if(PLUGIN_EXPERIMENTAL_DEVICES_SUPPORT)
+  add_subdirectory(experimental_devices_support)
+endif()
+
 # ##############################################################################
 option(PLUGIN_BITVIEW_APP "Enable BitView Application (Very WIP)" OFF)
 
@@ -514,3 +520,5 @@ option(PLUGIN_WEBHOOK_APP "Enable Webhook Application" ON)
 if(BUILD_GUI AND PLUGIN_WEBHOOK_APP)
   add_subdirectory(webhook_app)
 endif()
+
+
