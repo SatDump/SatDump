@@ -3,10 +3,14 @@
 #if LIMESUITENG
 #include <limesuiteng/limesuiteng.hpp>
 #else
+#ifdef __ANDROID__
+#include "API/lms7_device.h"
+#include "lime/LimeSuite.h"
+#else
 #include <lime/ConnectionHandle.h>
 #include <lime/ConnectionRegistry.h>
-#include <lime/Streamer.h>
 #include <lime/lms7_device.h>
+#endif
 #endif
 
 void LimeSDRSource::set_gains()

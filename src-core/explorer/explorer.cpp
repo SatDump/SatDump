@@ -31,7 +31,6 @@
 #include "handlers/experimental/dsp/cyclo_test.h"
 #include "handlers/experimental/dsp/fm_test.h"
 #include "handlers/experimental/dsp/newrec.h"
-#include "handlers/experimental/dsp/waterfall_test.h"
 
 namespace satdump
 {
@@ -290,8 +289,6 @@ namespace satdump
 
                     if (ImGui::BeginMenu("Experimental"))
                     { // TODOREWORK?
-                        if (ImGui::MenuItem("Waterfall TEST"))
-                            addHandler(std::make_shared<handlers::WaterfallTestHandler>());
                         if (ImGui::MenuItem("NewRec TEST"))
                             addHandler(std::make_shared<handlers::NewRecHandler>());
                         if (ImGui::MenuItem("CycloHelper TEST"))

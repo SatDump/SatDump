@@ -7,9 +7,15 @@
 #include <limesuiteng/limesuiteng.hpp>
 #include <limesuiteng/types.h>
 #else
+#ifdef __ANDROID__
+#include "API/lms7_device.h"
+#include "lime/LimeSuite.h"
+#include "ConnectionRegistry/ConnectionRegistry.h"
+#else
 #include <lime/ConnectionHandle.h>
 #include <lime/ConnectionRegistry.h>
 #include <lime/lms7_device.h>
+#endif
 #endif
 #include <lime/LimeSuite.h>
 #include <logger.h>
