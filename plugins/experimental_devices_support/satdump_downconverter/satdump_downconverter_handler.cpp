@@ -62,6 +62,8 @@ namespace satdump
             mcu_temp = dc->getMCUTemp();
             rf_temp = dc->getRFTemp();
             vreg_temp = dc->getVREGTemp();
+
+            updateOnChange = false;
         }
 
         void SatDumpDownconverHandler::drawMenu()
