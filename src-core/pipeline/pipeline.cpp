@@ -110,7 +110,7 @@ namespace satdump
                             if (pipelineConfig.value()["live"].contains("client"))
                                 newPipeline.live_cfg.client_live = pipelineConfig.value()["live"]["client"].get<std::vector<int>>();
                             if (pipelineConfig.value()["live"].contains("pkt_size"))
-                                newPipeline.live_cfg.pkt_size = pipelineConfig.value()["live_cfg"]["pkt_size"].get<int>();
+                                newPipeline.live_cfg.pkt_size = pipelineConfig.value()["live"]["pkt_size"].get<int>();
                         }
                     }
 
