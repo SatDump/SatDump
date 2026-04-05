@@ -39,7 +39,7 @@
 #ifndef SERIAL_IMPL_WINDOWS_H
 #define SERIAL_IMPL_WINDOWS_H
 
-#include ".../serial.h"
+#include "../serial.h"
 
 #include "windows.h"
 
