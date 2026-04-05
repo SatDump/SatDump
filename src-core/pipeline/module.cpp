@@ -1,3 +1,4 @@
+#include <string>
 #define SATDUMP_DLL_EXPORT 1
 
 #include "pipeline/modules/demod/module_demod_ndsp.h"
@@ -53,7 +54,7 @@ namespace satdump
                 if (t == type)
                     found = true;
             if (!found)
-                throw satdump_exception("Module input type not supported!");
+                throw satdump_exception("Module input type not supported! (" + getIDM() + ") : " + std::to_string(type));
         }
 
         void ProcessingModule::setOutputType(ModuleDataType type)

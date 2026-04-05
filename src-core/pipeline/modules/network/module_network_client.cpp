@@ -40,7 +40,7 @@ namespace satdump
                 buffer = new uint8_t[pkt_size * 10];
             }
 
-            std::vector<ModuleDataType> NetworkClientModule::getInputTypes() { return {DATA_FILE}; }
+            std::vector<ModuleDataType> NetworkClientModule::getInputTypes() { return {DATA_FILE, DATA_STREAM}; }
 
             std::vector<ModuleDataType> NetworkClientModule::getOutputTypes() { return {DATA_FILE, DATA_STREAM}; }
 
