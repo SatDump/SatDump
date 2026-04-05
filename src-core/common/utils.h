@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <climits>
+#include <ctime>
 
 #ifdef _MSC_VER
 #define timegm _mkgmtime

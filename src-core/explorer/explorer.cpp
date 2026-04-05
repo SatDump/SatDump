@@ -1,37 +1,13 @@
 #include "explorer.h"
 
-#include "common/utils.h"
-
+#include "../../src-interface/main_ui.h"
 #include "core/exception.h"
 #include "core/plugin.h"
-
-#include "core/style.h"
-#include "dsp/flowgraph/dsp_flowgraph_handler.h"
-#include "handlers/dataset/dataset_handler.h"
-#include "handlers/dummy_handler.h"
-#include "handlers/experimental/decoupled/rec_backend.h"
-#include "handlers/experimental/decoupled/rec_frontend.h"
-#include "handlers/experimental/decoupled/test/test_http.h"
-#include "handlers/experimental/decoupled/test/test_http_client.h"
-#include "handlers/experimental/decoupled/testremote.h"
-#include "handlers/experimental/decoupled/testremote_backend.h"
-#include "handlers/product/image_product_handler.h" // TODOREWORK CLEAN
-#include "handlers/projection/projection_handler.h"
-#include "handlers/vector/shapefile_handler.h"
-// TODOREWORK
 #include "core/resources.h"
+#include "core/style.h"
 #include "image/image.h"
-#include "imgui/imgui.h"
-
-// TODOREWORK
-#include "handlers/experimental/dsp/cyclo_test.h"
-#include "handlers/experimental/dsp/fm_test.h"
-#include "handlers/experimental/dsp/newrec.h"
-#include "handlers/experimental/dsp/waterfall_test.h"
-
 #include "image/io.h"
-
-#include "../../src-interface/main_ui.h"
+#include "imgui/imgui.h"
 #include "imgui/imgui_filedrop.h"
 #include "imgui/imgui_image.h"
 #include <cstddef>
@@ -39,6 +15,23 @@
 #include <fstream>
 #include <memory>
 #include <string>
+
+#include "dsp/flowgraph/dsp_flowgraph_handler.h"
+#include "handlers/dataset/dataset_handler.h"
+#include "handlers/dummy_handler.h"
+#include "handlers/experimental/decoupled/rec_backend.h"
+#include "handlers/experimental/decoupled/rec_frontend.h"
+#include "handlers/experimental/decoupled/test/test_http.h"
+#include "handlers/experimental/decoupled/test/test_http_client.h"
+#include "handlers/product/product_handler.h"
+#include "handlers/projection/projection_handler.h"
+#include "handlers/vector/shapefile_handler.h"
+
+// TODOREWORK
+#include "handlers/experimental/dsp/cyclo_test.h"
+#include "handlers/experimental/dsp/fm_test.h"
+#include "handlers/experimental/dsp/newrec.h"
+#include "handlers/experimental/dsp/waterfall_test.h"
 
 namespace satdump
 {
@@ -305,8 +298,6 @@ namespace satdump
                             addHandler(std::make_shared<handlers::CycloHelperHandler>());
                         if (ImGui::MenuItem("FM Test"))
                             addHandler(std::make_shared<handlers::FMTestHandler>());
-                        if (ImGui::MenuItem("TestRemoteStuff"))
-                            addHandler(std::make_shared<handlers::TestRemoteHandlerHandler>(std::make_shared<handlers::TestHttpBackend>(std::make_shared<handlers::TestRemoteHandlerBackend>())));
                         if (ImGui::MenuItem("TestRemoteRec"))
                             addHandler(std::make_shared<handlers::RecFrontendHandler>(std::make_shared<handlers::TestHttpBackend>(std::make_shared<handlers::RecBackend>())));
                         if (ImGui::MenuItem("TestRemoteClient"))

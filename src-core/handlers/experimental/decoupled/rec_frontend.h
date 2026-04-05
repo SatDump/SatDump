@@ -3,6 +3,7 @@
 #include "base/remote_handler.h"
 #include "base/remote_handler_backend.h"
 #include "common/widgets/fft_plot.h"
+#include "common/widgets/menuitem_tooltip.h"
 #include "common/widgets/waterfall_plot.h"
 #include "core/resources.h"
 #include "core/style.h"
@@ -151,13 +152,14 @@ namespace satdump
 
                 if (ImGui::CollapsingHeader("Source", ImGuiTreeNodeFlags_DefaultOpen))
                 {
+#if 0
                     if (is_started)
                         style::beginDisabled();
-                    if (ImGui::BeginCombo("Device##devicebox", current_device.name.c_str()))
+                    if (ImGui::BeginCombo("##devicebox", current_device.name.c_str()))
                     {
                         for (auto &d : available_devices)
                         {
-                            if (ImGui::Selectable(d.name.c_str(), d == current_device))
+                            if (ImGui::Selectable(d.name.c_str(), d.name == current_device.name))
                             {
                                 tq.push(
                                     [this, d]()
@@ -175,6 +177,8 @@ namespace satdump
                         ImGui::EndCombo();
                     }
 
+                    ImGui::SameLine();
+
                     if (ImGui::Button("Refresh"))
                     {
                         tq.push(
@@ -186,6 +190,9 @@ namespace satdump
                     }
                     if (is_started)
                         style::endDisabled();
+
+                    ImGui::Separator();
+#endif
 
                     nlohmann::json changed = dev_opt_disp.draw();
 
@@ -204,33 +211,6 @@ namespace satdump
                                 }
                             });
                     }
-
-                    if (!is_started)
-                    {
-                        if (ImGui::Button("Start"))
-                        {
-                            tq.push(
-                                [this]()
-                                {
-                                    std::scoped_lock l(fm);
-                                    bkd->set_cfg("started", true);
-                                });
-                        }
-                    }
-                    else
-                    {
-                        if (ImGui::Button("Stop"))
-                        {
-                            tq.push(
-                                [this]()
-                                {
-                                    std::scoped_lock l(fm);
-                                    bkd->set_cfg("started", false);
-                                });
-                        }
-                    }
-
-                    ImGui::ProgressBar(buffer_usage);
                 }
 
                 if (ImGui::CollapsingHeader("FFT", ImGuiTreeNodeFlags_DefaultOpen))
@@ -356,6 +336,71 @@ namespace satdump
                     }
                 }
                 ImGui::EndChild();
+            }
+
+            void drawMenuBar()
+            {
+                if (ImGui::BeginMenu("D", !is_started))
+                {
+                    for (auto &d : available_devices)
+                    {
+                        if (ImGui::MenuItem(d.name.c_str(), NULL, d.name == current_device.name))
+                        {
+                            tq.push(
+                                [this, d]()
+                                {
+                                    std::scoped_lock l(fm);
+                                    bkd->set_cfg("current_device", (nlohmann::json)d);
+
+                                    dev_opt_disp.clear();
+                                    dev_opt_disp.add_options(bkd->get_cfg("dev/list"));
+                                    dev_opt_disp.set_values(bkd->get_cfg("dev/cfg"));
+                                });
+                        }
+                    }
+
+                    ImGui::Separator();
+
+                    if (ImGui::MenuItem("Refresh"))
+                    {
+                        tq.push(
+                            [this]()
+                            {
+                                std::scoped_lock l(fm);
+                                bkd->set_cfg("refresh", true);
+                            });
+                    }
+
+                    ImGui::EndMenu();
+                }
+
+                if (!is_started)
+                {
+                    if (widgets::MenuItemTooltip(u8"\uf909", "Start source"))
+                    {
+                        tq.push(
+                            [this]()
+                            {
+                                std::scoped_lock l(fm);
+                                bkd->set_cfg("started", true);
+                            });
+                    }
+                }
+                else
+                {
+                    if (widgets::MenuItemTooltip(u8"\ufc62", "Stop source"))
+                    {
+                        tq.push(
+                            [this]()
+                            {
+                                std::scoped_lock l(fm);
+                                bkd->set_cfg("started", false);
+                            });
+                    }
+                }
+
+                ImGui::Spacing();
+                ImGui::ProgressBar(buffer_usage);
             }
 
             std::string getName() { return "RemoteHandleTest"; }
