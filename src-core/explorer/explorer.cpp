@@ -419,8 +419,8 @@ namespace satdump
                         ImVec2 line_size = ImGui::CalcTextSize("Add New Recorder");
                         ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), last_pos + (26 * 2) * scale});
                         if (ImGui::Button("Add Buggy Recorder"))
-                            addHandler(std::make_shared<handlers::NewRecHandler>());
-                        //   addHandler(std::make_shared<handlers::RecFrontendHandler>(std::make_shared<handlers::TestHttpBackend>(std::make_shared<handlers::RecBackend>())));
+                            //    addHandler(std::make_shared<handlers::NewRecHandler>());
+                            addHandler(std::make_shared<handlers::RecFrontendHandler>(std::make_shared<handlers::RecBackend>()));
                     }
                     else
                     {
