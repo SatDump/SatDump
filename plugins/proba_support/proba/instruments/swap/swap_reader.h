@@ -11,7 +11,15 @@ namespace proba
         class SWAPReader
         {
         private:
-            std::map<time_t, std::pair<int, std::pair<std::string, std::vector<uint8_t>>>> currentOuts;
+            struct WIP_Swap
+            {
+                std::string filename;
+                int nsegs = 0;
+                std::vector<uint8_t> payload_jpg;
+                std::vector<uint8_t> payload_raw;
+            };
+
+            std::map<time_t, WIP_Swap> currentOuts;
             std::string output_folder;
 
         public:
