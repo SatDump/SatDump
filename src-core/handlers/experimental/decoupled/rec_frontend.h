@@ -91,6 +91,9 @@ namespace satdump
             {
                 fft_vec.resize(8);
 
+                wip_fft_widget.set_fft_ptr(fft_vec.data());
+                wip_fft_widget.set_fft_size(8);
+
                 // fft_plot = std::make_shared<widgets::FFTPlot>(fft_vec.data(), 8, -150, 150, 10);
                 // fft_plot->frequency = 431.8e6;
                 // fft_plot->enable_freq_scale = true;
