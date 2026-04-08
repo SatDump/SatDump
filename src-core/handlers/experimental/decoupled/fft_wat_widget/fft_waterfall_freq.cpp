@@ -50,6 +50,15 @@ namespace satdump
                 auto size = ImGui::CalcTextSize(cfreq.c_str());
                 ImGui::GetWindowDrawList()->AddText({pos.x + fsize.x - size.x, pos.y + (fsize.y - size.y) / 2.f}, ImColor(ImGui::GetStyle().Colors[ImGuiCol_Text]), cfreq.c_str());
             }
+
+            for (int i = 0; i < 5 * 8; i++)
+            {
+                float posx = (float(i) / (5 * 8)) * fsize.x;
+                if (i > 0)
+                    ImGui::GetWindowDrawList()->AddLine({pos.x + posx, pos.y - (((i % 5 == 0) ? 8 : 4))}, //
+                                                        {pos.x + posx, pos.y},                            //
+                                                        (i % 5 == 0) ? ImColor(255, 255, 255) : style::theme.fft_graduations);
+            }
         }
     } // namespace widgets
 } // namespace satdump

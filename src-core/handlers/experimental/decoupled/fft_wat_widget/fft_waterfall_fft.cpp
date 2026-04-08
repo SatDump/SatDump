@@ -8,6 +8,19 @@ namespace satdump
 {
     namespace widgets
     {
+        struct VFO
+        {
+            double f;
+            double b;
+            bool l = 1, u = 1;
+
+            bool is_dragging = false;
+        };
+
+        std::vector<VFO> vfo_freqs = {{100.5e6, 100e3}, {98e6, 500e3, 0, 1}, {99.8e6, -1}};
+
+        bool is_dragging_vfo = false;
+
         void FFTWaterfallWidget::draw_fft(ImVec2 pos, ImVec2 size)
         {
             std::scoped_lock l(fft_values_mtx);
@@ -70,19 +83,9 @@ namespace satdump
                 tp0 = tp1;
             }
 
-            struct VFO
-            {
-                double f;
-                double b;
-                bool l = 1, u = 1;
-            };
-
-            std::vector<VFO> vfo_freqs = {{100.5e6, 100e3}, {98e6, 500e3, 0, 1}, {99.8e6, -1}};
-
             for (auto &vfo : vfo_freqs)
             {
                 float pos_x = pos.x + ((vfo.f - (frequency - bandwidth / 2.0)) / bandwidth) * size.x;
-                ImGui::GetWindowDrawList()->AddLine({pos_x, pos.y}, {pos_x, pos.y + size.y}, ImColor(255, 0, 0));
 
                 if (vfo.b != -1)
                 {
@@ -95,8 +98,8 @@ namespace satdump
                 }
                 else
                 {
-                    float pos_x1 = pos_x - 0.05 * size.x;
-                    float pos_x2 = pos_x + 0.05 * size.x;
+                    float pos_x1 = pos_x - 0.025 * size.x;
+                    float pos_x2 = pos_x + 0.025 * size.x;
                     ImGui::GetWindowDrawList()->AddRectFilledMultiColor({pos_x, pos.y}, {pos_x1, pos.y + size.y},               //
                                                                         ImColor(255, 255, 255, 100), ImColor(255, 255, 255, 0), //
                                                                         ImColor(255, 255, 255, 0), ImColor(255, 255, 255, 100));
@@ -104,15 +107,27 @@ namespace satdump
                                                                         ImColor(255, 255, 255, 100), ImColor(255, 255, 255, 0), //
                                                                         ImColor(255, 255, 255, 0), ImColor(255, 255, 255, 100));
                 }
-            }
 
-            for (int i = 0; i < 5 * 8; i++)
-            {
-                float posx = (float(i) / (5 * 8)) * size.x;
-                if (i > 0)
-                    ImGui::GetWindowDrawList()->AddLine({pos.x + posx, pos.y + size.y - ((((i % 10 == 0) && i > 0) ? 8 : 4))}, //
-                                                        {pos.x + posx, pos.y + size.y},                                        //
-                                                        style::theme.fft_graduations);
+                // Center red line
+                ImGui::GetWindowDrawList()->AddLine({pos_x, pos.y}, {pos_x, pos.y + size.y}, ImColor(255, 0, 0));
+
+                // Dragging logic
+
+                if (ImGui::IsMouseHoveringRect({pos_x - 5 * ui_scale, pos.y}, {pos_x + 5 * ui_scale, pos.y + size.y}))
+                {
+                    ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+
+                    if (!is_dragging_vfo && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+                        is_dragging_vfo = vfo.is_dragging = true;
+                }
+
+                if (vfo.is_dragging)
+                {
+                    if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+                        vfo.f = (((ImGui::GetMousePos().x - pos.x) / size.x) * bandwidth) + (frequency - bandwidth / 2.0);
+                    else
+                        is_dragging_vfo = vfo.is_dragging = false;
+                }
             }
         }
     } // namespace widgets
