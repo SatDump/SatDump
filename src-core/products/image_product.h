@@ -290,6 +290,8 @@ namespace satdump
                         bw = SPEED_OF_LIGHT_M_S / bw;
                     else if (parseUnitFromString(parts[2], bw, UNIT_HERTZ))
                         ;
+                    else if (parts[2] == "-1")
+                        bw = -1;
                     else
                         throw satdump_exception("Couldn't parse bandwidth unit and value from " + str);
                 }
