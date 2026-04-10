@@ -2,8 +2,6 @@
 #include "core/style.h"
 #include "fft_waterfall.h"
 #include "imgui/imgui.h"
-#include "imgui/imgui_internal.h"
-#include <mutex>
 
 namespace satdump
 {

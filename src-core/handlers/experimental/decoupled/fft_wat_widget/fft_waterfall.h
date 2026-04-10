@@ -12,6 +12,9 @@ namespace satdump
         class FFTWaterfallWidget
         {
         private:
+            const float fft_scale_resolution = 10;
+
+        private:
             float *fft_values = nullptr;
             int fft_values_size = 0;
             std::mutex fft_values_mtx;
@@ -22,7 +25,7 @@ namespace satdump
             int waterfall_lines;
             const int waterfall_resolution = 2000; // Number of colors
             unsigned int waterfall_texture_id = 0;
-            uint32_t *waterfall_raw_img_buffer = nullptr;
+            std::vector<uint32_t> waterfall_raw_img_buffer;
 
             std::vector<uint32_t> waterfall_palette;
 
@@ -47,7 +50,6 @@ namespace satdump
 
             float fft_scale_min = -200;
             float fft_scale_max = 200;
-            float fft_scale_resolution = 10;
 
         public:
             float waterfall_scale_min = -200;
@@ -59,6 +61,9 @@ namespace satdump
 
             bool show_freq_scale = true;
             bool show_waterfall = true;
+
+            bool allow_user_interactions = true;
+            double fft_ratio = 0.3;
 
         protected:
             void draw_fft(ImVec2 pos, ImVec2 size);
@@ -72,11 +77,7 @@ namespace satdump
                 this->waterfall_lines = waterfall_lines;
             }
 
-            ~FFTWaterfallWidget()
-            {
-                if (waterfall_raw_img_buffer != nullptr)
-                    free(waterfall_raw_img_buffer);
-            }
+            ~FFTWaterfallWidget() {}
 
             void draw(ImVec2 size, bool waterfall);
 
