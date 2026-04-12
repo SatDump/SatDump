@@ -52,6 +52,8 @@ namespace satdump
             bool recording = false;
             size_t rec_size = 0;
 
+            bool show_waterfall = true;
+
         protected:
             bool mustUpdate = true;
             void handle_stream_data(std::string id, uint8_t *data, size_t size)
@@ -102,6 +104,9 @@ namespace satdump
                 wip_fft_widget.set_waterfall_size(8);
                 wip_fft_widget.set_waterfall_rate(30, 20);
                 wip_fft_widget.set_waterfall_palette(colormaps::loadMap(resources::getResourcePath("waterfall/classic.json")));
+
+                wip_fft_widget.band_callback = [](auto v) { logger->critical("BAND %s %f", v.id.c_str(), v.b); };
+                wip_fft_widget.freq_callback = [](auto v) { logger->critical("FREQ %s %f", v.id.c_str(), v.f); };
             }
             ~RecFrontendHandler() {}
 
@@ -225,7 +230,7 @@ namespace satdump
                 {
                     widgets::SteppedSliderFloat("FFT Max", &wip_fft_widget.fft_scale_max, -160, 150);
                     widgets::SteppedSliderFloat("FFT Min", &wip_fft_widget.fft_scale_min, -160, 150);
-                    ImGui::Checkbox("Show Waterfall", &wip_fft_widget.show_waterfall);
+                    ImGui::Checkbox("Show Waterfall", &show_waterfall);
 
                     resyncFFT();
 
@@ -307,13 +312,8 @@ namespace satdump
 
             void drawContents(ImVec2 win_size)
             {
-                float right_width = win_size.x;
-                float wf_size = win_size.y;
-                bool show_waterfall = true;
-                float waterfall_ratio = 0.3;
-
-                ImGui::BeginChild("RecorderFFT", {right_width, wf_size}, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-                wip_fft_widget.draw({right_width, wf_size}, true);
+                ImGui::BeginChild("RecorderFFT", win_size, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+                wip_fft_widget.draw(win_size, show_waterfall);
                 ImGui::EndChild();
             }
 

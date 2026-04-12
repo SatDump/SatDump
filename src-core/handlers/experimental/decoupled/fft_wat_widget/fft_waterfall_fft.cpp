@@ -2,27 +2,13 @@
 #include "fft_waterfall.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
+#include <cmath>
 #include <mutex>
 
 namespace satdump
 {
     namespace widgets
     {
-        struct VFO
-        {
-            double f;
-            double b;
-            bool l = 1, u = 1;
-
-            bool is_dragging = false;
-            bool is_resizing = false;
-        };
-
-        std::vector<VFO> vfo_freqs = {{100.5e6, 100e3}, {98e6, 500e3, 0, 1}, {99.8e6, -1}};
-
-        bool is_dragging_vfo = false;
-        bool is_resizing_vfo = false;
-
         void FFTWaterfallWidget::draw_fft(ImVec2 pos, ImVec2 size)
         {
             std::scoped_lock l(fft_values_mtx);
@@ -128,6 +114,7 @@ namespace satdump
                 // Center red line
                 ImGui::GetWindowDrawList()->AddLine({pos_x, pos.y}, {pos_x, pos.y + size.y}, ImColor(255, 0, 0));
 
+                // Interactions
                 if (allow_user_interactions)
                 {
                     // Resizing logic, bandwidth
@@ -147,7 +134,10 @@ namespace satdump
                         if (vfo.is_resizing)
                         {
                             if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+                            {
                                 vfo.b = fabs(vfo.f - ((((ImGui::GetMousePos().x - pos.x) / size.x) * bandwidth) + (frequency - bandwidth / 2.0))) * 2;
+                                band_callback(vfo);
+                            }
                             else
                                 is_resizing_vfo = vfo.is_resizing = false;
                         }
@@ -168,7 +158,10 @@ namespace satdump
                         if (vfo.is_dragging)
                         {
                             if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+                            {
                                 vfo.f = (((ImGui::GetMousePos().x - pos.x) / size.x) * bandwidth) + (frequency - bandwidth / 2.0);
+                                freq_callback(vfo);
+                            }
                             else
                                 is_dragging_vfo = vfo.is_dragging = false;
                         }

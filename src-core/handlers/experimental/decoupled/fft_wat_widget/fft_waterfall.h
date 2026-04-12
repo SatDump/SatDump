@@ -2,6 +2,7 @@
 
 #include "common/colormaps.h"
 #include "imgui/imgui.h"
+#include <functional>
 #include <mutex>
 #include <volk/volk_alloc.hh>
 
@@ -60,10 +61,31 @@ namespace satdump
             double frequency = 100e6;
 
             bool show_freq_scale = true;
-            bool show_waterfall = true;
 
             bool allow_user_interactions = true;
             double fft_ratio = 0.3;
+
+        public:
+            struct VFO
+            {
+                std::string id;
+
+                double f;
+                double b;
+                bool l = 1, u = 1;
+
+                bool is_dragging = false;
+                bool is_resizing = false;
+            };
+
+            std::vector<VFO> vfo_freqs = {{"0", 100.5e6, 100e3}, {"1", 98e6, 500e3, 0, 1}, {"2", 99.8e6, -1}};
+
+            std::function<void(VFO)> freq_callback = [](auto) {};
+            std::function<void(VFO)> band_callback = [](auto) {};
+
+        private:
+            bool is_dragging_vfo = false;
+            bool is_resizing_vfo = false;
 
         protected:
             void draw_fft(ImVec2 pos, ImVec2 size);

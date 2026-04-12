@@ -3,6 +3,7 @@
 #include "base/remote_handler_backend.h"
 #include "core/config.h"
 #include "core/exception.h"
+#include "dsp/ddc/ddc.h"
 #include "dsp/device/dev.h"
 #include "dsp/fft/fft_pan.h"
 #include "dsp/io/iq_sink.h"
@@ -31,7 +32,7 @@ namespace satdump
         private:
             std::shared_ptr<ndsp::DeviceBlock> dev_blk;
 
-            std::shared_ptr<ndsp::SplitterBlock<complex_t>> splitter;
+            std::shared_ptr<ndsp::DDC_Block> splitter;
 
             std::shared_ptr<ndsp::FFTPanBlock> fftp;
 
@@ -63,14 +64,20 @@ namespace satdump
             }
 
         public:
+            struct AudioVFO
+            {
+                std::string id;
+            };
+
+        public:
             RecBackend()
             {
                 available_devices = ndsp::getDeviceList(ndsp::DeviceBlock::MODE_SINGLE_RX);
 
-                splitter = std::make_shared<ndsp::SplitterBlock<complex_t>>();
+                splitter = std::make_shared<ndsp::DDC_Block>();
 
                 fftp = std::make_shared<ndsp::FFTPanBlock>();
-                fftp->set_input(splitter->add_output("main_fft"), 0);
+                fftp->set_input(splitter->add_output("main_fft", 0, 0, 0), 0);
                 fftp->on_fft = [this](float *p, size_t s) { push_stream_data("fft", (uint8_t *)p, s * sizeof(float)); };
 
                 iq_sink = std::make_shared<ndsp::IQSinkBlock>();
@@ -124,7 +131,7 @@ namespace satdump
                 iq_sink->set_cfg("frequency", dev_blk->getStreamFrequency(0, false));
                 iq_sink->set_cfg("timestamp", getTime());
                 iq_sink->set_cfg("type", rec_type);
-                iq_sink->set_input(splitter->add_output("tmp_record", false), 0);
+                iq_sink->set_input(splitter->add_output("tmp_record", 0, 0, 0, false), 0);
                 iq_sink->start();
 
                 recording = true;
@@ -213,8 +220,8 @@ namespace satdump
             {
                 if (!is_started && key == "refresh")
                 {
-                    if(v == true)
-                    available_devices = ndsp::getDeviceList(ndsp::DeviceBlock::MODE_SINGLE_RX);
+                    if (v == true)
+                        available_devices = ndsp::getDeviceList(ndsp::DeviceBlock::MODE_SINGLE_RX);
                 }
                 else if (!is_started && key == "current_device")
                 {

@@ -1,20 +1,23 @@
 #include "fft.h"
 #include "common/dsp/buffer.h"
+#include "dsp/block_helpers.h"
+#include <complex.h>
 #include <fftw3.h>
+#include <type_traits>
 
 namespace satdump
 {
     namespace ndsp
     {
-        template <typename T>
-        FFTFilterBlock<T>::FFTFilterBlock()
-            : Block(std::is_same_v<T, complex_t> ? "fft_filter_cc" : "fft_filter_ff", {{"in", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}},
-                    {{"out", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}})
+        template <typename T, typename TT>
+        FFTFilterBlock<T, TT>::FFTFilterBlock(std::string id)
+            : Block(id + "fft_filter_" + (std::is_same_v<TT, complex_t> ? "c" : "") + "_" + getShortTypeName<T>() + getShortTypeName<T>(), {{"in", getTypeSampleType<T>()}},
+                    {{"out", getTypeSampleType<T>()}})
         {
         }
 
-        template <typename T>
-        FFTFilterBlock<T>::~FFTFilterBlock()
+        template <typename T, typename TT>
+        FFTFilterBlock<T, TT>::~FFTFilterBlock()
         {
             if (ffttaps_buffer != nullptr)
                 volk_free(ffttaps_buffer);
@@ -31,8 +34,8 @@ namespace satdump
                 fftwf_free(fft_inv_out);
         }
 
-        template <typename T>
-        void FFTFilterBlock<T>::init()
+        template <typename T, typename TT>
+        void FFTFilterBlock<T, TT>::init()
         {
             d_ntaps = p_taps.size();
             d_fftsize = (int)(2 * pow(2.0, ceil(log(double(d_ntaps)) / log(2.0)))) * 100;
@@ -65,7 +68,12 @@ namespace satdump
             // Init taps
             float scale = 1.0 / d_fftsize;
             for (int i = 0; i < d_ntaps; i++)
-                ((complex_t *)fft_fwd_in)[i] = complex_t(p_taps[i] * scale, 0.0f);
+            {
+                if constexpr (std::is_same_v<TT, float>)
+                    ((complex_t *)fft_fwd_in)[i] = complex_t(p_taps[i] * scale, 0.0f);
+                if constexpr (std::is_same_v<TT, complex_t>)
+                    ((complex_t *)fft_fwd_in)[i] = p_taps[i] * scale;
+            }
             for (int i = d_ntaps; i < d_fftsize; i++)
                 ((complex_t *)fft_fwd_in)[i] = complex_t(0.0f, 0.0f);
 
@@ -78,8 +86,8 @@ namespace satdump
             tail = dsp::create_volk_buffer<T>(d_ntaps - 1);
         }
 
-        template <typename T>
-        bool FFTFilterBlock<T>::work()
+        template <typename T, typename TT>
+        bool FFTFilterBlock<T, TT>::work()
         {
             DSPBuffer iblk = inputs[0].fifo->wait_dequeue();
 
@@ -148,6 +156,7 @@ namespace satdump
             return false;
         }
 
+        template class FFTFilterBlock<complex_t, complex_t>;
         template class FFTFilterBlock<complex_t>;
         // template class FFTFilterBlock<float>;
     } // namespace ndsp

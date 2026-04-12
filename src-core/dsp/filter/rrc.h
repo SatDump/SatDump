@@ -20,6 +20,8 @@ namespace satdump
             int ntaps = 31;
 
         public:
+            RRC_Block() : T("rrc") {}
+
             nlohmann::ordered_json get_cfg_list()
             {
                 nlohmann::ordered_json p;

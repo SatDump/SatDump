@@ -200,6 +200,79 @@ namespace dsp
             return taps;
         }
 
+        namespace
+        {
+            int compute_ntaps(double sampling_freq, double transition_width, fft::window::win_type window_type, double param)
+            {
+                double a = fft::window::max_attenuation(window_type, param);
+                int ntaps = (int)(a * sampling_freq / (22.0 * transition_width));
+                if ((ntaps & 1) == 0) // if even...
+                    ntaps++;          // ...make odd
+
+                return ntaps;
+            }
+
+            void sanity_check_2f_c(double sampling_freq,
+                                   double fa, // first cutoff freq
+                                   double fb, // second cutoff freq
+                                   double transition_width)
+            {
+                if (sampling_freq <= 0.0)
+                    throw std::out_of_range("firdes check failed: sampling_freq > 0");
+
+                if (fa < -sampling_freq / 2 || fa > sampling_freq / 2)
+                    throw std::out_of_range("firdes check failed: 0 < fa <= sampling_freq / 2");
+
+                if (fb < -sampling_freq / 2 || fb > sampling_freq / 2)
+                    throw std::out_of_range("firdes check failed: 0 < fb <= sampling_freq / 2");
+
+                if (fa > fb)
+                    throw std::out_of_range("firdes check failed: fa <= fb");
+
+                if (transition_width <= 0)
+                    throw std::out_of_range("firdes check failed: transition_width > 0");
+            }
+        } // namespace
+
+        std::vector<complex_t> complex_band_pass(double gain, double sampling_freq,
+                                                 double low_cutoff_freq,  // Hz center of transition band
+                                                 double high_cutoff_freq, // Hz center of transition band
+                                                 double transition_width, // Hz width of transition band
+                                                 fft::window::win_type window_type,
+                                                 double param) // used with Kaiser, Exp., Gaussian, Tukey
+        {
+            sanity_check_2f_c(sampling_freq, low_cutoff_freq, high_cutoff_freq, transition_width);
+
+            int ntaps = compute_ntaps(sampling_freq, transition_width, window_type, param);
+
+            // construct the truncated ideal impulse response times the window function
+
+            std::vector<complex_t> taps(ntaps);
+            std::vector<float> lptaps(ntaps);
+            std::vector<float> w = fft::window::build(window_type, ntaps, param);
+
+            lptaps = low_pass(gain, sampling_freq, (high_cutoff_freq - low_cutoff_freq) / 2, transition_width, window_type, param);
+
+            complex_t *optr = &taps[0];
+            float *iptr = &lptaps[0];
+            float freq = M_PI * (high_cutoff_freq + low_cutoff_freq) / sampling_freq;
+            float phase = 0;
+            if (lptaps.size() & 01)
+            {
+                phase = -freq * (lptaps.size() >> 1);
+            }
+            else
+                phase = -freq / 2.0 * ((1 + 2 * lptaps.size()) >> 1);
+
+            for (unsigned int i = 0; i < lptaps.size(); i++)
+            {
+                *optr++ = complex_t(*iptr * cos(phase), *iptr * sin(phase));
+                iptr++, phase += freq;
+            }
+
+            return taps;
+        }
+
         std::vector<float> design_resampler_filter_float(const unsigned interpolation, const unsigned decimation, const float fractional_bw)
         {
             // These are default values used to generate the filter when no taps are known

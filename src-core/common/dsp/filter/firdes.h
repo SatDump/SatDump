@@ -104,6 +104,27 @@ namespace dsp
                                      fft::window::win_type window = fft::window::win_type::WIN_HAMMING, double beta = 6.76);
 
         /*!
+         * \brief Use the "window method" to design a complex band-pass FIR
+         * filter.  The normalized width of the transition band is what sets the
+         * number of taps required.  Narrow --> more taps. The window type
+         * determines maximum attenuation and passband ripple.
+         *
+         * \param gain                overall gain of filter (typically 1.0)
+         * \param sampling_freq       sampling freq (Hz)
+         * \param low_cutoff_freq     center of transition band (Hz)
+         * \param high_cutoff_freq    center of transition band (Hz)
+         * \param transition_width    width of transition band (Hz)
+         * \param window              one of fft::window::win_type
+         * \param param               parameter for Kaiser, Exp., Gaussian, Tukey windows
+         */
+        std::vector<complex_t> complex_band_pass(double gain, double sampling_freq,
+                                                 double low_cutoff_freq,  // Hz center of transition band
+                                                 double high_cutoff_freq, // Hz center of transition band
+                                                 double transition_width, // Hz width of transition band
+                                                 fft::window::win_type window = fft::window::win_type::WIN_HAMMING,
+                                                 double param = 6.76); // used for Kaiser, Exp., Gaussian, Tukey windows
+
+        /*!
          * \brief design a band-pass FIR filter.
          *
          * \param gain                overall gain of filter (typically 1.0)
