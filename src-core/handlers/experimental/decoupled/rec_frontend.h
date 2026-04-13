@@ -67,14 +67,13 @@ namespace satdump
                     if (size != last_fft_size)
                     {
                         fft_vec.resize(size / sizeof(float));
-                        wip_fft_widget.set_fft_ptr(fft_vec.data());              //          fft_plot->set_ptr(fft_vec.data());
-                        wip_fft_widget.set_fft_size(size / sizeof(float));       //         fft_plot->set_size(size / sizeof(float));
-                        wip_fft_widget.set_waterfall_size(size / sizeof(float)); //  waterfall_plot->set_size(size / sizeof(float));
+                        wip_fft_widget.set_fft_ptr(fft_vec.data());        //          fft_plot->set_ptr(fft_vec.data());
+                        wip_fft_widget.set_fft_size(size / sizeof(float)); //         fft_plot->set_size(size / sizeof(float));
                         last_fft_size = size;
                     }
 
                     memcpy(fft_vec.data(), data, size);
-                    wip_fft_widget.push_waterfall_fft(fft_vec.data());
+                    wip_fft_widget.push_waterfall_fft(fft_vec.data(), size / sizeof(float));
                 }
                 else if (id == "rec_size" && size == sizeof(size_t))
                 {
@@ -101,7 +100,7 @@ namespace satdump
                 // fft_plot->enable_freq_scale = true;
 
                 //  waterfall_plot = std::make_shared<widgets::WaterfallPlot>(65536 * 4, 2000);
-                wip_fft_widget.set_waterfall_size(8);
+                // wip_fft_widget.set_waterfall_size(8);
                 wip_fft_widget.set_waterfall_rate(30, 20);
                 wip_fft_widget.set_waterfall_palette(colormaps::loadMap(resources::getResourcePath("waterfall/classic.json")));
 
@@ -165,6 +164,15 @@ namespace satdump
 
                 if (ImGui::CollapsingHeader("Source", ImGuiTreeNodeFlags_DefaultOpen))
                 {
+                    if (ImGui::Button("Add Audio"))
+                    {
+                        tq.push(
+                            [this]()
+                            {
+                                std::scoped_lock l(fm);
+                                bkd->set_cfg("add_audio", 0);
+                            });
+                    }
 #if 0
                     if (is_started)
                         style::beginDisabled();

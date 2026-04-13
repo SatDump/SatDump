@@ -1,19 +1,22 @@
 #pragma once
 
+#include "../dsp/fm_test.h"
 #include "base/remote_handler_backend.h"
 #include "core/config.h"
 #include "core/exception.h"
+#include "dsp/block.h"
 #include "dsp/ddc/ddc.h"
 #include "dsp/device/dev.h"
 #include "dsp/fft/fft_pan.h"
+#include "dsp/hier/audio_demod.h"
 #include "dsp/io/iq_sink.h"
 #include "dsp/io/iq_types.h"
-#include "dsp/path/splitter.h"
 #include "nlohmann/json.hpp"
 #include "utils/time.h"
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <thread>
 
@@ -67,7 +70,44 @@ namespace satdump
             struct AudioVFO
             {
                 std::string id;
+
+                std::shared_ptr<ndsp::AudioDemodHierBlock> demod;
+                std::shared_ptr<ndsp::Block> sink;
             };
+
+            nlohmann::json getVFOJson(AudioVFO &f)
+            {
+                nlohmann::json v;
+                v["id"] = f.id;
+                v["freq"] = splitter->get_vfo_freq(f.id);
+                v["band"] = splitter->get_vfo_bandwidth(f.id);
+                return v;
+            }
+
+            std::vector<AudioVFO> avfos;
+
+            void add_audio_vfo(std::string id)
+            {
+                AudioVFO nvfo;
+                nvfo.id = id;
+
+                nvfo.demod = std::make_shared<ndsp::AudioDemodHierBlock>();
+                nvfo.sink = getBlock("portaudio_sink_f");
+
+                nvfo.demod->set_cfg("samplerate", dev_blk->getStreamSamplerate(0, false) / 100.);
+                nvfo.demod->set_cfg("audio_samplerate", 48e3);
+                nvfo.demod->set_cfg("mode", "nfm");
+                nvfo.sink->set_cfg("samplerate", 48e3);
+
+                nvfo.sink->link(nvfo.demod.get(), 0, 0, 4);
+                nvfo.sink->start();
+
+                nvfo.demod->set_input(splitter->add_output(id, 0, 0, 100), 0);
+                nvfo.demod->start();
+
+                logger->info("Added audio!");
+                avfos.push_back(nvfo);
+            }
 
         public:
             RecBackend()
@@ -103,6 +143,9 @@ namespace satdump
                 dev_blk->start();
                 splitter->start();
                 fftp->start();
+
+                splitter->set_cfg("frequency", dev_blk->getStreamFrequency(0, false));
+                splitter->set_cfg("samplerate", dev_blk->getStreamSamplerate(0, false));
 
                 is_started = true;
             }
@@ -212,6 +255,13 @@ namespace satdump
                     return recording;
                 else if (key == "rec_size")
                     return iq_sink->total_written_raw;
+                else if (key == "avfos")
+                {
+                    nlohmann::json v;
+                    for (int i = 0; i <= avfos.size(); i++)
+                        v[i] = getVFOJson(avfos[i]);
+                    return v;
+                }
                 else
                     return nlohmann::json();
             }
@@ -236,7 +286,10 @@ namespace satdump
                     dev_blk = ndsp::getDeviceInstanceFromInfo(current_device, ndsp::DeviceBlock::MODE_SINGLE_RX);
                 }
                 else if (dev_blk && key == "dev/cfg")
+                {
                     dev_blk->set_cfg(v);
+                    splitter->set_cfg("frequency", dev_blk->getStreamFrequency(0, false));
+                }
                 else if (key == "started")
                 {
                     bool val = v;
@@ -284,6 +337,10 @@ namespace satdump
                         start_rec();
                     else if (recording && !val)
                         stop_rec();
+                }
+                else if (key == "add_audio")
+                {
+                    add_audio_vfo("avfo_test");
                 }
                 else
                     throw satdump_exception("Oops");

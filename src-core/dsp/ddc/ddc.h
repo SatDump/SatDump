@@ -215,6 +215,20 @@ namespace satdump
                 }
             }
 
+            double get_vfo_freq(std::string id)
+            {
+                std::lock_guard<std::mutex> lock_mtx(vfos_mtx);
+
+                for (auto &o : outputs)
+                {
+                    auto &i = *((IOInfo *)o.blkdata.get());
+                    if (i.id == id)
+                        return i.frequency;
+                }
+
+                return -1;
+            }
+
             void set_vfo_bandwidth(std::string id, double bw)
             {
                 std::lock_guard<std::mutex> lock_mtx(vfos_mtx);
@@ -230,6 +244,20 @@ namespace satdump
                 }
             }
 
+            double get_vfo_bandwidth(std::string id)
+            {
+                std::lock_guard<std::mutex> lock_mtx(vfos_mtx);
+
+                for (auto &o : outputs)
+                {
+                    auto &i = *((IOInfo *)o.blkdata.get());
+                    if (i.id == id)
+                        return i.bandwidth;
+                }
+
+                return -1;
+            }
+
             void set_vfo_dec(std::string id, int dec)
             {
                 std::lock_guard<std::mutex> lock_mtx(vfos_mtx);
@@ -242,6 +270,20 @@ namespace satdump
                         i.decimation = dec;
                     }
                 }
+            }
+
+            int get_vfo_dec(std::string id)
+            {
+                std::lock_guard<std::mutex> lock_mtx(vfos_mtx);
+
+                for (auto &o : outputs)
+                {
+                    auto &i = *((IOInfo *)o.blkdata.get());
+                    if (i.id == id)
+                        return i.decimation;
+                }
+
+                return -1;
             }
         };
     } // namespace ndsp

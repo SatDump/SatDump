@@ -45,6 +45,14 @@ namespace satdump
 
             bool waterfall_buffer_alloc(size_t size);
 
+            void set_waterfall_size(int size)
+            {
+                waterfall_mtx.lock();
+                if (size <= waterfall_max_size)
+                    waterfall_size = size;
+                waterfall_mtx.unlock();
+            }
+
         public:
             ImColor fft_background_color = ImColor(0, 0, 0);
             ImColor fft_lines_color = ImColor(21, 255, 80);
@@ -119,15 +127,7 @@ namespace satdump
             }
 
         public:
-            void set_waterfall_size(int size)
-            {
-                waterfall_mtx.lock();
-                if (size <= waterfall_max_size)
-                    waterfall_size = size;
-                waterfall_mtx.unlock();
-            }
-
-            void push_waterfall_fft(float *values);
+            void push_waterfall_fft(float *values, int size);
 
             void set_waterfall_rate(int input_rate, int output_rate);
 

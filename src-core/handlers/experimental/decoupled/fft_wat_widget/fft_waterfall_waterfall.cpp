@@ -59,10 +59,13 @@ namespace satdump
             ImGui::GetWindowDrawList()->AddImage((void *)(intptr_t)waterfall_texture_id, pos, pos + size);
         }
 
-        void FFTWaterfallWidget::push_waterfall_fft(float *values)
+        void FFTWaterfallWidget::push_waterfall_fft(float *values, int wsize)
         {
             if (waterfall_texture_id == 0)
                 return;
+
+            if (waterfall_size != wsize)
+                set_waterfall_size(wsize);
 
             waterfall_mtx.lock();
             if ((waterfall_i++ % waterfall_i_mod) == 0)
