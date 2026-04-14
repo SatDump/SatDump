@@ -216,7 +216,7 @@ namespace satdump
 
         bc->doUpdateTextures();
 
-        ImPlot::BeginPlot("MainPlot", window_size, ImPlotFlags_Equal | ImPlotFlags_NoLegend);
+        ImPlot::BeginPlot("##BitView", window_size, ImPlotFlags_Equal | ImPlotFlags_NoLegend);
         ImPlot::SetupAxes(nullptr, nullptr, 0, ImPlotAxisFlags_Invert);
 
         ImPlotRect c = ImPlot::GetPlotLimits();
