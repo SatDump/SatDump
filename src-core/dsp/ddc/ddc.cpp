@@ -56,9 +56,10 @@ namespace satdump
                     if (i->decimation > 1)
                     {
                         int size_out = 0;
-                        complex_t *ibuf = iblk.getSamples<complex_t>();
+                        complex_t *ibuf = oblk.getSamples<complex_t>();
                         complex_t *obuf = oblk.getSamples<complex_t>();
 
+#if 0
                         int off = i->decimation - i->sample_index;
                         if (off == i->decimation)
                             off = 0;
@@ -74,6 +75,17 @@ namespace satdump
 
                         i->sample_index -= is - iblk.size;
                         i->sample_index = i->sample_index % i->decimation;
+#endif
+
+                        for (int p = 0; p < iblk.size; p++)
+                        {
+                            i->sample_index = (i->sample_index + 1) % i->decimation;
+                            if (i->sample_index == 0)
+                            {
+                                obuf[size_out++] = ibuf[p];
+                                //   printf(" %d,%d \n", p, size_out);
+                            }
+                        }
 
                         oblk.size = size_out;
                     }
@@ -110,6 +122,7 @@ namespace satdump
                         complex_t *ibuf = oblk.getSamples<complex_t>();
                         complex_t *obuf = oblk.getSamples<complex_t>();
 
+#if 0
                         int off = i->decimation - i->sample_index;
                         if (off == i->decimation)
                             off = 0;
@@ -125,6 +138,17 @@ namespace satdump
 
                         i->sample_index -= is - iblk.size;
                         i->sample_index = i->sample_index % i->decimation;
+#endif
+
+                        for (int p = 0; p < iblk.size; p++)
+                        {
+                            i->sample_index = (i->sample_index + 1) % i->decimation;
+                            if (i->sample_index == 0)
+                            {
+                                obuf[size_out++] = ibuf[p];
+                                //    printf(" %d,%d \n", p, size_out);
+                            }
+                        }
 
                         oblk.size = size_out;
                     }

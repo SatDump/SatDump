@@ -94,7 +94,7 @@ namespace satdump
                 nvfo.demod = std::make_shared<ndsp::AudioDemodHierBlock>();
                 nvfo.sink = getBlock("portaudio_sink_f");
 
-                nvfo.demod->set_cfg("samplerate", dev_blk->getStreamSamplerate(0, false) / 100.);
+                nvfo.demod->set_cfg("samplerate", dev_blk->getStreamSamplerate(0, false) / 30.);
                 nvfo.demod->set_cfg("audio_samplerate", 48e3);
                 nvfo.demod->set_cfg("mode", "nfm");
                 nvfo.sink->set_cfg("samplerate", 48e3);
@@ -102,7 +102,7 @@ namespace satdump
                 nvfo.sink->link(nvfo.demod.get(), 0, 0, 4);
                 nvfo.sink->start();
 
-                nvfo.demod->set_input(splitter->add_output(id, 0, 0, 100), 0);
+                nvfo.demod->set_input(splitter->add_output(id, 98.4e6, 0, 30), 0);
                 nvfo.demod->start();
 
                 logger->info("Added audio!");
@@ -258,7 +258,7 @@ namespace satdump
                 else if (key == "avfos")
                 {
                     nlohmann::json v;
-                    for (int i = 0; i <= avfos.size(); i++)
+                    for (int i = 0; i < avfos.size(); i++)
                         v[i] = getVFOJson(avfos[i]);
                     return v;
                 }
