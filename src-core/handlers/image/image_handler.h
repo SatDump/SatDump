@@ -111,6 +111,7 @@ namespace satdump
             image::ImgCalibHandler image_calib;
             bool image_proj_valid = false;
             projection::Projection image_proj;
+            bool image_corr_valid = false;
             std::vector<float> correct_fwd_lut; // TODOREWORK handle this better?
             std::vector<float> correct_rev_lut;
 
