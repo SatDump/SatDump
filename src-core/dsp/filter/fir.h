@@ -4,23 +4,24 @@
 #include "common/dsp/complex.h"
 #include "dsp/block.h"
 #include "dsp/block_simple.h"
+#include "dsp/complex_json.h"
 #include <volk/volk_alloc.hh>
 
 namespace satdump
 {
     namespace ndsp
     {
-        template <typename T>
+        template <typename T, typename TT = float>
         class FIRBlock : public BlockSimple<T, T>
         {
         public:
             bool needs_reinit = false;
-            std::vector<float> p_taps;
+            std::vector<TT> p_taps;
 
         private:
             int buffer_size = 0;
             volk::vector<T> buffer;
-            float **taps = nullptr;
+            TT **taps = nullptr;
             int ntaps;
             int align;
             int aligned_tap_count;
@@ -31,7 +32,7 @@ namespace satdump
             uint32_t process(T *input, uint32_t nsamples, T *output);
 
         public:
-            FIRBlock();
+            FIRBlock(std::string id = "");
             ~FIRBlock();
 
             void init();
@@ -48,7 +49,7 @@ namespace satdump
             {
                 if (key == "taps")
                 {
-                    p_taps = v.get<std::vector<float>>();
+                    p_taps = v.get<std::vector<TT>>();
                     needs_reinit = true;
                 }
                 else

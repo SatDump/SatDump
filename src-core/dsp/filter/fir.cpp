@@ -1,18 +1,19 @@
 #include "fir.h"
+#include "dsp/block_helpers.h"
 
 namespace satdump
 {
     namespace ndsp
     {
-        template <typename T>
-        FIRBlock<T>::FIRBlock()
-            : BlockSimple<T, T>(std::is_same_v<T, complex_t> ? "fir_cc" : "fir_ff", {{"in", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}},
-                                {{"out", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}})
+        template <typename T, typename TT>
+        FIRBlock<T, TT>::FIRBlock(std::string id)
+            : BlockSimple<T, T>(id + "fir" + (std::is_same_v<TT, complex_t> ? "c" : "") + "_" + getShortTypeName<T>() + getShortTypeName<T>(), {{"in", getTypeSampleType<T>()}},
+                                {{"out", getTypeSampleType<T>()}})
         {
         }
 
-        template <typename T>
-        FIRBlock<T>::~FIRBlock()
+        template <typename T, typename TT>
+        FIRBlock<T, TT>::~FIRBlock()
         {
             if (taps != nullptr)
             {
@@ -22,8 +23,8 @@ namespace satdump
             }
         }
 
-        template <typename T>
-        void FIRBlock<T>::init()
+        template <typename T, typename TT>
+        void FIRBlock<T, TT>::init()
         {
             // Free if needed
             if (taps != nullptr)
@@ -46,10 +47,10 @@ namespace satdump
             ntaps = p_taps.size();
 
             // Init taps
-            this->taps = (float **)volk_malloc(aligned_tap_count * sizeof(float *), align);
+            this->taps = (TT **)volk_malloc(aligned_tap_count * sizeof(TT *), align);
             for (int i = 0; i < aligned_tap_count; i++)
             {
-                this->taps[i] = (float *)volk_malloc((ntaps + aligned_tap_count - 1) * sizeof(float), align);
+                this->taps[i] = (TT *)volk_malloc((ntaps + aligned_tap_count - 1) * sizeof(TT), align);
                 for (int y = 0; y < ntaps + aligned_tap_count - 1; y++)
                     this->taps[i][y] = 0;
                 for (int j = 0; j < ntaps; j++)
@@ -57,8 +58,8 @@ namespace satdump
             }
         }
 
-        template <typename T>
-        uint32_t FIRBlock<T>::process(T *input, uint32_t nsamples, T *output)
+        template <typename T, typename TT>
+        uint32_t FIRBlock<T, TT>::process(T *input, uint32_t nsamples, T *output)
         {
             if (needs_reinit)
             {
@@ -95,15 +96,31 @@ namespace satdump
             }
             if constexpr (std::is_same_v<T, complex_t>)
             {
-                for (int i = 0; i < to_use; i++)
+                if constexpr (std::is_same_v<TT, float>)
                 {
-                    // Doing it this way instead of the normal :
-                    // volk_32fc_32f_dot_prod_32fc(&output_stream->writeBuf[i], &buffer[i + 1], taps, ntaps);
-                    // turns out to enhance performances quite a bit... Initially tested this after noticing
-                    // inconsistencies between the above simple way and GNU Radio's implementation
-                    const complex_t *ar = (complex_t *)((size_t)&buffer[i + 1] & ~(align - 1));
-                    const unsigned al = &buffer[i + 1] - ar;
-                    volk_32fc_32f_dot_prod_32fc_a((lv_32fc_t *)&output[i], (lv_32fc_t *)ar, taps[al], ntaps + al);
+                    for (int i = 0; i < to_use; i++)
+                    {
+                        // Doing it this way instead of the normal :
+                        // volk_32fc_32f_dot_prod_32fc(&output_stream->writeBuf[i], &buffer[i + 1], taps, ntaps);
+                        // turns out to enhance performances quite a bit... Initially tested this after noticing
+                        // inconsistencies between the above simple way and GNU Radio's implementation
+                        const complex_t *ar = (complex_t *)((size_t)&buffer[i + 1] & ~(align - 1));
+                        const unsigned al = &buffer[i + 1] - ar;
+                        volk_32fc_32f_dot_prod_32fc_a((lv_32fc_t *)&output[i], (lv_32fc_t *)ar, taps[al], ntaps + al);
+                    }
+                }
+                if constexpr (std::is_same_v<TT, complex_t>)
+                {
+                    for (int i = 0; i < to_use; i++)
+                    {
+                        // Doing it this way instead of the normal :
+                        // volk_32fc_32f_dot_prod_32fc(&output_stream->writeBuf[i], &buffer[i + 1], taps, ntaps);
+                        // turns out to enhance performances quite a bit... Initially tested this after noticing
+                        // inconsistencies between the above simple way and GNU Radio's implementation
+                        const complex_t *ar = (complex_t *)((size_t)&buffer[i + 1] & ~(align - 1));
+                        const unsigned al = &buffer[i + 1] - ar;
+                        volk_32fc_x2_dot_prod_32fc_a((lv_32fc_t *)&output[i], (lv_32fc_t *)ar, (lv_32fc_t *)taps[al], ntaps + al);
+                    }
                 }
             }
 
@@ -113,7 +130,8 @@ namespace satdump
             return to_use;
         }
 
-        template class FIRBlock<complex_t>;
-        template class FIRBlock<float>;
+        template class FIRBlock<complex_t, complex_t>;
+        template class FIRBlock<complex_t, float>;
+        template class FIRBlock<float, float>;
     } // namespace ndsp
 } // namespace satdump

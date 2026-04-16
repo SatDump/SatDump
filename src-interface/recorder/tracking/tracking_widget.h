@@ -64,14 +64,14 @@ namespace satdump
             nlohmann::json cfg = db->get_user_json("recorder_tracking");
             if (!cfg.is_null())
             {
-                auto enabled_satellites = getValueOrDefault(cfg["recorder_tracking"]["enabled_objects"], std::vector<TrackedObject>());
+                auto enabled_satellites = getValueOrDefault(cfg["enabled_objects"], std::vector<TrackedObject>());
                 nlohmann::json rotator_algo_cfg;
-                if (cfg["recorder_tracking"].contains("rotator_algo"))
-                    rotator_algo_cfg = cfg["recorder_tracking"]["rotator_algo"];
+                if (cfg.contains("rotator_algo"))
+                    rotator_algo_cfg = cfg["rotator_algo"];
 
                 auto_scheduler.setTracked(enabled_satellites);
                 object_tracker.setRotatorConfig(rotator_algo_cfg);
-                auto_scheduler.setAutoTrackCfg(getValueOrDefault<AutoTrackCfg>(cfg["recorder_tracking"]["autotrack_cfg"], AutoTrackCfg()));
+                auto_scheduler.setAutoTrackCfg(getValueOrDefault<AutoTrackCfg>(cfg["autotrack_cfg"], AutoTrackCfg()));
             }
         }
 

@@ -18,6 +18,8 @@ namespace satdump
 {
     namespace handlers
     {
+        std::shared_ptr<ndsp::Block> getBlock(std::string id);
+
         class FMTestHandler : public Handler
         {
         private:

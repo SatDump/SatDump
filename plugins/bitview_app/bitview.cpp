@@ -130,6 +130,8 @@ namespace satdump
                     auto bbc = bc;
                     bc = std::make_shared<BitContainer>(bbc->getName(), bbc->getFilePath(), bbc->frames);
                     bc->d_bitperiod = bbc->d_bitperiod;
+                    bc->d_display_mode = bbc->d_display_mode;
+                    bc->d_display_bits = bbc->d_display_bits;
                     bc->init_display();
                     bc->bitview = this;
                 }
@@ -214,7 +216,7 @@ namespace satdump
 
         bc->doUpdateTextures();
 
-        ImPlot::BeginPlot("MainPlot", window_size, ImPlotFlags_Equal | ImPlotFlags_NoLegend);
+        ImPlot::BeginPlot("##BitView", window_size, ImPlotFlags_Equal | ImPlotFlags_NoLegend);
         ImPlot::SetupAxes(nullptr, nullptr, 0, ImPlotAxisFlags_Invert);
 
         ImPlotRect c = ImPlot::GetPlotLimits();

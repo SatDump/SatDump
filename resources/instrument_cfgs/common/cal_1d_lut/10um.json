@@ -2,7 +2,7 @@
     "presets": [
         {
             "name": "10.8µm Thermal IR",
-            "expression": "cch4=({10.4um}, emissive_radiance, 30, 120); cch4",
+            "expression": "cch4=({10.4um, *, -1, 10}, emissive_radiance, 30, 120); cch4",
             "image": {
                 "geo_correct": true
             },
@@ -10,12 +10,12 @@
         },
         {
             "name": "NO enhancement",
-            "expression": "cch4=({10.4um}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-NO.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
+            "expression": "cch4=({10.4um, *, -1, 10}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-NO.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
             "description": "descriptions/NO.md"
         },
         {
             "name": "ZA enhancement",
-            "expression": "cch4=({10.4um}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-ZA.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
+            "expression": "cch4=({10.4um, *, -1, 10}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-ZA.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
             "image": {
                 "geo_correct": true
             },
@@ -23,7 +23,7 @@
         },
         {
             "name": "MB enhancement",
-            "expression": "cch4=({10.4um}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-MB.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
+            "expression": "cch4=({10.4um, *, -1, 10}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-MB.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
             "image": {
                 "geo_correct": true
             },
@@ -31,7 +31,7 @@
         },
         {
             "name": "MD enhancement",
-            "expression": "cch4=({10.4um}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-MD.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
+            "expression": "cch4=({10.4um, *, -1, 10}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-MD.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
             "image": {
                 "geo_correct": true
             },
@@ -39,7 +39,7 @@
         },
         {
             "name": "BD enhancement",
-            "expression": "cch4=({10.4um}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-BD.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
+            "expression": "cch4=({10.4um, *, -1, 10}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-BD.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
             "image": {
                 "geo_correct": true
             },
@@ -47,7 +47,7 @@
         },
         {
             "name": "CC enhancement",
-            "expression": "cch4=({10.4um}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-CC.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
+            "expression": "cch4=({10.4um, *, -1, 10}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-CC.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
             "image": {
                 "geo_correct": true
             },
@@ -55,7 +55,7 @@
         },
         {
             "name": "EC enhancement",
-            "expression": "cch4=({10.4um}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-EC.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
+            "expression": "cch4=({10.4um, *, -1, 10}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-EC.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
             "image": {
                 "geo_correct": true
             },
@@ -63,7 +63,7 @@
         },
         {
             "name": "HE enhancement",
-            "expression": "cch4=({10.4um}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-HE.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
+            "expression": "cch4=({10.4um, *, -1, 10}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-HE.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
             "image": {
                 "geo_correct": true
             },
@@ -71,7 +71,7 @@
         },
         {
             "name": "HF enhancement",
-            "expression": "cch4=({10.4um}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-HF.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
+            "expression": "cch4=({10.4um, *, -1, 10}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-HF.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
             "image": {
                 "geo_correct": true
             },
@@ -79,7 +79,7 @@
         },
         {
             "name": "JF enhancement",
-            "expression": "cch4=({10.4um}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-JF.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
+            "expression": "cch4=({10.4um, *, -1, 10}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-JF.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
             "image": {
                 "geo_correct": true
             },
@@ -87,7 +87,7 @@
         },
         {
             "name": "JJ enhancement",
-            "expression": "cch4=({10.4um}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-JJ.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
+            "expression": "cch4=({10.4um, *, -1, 10}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-JJ.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
             "image": {
                 "geo_correct": true
             },
@@ -95,7 +95,7 @@
         },
         {
             "name": "TA enhancement",
-            "expression": "cch4=({10.4um}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-TA.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
+            "expression": "cch4=({10.4um, *, -1, 10}, emissive_radiance, 4.2612729676878, 155.2782819317);lut=lut(lut/cal/WXtoImg-TA.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
             "image": {
                 "geo_correct": true
             },
@@ -103,7 +103,7 @@
         },
         {
             "name": "Enhanced IR",
-            "expression": "cch4=({10.4um}, brightness_temperature, 200, 300);lut=lut(lut/cal/EnhancedIR.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
+            "expression": "cch4=({10.4um, *, -1, 10}, brightness_temperature, 200, 300);lut=lut(lut/cal/EnhancedIR.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
             "image": {
                 "geo_correct": true
             },
@@ -111,7 +111,7 @@
         },
         {
             "name": "Cloud Top IR",
-            "expression": "cch4=({10.4um}, brightness_temperature, 183.15, 323.15);lut=lut(lut/cal/CloudTopIR.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
+            "expression": "cch4=({10.4um, *, -1, 10}, brightness_temperature, 183.15, 323.15);lut=lut(lut/cal/CloudTopIR.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
             "image": {
                 "geo_correct": true
             },
@@ -128,7 +128,7 @@
         },
         {
             "name": "Color general cloud IR",
-            "expression": "cch4=({10.4um}, brightness_temperature, 180, 320);lut=lut(lut/cal/Multispectral.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
+            "expression": "cch4=({10.4um, *, -1, 10}, brightness_temperature, 180, 320);lut=lut(lut/cal/Multispectral.png);lut(cch4, 0, 0), lut(cch4, 0, 1), lut(cch4, 0, 2)",
             "image": {
                 "geo_correct": true
             },

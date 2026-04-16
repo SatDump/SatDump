@@ -43,6 +43,8 @@ namespace satdump
                 return b;
             }
 
+            inline bool try_dequeue(DSPBuffer &b) { return fifo.try_dequeue(b); }
+
             DSPBuffer alloc(size_t size)
             {
                 DSPBuffer b;
@@ -51,14 +53,14 @@ namespace satdump
                 {
                     b.ptr = volk_malloc(size, volk_get_alignment());
                     b.ptr_size = size;
-                   // printf("Alloc\n");
+                    // printf("Alloc\n");
                 }
                 else if (b.ptr_size < size)
                 {
                     volk_free(b.ptr);
                     b.ptr = volk_malloc(size, volk_get_alignment());
                     b.ptr_size = size;
-                   // printf("Realloc\n");
+                    // printf("Realloc\n");
                 }
                 return b;
             }

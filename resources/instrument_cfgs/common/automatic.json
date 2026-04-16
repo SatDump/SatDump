@@ -2,7 +2,7 @@
     "presets": [
         {
             "name": "Automatic IR False Color",
-            "expression": "IR11=({10.5um}, brightness_temperature_celsius, -60, 40);lm=equp(maps/landmask.png);land=lut(lut/2dfc/2dfc_ir_land.png);sea=lut(lut/2dfc/2dfc_ir_sea.png);lm(0) == 1 ? land(IR11, 0, 0) : sea(IR11, 0, 0),lm(0) == 1 ? land(IR11, 0, 1) : sea(IR11, 0, 1),lm(0) == 1 ? land(IR11, 0, 2) : sea(IR11, 0, 2)",
+            "expression": "IR11=({10.4um, *, -1, 10}, brightness_temperature_celsius, -60, 40);lm=equp(maps/landmask.png);land=lut(lut/2dfc/2dfc_ir_land.png);sea=lut(lut/2dfc/2dfc_ir_sea.png);lm(0) == 1 ? land(IR11, 0, 0) : sea(IR11, 0, 0),lm(0) == 1 ? land(IR11, 0, 1) : sea(IR11, 0, 1),lm(0) == 1 ? land(IR11, 0, 2) : sea(IR11, 0, 2)",
             "image": {
                 "geo_correct": true
             }
@@ -38,12 +38,12 @@
         },
         {
             "name": "MCIR",
-            "expression": "cch4=({10.5um}, emissive_radiance, 120.000000, 20.000000); bm=equp(maps/map_aweeri.jpg); cch4 * (cch4) + (1-cch4) * bm(0), cch4 * (cch4) + (1-cch4) * bm(1), cch4 * (cch4) + (1-cch4) * bm(2)",
+            "expression": "cch4=({10.4um, *, -1, 10}, emissive_radiance, 120.000000, 20.000000); bm=equp(maps/map_aweeri.jpg); cch4 * (cch4) + (1-cch4) * bm(0), cch4 * (cch4) + (1-cch4) * bm(1), cch4 * (cch4) + (1-cch4) * bm(2)",
             "description": "descriptions/MCIR.md"
         },
         {
             "name": "MCIR (NASA Underlay)",
-            "expression": "cch4=({10.5um}, emissive_radiance, 120.000000, 20.000000); bm=equp(maps/nasa_hd.jpg); cch4 * (cch4) + (1-cch4) * bm(0), cch4 * (cch4) + (1-cch4) * bm(1), cch4 * (cch4) + (1-cch4) * bm(2)",
+            "expression": "cch4=({10.4um, *, -1, 10}, emissive_radiance, 120.000000, 20.000000); bm=equp(maps/nasa_hd.jpg); cch4 * (cch4) + (1-cch4) * bm(0), cch4 * (cch4) + (1-cch4) * bm(1), cch4 * (cch4) + (1-cch4) * bm(2)",
             "description": "descriptions/MCIR.md"
         },
         {
@@ -76,6 +76,7 @@
     "instruments": [
         "avhrr_3",
         "msu_mr",
+        "iasi_img",
         "fci",
         "modis",
         "abi",

@@ -2,6 +2,7 @@
 #include "common/dsp_source_sink/format_notated.h"
 #include "common/widgets/waterfall_plot.h"
 #include "core/plugin.h"
+#include <complex.h>
 #include <cstdint>
 
 #include "core/resources.h"
@@ -22,6 +23,7 @@
 #include "dsp/conv/real_to_complex.h"
 #include "dsp/conv/short_to_float.h"
 #include "dsp/conv/uchar_to_float.h"
+#include "dsp/ddc/ddc.h"
 #include "dsp/digital/binary_slicer.h"
 #include "dsp/digital/cadu_deframer.h"
 #include "dsp/digital/cadu_derand.h"
@@ -30,9 +32,11 @@
 #include "dsp/displays/hist_disp.h"
 #include "dsp/fft/fft_pan.h"
 #include "dsp/filter/fft.h"
+#include "dsp/filter/fir.h"
 #include "dsp/filter/rrc.h"
 #include "dsp/flowgraph/flowgraph.h"
 #include "dsp/flowgraph/node_int.h"
+#include "dsp/hier/audio_demod.h"
 #include "dsp/hier/psk_demod.h"
 #include "dsp/io/file_sink.h"
 #include "dsp/io/file_source.h"
@@ -40,7 +44,9 @@
 #include "dsp/io/iq_source.h"
 #include "dsp/io/nng_sink.h"
 #include "dsp/io/waveform.h"
+#include "dsp/path/selector.h"
 #include "dsp/path/splitter.h"
+#include "dsp/path/switch.h"
 #include "dsp/pll/costas.h"
 #include "dsp/pll/costas_fast.h"
 #include "dsp/pll/pll_carrier_tracking.h"
@@ -256,6 +262,14 @@ namespace satdump
                 registerNodeSimple<ndsp::RationalResamplerBlock<complex_t>>(flowgraph, "Resampling/Rational Resampler CC");
                 registerNodeSimple<ndsp::RationalResamplerBlock<float>>(flowgraph, "Resampling/Rational Resampler FF");
 
+                registerNodeSimple<ndsp::FIRBlock<complex_t>>(flowgraph, "Filter/FIR CCF");
+                registerNodeSimple<ndsp::FIRBlock<float>>(flowgraph, "Filter/FIR FFF");
+                registerNodeSimple<ndsp::FIRBlock<complex_t, complex_t>>(flowgraph, "Filter/FIR CCC");
+
+                registerNodeSimple<ndsp::FFTFilterBlock<complex_t>>(flowgraph, "Filter/FFT CCF");
+                // registerNodeSimple<ndsp::FIRBlock<float>>(flowgraph, "Filter/FFT FFF");
+                registerNodeSimple<ndsp::FFTFilterBlock<complex_t, complex_t>>(flowgraph, "Filter/FFT CCC");
+
                 registerNodeSimple<ndsp::RRC_Block<FIRBlock<complex_t>>>(flowgraph, "Filter/RRC FIR CC");
                 registerNodeSimple<ndsp::RRC_Block<FFTFilterBlock<complex_t>>>(flowgraph, "Filter/RRC FFT CC");
 
@@ -273,6 +287,13 @@ namespace satdump
 
                 registerNodeSimple<ndsp::SplitterBlock<complex_t>>(flowgraph, "Utils/Splitter CC");
                 registerNodeSimple<ndsp::SplitterBlock<float>>(flowgraph, "Utils/Splitter FF");
+                registerNodeSimple<ndsp::DDC_Block>(flowgraph, "DDC/DDC");
+
+                registerNodeSimple<ndsp::SwitchBlock<complex_t>>(flowgraph, "Utils/Switch CC");
+                registerNodeSimple<ndsp::SwitchBlock<float>>(flowgraph, "Utils/Switch FF");
+
+                registerNodeSimple<ndsp::SelectorBlock<complex_t>>(flowgraph, "Utils/Selector CC");
+                registerNodeSimple<ndsp::SelectorBlock<float>>(flowgraph, "Utils/Selector FF");
 
                 registerNodeSimple<ndsp::ThrottleBlock<complex_t>>(flowgraph, "Utils/Throttle CC");
                 registerNodeSimple<ndsp::ThrottleBlock<float>>(flowgraph, "Utils/Throttle FF");
@@ -318,6 +339,8 @@ namespace satdump
                 registerNodeSimple<ndsp::ComplexToMagSquaredBlock>(flowgraph, "Conv/Complex To Mag²");
 
                 registerNodeSimple<ndsp::PSKDemodHierBlock>(flowgraph, "Modem/PSK Demod");
+
+                registerNodeSimple<ndsp::AudioDemodHierBlock>(flowgraph, "Modem/Audio Demod");
 
                 registerNodeSimple<ndsp::PSKSnrEstimatorBlock>(flowgraph, "Utils/PSK SNR Estimator");
 

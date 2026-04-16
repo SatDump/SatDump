@@ -6,6 +6,7 @@
 #include "imgui/imgui_image.h"
 #include "imgui/imgui_internal.h"
 #include "logger.h"
+#include <cstdint>
 #include <mutex>
 
 namespace satdump
@@ -14,23 +15,12 @@ namespace satdump
     {
         bool FFTWaterfallWidget::waterfall_buffer_alloc(size_t size)
         {
-            uint32_t *new_img_buffer = (uint32_t *)realloc(waterfall_raw_img_buffer, size);
-            if (new_img_buffer == nullptr)
-            {
-                logger->error("Cannot allocate memory for waterfall");
-                if (waterfall_raw_img_buffer != nullptr)
-                {
-                    free(waterfall_raw_img_buffer);
-                    waterfall_raw_img_buffer = nullptr;
-                }
-                waterfall_last_curr_height = waterfall_last_curr_width = 0;
-                return false;
-            }
+            if (size > 0)
+                waterfall_raw_img_buffer.resize(size);
 
-            waterfall_raw_img_buffer = new_img_buffer;
             uint64_t old_size = waterfall_last_curr_width * waterfall_last_curr_height;
-            if (size > old_size * sizeof(uint32_t))
-                memset(&waterfall_raw_img_buffer[old_size], 0, size - old_size * sizeof(uint32_t));
+            if (size > old_size)
+                memset(&waterfall_raw_img_buffer[old_size], 0, size - old_size);
             waterfall_last_curr_width = waterfall_curr_width;
             waterfall_last_curr_height = waterfall_curr_height;
             return true;
@@ -39,42 +29,43 @@ namespace satdump
         void FFTWaterfallWidget::draw_waterfall(ImVec2 pos, ImVec2 size)
         {
             waterfall_mtx.lock();
-            if (true) // if (waterfall_texture_id == 0 /*|| active*/)
-            {
-                waterfall_curr_width = size.x > waterfall_size ? waterfall_size : size.x;
-                waterfall_curr_height = size.y > waterfall_lines ? waterfall_lines : size.y;
-            }
+
+            waterfall_curr_width = size.x > waterfall_size ? waterfall_size : size.x;
+            waterfall_curr_height = size.y > waterfall_lines ? waterfall_lines : size.y;
+
             if (waterfall_texture_id == 0)
             {
                 waterfall_texture_id = makeImageTexture();
-                waterfall_need_update = waterfall_buffer_alloc(waterfall_curr_width * waterfall_curr_height * sizeof(uint32_t));
+                waterfall_need_update = waterfall_buffer_alloc(waterfall_curr_width * waterfall_curr_height);
                 if ((int)waterfall_palette.size() != waterfall_resolution)
                     set_waterfall_palette(colormaps::loadMap(resources::getResourcePath("waterfall/classic.json")), false);
             }
-            if (/*active &&*/ (waterfall_last_curr_width != waterfall_curr_width || waterfall_last_curr_height != waterfall_curr_height))
+
+            if ((waterfall_last_curr_width != waterfall_curr_width || waterfall_last_curr_height != waterfall_curr_height))
             {
-                if (waterfall_raw_img_buffer != nullptr && waterfall_last_curr_width != waterfall_curr_width)
-                {
-                    free(waterfall_raw_img_buffer);
-                    waterfall_raw_img_buffer = nullptr;
+                if (waterfall_last_curr_width != waterfall_curr_width)
                     waterfall_last_curr_height = waterfall_last_curr_width = 0;
-                }
-                waterfall_need_update = waterfall_buffer_alloc(waterfall_curr_width * waterfall_curr_height * sizeof(uint32_t));
+                waterfall_need_update = waterfall_buffer_alloc(waterfall_curr_width * waterfall_curr_height);
             }
+
             if (waterfall_need_update)
             {
-                updateImageTexture(waterfall_texture_id, waterfall_raw_img_buffer, waterfall_curr_width, waterfall_curr_height);
+                updateImageTexture(waterfall_texture_id, waterfall_raw_img_buffer.data(), waterfall_curr_width, waterfall_curr_height);
                 waterfall_need_update = false;
             }
+
             waterfall_mtx.unlock();
 
             ImGui::GetWindowDrawList()->AddImage((void *)(intptr_t)waterfall_texture_id, pos, pos + size);
         }
 
-        void FFTWaterfallWidget::push_waterfall_fft(float *values)
+        void FFTWaterfallWidget::push_waterfall_fft(float *values, int wsize)
         {
-            if (waterfall_texture_id == 0 || waterfall_raw_img_buffer == nullptr)
+            if (waterfall_texture_id == 0)
                 return;
+
+            if (waterfall_size != wsize)
+                set_waterfall_size(wsize);
 
             waterfall_mtx.lock();
             if ((waterfall_i++ % waterfall_i_mod) == 0)

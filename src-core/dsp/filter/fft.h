@@ -4,6 +4,7 @@
 #include "common/dsp/complex.h"
 #include "dsp/block.h"
 #include "dsp/block_simple.h"
+#include "dsp/complex_json.h"
 #include <fftw3.h>
 #include <volk/volk_alloc.hh>
 
@@ -11,12 +12,12 @@ namespace satdump
 {
     namespace ndsp
     {
-        template <typename T>
+        template <typename T, typename TT = float>
         class FFTFilterBlock : public Block
         {
         public:
             bool needs_reinit = false;
-            std::vector<float> p_taps;
+            std::vector<TT> p_taps;
 
         private:
             int buffer_size = 0;
@@ -40,7 +41,7 @@ namespace satdump
             bool work();
 
         public:
-            FFTFilterBlock();
+            FFTFilterBlock(std::string id = "");
             ~FFTFilterBlock();
 
             void init();
@@ -57,7 +58,7 @@ namespace satdump
             {
                 if (key == "taps")
                 {
-                    p_taps = v.get<std::vector<float>>();
+                    p_taps = v.get<std::vector<TT>>();
                     needs_reinit = true;
                 }
                 else
