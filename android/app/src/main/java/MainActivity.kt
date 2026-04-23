@@ -18,8 +18,8 @@ import android.net.Uri;
 import RealPathUtil;
 
 import android.Manifest;
-import android.support.v4.content.PermissionChecker;
-import android.support.v4.app.ActivityCompat;
+import androidx.core.content.PermissionChecker;
+import androidx.core.app.ActivityCompat;
 import android.content.pm.PackageManager;
 import android.provider.DocumentsContract;
 
@@ -38,6 +38,9 @@ import android.text.Editable;
 import android.text.InputType;
 
 import android.view.WindowManager;
+
+import org.woheller69.freeDroidWarn.FreeDroidWarn;
+import org.satdump.SatDump.BuildConfig;
 
 // Extension on intent
 fun Intent?.getFilePath(context: Context): String {
@@ -116,6 +119,8 @@ class MainActivity : NativeActivity(), TextWatcher {
         editText!!.addTextChangedListener(this);
 
         setContentView(mLayout);
+
+        FreeDroidWarn.showWarningOnUpgrade(this, BuildConfig.VERSION_CODE);
     }
 
 
