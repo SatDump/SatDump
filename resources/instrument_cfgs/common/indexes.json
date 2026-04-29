@@ -22,8 +22,6 @@
         "msu_mr",
         "fci",
         "modis",
-        "abi",
-        "ahi",
         "seviri",
         "slstr_nadir",
         "slstr_offset",

@@ -1,0 +1,24 @@
+{
+    "presets": [
+        {
+            "name": "NDVI (albedo)",
+            "expression": "cch1=({0.67um}, albedo, 0, 1);cch2=({0.86um}, albedo, 0, 1);lut=lut(lut/NDVI.png);lut(0, ((cch2-cch1)/((cch2+cch1) == 0 ? 0.000001 : (cch1+cch2))+1)/2, 0),lut(0, ((cch2-cch1)/((cch2+cch1) == 0 ? 0.000001 : (cch1+cch2))+1)/2, 1),lut(0, ((cch2-cch1)/((cch2+cch1) == 0 ? 0.000001 : (cch1+cch2))+1)/2, 2)",
+            "image": {
+                "geo_correct": true
+            },
+            "description": "descriptions/NDVI.md"
+        },
+        {
+            "name": "NDWI (albedo)",
+            "expression": "cch2=({0.86um}, albedo, 0, 1);cch2=({0.86um}, albedo, 0, 1);cch3a=({1.61um},  albedo, 0, 1);cch2=({0.86um}, albedo, 0, 1);lut=lut(lut/NDWI.png);lut(0, 1-((cch2-cch3a)/((cch2+cch3a) == 0 ? 0.000001 : (cch3a+cch2))+1)/2, 0),lut(0, 1-((cch2-cch3a)/((cch2+cch3a) == 0 ? 0.000001 : (cch3a+cch2))+1)/2, 1),lut(0, 1-((cch2-cch3a)/((cch2+cch3a) == 0 ? 0.000001 : (cch3a+cch2))+1)/2, 2)",
+            "image": {
+                "geo_correct": true
+            },
+            "description": "descriptions/NDWI.md"
+        }
+    ],
+    "instruments": [
+        "abi",
+        "ahi"
+    ]
+}
