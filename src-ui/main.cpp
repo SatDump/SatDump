@@ -271,26 +271,10 @@ int main(int argc, char *argv[])
     signal(SIGTERM, sig_handler_ui);
 
     // Main loop
-    while (!glfwWindowShouldClose(window) && !signal_caught)
+    do
     {
-        glfwPollEvents();
-
-        int win_w = 0, win_h = 0;
-        int fb_w = 0, fb_h = 0;
-
-        glfwGetWindowSize(window, &win_w, &win_h);
-        glfwGetFramebufferSize(window, &fb_w, &fb_h);
-
-        const bool drawable = !glfwGetWindowAttrib(window, GLFW_ICONIFIED) && win_w > 0 && win_h > 0 && fb_w > 0 && fb_h > 0;
-
-        if (!drawable)
-        {
-            glfwWaitEventsTimeout(0.05);
-            continue;
-        }
-
         satdump::renderMainUI();
-    }
+    } while (!glfwWindowShouldClose(window) && !signal_caught);
 
     // Avoid getting stuck
     bool killThread_cancel = false;

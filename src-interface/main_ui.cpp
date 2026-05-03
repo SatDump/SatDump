@@ -138,8 +138,8 @@ namespace satdump
 
         // On Windows minimizing makes the window dimensions 0,
         // which of course cause a whole lot of issues...
-        // Simply abort any further rendering if this happens!
-        if (dims.first <= 0 && dims.second <= 0)
+        // Simply abort any further rendering of this happens!
+        if (dims.first == 0 && dims.second == 0)
         {
             backend::endFrame();
             return;
