@@ -6,6 +6,7 @@
 #include "products/image/calibration_units.h"
 #include "products/image/image_calibrator.h"
 #include "products/image_product.h"
+#include "utils/tasked_button.h"
 #include <vector>
 
 namespace satdump
@@ -14,6 +15,9 @@ namespace satdump
     {
         class ImageProductHandler : public ProductHandler
         {
+        private:
+            utils::TaskedButton advanced_auto_align_affine;
+
         public:
             ImageProductHandler(std::shared_ptr<products::Product>, bool dataset_mode = false);
             ~ImageProductHandler();
