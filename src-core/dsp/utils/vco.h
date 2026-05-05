@@ -9,6 +9,7 @@ namespace satdump
 {
     namespace ndsp
     {
+        // For a specific deviation : k = (2 * M_PI * 2500 / 1.0) / samplerate
         class VCOBlock : public BlockSimple<float, complex_t>
         {
         private:
