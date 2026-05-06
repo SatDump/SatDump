@@ -31,7 +31,7 @@ namespace satdump
 
             const int intpo = interpolation;
 
-            DSPBuffer oblk = outputs[0].fifo->newBufferSamples(intpo * iblk.max_size, sizeof(T));
+            DSPBuffer oblk = outputs[0].fifo->newBufferSamples(intpo * iblk.size, sizeof(T));
             T *ibuf = iblk.getSamples<T>();
             T *obuf = oblk.getSamples<T>();
 
