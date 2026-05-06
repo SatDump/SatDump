@@ -5,7 +5,7 @@ namespace satdump
 {
     namespace ndsp
     {
-        VCOBlock::VCOBlock() : BlockSimple<float, complex_t>("vco_fc", {{"in", DSP_SAMPLE_TYPE_F32}}, {{"out", DSP_SAMPLE_TYPE_CF32}}) {}
+        VCOBlock::VCOBlock(std::string id) : BlockSimple<float, complex_t>(id, {{"in", DSP_SAMPLE_TYPE_F32}}, {{"out", DSP_SAMPLE_TYPE_CF32}}) {}
 
         VCOBlock::~VCOBlock() {}
 
