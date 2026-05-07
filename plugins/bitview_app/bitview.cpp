@@ -127,13 +127,20 @@ namespace satdump
             {
                 if (ImGui::Button("Reload"))
                 {
-                    auto bbc = bc;
-                    bc = std::make_shared<BitContainer>(bbc->getName(), bbc->getFilePath(), bbc->frames);
-                    bc->d_bitperiod = bbc->d_bitperiod;
-                    bc->d_display_mode = bbc->d_display_mode;
-                    bc->d_display_bits = bbc->d_display_bits;
-                    bc->init_display();
-                    bc->bitview = this;
+                    try
+                    {
+                        auto bbc = bc;
+                        bc = std::make_shared<BitContainer>(bbc->getName(), bbc->getFilePath(), bbc->frames);
+                        bc->d_bitperiod = bbc->d_bitperiod;
+                        bc->d_display_mode = bbc->d_display_mode;
+                        bc->d_display_bits = bbc->d_display_bits;
+                        bc->init_display();
+                        bc->bitview = this;
+                    }
+                    catch (std::exception &e)
+                    {
+                        logger->error("Error refreshing file %s", e.what());
+                    }
                 }
             }
         }

@@ -1,0 +1,35 @@
+cmake_minimum_required(VERSION 3.12)
+project(litex_m2sdr_sdr_support)
+include(CheckCXXSourceCompiles)
+
+find_library(LITEXM2SDR_LIBRARY m2sdr)
+
+if(LITEXM2SDR_LIBRARY OR MSVC) # OR ANDROID)
+    message("Building with LiteX M2SDR support")
+    file(GLOB_RECURSE litex_m2sdr_sdr_support_CPPS *.cpp)
+    add_library(litex_m2sdr_sdr_support SHARED ${litex_m2sdr_sdr_support_CPPS})
+    target_include_directories(litex_m2sdr_sdr_support PUBLIC src)
+
+    if(MSVC)
+        target_link_libraries(litex_m2sdr_sdr_support PUBLIC satdump_core m2sdr.dll)
+    elseif(APPLE)
+        target_link_libraries(litex_m2sdr_sdr_support PUBLIC satdump_core ${LITEXM2SDR_LIBRARY})
+        set(CMAKE_REQUIRED_LIBRARIES ${LITEXM2SDR_LIBRARY})
+    elseif(ANDROID)
+        target_link_libraries(litex_m2sdr_sdr_support PUBLIC satdump_core m2sdr usb)
+        target_include_directories(litex_m2sdr_sdr_support PUBLIC ../../../android/deps/libm2sdr)
+    else()
+        target_link_libraries(litex_m2sdr_sdr_support PUBLIC satdump_core ${LITEXM2SDR_LIBRARY} litepcie)
+        set(CMAKE_REQUIRED_LIBRARIES ${LITEXM2SDR_LIBRARY})
+    endif()
+
+
+
+    if(MSVC)
+        install(TARGETS litex_m2sdr_sdr_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins RUNTIME_DEPENDENCY_SET satdump_deps)
+    else()
+        install(TARGETS litex_m2sdr_sdr_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+    endif()
+else()
+    message("LiteX M2SDR Library could not be found! Not building.")
+endif()
