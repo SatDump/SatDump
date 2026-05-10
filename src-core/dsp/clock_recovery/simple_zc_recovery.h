@@ -29,7 +29,7 @@ namespace satdump
             nlohmann::ordered_json get_cfg_list()
             {
                 nlohmann::ordered_json p;
-                add_param_simple(p, "sps", "int");
+                add_param_simple(p, "sps", "float");
                 add_param_simple(p, "alpha", "float");
                 return p;
             }
