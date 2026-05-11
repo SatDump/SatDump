@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/dsp/block.h"
+#include "common/dsp/buffer.h"
 #include "common/dsp/complex.h"
 #include "common/dsp/filter/firdes.h"
 #include "dsp/block.h"
@@ -16,15 +17,22 @@ namespace satdump
         {
         private:
             int buffer_size = 1024;
-            volk::vector<T> buffer;
+            dsp::RingBuffer<T> ring_buf;
+
+            bool work2shouldrun;
+            std::thread work2Thread;
 
             bool work();
+            void work2();
 
         public:
             ReshapeBufferBlock();
             ~ReshapeBufferBlock();
 
-            void init() {}
+            void start();
+            void stop(bool stop_now = false, bool force = false);
+
+            void init() { ring_buf.init(100); }
 
             nlohmann::ordered_json get_cfg_list()
             {

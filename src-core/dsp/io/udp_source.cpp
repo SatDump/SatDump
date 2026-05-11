@@ -23,11 +23,30 @@ namespace satdump
         template <typename T>
         bool UDPSourceBlock<T>::work()
         {
+            if (work_should_exit)
+            {
+                outputs[0].fifo->wait_enqueue(outputs[0].fifo->newBufferTerminator());
+                return true;
+            }
+
             try
             {
                 auto oblk = outputs[0].fifo->newBufferSamples(max_pkt_size, sizeof(T));
-                oblk.size = udp_rx->recv((uint8_t *)oblk.template getSamples<T>(), max_pkt_size);
-                outputs[0].fifo->wait_enqueue(oblk);
+
+                try
+                {
+                    oblk.size = udp_rx->recv((uint8_t *)oblk.template getSamples<T>(), max_pkt_size);
+                }
+                catch (std::exception &e)
+                {
+                    oblk.size = 0;
+                }
+
+                if (oblk.size)
+                    outputs[0].fifo->wait_enqueue(oblk);
+                else
+                    outputs[0].fifo->free(oblk);
+
                 return false;
             }
             catch (std::exception &e)

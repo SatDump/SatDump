@@ -25,7 +25,17 @@ namespace satdump
             UDPSourceBlock();
             ~UDPSourceBlock();
 
-            void init() { udp_rx = std::make_shared<net::UDPServer>(port); }
+            void init()
+            {
+                udp_rx = std::make_shared<net::UDPServer>(port);
+                udp_rx->enableTimeout();
+            }
+
+            void stop(bool stop_now = false, bool force = false)
+            {
+                Block::stop(stop_now, force);
+                udp_rx.reset();
+            }
 
             nlohmann::ordered_json get_cfg_list()
             {
