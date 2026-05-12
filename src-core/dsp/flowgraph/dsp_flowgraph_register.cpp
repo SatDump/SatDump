@@ -35,6 +35,7 @@
 #include "dsp/digital/unpack_bits.h"
 #include "dsp/displays/const_disp.h"
 #include "dsp/displays/hist_disp.h"
+#include "dsp/displays/time_disp.h"
 #include "dsp/fft/fft_pan.h"
 #include "dsp/filter/decimating_fir.h"
 #include "dsp/filter/fft.h"
@@ -234,6 +235,19 @@ namespace satdump
                 }
             };
 
+            class NodeTestTime : public NodeInternal
+            {
+            public:
+                NodeTestTime(const Flowgraph *f) : NodeInternal(f, std::make_shared<ndsp::TimeDisplayBlock>()) {}
+
+                virtual bool render()
+                {
+                    NodeInternal::render();
+                    ((ndsp::TimeDisplayBlock *)blk.get())->draw({800, 400});
+                    return false;
+                }
+            };
+
             void registerNodesInFlowgraph(Flowgraph &flowgraph)
             {
                 registerNode<NodeTestIQSource>(flowgraph, "IO/IQ Source");
@@ -246,6 +260,7 @@ namespace satdump
                 registerNode<NodeTestFFT>(flowgraph, "FFT/FFT Pan");
                 registerNode<NodeTestConst>(flowgraph, "View/Constellation Display");
                 registerNode<NodeTestHisto>(flowgraph, "View/Histogram Display");
+                registerNode<NodeTestTime>(flowgraph, "View/Time Display");
 
                 registerNodeSimple<ndsp::AGCBiasBlock>(flowgraph, "AGC/Agc Bias");
 
@@ -381,6 +396,7 @@ namespace satdump
                 registerNodeSimple<ndsp::BitToFloatBlock>(flowgraph, "Utils/Bit To Float");
                 registerNodeSimple<ndsp::UnpackBitsBlock>(flowgraph, "Utils/Unpack Bits");
                 registerNodeSimple<ndsp::RepeatBlock<float>>(flowgraph, "Utils/Repeat FF");
+                registerNodeSimple<ndsp::RepeatBlock<complex_t>>(flowgraph, "Utils/Repeat CC");
 
                 registerNodeSimple<ndsp::ZeroFillBlock<float>>(flowgraph, "Utils/Zero Fill FF");
                 registerNodeSimple<ndsp::ZeroFillBlock<complex_t>>(flowgraph, "Utils/Zero Fill CC");
