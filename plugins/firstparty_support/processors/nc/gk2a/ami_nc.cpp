@@ -20,27 +20,22 @@ namespace satdump
 
             H5::H5File file(H5LTopen_file_image(data.data(), data.size(), H5F_ACC_RDONLY));
 
-            std::string file_name_hdf;
-            hdfpp_read_attribute_string(file.openAttribute("file_name"), file_name_hdf);
-            std::vector<std::string> name_parts = splitString(file_name_hdf, '_');
+            std::vector<std::string> name_parts = splitString(hdfpp_read_attribute_string(file.openAttribute("file_name")), '_');
             image_out.channel = name_parts[3];
             std::transform(image_out.channel.begin(), image_out.channel.end(), image_out.channel.begin(), ::toupper);
 
-            hdfpp_read_attribute_double(file.openAttribute("sub_longitude"), image_out.longitude);
-            image_out.longitude *= 180 / M_PI;
-            hdfpp_read_attribute_double(file.openAttribute("cfac"), image_out.cfac);
-            hdfpp_read_attribute_double(file.openAttribute("lfac"), image_out.lfac);
-            hdfpp_read_attribute_double(file.openAttribute("coff"), image_out.coff);
-            hdfpp_read_attribute_double(file.openAttribute("loff"), image_out.loff);
-            hdfpp_read_attribute_double(file.openAttribute("nominal_satellite_height"), image_out.nominal_satellite_height);
-            hdfpp_read_attribute_double(file.openAttribute("DN_to_Radiance_Gain"), image_out.calibration_scale);
-            hdfpp_read_attribute_double(file.openAttribute("DN_to_Radiance_Offset"), image_out.calibration_offset);
+            image_out.longitude = hdfpp_read_attribute_double(file.openAttribute("sub_longitude")) * 180 / M_PI;
+            image_out.cfac = hdfpp_read_attribute_double(file.openAttribute("cfac"));
+            image_out.lfac = hdfpp_read_attribute_double(file.openAttribute("lfac"));
+            image_out.coff = hdfpp_read_attribute_double(file.openAttribute("coff"));
+            image_out.loff = hdfpp_read_attribute_double(file.openAttribute("loff"));
+            image_out.nominal_satellite_height = hdfpp_read_attribute_double(file.openAttribute("nominal_satellite_height"));
+            image_out.calibration_scale = hdfpp_read_attribute_double(file.openAttribute("DN_to_Radiance_Gain"));
+            image_out.calibration_offset = hdfpp_read_attribute_double(file.openAttribute("DN_to_Radiance_Offset"));
             if (file.attrExists("Radiance_to_Albedo_c"))
-                hdfpp_read_attribute_double(file.openAttribute("Radiance_to_Albedo_c"), image_out.kappa);
-            double timestamp_double;
-            hdfpp_read_attribute_double(file.openAttribute("observation_start_time"), timestamp_double);
-            image_out.timestamp = timestamp_double + 946728000; // Jan 1, 2000 12:00 UTC
-            hdfpp_read_attribute_string(file.openAttribute("satellite_name"), image_out.sat_name);
+                image_out.kappa = hdfpp_read_attribute_double(file.openAttribute("Radiance_to_Albedo_c"));
+            image_out.timestamp = hdfpp_read_attribute_double(file.openAttribute("observation_start_time")) + 946728000; // Jan 1, 2000 12:00 UTC
+            image_out.sat_name = hdfpp_read_attribute_string(file.openAttribute("satellite_name"));
 
             {
                 if (!file.nameExists("image_pixel_values"))
@@ -56,9 +51,7 @@ namespace satdump
 
                 image_out.img = image::Image(16, image_dims[1], image_dims[0], 1);
                 dataset.read(image_out.img.raw_data(), H5::PredType::NATIVE_UINT16, H5::DataSpace(2, image_dims));
-                double bit_depth_f = 0;
-                hdfpp_read_attribute_double(file.openDataSet("image_pixel_values").openAttribute("number_of_valid_bits_per_pixel"), bit_depth_f);
-                int bit_depth = bit_depth_f;
+                int bit_depth = hdfpp_read_attribute_double(file.openDataSet("image_pixel_values").openAttribute("number_of_valid_bits_per_pixel"));
                 int bit_depth_exponentiation = pow(2, bit_depth) - 1;
                 image_out.calibration_scale /= pow(2, 16 - bit_depth);
 

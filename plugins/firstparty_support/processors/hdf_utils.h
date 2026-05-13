@@ -7,10 +7,33 @@ namespace satdump
 {
     namespace firstparty
     {
-        inline void hdfpp_read_attribute_string(H5::Attribute attr, std::string &variable) { attr.read(attr.getStrType(), variable); }
-        inline void hdfpp_read_attribute_float(H5::Attribute attr, float &variable) { attr.read(H5::PredType::NATIVE_FLOAT, &variable); }
-        inline void hdfpp_read_attribute_double(H5::Attribute attr, double &variable) { attr.read(H5::PredType::NATIVE_DOUBLE, &variable); }
-        inline void hdfpp_read_attribute_int(H5::Attribute attr, int &variable) { attr.read(H5::PredType::NATIVE_INT32, &variable); }
+        inline std::string hdfpp_read_attribute_string(H5::Attribute attr)
+        {
+            std::string variable;
+            attr.read(attr.getStrType(), variable);
+            return variable;
+        }
+
+        inline float hdfpp_read_attribute_float(H5::Attribute attr)
+        {
+            float variable;
+            attr.read(H5::PredType::NATIVE_FLOAT, &variable);
+            return variable;
+        }
+
+        inline double hdfpp_read_attribute_double(H5::Attribute attr)
+        {
+            double variable;
+            attr.read(H5::PredType::NATIVE_DOUBLE, &variable);
+            return variable;
+        }
+
+        inline int hdfpp_read_attribute_int(H5::Attribute attr)
+        {
+            int variable;
+            attr.read(H5::PredType::NATIVE_INT32, &variable);
+            return variable;
+        }
 
         inline int get_one_int_dataset(H5::H5File &file, std::string path)
         {

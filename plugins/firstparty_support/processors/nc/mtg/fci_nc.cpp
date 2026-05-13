@@ -34,9 +34,9 @@ namespace satdump
                 is_hr_mode = l1c_channels[0] == 4;
             }
 
-            hdfpp_read_attribute_string(file.openAttribute("platform"), image_out.platform_name);
-            hdfpp_read_attribute_string(file.openAttribute("time_coverage_start"), image_out.time_coverage_start);
-            hdfpp_read_attribute_double(file.openDataSet("data/mtg_geos_projection").openAttribute("longitude_of_projection_origin"), image_out.longitude);
+            image_out.platform_name = hdfpp_read_attribute_string(file.openAttribute("platform"));
+            image_out.time_coverage_start = hdfpp_read_attribute_string(file.openAttribute("time_coverage_start"));
+            image_out.longitude = hdfpp_read_attribute_double(file.openDataSet("data/mtg_geos_projection").openAttribute("longitude_of_projection_origin"));
 
             const std::string channel_map[16] = {
                 "vis_04", "vis_05", "vis_06", "vis_08", "vis_09", "nir_13", "nir_16", "nir_22", "ir_38", "wv_63", "wv_73", "ir_87", "ir_97", "ir_105", "ir_123", "ir_133",
@@ -58,8 +58,8 @@ namespace satdump
                     continue;
                 }
 
-                hdfpp_read_attribute_double(file.openDataSet(channel_path).openAttribute("scale_factor"), image_out.calibration_scale[ch]);
-                hdfpp_read_attribute_double(file.openDataSet(channel_path).openAttribute("add_offset"), image_out.calibration_offset[ch]);
+                image_out.calibration_scale[ch] = hdfpp_read_attribute_double(file.openDataSet(channel_path).openAttribute("scale_factor"));
+                image_out.calibration_offset[ch] = hdfpp_read_attribute_double(file.openDataSet(channel_path).openAttribute("add_offset"));
 
                 {
                     int start_row = get_one_int_dataset(file, rowoff_path);

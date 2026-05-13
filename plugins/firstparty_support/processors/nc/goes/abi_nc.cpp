@@ -16,19 +16,18 @@ namespace satdump
             H5::H5File file(H5LTopen_file_image(data.data(), data.size(), H5F_ACC_RDONLY));
 
             image_out.channel = get_one_int_dataset(file, "band_id");
-            hdfpp_read_attribute_double(file.openDataSet("x").openAttribute("add_offset"), image_out.x_add_offset);
-            hdfpp_read_attribute_double(file.openDataSet("y").openAttribute("add_offset"), image_out.y_add_offset);
-            hdfpp_read_attribute_double(file.openDataSet("x").openAttribute("scale_factor"), image_out.x_scale_factor);
-            hdfpp_read_attribute_double(file.openDataSet("y").openAttribute("scale_factor"), image_out.y_scale_factor);
-            hdfpp_read_attribute_double(file.openDataSet("goes_imager_projection").openAttribute("perspective_point_height"), image_out.perspective_point_height);
-            hdfpp_read_attribute_double(file.openDataSet("goes_imager_projection").openAttribute("longitude_of_projection_origin"), image_out.longitude);
-            hdfpp_read_attribute_string(file.openAttribute("platform_ID"), image_out.goes_sat);
-            hdfpp_read_attribute_string(file.openAttribute("time_coverage_start"), image_out.time_coverage_start);
-            hdfpp_read_attribute_double(file.openDataSet("Rad").openAttribute("scale_factor"), image_out.calibration_scale);
-            hdfpp_read_attribute_double(file.openDataSet("Rad").openAttribute("add_offset"), image_out.calibration_offset);
+            image_out.x_add_offset = hdfpp_read_attribute_double(file.openDataSet("x").openAttribute("add_offset"));
+            image_out.y_add_offset = hdfpp_read_attribute_double(file.openDataSet("y").openAttribute("add_offset"));
+            image_out.x_scale_factor = hdfpp_read_attribute_double(file.openDataSet("x").openAttribute("scale_factor"));
+            image_out.y_scale_factor = hdfpp_read_attribute_double(file.openDataSet("y").openAttribute("scale_factor"));
+            image_out.perspective_point_height = hdfpp_read_attribute_double(file.openDataSet("goes_imager_projection").openAttribute("perspective_point_height"));
+            image_out.longitude = hdfpp_read_attribute_double(file.openDataSet("goes_imager_projection").openAttribute("longitude_of_projection_origin"));
+            image_out.goes_sat = hdfpp_read_attribute_string(file.openAttribute("platform_ID"));
+            image_out.time_coverage_start = hdfpp_read_attribute_string(file.openAttribute("time_coverage_start"));
+            image_out.calibration_scale = hdfpp_read_attribute_double(file.openDataSet("Rad").openAttribute("scale_factor"));
+            image_out.calibration_offset = hdfpp_read_attribute_double(file.openDataSet("Rad").openAttribute("add_offset"));
             image_out.kappa = get_one_double_dataset(file, "kappa0");
-            int bit_depth = 0;
-            hdfpp_read_attribute_int(file.openDataSet("Rad").openAttribute("sensor_band_bit_depth"), bit_depth);
+            int bit_depth = hdfpp_read_attribute_int(file.openDataSet("Rad").openAttribute("sensor_band_bit_depth"));
             int bit_depth_exponentiation = pow(2, bit_depth) - 1;
 
             image_out.calibration_scale /= pow(2, 14 - bit_depth);
