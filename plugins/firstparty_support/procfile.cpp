@@ -6,6 +6,8 @@
 #include "utils/file/file_iterators.h"
 #include "utils/file/folder_file_iterators.h"
 #include "utils/file/zip_file_iterators.h"
+#include <H5Cpp.h>
+#include <exception>
 #include <memory>
 
 namespace satdump
@@ -91,7 +93,19 @@ namespace satdump
                     if (toproc_info.group_id == parseFirstPartyInfo(f).group_id)
                     {
                         logger->trace(" - " + f->name);
-                        processor->ingestFile(f->getPayload());
+
+                        try
+                        {
+                            processor->ingestFile(f->getPayload());
+                        }
+                        catch (std::exception &e)
+                        {
+                            logger->error("Error processing file! %s", e.what());
+                        }
+                        catch (H5::Exception &e)
+                        {
+                            logger->error("Error processing file! %s", e.getCDetailMsg());
+                        }
                     }
                 }
             }
