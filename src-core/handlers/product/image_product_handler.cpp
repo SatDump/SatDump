@@ -1,5 +1,6 @@
 #include "image_product_handler.h"
 #include "common/widgets/menuitem_tooltip.h"
+#include "image/spectral_align.h"
 #include "imgui/imgui.h"
 #include "nlohmann/json_utils.h"
 
@@ -291,6 +292,30 @@ namespace satdump
                                     std::string str = nlohmann::json(ch.ch_transform).dump(4);
                                     ImGui::SetClipboardText(str.c_str());
                                 }
+
+                                auto alignAffineF = [this, &ch]()
+                                {
+                                    auto &ref = product->images[0].image;
+                                    auto tgt = ch.image;
+                                    double ax = double(ref.width()) / double(tgt.width());
+                                    double ay = double(ref.height()) / double(tgt.height());
+                                    if (ax != 1 || ay != 1)
+                                        tgt.resize(ref.width(), ref.height());
+
+                                    double x, y;
+                                    if (image::correlate_fft2d(ref, tgt, x, y))
+                                    {
+                                        logger->error("Correlation failed!");
+                                    }
+                                    else
+                                    {
+                                        logger->info("Correlation done!");
+                                        ch.ch_transform.init_affine(ax, //
+                                                                    ay, //
+                                                                    x, y);
+                                    }
+                                };
+                                advanced_auto_align_affine.draw("Auto-Align with first channel (Affine)", alignAffineF);
 
                                 ImGui::EndTabItem();
                             }

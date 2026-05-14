@@ -31,6 +31,7 @@ namespace satdump
             }
 
             file_writer.write((char *)iblk.getSamples<T>(), iblk.size * sizeof(T));
+            file_writer.flush();
 
             inputs[0].fifo->free(iblk);
 

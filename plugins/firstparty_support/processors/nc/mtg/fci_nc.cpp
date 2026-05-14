@@ -1,10 +1,11 @@
 #include "fci_nc.h"
-#include "../../../old/nc2pro/hdf5_utils.h"
-#include "common/utils.h"
+#include "../../hdf_utils.h"
+#include "H5DataSpace.h"
 #include "core/resources.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
 #include "projection/standard/proj_json.h"
+#include <H5Cpp.h>
 #include <H5LTpublic.h>
 
 extern "C"
@@ -20,30 +21,22 @@ namespace satdump
         {
             ParsedMTGFCI image_out;
 
-            // herr_t status;
             hsize_t image_dims[2];
 
-            hid_t file = H5LTopen_file_image(data.data(), data.size(), H5F_ACC_RDONLY);
-
-            if (file < 0)
-                return image_out;
+            H5::H5File file(H5LTopen_file_image(data.data(), data.size(), H5F_ACC_RDONLY));
 
             bool is_hr_mode = true;
 
             {
-                hid_t dataset = H5Dopen1(file, "l1c_channels_present");
-                if (dataset < 0)
-                    return image_out;
+                H5::DataSet s = file.openDataSet("l1c_channels_present");
                 hsize_t l1c_channels[2];
-                hid_t dataspace = H5Dget_space(dataset); /* dataspace handle */
-                H5Sget_simple_extent_dims(dataspace, l1c_channels, NULL);
+                s.getSpace().getSimpleExtentDims(l1c_channels);
                 is_hr_mode = l1c_channels[0] == 4;
-                H5Dclose(dataset);
             }
 
-            image_out.platform_name = nc2pro::hdf5_get_string_attr_FILE(file, "platform");
-            image_out.time_coverage_start = nc2pro::hdf5_get_string_attr_FILE(file, "time_coverage_start");
-            image_out.longitude = nc2pro::hdf5_get_float_attr(file, "data/mtg_geos_projection", "longitude_of_projection_origin");
+            image_out.platform_name = hdfpp_read_attribute_string(file.openAttribute("platform"));
+            image_out.time_coverage_start = hdfpp_read_attribute_string(file.openAttribute("time_coverage_start"));
+            image_out.longitude = hdfpp_read_attribute_double(file.openDataSet("data/mtg_geos_projection").openAttribute("longitude_of_projection_origin"));
 
             const std::string channel_map[16] = {
                 "vis_04", "vis_05", "vis_06", "vis_08", "vis_09", "nir_13", "nir_16", "nir_22", "ir_38", "wv_63", "wv_73", "ir_87", "ir_97", "ir_105", "ir_123", "ir_133",
@@ -59,39 +52,32 @@ namespace satdump
                 auto channel_path = (std::string) "data/" + std::string(is_hr_mode ? channel_map_hr[ch] : channel_map[ch]) + "/measured/effective_radiance";
                 auto rowoff_path = (std::string) "data/" + std::string(is_hr_mode ? channel_map_hr[ch] : channel_map[ch]) + "/measured/start_position_row";
 
-                if (!H5Lexists(file, test_path.c_str(), H5P_DEFAULT))
+                if (!file.nameExists(test_path.c_str()))
                 {
                     logger->trace("Skipping channel %d", ch + 1);
                     continue;
                 }
 
-                image_out.calibration_scale[ch] = nc2pro::hdf5_get_float_attr(file, channel_path, "scale_factor");
-                image_out.calibration_offset[ch] = nc2pro::hdf5_get_float_attr(file, channel_path, "add_offset");
+                image_out.calibration_scale[ch] = hdfpp_read_attribute_double(file.openDataSet(channel_path).openAttribute("scale_factor"));
+                image_out.calibration_offset[ch] = hdfpp_read_attribute_double(file.openDataSet(channel_path).openAttribute("add_offset"));
 
                 {
-                    int start_row = nc2pro::hdf5_get_int(file, rowoff_path);
+                    int start_row = get_one_int_dataset(file, rowoff_path);
                     if (start_row == -1e6)
                         continue;
                     image_out.start_row[ch] = start_row;
                 }
 
-                hid_t dataset = H5Dopen2(file, channel_path.c_str(), H5P_DEFAULT);
+                auto dataset = file.openDataSet(channel_path);
 
-                if (dataset < 0)
-                    continue;
-
-                hid_t dataspace = H5Dget_space(dataset);
-                int rank = H5Sget_simple_extent_ndims(dataspace);
-                H5Sget_simple_extent_dims(dataspace, image_dims, NULL);
+                int rank = dataset.getSpace().getSimpleExtentNdims();
+                dataset.getSpace().getSimpleExtentDims(image_dims);
 
                 if (rank != 2)
                     return image_out;
 
-                hid_t memspace = H5Screate_simple(2, image_dims, NULL);
-
                 image::Image img(16, image_dims[1], image_dims[0], 1);
-
-                H5Dread(dataset, H5T_NATIVE_UINT16, memspace, dataspace, H5P_DEFAULT, (uint16_t *)img.raw_data());
+                dataset.read(img.raw_data(), H5::PredType::NATIVE_UINT16, H5::DataSpace(2, image_dims));
 
                 for (size_t i = 0; i < img.size(); i++)
                     if (img.get(i) == 65535)
@@ -100,11 +86,7 @@ namespace satdump
                         img.set(i, img.get(i) << 4);
 
                 image_out.imgs[ch] = img;
-
-                H5Dclose(dataset);
             }
-
-            H5Fclose(file);
 
             return image_out;
         }

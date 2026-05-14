@@ -1,37 +1,47 @@
 #pragma once
 
+#include "common/net/udp.h"
+#include "common/utils.h"
 #include "dsp/block.h"
-#include <nng/nng.h>
+#include "logger.h"
+#include <fstream>
 
 namespace satdump
 {
     namespace ndsp
     {
         template <typename T>
-        class NNGSinkBlock : public Block
+        class UDPSourceBlock : public Block
         {
         private:
-            std::string address = "0.0.0.0";
+            int max_pkt_size = 65536;
             int port = 8888;
 
-            nng_socket sock;
-            nng_listener listener;
+            std::shared_ptr<net::UDPServer> udp_rx;
 
             bool work();
 
         public:
-            void start();
-            void stop(bool stop_now = false, bool force = false);
+            UDPSourceBlock();
+            ~UDPSourceBlock();
 
-        public:
-            NNGSinkBlock();
-            ~NNGSinkBlock();
+            void init()
+            {
+                udp_rx = std::make_shared<net::UDPServer>(port);
+                udp_rx->enableTimeout();
+            }
+
+            void stop(bool stop_now = false, bool force = false)
+            {
+                Block::stop(stop_now, force);
+                udp_rx.reset();
+            }
 
             nlohmann::ordered_json get_cfg_list()
             {
                 nlohmann::ordered_json p;
-                add_param_simple(p, "address", "string");
-                p["address"]["disable"] = is_work_running();
+                add_param_simple(p, "max_pkt_size", "int");
+                p["max_pkt_size"]["disable"] = is_work_running();
                 add_param_simple(p, "port", "int");
                 p["port"]["disable"] = is_work_running();
                 return p;
@@ -39,8 +49,8 @@ namespace satdump
 
             nlohmann::json get_cfg(std::string key)
             {
-                if (key == "address")
-                    return address;
+                if (key == "max_pkt_size")
+                    return max_pkt_size;
                 else if (key == "port")
                     return port;
                 else
@@ -49,8 +59,8 @@ namespace satdump
 
             cfg_res_t set_cfg(std::string key, nlohmann::json v)
             {
-                if (key == "address")
-                    address = v;
+                if (key == "max_pkt_size")
+                    max_pkt_size = v;
                 else if (key == "port")
                     port = v;
                 else

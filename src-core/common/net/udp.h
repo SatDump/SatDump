@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string.h>
 #include <stdexcept>
+#include <string.h>
 
 #if defined(_WIN32)
 #include <stdio.h>
@@ -110,7 +110,7 @@ namespace net
             if (bind(sock, (struct sockaddr *)&sock_addr, sizeof(sock_addr)) < 0)
                 throw std::runtime_error("Couldn't connect to UDP socket!");
             int ttrue = 1;
-            setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char*)&ttrue, sizeof(int));
+            setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&ttrue, sizeof(int));
         }
 
         ~UDPServer()
@@ -122,6 +122,14 @@ namespace net
             shutdown(sock, SHUT_RDWR);
             close(sock);
 #endif
+        }
+
+        void enableTimeout()
+        {
+            struct timeval read_timeout;
+            read_timeout.tv_sec = 0;
+            read_timeout.tv_usec = 1e4;
+            setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof read_timeout);
         }
 
         int send(uint8_t *data, int len)
@@ -144,11 +152,11 @@ namespace net
             if (r == -1)
             {
 #if defined(_WIN32)
-                if(WSAGetLastError() != WSAEINTR)
+                if (WSAGetLastError() != WSAEINTR)
 #endif
-                throw std::runtime_error("Error receiving from UDP socket!");
+                    throw std::runtime_error("Error receiving from UDP socket!");
             }
             return r;
         }
     };
-}
+} // namespace net

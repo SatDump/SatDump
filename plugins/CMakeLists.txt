@@ -363,6 +363,12 @@ if(PLUGIN_BLADERF_SDR_SUPPORT)
   add_subdirectory(sdr_sources/bladerf_sdr_support)
 endif()
 
+option(PLUGIN_LITEXM2SDR_SDR_SUPPORT "Enable LiteX M2SDR SDR Support plugin" ON)
+
+if(PLUGIN_LITEXM2SDR_SDR_SUPPORT)
+  add_subdirectory(sdr_sources/litexm2sdr_sdr_support)
+endif()
+
 option(PLUGIN_USRP_SDR_SUPPORT "Enable USRP SDR Support plugin" ON)
 
 if(PLUGIN_USRP_SDR_SUPPORT)

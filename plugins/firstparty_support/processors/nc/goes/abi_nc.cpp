@@ -1,12 +1,7 @@
 #include "abi_nc.h"
-#include "../../../old/nc2pro/hdf5_utils.h"
-#include "common/utils.h"
+#include "../../hdf_utils.h"
+#include <H5Cpp.h>
 #include <H5LTpublic.h>
-
-extern "C"
-{
-    void register_MTG_FILTER();
-}
 
 namespace satdump
 {
@@ -18,63 +13,46 @@ namespace satdump
 
             hsize_t image_dims[2];
 
-            hid_t file = H5LTopen_file_image(data.data(), data.size(), H5F_ACC_RDONLY);
+            H5::H5File file(H5LTopen_file_image(data.data(), data.size(), H5F_ACC_RDONLY));
 
-            if (file < 0)
+            image_out.channel = get_one_int_dataset(file, "band_id");
+            image_out.x_add_offset = hdfpp_read_attribute_double(file.openDataSet("x").openAttribute("add_offset"));
+            image_out.y_add_offset = hdfpp_read_attribute_double(file.openDataSet("y").openAttribute("add_offset"));
+            image_out.x_scale_factor = hdfpp_read_attribute_double(file.openDataSet("x").openAttribute("scale_factor"));
+            image_out.y_scale_factor = hdfpp_read_attribute_double(file.openDataSet("y").openAttribute("scale_factor"));
+            image_out.perspective_point_height = hdfpp_read_attribute_double(file.openDataSet("goes_imager_projection").openAttribute("perspective_point_height"));
+            image_out.longitude = hdfpp_read_attribute_double(file.openDataSet("goes_imager_projection").openAttribute("longitude_of_projection_origin"));
+            image_out.goes_sat = hdfpp_read_attribute_string(file.openAttribute("platform_ID"));
+            image_out.time_coverage_start = hdfpp_read_attribute_string(file.openAttribute("time_coverage_start"));
+            image_out.calibration_scale = hdfpp_read_attribute_double(file.openDataSet("Rad").openAttribute("scale_factor"));
+            image_out.calibration_offset = hdfpp_read_attribute_double(file.openDataSet("Rad").openAttribute("add_offset"));
+            image_out.kappa = get_one_double_dataset(file, "kappa0");
+            int bit_depth = hdfpp_read_attribute_int(file.openDataSet("Rad").openAttribute("sensor_band_bit_depth"));
+            int bit_depth_exponentiation = pow(2, bit_depth) - 1;
+
+            image_out.calibration_scale /= pow(2, 14 - bit_depth);
+
+            if (!file.nameExists("Rad"))
                 return image_out;
 
-            {
-                image_out.channel = nc2pro::hdf5_get_int(file, "band_id");
-                image_out.x_add_offset = nc2pro::hdf5_get_float_attr(file, "x", "add_offset");
-                image_out.y_add_offset = nc2pro::hdf5_get_float_attr(file, "y", "add_offset");
-                image_out.x_scale_factor = nc2pro::hdf5_get_float_attr(file, "x", "scale_factor");
-                image_out.y_scale_factor = nc2pro::hdf5_get_float_attr(file, "y", "scale_factor");
-                image_out.perspective_point_height = nc2pro::hdf5_get_float_attr(file, "goes_imager_projection", "perspective_point_height");
-                image_out.longitude = nc2pro::hdf5_get_float_attr(file, "goes_imager_projection", "longitude_of_projection_origin");
-                image_out.goes_sat = nc2pro::hdf5_get_string_attr_FILE_fixed(file, "platform_ID");
-                image_out.time_coverage_start = nc2pro::hdf5_get_string_attr_FILE_fixed(file, "time_coverage_start");
-                image_out.calibration_scale = nc2pro::hdf5_get_float_attr(file, "Rad", "scale_factor");
-                image_out.calibration_offset = nc2pro::hdf5_get_float_attr(file, "Rad", "add_offset");
-                image_out.kappa = nc2pro::hdf5_get_float(file, "kappa0");
-                int bit_depth = nc2pro::hdf5_get_float_attr(file, "Rad", "sensor_band_bit_depth");
-                int bit_depth_exponentiation = pow(2, bit_depth) - 1;
+            auto dataset = file.openDataSet("Rad");
 
-                image_out.calibration_scale /= pow(2, 14 - bit_depth);
+            int rank = dataset.getSpace().getSimpleExtentNdims();
+            dataset.getSpace().getSimpleExtentDims(image_dims);
 
-                if (!H5Lexists(file, "Rad", H5P_DEFAULT))
-                    goto close;
+            if (rank != 2)
+                return image_out;
 
-                hid_t dataset = H5Dopen2(file, "Rad", H5P_DEFAULT);
+            image::Image img(16, image_dims[1], image_dims[0], 1);
+            dataset.read(img.raw_data(), H5::PredType::NATIVE_UINT16, H5::DataSpace(2, image_dims));
 
-                if (dataset < 0)
-                    goto close;
+            for (size_t i = 0; i < img.size(); i++)
+                if (img.get(i) == bit_depth_exponentiation)
+                    img.set(i, 0);
+                else
+                    img.set(i, img.get(i) << (16 - bit_depth));
 
-                hid_t dataspace = H5Dget_space(dataset);
-                int rank = H5Sget_simple_extent_ndims(dataspace);
-                H5Sget_simple_extent_dims(dataspace, image_dims, NULL);
-
-                if (rank != 2)
-                    goto close;
-
-                hid_t memspace = H5Screate_simple(2, image_dims, NULL);
-
-                image::Image img(16, image_dims[1], image_dims[0], 1);
-
-                H5Dread(dataset, H5T_NATIVE_UINT16, memspace, dataspace, H5P_DEFAULT, (uint16_t *)img.raw_data());
-
-                for (size_t i = 0; i < img.size(); i++)
-                    if (img.get(i) == bit_depth_exponentiation)
-                        img.set(i, 0);
-                    else
-                        img.set(i, img.get(i) << (16 - bit_depth));
-
-                image_out.img = img;
-
-                H5Dclose(dataset);
-            }
-        close:
-
-            H5Fclose(file);
+            image_out.img = img;
 
             return image_out;
         }

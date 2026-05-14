@@ -1,16 +1,13 @@
 #include "ami_nc.h"
 #include "../../../old/nc2pro/hdf5_utils.h"
+#include "../../hdf_utils.h"
 #include "core/resources.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
 #include "projection/standard/proj_json.h"
 #include "utils/string.h"
+#include <H5Cpp.h>
 #include <H5LTpublic.h>
-
-extern "C"
-{
-    void register_MTG_FILTER();
-}
 
 namespace satdump
 {
@@ -21,45 +18,40 @@ namespace satdump
             ParsedGK2AAMI image_out;
             hsize_t image_dims[2];
 
-            hid_t file = H5LTopen_file_image(data.data(), data.size(), H5F_ACC_RDONLY);
-            if (file < 0)
-                return image_out;
+            H5::H5File file(H5LTopen_file_image(data.data(), data.size(), H5F_ACC_RDONLY));
 
-            std::vector<std::string> name_parts = splitString(nc2pro::hdf5_get_string_attr_FILE_fixed(file, "file_name"), '_');
+            std::vector<std::string> name_parts = splitString(hdfpp_read_attribute_string(file.openAttribute("file_name")), '_');
             image_out.channel = name_parts[3];
             std::transform(image_out.channel.begin(), image_out.channel.end(), image_out.channel.begin(), ::toupper);
 
-            image_out.longitude = nc2pro::hdf5_get_double_attr_FILE(file, "sub_longitude") * 180 / M_PI;
-            image_out.cfac = nc2pro::hdf5_get_double_attr_FILE(file, "cfac");
-            image_out.lfac = nc2pro::hdf5_get_double_attr_FILE(file, "lfac");
-            image_out.coff = nc2pro::hdf5_get_double_attr_FILE(file, "coff");
-            image_out.loff = nc2pro::hdf5_get_double_attr_FILE(file, "loff");
-            image_out.nominal_satellite_height = nc2pro::hdf5_get_double_attr_FILE(file, "nominal_satellite_height");
-            image_out.calibration_scale = nc2pro::hdf5_get_double_attr_FILE(file, "DN_to_Radiance_Gain");
-            image_out.calibration_offset = nc2pro::hdf5_get_double_attr_FILE(file, "DN_to_Radiance_Offset");
-            image_out.kappa = nc2pro::hdf5_get_double_attr_FILE(file, "Radiance_to_Albedo_c");
-            image_out.timestamp = nc2pro::hdf5_get_double_attr_FILE(file, "observation_start_time") + 946728000; // Jan 1, 2000 12:00 UTC
-            image_out.sat_name = nc2pro::hdf5_get_string_attr_FILE_fixed(file, "satellite_name");
+            image_out.longitude = hdfpp_read_attribute_double(file.openAttribute("sub_longitude")) * 180 / M_PI;
+            image_out.cfac = hdfpp_read_attribute_double(file.openAttribute("cfac"));
+            image_out.lfac = hdfpp_read_attribute_double(file.openAttribute("lfac"));
+            image_out.coff = hdfpp_read_attribute_double(file.openAttribute("coff"));
+            image_out.loff = hdfpp_read_attribute_double(file.openAttribute("loff"));
+            image_out.nominal_satellite_height = hdfpp_read_attribute_double(file.openAttribute("nominal_satellite_height"));
+            image_out.calibration_scale = hdfpp_read_attribute_double(file.openAttribute("DN_to_Radiance_Gain"));
+            image_out.calibration_offset = hdfpp_read_attribute_double(file.openAttribute("DN_to_Radiance_Offset"));
+            if (file.attrExists("Radiance_to_Albedo_c"))
+                image_out.kappa = hdfpp_read_attribute_double(file.openAttribute("Radiance_to_Albedo_c"));
+            image_out.timestamp = hdfpp_read_attribute_double(file.openAttribute("observation_start_time")) + 946728000; // Jan 1, 2000 12:00 UTC
+            image_out.sat_name = hdfpp_read_attribute_string(file.openAttribute("satellite_name"));
 
             {
-                if (!H5Lexists(file, "image_pixel_values", H5P_DEFAULT))
-                    goto close;
+                if (!file.nameExists("image_pixel_values"))
+                    return image_out;
 
-                hid_t dataset = H5Dopen2(file, "image_pixel_values", H5P_DEFAULT);
-                if (dataset < 0)
-                    goto close;
+                auto dataset = file.openDataSet("image_pixel_values");
 
-                hid_t dataspace = H5Dget_space(dataset);
-                int rank = H5Sget_simple_extent_ndims(dataspace);
-                H5Sget_simple_extent_dims(dataspace, image_dims, NULL);
+                int rank = dataset.getSpace().getSimpleExtentNdims();
+                dataset.getSpace().getSimpleExtentDims(image_dims);
 
                 if (rank != 2)
-                    goto close;
+                    return image_out;
 
-                hid_t memspace = H5Screate_simple(2, image_dims, NULL);
                 image_out.img = image::Image(16, image_dims[1], image_dims[0], 1);
-                H5Dread(dataset, H5T_NATIVE_UINT16, memspace, dataspace, H5P_DEFAULT, (uint16_t *)image_out.img.raw_data());
-                int bit_depth = nc2pro::hdf5_get_float_attr(file, "image_pixel_values", "number_of_valid_bits_per_pixel");
+                dataset.read(image_out.img.raw_data(), H5::PredType::NATIVE_UINT16, H5::DataSpace(2, image_dims));
+                int bit_depth = hdfpp_read_attribute_double(file.openDataSet("image_pixel_values").openAttribute("number_of_valid_bits_per_pixel"));
                 int bit_depth_exponentiation = pow(2, bit_depth) - 1;
                 image_out.calibration_scale /= pow(2, 16 - bit_depth);
 
@@ -70,12 +62,8 @@ namespace satdump
                     else
                         image_out.img.set(i, image_out.img.get(i) << (16 - bit_depth));
                 }
-
-                H5Dclose(dataset);
             }
 
-        close:
-            H5Fclose(file);
             return image_out;
         }
 

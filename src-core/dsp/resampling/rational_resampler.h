@@ -59,6 +59,8 @@ namespace satdump
                     return p_interpolation;
                 else if (key == "decimation")
                     return p_decimation;
+                else if (key == "taps")
+                    return p_taps;
                 else
                     throw satdump_exception(key);
             }
@@ -73,6 +75,11 @@ namespace satdump
                 else if (key == "decimation")
                 {
                     p_decimation = v;
+                    needs_reinit = true;
+                }
+                else if (key == "taps")
+                {
+                    p_taps = v.get<std::vector<float>>();
                     needs_reinit = true;
                 }
                 else
