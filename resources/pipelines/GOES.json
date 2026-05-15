@@ -107,7 +107,6 @@
                 "name": "Save EMWIN text files",
                 "description": "EMWIN sends down a lot of raw text data including METAR reports, station readings, and written forecasts. These usually use up a lot of space because of their quantity, you can use this setting to toggle saving them."
             }
-
         },
         "work": {
             "baseband": {},
@@ -210,10 +209,8 @@
                 2
             ],
             "client": [
-                [
-                    3,
-                    0
-                ]
+                3,
+                0
             ]
         },
         "frequencies": [
@@ -506,7 +503,7 @@
                 "GOES-N Sensor data",
                 1676e6
             ]
-        ],        
+        ],
         "parameters": {
             "samplerate": {
                 "value": 6e6
