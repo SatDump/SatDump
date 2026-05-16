@@ -1,8 +1,6 @@
 #include "mersi_hdf.h"
-#include "common/utils.h"
 #include "image/image.h"
 #include "logger.h"
-#include "utils/string.h"
 #include <H5Cpp.h>
 #include <H5LTpublic.h>
 #include <cstdint>
@@ -75,6 +73,8 @@ namespace satdump
                 mersi_type = MERSI_3;
             else if (name_str == "FY-3G")
                 mersi_type = MERSI_RM;
+            else if (name_str == "FY-3H")
+                mersi_type = MERSI_3;
 
             // Init as needed
             if (!mersi_products)
@@ -88,81 +88,135 @@ namespace satdump
                 mersi_products->set_product_source(name_str);
             }
 
-            // From now on, we want only Data
-            if (!file.nameExists("Data"))
-                return;
-
-            // Process depending on MERSI type
-            if (mersi_type == MERSI_RM)
+            // There, we want only Data
+            if (file.nameExists("Data"))
             {
-                if (file.nameExists("Data/EV_Reflectance"))
+                // Process depending on MERSI type
+                if (mersi_type == MERSI_LL)
                 {
-                    auto ch1_5 = get_multi_img_from_hdf(file, "Data/EV_Reflectance");
-                    for (int i = 0; i < ch1_5.size(); i++)
-                        mersi_products->images.push_back({i, "MERSIRM-" + std::to_string(i + 1), std::to_string(i + 1), ch1_5[i], 16, satdump::ChannelTransform().init_none()});
-                }
-                if (file.nameExists("Data/EV_Emissive"))
-                {
-                    auto ch6_8 = get_multi_img_from_hdf(file, "Data/EV_Emissive");
-                    for (int i = 5; i < 5 + ch6_8.size(); i++)
-                        mersi_products->images.push_back({i, "MERSIRM-" + std::to_string(i + 1), std::to_string(i + 1), ch6_8[i - 5], 16, satdump::ChannelTransform().init_none()});
-                }
-            }
-            else if (mersi_type == MERSI_3)
-            {
-                if (file.nameExists("Data/EV_250_RefSB_b1"))
-                {
-                    auto img = get_img_from_hdf(file, "Data/EV_250_RefSB_b1");
-                    for (size_t i = 0; i < img.size(); i++)
-                        img.set(i, img.get(i) << 4);
-                    mersi_products->images.push_back({0, "MERSI3-1", "1", img, 12, satdump::ChannelTransform().init_none()});
-                }
-                if (file.nameExists("Data/EV_250_RefSB_b2"))
-                {
-                    auto img = get_img_from_hdf(file, "Data/EV_250_RefSB_b2");
-                    for (size_t i = 0; i < img.size(); i++)
-                        img.set(i, img.get(i) << 4);
-                    mersi_products->images.push_back({1, "MERSI3-2", "2", img, 12, satdump::ChannelTransform().init_none()});
-                }
-                if (file.nameExists("Data/EV_250_RefSB_b3"))
-                {
-                    auto img = get_img_from_hdf(file, "Data/EV_250_RefSB_b3");
-                    for (size_t i = 0; i < img.size(); i++)
-                        img.set(i, img.get(i) << 4);
-                    mersi_products->images.push_back({2, "MERSI3-3", "3", img, 12, satdump::ChannelTransform().init_none()});
-                }
-                if (file.nameExists("Data/EV_250_RefSB_b4"))
-                {
-                    auto img = get_img_from_hdf(file, "Data/EV_250_RefSB_b4");
-                    for (size_t i = 0; i < img.size(); i++)
-                        img.set(i, img.get(i) << 4);
-                    mersi_products->images.push_back({3, "MERSI3-4", "4", img, 12, satdump::ChannelTransform().init_none()});
-                }
-                if (file.nameExists("Data/EV_250_Emissive_b24"))
-                {
-                    auto img = get_img_from_hdf(file, "Data/EV_250_Emissive_b24");
-                    mersi_products->images.push_back({4, "MERSI3-5", "5", img, 16, satdump::ChannelTransform().init_none()});
-                }
-                if (file.nameExists("Data/EV_250_Emissive_b25"))
-                {
-                    auto img = get_img_from_hdf(file, "Data/EV_250_Emissive_b25");
-                    mersi_products->images.push_back({5, "MERSI3-6", "6", img, 16, satdump::ChannelTransform().init_none()});
-                }
-                if (file.nameExists("Data/EV_1KM_RefSB"))
-                {
-                    auto ch5_19 = get_multi_img_from_hdf(file, "Data/EV_1KM_RefSB");
-                    for (int i = 6; i < 6 + ch5_19.size(); i++)
+                    if (file.nameExists("Data/EV_250_Emissive_b6"))
                     {
-                        for (size_t i2 = 0; i2 < ch5_19[i - 6].size(); i2++)
-                            ch5_19[i - 6].set(i2, ch5_19[i - 6].get(i2) << 4);
-                        mersi_products->images.push_back({i, "MERSI3-" + std::to_string(i + 1), std::to_string(i + 1), ch5_19[i - 6], 12, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
+                        auto ch1 = get_img_from_hdf(file, "Data/EV_250_Emissive_b6");
+                        mersi_products->images.push_back({0, "MERSILL-1", "1", ch1, 16, satdump::ChannelTransform().init_none()});
+                    }
+                    if (file.nameExists("Data/EV_250_Emissive_b7"))
+                    {
+                        auto ch2 = get_img_from_hdf(file, "Data/EV_250_Emissive_b7");
+                        mersi_products->images.push_back({1, "MERSILL-2", "2", ch2, 16, satdump::ChannelTransform().init_none()});
+                    }
+                    if (file.nameExists("Data/EV_1KM_Emissive"))
+                    {
+                        auto ch3_6 = get_multi_img_from_hdf(file, "Data/EV_1KM_Emissive");
+                        for (int i = 2; i < 2 + ch3_6.size(); i++)
+                            mersi_products->images.push_back({i, "MERSILL-" + std::to_string(i + 1), std::to_string(i + 1), ch3_6[i], 16, satdump::ChannelTransform().init_none()});
+                    }
+                    if (file.nameExists("Data/EV_1KM_SWIR"))
+                    {
+                        auto img = get_img_from_hdf(file, "Data/EV_1KM_SWIR");
+                        for (size_t i = 0; i < img.size(); i++)
+                            img.set(i, img.get(i) << 4);
+                        mersi_products->images.push_back({6, "MERSILL-7", "7", img, 16, satdump::ChannelTransform().init_none()});
+                    }
+                    if (file.nameExists("Data/EV_1KM_HGS"))
+                    {
+                        auto img = get_img_from_hdf(file, "Data/EV_1KM_HGS");
+                        for (size_t i = 0; i < img.size(); i++)
+                            img.set(i, img.get(i) << 4);
+                        mersi_products->images.push_back({7, "MERSILL-8", "8", img, 16, satdump::ChannelTransform().init_none()});
+                    }
+                    if (file.nameExists("Data/EV_1KM_HGS_ACC"))
+                    {
+                        auto img = get_img_from_hdf(file, "Data/EV_1KM_HGS_ACC");
+                        for (size_t i = 0; i < img.size(); i++)
+                            img.set(i, img.get(i) << 4);
+                        mersi_products->images.push_back({8, "MERSILL-9", "9", img, 16, satdump::ChannelTransform().init_none()});
+                    }
+                    if (file.nameExists("Data/EV_1KM_LGS"))
+                    {
+                        auto img = get_img_from_hdf(file, "Data/EV_1KM_LGS");
+                        for (size_t i = 0; i < img.size(); i++)
+                            img.set(i, img.get(i) << 4);
+                        mersi_products->images.push_back({9, "MERSILL-10", "10", img, 16, satdump::ChannelTransform().init_none()});
+                    }
+                    if (file.nameExists("Data/EV_1KM_MGS"))
+                    {
+                        auto img = get_img_from_hdf(file, "Data/EV_1KM_MGS");
+                        for (size_t i = 0; i < img.size(); i++)
+                            img.set(i, img.get(i) << 4);
+                        mersi_products->images.push_back({10, "MERSILL-11", "11", img, 16, satdump::ChannelTransform().init_none()});
                     }
                 }
-                if (file.nameExists("Data/EV_1KM_Emissive"))
+                else if (mersi_type == MERSI_RM)
                 {
-                    auto ch20_23 = get_multi_img_from_hdf(file, "Data/EV_1KM_Emissive");
-                    for (int i = 21; i < 21 + ch20_23.size(); i++)
-                        mersi_products->images.push_back({i, "MERSI3-" + std::to_string(i + 1), std::to_string(i + 1), ch20_23[i - 21], 16, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
+                    if (file.nameExists("Data/EV_Reflectance"))
+                    {
+                        auto ch1_5 = get_multi_img_from_hdf(file, "Data/EV_Reflectance");
+                        for (int i = 0; i < ch1_5.size(); i++)
+                            mersi_products->images.push_back({i, "MERSIRM-" + std::to_string(i + 1), std::to_string(i + 1), ch1_5[i], 16, satdump::ChannelTransform().init_none()});
+                    }
+                    if (file.nameExists("Data/EV_Emissive"))
+                    {
+                        auto ch6_8 = get_multi_img_from_hdf(file, "Data/EV_Emissive");
+                        for (int i = 5; i < 5 + ch6_8.size(); i++)
+                            mersi_products->images.push_back({i, "MERSIRM-" + std::to_string(i + 1), std::to_string(i + 1), ch6_8[i - 5], 16, satdump::ChannelTransform().init_none()});
+                    }
+                }
+                else if (mersi_type == MERSI_3)
+                {
+                    if (file.nameExists("Data/EV_250_RefSB_b1"))
+                    {
+                        auto img = get_img_from_hdf(file, "Data/EV_250_RefSB_b1");
+                        for (size_t i = 0; i < img.size(); i++)
+                            img.set(i, img.get(i) << 4);
+                        mersi_products->images.push_back({0, "MERSI3-1", "1", img, 12, satdump::ChannelTransform().init_none()});
+                    }
+                    if (file.nameExists("Data/EV_250_RefSB_b2"))
+                    {
+                        auto img = get_img_from_hdf(file, "Data/EV_250_RefSB_b2");
+                        for (size_t i = 0; i < img.size(); i++)
+                            img.set(i, img.get(i) << 4);
+                        mersi_products->images.push_back({1, "MERSI3-2", "2", img, 12, satdump::ChannelTransform().init_none()});
+                    }
+                    if (file.nameExists("Data/EV_250_RefSB_b3"))
+                    {
+                        auto img = get_img_from_hdf(file, "Data/EV_250_RefSB_b3");
+                        for (size_t i = 0; i < img.size(); i++)
+                            img.set(i, img.get(i) << 4);
+                        mersi_products->images.push_back({2, "MERSI3-3", "3", img, 12, satdump::ChannelTransform().init_none()});
+                    }
+                    if (file.nameExists("Data/EV_250_RefSB_b4"))
+                    {
+                        auto img = get_img_from_hdf(file, "Data/EV_250_RefSB_b4");
+                        for (size_t i = 0; i < img.size(); i++)
+                            img.set(i, img.get(i) << 4);
+                        mersi_products->images.push_back({3, "MERSI3-4", "4", img, 12, satdump::ChannelTransform().init_none()});
+                    }
+                    if (file.nameExists("Data/EV_250_Emissive_b24"))
+                    {
+                        auto img = get_img_from_hdf(file, "Data/EV_250_Emissive_b24");
+                        mersi_products->images.push_back({4, "MERSI3-5", "5", img, 16, satdump::ChannelTransform().init_none()});
+                    }
+                    if (file.nameExists("Data/EV_250_Emissive_b25"))
+                    {
+                        auto img = get_img_from_hdf(file, "Data/EV_250_Emissive_b25");
+                        mersi_products->images.push_back({5, "MERSI3-6", "6", img, 16, satdump::ChannelTransform().init_none()});
+                    }
+                    if (file.nameExists("Data/EV_1KM_RefSB"))
+                    {
+                        auto ch5_19 = get_multi_img_from_hdf(file, "Data/EV_1KM_RefSB");
+                        for (int i = 6; i < 6 + ch5_19.size(); i++)
+                        {
+                            for (size_t i2 = 0; i2 < ch5_19[i - 6].size(); i2++)
+                                ch5_19[i - 6].set(i2, ch5_19[i - 6].get(i2) << 4);
+                            mersi_products->images.push_back({i, "MERSI3-" + std::to_string(i + 1), std::to_string(i + 1), ch5_19[i - 6], 12, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
+                        }
+                    }
+                    if (file.nameExists("Data/EV_1KM_Emissive"))
+                    {
+                        auto ch20_23 = get_multi_img_from_hdf(file, "Data/EV_1KM_Emissive");
+                        for (int i = 21; i < 21 + ch20_23.size(); i++)
+                            mersi_products->images.push_back({i, "MERSI3-" + std::to_string(i + 1), std::to_string(i + 1), ch20_23[i - 21], 16, satdump::ChannelTransform().init_affine(4, 4, 0, 0)});
+                    }
                 }
             }
         }

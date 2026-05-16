@@ -42,6 +42,10 @@ namespace satdump
             // FengYun-3
             HDF_FY3_MERSI,
 
+            // FengYun-4
+            HDF_FY4_AGRI,
+            HDF_FY4_GHI,
+
             // GPM
             HDF_GPM_GMI,
             HDF_DMSP_SSMIS,

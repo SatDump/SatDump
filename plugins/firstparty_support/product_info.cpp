@@ -4,6 +4,8 @@
 #include "processors/hdf/dmsp/ssmis_hdf.h"
 #include "processors/hdf/fy2/svissr_hdf.h"
 #include "processors/hdf/fy3/mersi_hdf.h"
+#include "processors/hdf/fy4/agri_hdf.h"
+#include "processors/hdf/fy4/ghi_hdf.h"
 #include "processors/hdf/gpm/gmi_hdf.h"
 #include "processors/hrit/hrit_generic.h"
 #include "processors/hsd/himawari/ahi_hsd.h"
@@ -443,6 +445,8 @@ namespace satdump
                              i.name = "FY-3" + std::string(sat_name) + " MERSI-3 " + timestamp_to_string(i.timestamp);
                          else if (std::string(sat_name) == "G")
                              i.name = "FY-3" + std::string(sat_name) + " MERSI-RM " + timestamp_to_string(i.timestamp);
+                         else if (std::string(sat_name) == "H")
+                             i.name = "FY-3" + std::string(sat_name) + " MERSI-3 " + timestamp_to_string(i.timestamp);
 
                          i.group_id = std::string(dtype) + "_" + std::string(sat_name) + "_" + std::to_string((time_t)i.timestamp);
                      }
@@ -450,6 +454,68 @@ namespace satdump
                      return i;
                  },
                  []() { return std::make_shared<MERSIHdfProcessor>(); }},
+
+                {HDF_FY4_AGRI,
+                 [](std::shared_ptr<satdump::utils::FilesIteratorItem> &f)
+                 {
+                     FirstPartyProductInfo i;
+
+                     char sat_name[2], dtype[5], postype[6], fftype[4], ftype[6], fver[5];
+                     int len;
+                     std::tm timeS;
+                     std::tm timeS2;
+                     memset(&timeS, 0, sizeof(std::tm));
+
+                     if (sscanf(f->name.c_str(), "FY4%1s-_AGRI--_N_%4s_%5s_L1-_%3s-_MULT_NOM_%4d%2d%2d%2d%2d%2d_%4d%2d%2d%2d%2d%2d_%5s_V%4s.HDF%n", sat_name, dtype, postype, fftype, &timeS.tm_year,
+                                &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec, &timeS2.tm_year, &timeS2.tm_mon, &timeS2.tm_mday, &timeS2.tm_hour, &timeS2.tm_min,
+                                &timeS2.tm_sec, ftype, fver, &len) == 18 &&
+                         len == f->name.size())
+                     {
+                         i.type = HDF_FY4_AGRI;
+
+                         timeS.tm_year -= 1900;
+                         timeS.tm_mon -= 1;
+                         i.timestamp = timegm(&timeS);
+
+                         i.name = "FY-3" + std::string(sat_name) + " AGRI " + timestamp_to_string(i.timestamp);
+
+                         i.group_id = std::string(dtype) + "_" + std::string(sat_name) + "_" + std::to_string((time_t)i.timestamp);
+                     }
+
+                     return i;
+                 },
+                 []() { return std::make_shared<AGRIHdfProcessor>(); }},
+
+                {HDF_FY4_GHI,
+                 [](std::shared_ptr<satdump::utils::FilesIteratorItem> &f)
+                 {
+                     FirstPartyProductInfo i;
+
+                     char sat_name[2], dtype[5], postype[6], fftype[4], ftype[6], fver[5];
+                     int len;
+                     std::tm timeS;
+                     std::tm timeS2;
+                     memset(&timeS, 0, sizeof(std::tm));
+
+                     if (sscanf(f->name.c_str(), "FY4%1s-_GHI---_N_%4s_%5s_L1-_%3s-_MULT_NOM_%4d%2d%2d%2d%2d%2d_%4d%2d%2d%2d%2d%2d_%5s_V%4s.HDF%n", sat_name, dtype, postype, fftype, &timeS.tm_year,
+                                &timeS.tm_mon, &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec, &timeS2.tm_year, &timeS2.tm_mon, &timeS2.tm_mday, &timeS2.tm_hour, &timeS2.tm_min,
+                                &timeS2.tm_sec, ftype, fver, &len) == 18 &&
+                         len == f->name.size())
+                     {
+                         i.type = HDF_FY4_GHI;
+
+                         timeS.tm_year -= 1900;
+                         timeS.tm_mon -= 1;
+                         i.timestamp = timegm(&timeS);
+
+                         i.name = "FY-3" + std::string(sat_name) + " GHI " + timestamp_to_string(i.timestamp);
+
+                         i.group_id = std::string(dtype) + "_" + std::string(sat_name) + "_" + std::to_string((time_t)i.timestamp);
+                     }
+
+                     return i;
+                 },
+                 []() { return std::make_shared<GHIHdfProcessor>(); }},
 
                 {HDF_GPM_GMI,
                  [](std::shared_ptr<satdump::utils::FilesIteratorItem> &f)
