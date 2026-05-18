@@ -99,7 +99,7 @@ namespace satdump
                 needs_to_update |= ImGui::Checkbox("Median Blur", &median_blur_img);
                 needs_to_update |= ImGui::Checkbox("Despeckle", &despeckle_img);
                 needs_to_update |= ImGui::Checkbox("Rotate 180", &rotate180_image);
-                if (image_proj_valid)
+                if (image_corr_valid)
                     needs_to_update |= ImGui::Checkbox("Geo Correct", &geocorrect_image); // TODOREWORK Disable if it can't be?
                 needs_to_update |= ImGui::Checkbox("Equalize", &equalize_img);
                 needs_to_update |= ImGui::Checkbox("Individual Equalize", &equalize_perchannel_img);
@@ -485,11 +485,17 @@ namespace satdump
             imgview_needs_update = true;
 
             image_proj_valid = false;
+            image_corr_valid = false;
             if (image::has_metadata_proj_cfg(image))
             {
                 image_proj = image::get_metadata_proj_cfg(image);
                 if (image_proj.init(0, 1))
                     image_proj_valid = true;
+
+                nlohmann::json cfg;
+                image_proj.to_json(cfg);
+                if (cfg.contains("corr_swath") && cfg.contains("corr_resol") && cfg.contains("corr_altit"))
+                    image_corr_valid = true;
             }
 
             image_calib_valid = false;
