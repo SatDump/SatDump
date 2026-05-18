@@ -263,6 +263,10 @@ namespace satdump
                         v[i] = getVFOJson(avfos[i]);
                     return v;
                 }
+                else if (key == "frequency")
+                    return dev_blk ? dev_blk->getStreamFrequency(0, false) : 0;
+                else if (key == "bandwidth")
+                    return dev_blk ? dev_blk->getStreamSamplerate(0, false) : 1;
                 else
                     return nlohmann::json();
             }
