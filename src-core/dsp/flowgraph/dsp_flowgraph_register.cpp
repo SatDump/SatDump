@@ -11,6 +11,7 @@
 #include "dsp/agc/agc_fast.h"
 #include "dsp/clock_recovery/clock_recovery_mm.h"
 #include "dsp/clock_recovery/clock_recovery_mm_fast.h"
+#include "dsp/clock_recovery/simple_gardner_recovery.h"
 #include "dsp/clock_recovery/simple_zc_recovery.h"
 #include "dsp/conv/char_to_float.h"
 #include "dsp/conv/complex_to_float.h"
@@ -288,6 +289,7 @@ namespace satdump
                 registerNodeSimple<ndsp::PLLCarrierTrackingBlock>(flowgraph, "PLL/PLL Carrier Tracking");
 
                 registerNodeSimple<ndsp::SimpleZeroCrossingRecoveryBlock>(flowgraph, "Timing/Simple Zero-Crossing Clock Recovery FF");
+                registerNodeSimple<ndsp::SimpleGardnerRecoveryBlock>(flowgraph, "Timing/Simple Gardner Clock Recovery CC");
 
                 registerNodeSimple<ndsp::MMClockRecoveryBlock<complex_t>>(flowgraph, "Timing/Clock Recovery MM CC");
                 registerNodeSimple<ndsp::MMClockRecoveryBlock<float>>(flowgraph, "Timing/Clock Recovery MM FF");

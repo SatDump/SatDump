@@ -4,6 +4,7 @@
 #include "core/exception.h"
 #include "dsp/block.h"
 #include "dsp/block_helpers.h"
+#include "dsp/filter/decimating_fir.h"
 #include "dsp/filter/fir.h"
 #include <memory>
 #include <mutex>
@@ -125,12 +126,13 @@ namespace satdump
                     if (bandwidth == 0)
                         return;
 
-                    auto v = calc_filter(sr, 0, bandwidth / 2, 30, 80);
+                    auto v = calc_filter(sr, 0, bandwidth / 2, 300, 80);
 
                     filter.set_cfg("taps", v /*dsp::firdes::low_pass(1, sr, bandwidth / 2, 1e3)*/);
+                    filter.set_cfg("decimation", decimation);
                 }
 
-                FIRBlock<complex_t> filter;
+                DecimatingFIRBlock<complex_t> filter;
 
                 IOInfo(std::string id, bool forward_terminator, double f = 0, double b = 0, double d = 0) : id(id), forward_terminator(forward_terminator), frequency(f), bandwidth(b), decimation(d) {}
             };
