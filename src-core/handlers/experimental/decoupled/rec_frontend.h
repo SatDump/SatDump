@@ -65,6 +65,7 @@ namespace satdump
                 NLOHMANN_DEFINE_TYPE_INTRUSIVE(VFOInfo, id, freq, band)
             };
 
+            bool vfo_need_upd = false;
             std::vector<VFOInfo> cvfos;
 
         protected:
@@ -118,7 +119,20 @@ namespace satdump
                 wip_fft_widget.set_waterfall_palette(colormaps::loadMap(resources::getResourcePath("waterfall/classic.json")));
 
                 wip_fft_widget.band_callback = [](auto v) { logger->critical("BAND %s %f", v.id.c_str(), v.b); };
-                wip_fft_widget.freq_callback = [](auto v) { logger->critical("FREQ %s %f", v.id.c_str(), v.f); };
+                wip_fft_widget.freq_callback = [this, bkd](auto v)
+                {
+                    logger->critical("FREQ %s %f", v.id.c_str(), v.f);
+
+                    tq.push(
+                        [this, v, bkd]()
+                        {
+                            // std::scoped_lock l(fm);
+                            nlohmann::json vv;
+                            vv["id"] = v.id;
+                            vv["f"] = v.f;
+                            bkd->set_cfg("set_audio_vfo_freq", vv);
+                        });
+                };
             }
             ~RecFrontendHandler() {}
 
@@ -173,6 +187,7 @@ namespace satdump
                             wip_fft_widget.bandwidth = bkd->get_cfg("bandwidth");
 
                             cvfos = bkd->get_cfg("avfos");
+                            vfo_need_upd = true;
                         });
 
                     mustUpdate = false;
@@ -338,11 +353,16 @@ namespace satdump
 
             void drawContents(ImVec2 win_size)
             {
-                wip_fft_widget.vfo_freqs.clear();
-
-                for (auto &vf : cvfos)
+                if (vfo_need_upd && !wip_fft_widget.isBeingInteractedWith())
                 {
-                    wip_fft_widget.vfo_freqs.push_back({vf.id, vf.freq, vf.band == 0 ? -1 : vf.band});
+                    wip_fft_widget.vfo_freqs.clear();
+
+                    for (auto &vf : cvfos)
+                    {
+                        wip_fft_widget.vfo_freqs.push_back({vf.id, vf.freq, vf.band == 0 ? -1 : vf.band});
+                    }
+
+                    vfo_need_upd = false;
                 }
 
                 ImGui::BeginChild("RecorderFFT", win_size, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);

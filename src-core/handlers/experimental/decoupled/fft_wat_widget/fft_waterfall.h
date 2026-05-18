@@ -111,6 +111,8 @@ namespace satdump
 
             void draw(ImVec2 size, bool waterfall);
 
+            bool isBeingInteractedWith() { return is_dragging_vfo || is_resizing_vfo; }
+
         public:
             void set_fft_size(int size)
             {

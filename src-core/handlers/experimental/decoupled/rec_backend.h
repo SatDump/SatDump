@@ -100,11 +100,11 @@ namespace satdump
                 nvfo.demod->set_cfg("mode", "nfm");
                 nvfo.sink->set_cfg("samplerate", 48e3);
 
+                nvfo.demod->set_input(splitter->add_output(id, 98.4e6, 200e3, 20, false), 0);
                 nvfo.sink->link(nvfo.demod.get(), 0, 0, 4);
-                nvfo.sink->start();
 
-                nvfo.demod->set_input(splitter->add_output(id, 98.4e6, 200e3, 20), 0);
                 nvfo.demod->start();
+                nvfo.sink->start();
 
                 logger->info("Added audio!");
                 avfos.push_back(nvfo);
@@ -346,6 +346,12 @@ namespace satdump
                 else if (key == "add_audio")
                 {
                     add_audio_vfo("avfo_test");
+                }
+                else if (key == "set_audio_vfo_freq")
+                {
+                    std::string id = v["id"];
+                    double f = v["f"];
+                    splitter->set_vfo_freq(id, f);
                 }
                 else
                     throw satdump_exception("Oops");

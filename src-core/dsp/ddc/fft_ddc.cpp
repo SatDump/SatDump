@@ -73,7 +73,7 @@ namespace satdump
 
                 if (i->frequency == 0 && i->bandwidth == 0 && i->decimation <= 1)
                 {
-                    DSPBuffer oblk = o.fifo->newBufferSamples(d_nsamples, sizeof(complex_t));
+                    DSPBuffer oblk = o.fifo->newBufferSamples(iblk.size, sizeof(complex_t));
                     memcpy(oblk.getSamples<complex_t>(), iblk.getSamples<complex_t>(), iblk.size * sizeof(complex_t));
                     oblk.size = iblk.size;
                     o.fifo->wait_enqueue(oblk);
