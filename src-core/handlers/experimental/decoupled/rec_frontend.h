@@ -118,7 +118,20 @@ namespace satdump
                 wip_fft_widget.set_waterfall_rate(30, 20);
                 wip_fft_widget.set_waterfall_palette(colormaps::loadMap(resources::getResourcePath("waterfall/classic.json")));
 
-                wip_fft_widget.band_callback = [](auto v) { logger->critical("BAND %s %f", v.id.c_str(), v.b); };
+                wip_fft_widget.band_callback = [this, bkd](auto v)
+                {
+                    logger->critical("BAND %s %f", v.id.c_str(), v.b);
+
+                    tq.push(
+                        [this, v, bkd]()
+                        {
+                            std::scoped_lock l(fm);
+                            nlohmann::json vv;
+                            vv["id"] = v.id;
+                            vv["b"] = v.b;
+                            bkd->set_cfg("set_audio_vfo_bw", vv);
+                        });
+                };
                 wip_fft_widget.freq_callback = [this, bkd](auto v)
                 {
                     logger->critical("FREQ %s %f", v.id.c_str(), v.f);
@@ -126,7 +139,7 @@ namespace satdump
                     tq.push(
                         [this, v, bkd]()
                         {
-                            // std::scoped_lock l(fm);
+                            std::scoped_lock l(fm);
                             nlohmann::json vv;
                             vv["id"] = v.id;
                             vv["f"] = v.f;

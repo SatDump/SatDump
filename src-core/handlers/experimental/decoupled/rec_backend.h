@@ -353,6 +353,12 @@ namespace satdump
                     double f = v["f"];
                     splitter->set_vfo_freq(id, f);
                 }
+                else if (key == "set_audio_vfo_bw")
+                {
+                    std::string id = v["id"];
+                    double b = v["b"];
+                    splitter->set_vfo_bandwidth(id, b);
+                }
                 else
                     throw satdump_exception("Oops");
 
