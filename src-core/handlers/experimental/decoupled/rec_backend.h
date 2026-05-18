@@ -6,6 +6,7 @@
 #include "core/exception.h"
 #include "dsp/block.h"
 #include "dsp/ddc/ddc.h"
+#include "dsp/ddc/fft_ddc.h"
 #include "dsp/device/dev.h"
 #include "dsp/fft/fft_pan.h"
 #include "dsp/hier/audio_demod.h"
@@ -35,7 +36,7 @@ namespace satdump
         private:
             std::shared_ptr<ndsp::DeviceBlock> dev_blk;
 
-            std::shared_ptr<ndsp::DDC_Block> splitter;
+            std::shared_ptr<ndsp::FFTDDCBlock> splitter;
 
             std::shared_ptr<ndsp::FFTPanBlock> fftp;
 
@@ -94,7 +95,7 @@ namespace satdump
                 nvfo.demod = std::make_shared<ndsp::AudioDemodHierBlock>();
                 nvfo.sink = getBlock("portaudio_sink_f");
 
-                nvfo.demod->set_cfg("samplerate", dev_blk->getStreamSamplerate(0, false) / 30.);
+                nvfo.demod->set_cfg("samplerate", dev_blk->getStreamSamplerate(0, false) / 20.);
                 nvfo.demod->set_cfg("audio_samplerate", 48e3);
                 nvfo.demod->set_cfg("mode", "nfm");
                 nvfo.sink->set_cfg("samplerate", 48e3);
@@ -102,7 +103,7 @@ namespace satdump
                 nvfo.sink->link(nvfo.demod.get(), 0, 0, 4);
                 nvfo.sink->start();
 
-                nvfo.demod->set_input(splitter->add_output(id, 98.4e6, 0, 30), 0);
+                nvfo.demod->set_input(splitter->add_output(id, 98.4e6, 200e3, 20), 0);
                 nvfo.demod->start();
 
                 logger->info("Added audio!");
@@ -114,7 +115,7 @@ namespace satdump
             {
                 available_devices = ndsp::getDeviceList(ndsp::DeviceBlock::MODE_SINGLE_RX);
 
-                splitter = std::make_shared<ndsp::DDC_Block>();
+                splitter = std::make_shared<ndsp::FFTDDCBlock>();
 
                 fftp = std::make_shared<ndsp::FFTPanBlock>();
                 fftp->set_input(splitter->add_output("main_fft", 0, 0, 0), 0);

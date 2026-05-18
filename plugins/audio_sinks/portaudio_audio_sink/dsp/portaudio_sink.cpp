@@ -101,6 +101,7 @@ namespace satdump
             int nsam = iblk.size;
             float *ibuf = iblk.getSamples<float>();
 
+#if 0
         retry:
             audio_mtx.lock();
 #if 1
@@ -116,6 +117,21 @@ namespace satdump
                 audio_buff.insert(audio_buff.end(), ibuf, ibuf + nsam);
                 audio_mtx.unlock();
             }
+#else
+            audio_mtx.lock();
+
+            if (audio_buff.size() > samplerate * 0.2)
+            {
+                logger->warn("Audio overflow!");
+            }
+            else
+            {
+                audio_buff.insert(audio_buff.end(), ibuf, ibuf + nsam);
+                audio_mtx.unlock();
+            }
+
+            audio_mtx.unlock();
+#endif
 
             inputs[0].fifo->free(iblk);
 

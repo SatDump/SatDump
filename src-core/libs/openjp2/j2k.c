@@ -7900,6 +7900,7 @@ OPJ_BOOL opj_j2k_setup_encoder(opj_j2k_t *p_j2k,
     cp->tx0 = (OPJ_UINT32)parameters->cp_tx0;
     cp->ty0 = (OPJ_UINT32)parameters->cp_ty0;
 
+#if 0
     /* comment string */
     if (parameters->cp_comment) {
         cp->comment = (char*)opj_malloc(strlen(parameters->cp_comment) + 1U);
@@ -7935,6 +7936,7 @@ OPJ_BOOL opj_j2k_setup_encoder(opj_j2k_t *p_j2k,
 #endif
         /* <<UniPG */
     }
+#endif
 
     /*
     calculate other encoding parameters

@@ -26,6 +26,7 @@
 #include "dsp/conv/short_to_float.h"
 #include "dsp/conv/uchar_to_float.h"
 #include "dsp/ddc/ddc.h"
+#include "dsp/ddc/fft_ddc.h"
 #include "dsp/digital/binary_slicer.h"
 #include "dsp/digital/bit_to_float.h"
 #include "dsp/digital/bits_repack.h"
@@ -409,6 +410,8 @@ namespace satdump
                 registerNodeSimple<ndsp::UDPSourceBlock<int8_t>>(flowgraph, "IO/UDP Source H");
                 registerNodeSimple<ndsp::UDPSourceBlock<uint8_t>>(flowgraph, "IO/UDP Source B");
                 registerNodeSimple<ndsp::BitsRepackBlock>(flowgraph, "Digital/Bits Repack");
+
+                registerNodeSimple<ndsp::FFTDDCBlock>(flowgraph, "DDC/FFT DDC");
 
                 eventBus->fire_event<RegisterNodesEvent>({flowgraph.node_internal_registry});
 
