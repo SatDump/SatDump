@@ -7,6 +7,7 @@
 #include "dsp/clock_recovery/clock_recovery_mm_fast.h"
 #include "dsp/clock_recovery/simple_gardner_recovery.h"
 #include "dsp/clock_recovery/simple_zc_recovery.h"
+#include "dsp/ddc/fft_ddc.h"
 #include "dsp/path/splitter.h"
 #include "dsp/pll/costas.h"
 #include "dsp/pll/costas_fast.h"
@@ -80,7 +81,7 @@
 #include "dsp/filter/fir.h"
 
 template <typename T>
-void benchmarkNDSPBlock(std::shared_ptr<satdump::ndsp::Block> ptr, int duration, std::string blkname)
+void benchmarkNDSPBlock(std::shared_ptr<satdump::ndsp::Block> ptr, int duration, std::string blkname, double ratio = 1)
 {
     satdump::ndsp::BlockIO istr;
     istr.fifo = std::make_shared<satdump::ndsp::DSPStream>(4); // TODOREWORK FIFONUM?
@@ -141,7 +142,7 @@ void benchmarkNDSPBlock(std::shared_ptr<satdump::ndsp::Block> ptr, int duration,
         consumer_th.join();
 
     double throughput = received / (end_time - start_time);
-    //   throughput *= MULTIPICATOR;
+    throughput *= ratio;
     logger->warn((std::string) "Performance (" + blkname + ") %s", format_notated(throughput, "S/s").c_str());
 }
 
@@ -153,6 +154,16 @@ int main(int argc, char *argv[])
     satdump::initSatDump();
     completeLoggerInit();
     logger->set_level(slog::LOG_TRACE);
+
+    logger->debug("Benchmarking FFT DDC...");
+    for (int decim : {2, 8, 16, 32, 50, 64, 128, 256})
+    {
+        auto p = std::make_shared<satdump::ndsp::FFTDDCBlock>();
+        p->set_cfg("frequency", 100e6);
+        p->set_cfg("samplerate", 6e6);
+        p->add_output("out1", 101e6, 200e3, decim);
+        benchmarkNDSPBlock<complex_t>(p, 10, "FFT DDC, 1 output, decim " + std::to_string(decim), decim);
+    }
 
     logger->debug("Benchmarking Simple Gardner Recovery...");
     for (float v : {1.2, 2.0, 3.0, 40.})
