@@ -83,6 +83,7 @@ namespace satdump
             else
             {
                 memset(buffer, 0, frameCount * sizeof(float));
+                //  logger->warn("Audio underflow!");
             }
 
             return 0;
