@@ -80,15 +80,17 @@ namespace satdump
             }
             // ImPlotLocation loc = ImPlotLocation_South;
             // ImPlotLegendFlags leg = ImPlotLegendFlags_Outside | ImPlotLegendFlags_Horizontal;
-            ImPlot::BeginPlot("##Histogram", ImVec2(d_histo_size, d_histo_size),
-                              ImPlotFlags_NoTitle | ImPlotFlags_NoFrame | ImPlotFlags_NoMouseText | ImPlotFlags_NoLegend | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoInputs);
-            // ImPlot::SetupLegend(loc, leg);
-            ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoDecorations, ImPlotAxisFlags_NoDecorations);
-            ImPlot::SetupAxesLimits(-2.0, 2.0, 0, 2.0);
-            ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 0.5f);
-            ImPlot::PlotHistogram("Real", realVal, HIST_SIZE, bins, 1.0, ImPlotRange(-2.0f, 2.0f), hist_flags);
-            ImPlot::PlotHistogram("Imag", imagVal, HIST_SIZE, bins, 1.0, ImPlotRange(-2.0f, 2.0f), hist_flags);
-            ImPlot::EndPlot();
+            if (ImPlot::BeginPlot("##Histogram", ImVec2(d_histo_size, d_histo_size),
+                                  ImPlotFlags_NoTitle | ImPlotFlags_NoFrame | ImPlotFlags_NoMouseText | ImPlotFlags_NoLegend | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoInputs))
+            {
+                // ImPlot::SetupLegend(loc, leg);
+                ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoDecorations, ImPlotAxisFlags_NoDecorations);
+                ImPlot::SetupAxesLimits(-2.0, 2.0, 0, 2.0);
+                ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 0.5f);
+                ImPlot::PlotHistogram("Real", realVal, HIST_SIZE, bins, 1.0, ImPlotRange(-2.0f, 2.0f), hist_flags);
+                ImPlot::PlotHistogram("Imag", imagVal, HIST_SIZE, bins, 1.0, ImPlotRange(-2.0f, 2.0f), hist_flags);
+                ImPlot::EndPlot();
+            }
             mtx.unlock();
         }
 
