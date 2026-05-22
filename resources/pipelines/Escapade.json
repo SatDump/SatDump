@@ -1,0 +1,35 @@
+{
+    "escapade_x_link": {
+        "name": "Escapade X-Band Link",
+        "live": [
+            1,
+            2
+        ],
+        "frequencies": [],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "pm_demod",
+                "parameters": {
+                    "resample_after_pll": true,
+                    "symbolrate": 16e3,
+                    "pll_bw": 0.001,
+                    "rrc_alpha": 0.35,
+                    "costas_bw": 0.005,
+                    "subcarrier_offset": 64e3,
+                    "pll_max_offset": 3.14
+                }
+            },
+            "frames": {
+                "module": "ccsds_turbo_decoder",
+                "parameters": {
+                    "turbo_rate": "1/2",
+                    "turbo_base": 1115,
+                    "turbo_iters": 5
+                }
+            },
+            "products": {}
+        }
+    }
+}

@@ -22,6 +22,7 @@ namespace proba
                 PROBA_1,
                 PROBA_2,
                 PROBA_V,
+                PROBA_3,
             };
 
             proba_sat_t d_satellite;
