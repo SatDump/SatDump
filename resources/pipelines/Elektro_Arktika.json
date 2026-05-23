@@ -229,7 +229,8 @@
         "name": "ELEKTRO-L GGAK",
         "live": [
             1,
-            2
+            2,
+            3
         ],
         "frequencies": [
             [
@@ -244,6 +245,9 @@
                 "module": "pm_demod",
                 "parameters": {
                     "symbolrate": 5e3,
+                    // PLL bandwidth trade-off: lower = less noise (fewer lost frames)
+                    // but slower tracking.  GEO has minimal Doppler so 0.01-0.02 is safe.
+                    // Try 0.01 if counter gaps are high; revert if lock is unstable.
                     "pll_bw": 0.02,
                     "rrc_alpha": 0.5
                 }
@@ -252,10 +256,16 @@
                 "module": "ccsds_simple_psk_decoder",
                 "parameters": {
                     "constellation": "bpsk",
-                    "cadu_size": 1792,
+                    "cadu_size": 1792, // 224 bytes
                     "derandomize": false,
                     "nrzm": false,
-                    "rs_i": 0
+                    "rs_i": 0 // no Reed-Solomon FEC; lost frames are unrecoverable
+                }
+            },
+            "products": {
+                "module": "elektro_arktika_ggak",
+                "parameters": {
+                    // "interpolate_mag_gaps": true  // fill 1-2 frame magnetometer gaps via linear interpolation
                 }
             }
         }
@@ -264,7 +274,8 @@
         "name": "ARKTIKA-M N°1 GGAK",
         "live": [
             1,
-            2
+            2,
+            3
         ],
         "frequencies": [
             [
@@ -282,6 +293,8 @@
                     "satellite_frequency": 1703e6,
                     "satellite_norad": 47719,
                     "symbolrate": 5e3,
+                    // HEO orbit has significant Doppler; keep pll_bw >= 0.02
+                    // for reliable tracking.  Narrowing risks losing lock.
                     "pll_bw": 0.02,
                     "rrc_alpha": 0.5
                 }
@@ -295,6 +308,12 @@
                     "nrzm": false,
                     "rs_i": 0
                 }
+            },
+            "products": {
+                "module": "elektro_arktika_ggak",
+                "parameters": {
+                    // "interpolate_mag_gaps": true
+                }
             }
         }
     },
@@ -302,7 +321,8 @@
         "name": "ARKTIKA-M N°2 GGAK",
         "live": [
             1,
-            2
+            2,
+            3
         ],
         "frequencies": [
             [
@@ -320,6 +340,7 @@
                     "satellite_frequency": 1703e6,
                     "satellite_norad": 58584,
                     "symbolrate": 5e3,
+                    // HEO orbit: keep pll_bw >= 0.02 for Doppler tracking
                     "pll_bw": 0.02,
                     "rrc_alpha": 0.5
                 }
@@ -332,6 +353,12 @@
                     "derandomize": false,
                     "nrzm": false,
                     "rs_i": 0
+                }
+            },
+            "products": {
+                "module": "elektro_arktika_ggak",
+                "parameters": {
+                    // "interpolate_mag_gaps": true
                 }
             }
         }
