@@ -34,6 +34,7 @@ file(GLOB_RECURSE SatDump_core_CPPS *.cpp
     libs/tiny-regex-c/*.c
     libs/supernovas/*.c
     libs/calceph/*.c
+    libs/bpe/*.c
 )
 
 ################################################################
