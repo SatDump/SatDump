@@ -256,16 +256,15 @@
                 "module": "ccsds_simple_psk_decoder",
                 "parameters": {
                     "constellation": "bpsk",
-                    "cadu_size": 1792, // 224 bytes
+                    "cadu_size": 1792,
                     "derandomize": false,
                     "nrzm": false,
-                    "rs_i": 0 // no Reed-Solomon FEC; lost frames are unrecoverable
+                    "rs_i": 0
                 }
             },
             "products": {
                 "module": "elektro_arktika_ggak",
                 "parameters": {
-                    // "interpolate_mag_gaps": true  // fill 1-2 frame magnetometer gaps via linear interpolation
                 }
             }
         }
@@ -293,8 +292,6 @@
                     "satellite_frequency": 1703e6,
                     "satellite_norad": 47719,
                     "symbolrate": 5e3,
-                    // HEO orbit has significant Doppler; keep pll_bw >= 0.02
-                    // for reliable tracking.  Narrowing risks losing lock.
                     "pll_bw": 0.02,
                     "rrc_alpha": 0.5
                 }
@@ -312,7 +309,6 @@
             "products": {
                 "module": "elektro_arktika_ggak",
                 "parameters": {
-                    // "interpolate_mag_gaps": true
                 }
             }
         }
@@ -340,7 +336,6 @@
                     "satellite_frequency": 1703e6,
                     "satellite_norad": 58584,
                     "symbolrate": 5e3,
-                    // HEO orbit: keep pll_bw >= 0.02 for Doppler tracking
                     "pll_bw": 0.02,
                     "rrc_alpha": 0.5
                 }
@@ -358,7 +353,6 @@
             "products": {
                 "module": "elektro_arktika_ggak",
                 "parameters": {
-                    // "interpolate_mag_gaps": true
                 }
             }
         }
