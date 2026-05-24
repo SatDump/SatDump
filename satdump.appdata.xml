@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>org.satdump.satdump</id>
+  <id>eu.mrtalon.gobdump</id>
   
-  <name>satdump</name>
-  <summary>SatDump is a general purpose satellite data processing software</summary>
+  <name>GobDump</name>
+  <summary>GobDump is a fork of widely satellite reception tool, SatDump.</summary>
   
   <metadata_license>GPL-3.0-or-later</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
@@ -14,7 +14,7 @@
     </p>
   </description>
   
-  <launchable type="desktop-id">satdump.desktop</launchable>
+  <launchable type="desktop-id">gobdump.desktop</launchable>
   <screenshots>
     <screenshot type="default">
       <image>https://www.satdump.org/assets/release_110/SatDump_autotrack.png</image>

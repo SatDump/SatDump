@@ -2,9 +2,9 @@
 Version=1.0
 Type=Application
 Terminal=false
-Exec=@CMAKE_INSTALL_PREFIX@/bin/satdump-ui
-Name=SatDump
-Icon=@CMAKE_INSTALL_PREFIX@/share/satdump/icon.png
-StartupWMClass=SatDump v@SATDUMP_VERSION@
+Exec=@CMAKE_INSTALL_PREFIX@/bin/gobdump-ui
+Name=GobDump
+Icon=@CMAKE_INSTALL_PREFIX@/share/gobdump/icon.png
+StartupWMClass=GobDump v@GOBDUMP_VERSION@
 Categories=Science;HamRadio
 Keywords=Satellite;SDR

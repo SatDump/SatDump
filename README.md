@@ -1,6 +1,6 @@
-# Sat2Dump
+# GobDump
 
-<img src='./icon.png' width='500px' />
+<img src='./icon.png' width='100px' />
 
 A generic satellite data processing software.
 _Thanks Crosswalkersam for the icon!_
