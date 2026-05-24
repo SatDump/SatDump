@@ -9,6 +9,10 @@
 #include <exception>
 #include <string>
 
+#ifdef _WIN32
+#define timegm _mkgmtime
+#endif
+
 namespace satdump
 {
     namespace firstparty

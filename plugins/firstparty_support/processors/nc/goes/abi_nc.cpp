@@ -3,6 +3,10 @@
 #include <H5Cpp.h>
 #include <H5LTpublic.h>
 
+#ifdef _WIN32
+#define timegm _mkgmtime
+#endif
+
 namespace satdump
 {
     namespace firstparty

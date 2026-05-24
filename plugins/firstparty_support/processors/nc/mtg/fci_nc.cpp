@@ -8,6 +8,10 @@
 #include <H5Cpp.h>
 #include <H5LTpublic.h>
 
+#ifdef _WIN32
+#define timegm _mkgmtime
+#endif
+
 extern "C"
 {
     void register_MTG_FILTER();

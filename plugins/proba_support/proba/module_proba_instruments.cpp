@@ -392,7 +392,7 @@ namespace proba
                     {
                         std::string vegs_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/Vegetation-X";
 
-                        for (auto &tocorr_inst : (std::vector<std::vector<vegetation::VegetationX *>>){
+                        for (auto &tocorr_inst : std::vector<std::vector<vegetation::VegetationX *>>{
                                  {&vegx_reader1, &vegx_reader14, &vegx_reader15}, //
                                  {&vegx_reader8, &vegx_reader12, &vegx_reader13}, //
                                  {&vegx_reader5, &vegx_reader6, &vegx_reader7},   //
@@ -643,8 +643,6 @@ namespace proba
         std::string PROBAInstrumentsDecoderModule::getID() { return "proba_instruments"; }
 
         std::shared_ptr<satdump::pipeline::ProcessingModule> PROBAInstrumentsDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-        {
-            return std::make_shared<PROBAInstrumentsDecoderModule>(input_file, output_file_hint, parameters);
-        }
+        { return std::make_shared<PROBAInstrumentsDecoderModule>(input_file, output_file_hint, parameters); }
     } // namespace instruments
 } // namespace proba
