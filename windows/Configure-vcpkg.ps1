@@ -65,6 +65,27 @@ git clone https://github.com/microsoft/vcpkg -b 2025.01.13
 cd vcpkg
 .\bootstrap-vcpkg.bat
 
+# New CMake version enforces policies that break compatibility with some older CMakeLists.txt files. Patch them here to avoid build failures.
+Write-Output "Patching legacy libraries for modern CMake compatibility..."
+
+(Get-Content -raw .\ports\openblas\portfile.cmake) -replace '(?s)(vcpkg_cmake_configure\(.*?OPTIONS)', '$1 -DCMAKE_POLICY_VERSION_MINIMUM=3.5' | Set-Content -Encoding ASCII .\ports\openblas\portfile.cmake
+
+(Get-Content -raw .\ports\fftw3\portfile.cmake) -replace '(?s)(vcpkg_cmake_configure\(.*?OPTIONS)', '$1 -DCMAKE_POLICY_VERSION_MINIMUM=3.5' | Set-Content -Encoding ASCII .\ports\fftw3\portfile.cmake
+
+(Get-Content -raw .\ports\portaudio\portfile.cmake) -replace '(?s)(vcpkg_cmake_configure\(.*?OPTIONS)', '$1 -DCMAKE_POLICY_VERSION_MINIMUM=3.5' | Set-Content -Encoding ASCII .\ports\portaudio\portfile.cmake
+
+$lapack_patch = @"
+file(GLOB_RECURSE CMAKE_FILES "`${SOURCE_PATH}/CMakeLists.txt" "`${SOURCE_PATH}/*.cmake")
+foreach(CMAKE_FILE IN LISTS CMAKE_FILES)
+    file(READ "`${CMAKE_FILE}" _contents)
+    string(REGEX REPLACE "cmake_minimum_required[ \t]*\\([^\\)]+\\)" "cmake_minimum_required(VERSION 3.5)" _contents "`${_contents}")
+    file(WRITE "`${CMAKE_FILE}" "`${_contents}")
+endforeach()
+
+vcpkg_cmake_configure(
+"@
+(Get-Content -raw .\ports\lapack-reference\portfile.cmake) -replace 'vcpkg_cmake_configure\s*\(', $lapack_patch | Set-Content -Encoding ASCII .\ports\lapack-reference\portfile.cmake
+
 # Core packages. libxml2 is for libiio
 .\vcpkg install --triplet $platform pthreads libjpeg-turbo tiff libpng glfw3 libusb fftw3 libxml2 portaudio nng zstd armadillo opencl curl[schannel] hdf5[cpp] sqlite3
 
@@ -112,7 +133,7 @@ cd cpu_features
 $null = mkdir build
 cd build
 cmake $build_args -DBUILD_TESTING=OFF -DBUILD_EXECUTABLE=OFF ..
-cmake --build . --config Release
+cmake --build . --config Release --parallel
 cmake --install .
 cd ..\..
 rm -recurse -force cpu_features
@@ -124,7 +145,7 @@ cd volk
 $null = mkdir build
 cd build
 cmake $build_args -DENABLE_TESTING=OFF -DENABLE_MODTOOL=OFF ..
-cmake --build . --config Release
+cmake --build . --config Release --parallel
 cmake --install .
 cd ..\..
 rm -recurse -force volk
@@ -133,10 +154,11 @@ Write-Output "Building Airspy..."
 #git clone https://github.com/airspy/airspyone_host --depth 1 #-b v1.0.10
 git clone https://github.com/JVital2013/airspyone_host -b rawio #Enables RAW_IO to avoid sample drops
 cd airspyone_host\libairspy
+(Get-Content -raw CMakeLists.txt) -replace 'cmake_minimum_required\s*\(.*?\)', 'cmake_minimum_required(VERSION 3.5)' | Set-Content -Encoding ASCII CMakeLists.txt
 $null = mkdir build
 cd build
 cmake $build_args -DLIBUSB_INCLUDE_DIR="$($libusb_include)" -DLIBUSB_LIBRARIES="$($libusb_lib)" -DTHREADS_PTHREADS_WIN32_LIBRARY="$($pthread_lib)" ..
-cmake --build . --config Release
+cmake --build . --config Release --parallel
 cmake --install .
 cd ..\..\..
 rm -recurse -force airspyone_host
@@ -145,10 +167,11 @@ Write-Output "Building Airspy HF..."
 #git clone https://github.com/airspy/airspyhf --depth 1 #-b 1.6.8
 git clone https://github.com/JVital2013/airspyhf -b rawio #Enables RAW_IO to avoid sample drops
 cd airspyhf\libairspyhf
+(Get-Content -raw CMakeLists.txt) -replace 'cmake_minimum_required\s*\(.*?\)', 'cmake_minimum_required(VERSION 3.5)' | Set-Content -Encoding ASCII CMakeLists.txt
 $null = mkdir build
 cd build
 cmake $build_args -DLIBUSB_INCLUDE_DIR="$($libusb_include)" -DLIBUSB_LIBRARIES="$($libusb_lib)" -DTHREADS_PTHREADS_WIN32_LIBRARY="$($pthread_lib)" ..
-cmake --build . --config Release
+cmake --build . --config Release --parallel
 cmake --install .
 cd ..\..\..
 rm -recurse -force airspyhf
@@ -157,10 +180,11 @@ Write-Output "Building RTL-SDR..."
 #git clone https://github.com/osmocom/rtl-sdr --depth 1 -b v2.0.2
 git clone https://github.com/JVital2013/librtlsdr -b rawio #Enables RAW_IO to avoid sample drops
 cd librtlsdr
+(Get-Content -raw CMakeLists.txt) -replace 'cmake_minimum_required\s*\(.*?\)', 'cmake_minimum_required(VERSION 3.5)' | Set-Content -Encoding ASCII CMakeLists.txt
 $null = mkdir build
 cd build
 cmake $build_args -DLIBUSB_INCLUDE_DIRS="$($libusb_include)" -DLIBUSB_LIBRARIES="$($libusb_lib)" -DTHREADS_PTHREADS_INCLUDE_DIR="$($standard_include)" -DTHREADS_PTHREADS_LIBRARY="$($pthread_lib)" ..
-cmake --build . --config Release
+cmake --build . --config Release --parallel
 cmake --install .
 cd ..\..
 rm -recurse -force librtlsdr
@@ -169,10 +193,11 @@ Write-Output "Building HackRF..."
 #git clone https://github.com/greatscottgadgets/hackrf --depth 1 -b v2024.02.1
 git clone https://github.com/JVital2013/hackrf -b rawio #Enables RAW_IO to avoid sample drops
 cd hackrf\host\libhackrf
+(Get-Content -raw CMakeLists.txt) -replace 'cmake_minimum_required\s*\(.*?\)', 'cmake_minimum_required(VERSION 3.5)' | Set-Content -Encoding ASCII CMakeLists.txt
 $null = mkdir build
 cd build
 cmake $build_args -DLIBUSB_INCLUDE_DIR="$($libusb_include)" -DLIBUSB_LIBRARIES="$($libusb_lib)" -DTHREADS_PTHREADS_WIN32_LIBRARY="$($pthread_lib)" ..
-cmake --build . --config Release
+cmake --build . --config Release --parallel
 cmake --install .
 cd ..\..\..\..
 rm -recurse -force hackrf
@@ -180,10 +205,11 @@ rm -recurse -force hackrf
 Write-Output "Building HydraSDR..."
 git clone https://github.com/hydrasdr/rfone_host -b v1.0.1 #TODO: Patch for Raw IO support to avoid sample drops?
 cd rfone_host\libhydrasdr
+(Get-Content -raw CMakeLists.txt) -replace 'cmake_minimum_required\s*\(.*?\)', 'cmake_minimum_required(VERSION 3.5)' | Set-Content -Encoding ASCII CMakeLists.txt
 $null = mkdir build
 cd build
 cmake $build_args -DLIBUSB_INCLUDE_DIR="$($libusb_include)" -DLIBUSB_LIBRARIES="$($libusb_lib)" -DTHREADS_PTHREADS_WIN32_LIBRARY="$($pthread_lib)" ..
-cmake --build . --config Release
+cmake --build . --config Release --parallel
 cmake --install .
 cd ..\..\..
 rm -recurse -force rfone_host
@@ -200,8 +226,12 @@ cd libfobos
 
 $null = mkdir build
 cd build
-cmake $build_args -DLIBUSB_INCLUDE_DIRS="$($standard_include)" -DLIBUSB_LIBRARIES="$($(Get-Item $libusb_lib).Directory.FullName)" -DCMAKE_INSTALL_LIBDIR="$($standard_lib)" ..
-cmake --build . --config Release
+$fobos_inc = $standard_include.Replace('\', '/')
+$fobos_usb = $(Get-Item $libusb_lib).Directory.FullName.Replace('\', '/')
+$fobos_lib = $standard_lib.Replace('\', '/')
+
+cmake $build_args -DLIBUSB_INCLUDE_DIRS="$fobos_inc" -DLIBUSB_LIBRARIES="$fobos_usb" -DCMAKE_INSTALL_LIBDIR="$fobos_lib" ..
+cmake --build . --config Release --parallel
 cmake --install .
 cd ..\..
 rm -recurse -force libfobos
@@ -213,7 +243,7 @@ cd libiio
 $null = mkdir build
 cd build
 cmake $build_args -DWITH_IIOD=OFF -DWITH_TESTS=OFF -DWITH_ZSTD=ON -DLIBUSB_INCLUDE_DIR="$($libusb_include)" -DLIBUSB_LIBRARIES="$($libusb_lib)" ..
-cmake --build . --config Release
+cmake --build . --config Release --parallel
 cmake --install .
 cd ..\..
 rm -recurse -force libiio
@@ -221,10 +251,11 @@ rm -recurse -force libiio
 Write-Output "Building libad9361-iio..."
 git clone https://github.com/analogdevicesinc/libad9361-iio --depth 1 -b v0.3
 cd libad9361-iio
+(Get-Content -raw CMakeLists.txt) -replace 'cmake_minimum_required\s*\(.*?\)', 'cmake_minimum_required(VERSION 3.5)' | Set-Content -Encoding ASCII CMakeLists.txt
 $null = mkdir build
 cd build
 cmake $build_args -DLIBIIO_LIBRARIES="$($(Get-Item ..\..\..\installed\$platform\lib\libiio.lib).FullName)" -DENABLE_PACKAGING=OFF ..
-cmake --build . --config Release
+cmake --build . --config Release --parallel
 cmake --install .
 cd ..\..
 rm -recurse -force libad9361-iio
@@ -241,7 +272,7 @@ if($platform -eq "x64-windows" -or $platform -eq "x86-windows")
     $null = mkdir build-dir
     cd build-dir
     cmake $build_args -DENABLE_GUI=OFF $fx3_arg ..
-    cmake --build . --config Release
+    cmake --build . --config Release --parallel
     cmake --install .
     cd ..\..
     rm -recurse -force LimeSuite
@@ -256,7 +287,7 @@ Clear-Content cmake/modules/FindLibUSB.cmake
 $null = mkdir build
 cd build
 cmake $build_args $fx3_arg -DTREAT_WARNINGS_AS_ERRORS=OFF -DLIBPTHREADSWIN32_INCLUDE_DIRS="$($standard_include)" -DLIBUSB_INCLUDE_DIRS="$($libusb_include)" -DLIBUSB_LIBRARIES="$($libusb_lib)" -DLIBPTHREADSWIN32_LIBRARIES="$($pthread_lib)" -DTEST_LIBBLADERF=OFF -DLIBUSB_FOUND=ON -DLIBPTHREADSWIN32_FOUND=ON -DLIBUSB_VERSION="$($(ls ..\..\..\..\installed\vcpkg\info\libusb*).BaseName.split('_')[1])" ..
-cmake --build . --config Release
+cmake --build . --config Release --parallel
 cmake --install .
 cd ..\..\..
 rm -recurse -force bladeRF
@@ -272,8 +303,8 @@ git clone https://github.com/EttusResearch/uhd # v4.8 (latest as of this writing
 cd uhd\host
 $null = mkdir build
 cd build
-cmake $build_args -DENABLE_MAN_PAGES=OFF -DENABLE_MANUAL=OFF -DENABLE_PYTHON_API=OFF -DENABLE_EXAMPLES=OFF -DENABLE_UTILS=OFF -DENABLE_TESTS=OFF -DPYTHON_EXECUTABLE="$((Get-Command python3).Source)" ..
-cmake --build . --config Release
+cmake $build_args -DENABLE_MAN_PAGES=OFF -DENABLE_MANUAL=OFF -DENABLE_PYTHON_API=OFF -DENABLE_EXAMPLES=OFF -DENABLE_UTILS=OFF -DENABLE_TESTS=OFF -DPYTHON_EXECUTABLE="$((Get-Command python).Source)" ..
+cmake --build . --config Release --parallel
 cmake --install .
 cd ..\..\..
 rm -recurse -force uhd

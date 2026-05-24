@@ -59,5 +59,5 @@ cd "$(Split-Path -Parent $MyInvocation.MyCommand.Path)\.."
 mkdir build | Out-Null
 cd build
 cmake .. -DBUILD_MSVC=ON -DCMAKE_TOOLCHAIN_FILE="$($(Get-Item ..\vcpkg\scripts\buildsystems\vcpkg.cmake).FullName)" -DVCPKG_TARGET_TRIPLET="$platform" -A $generator $additional_args
-cmake --build . --config Release
+cmake --build . --config Release --parallel
 cd ..
