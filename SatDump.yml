@@ -38,5 +38,8 @@ ingredients:
         #    - wget -c $DLD -O /home/owner/satdump.deb
         - echo "1.2.1" > VERSION
 
-#script:
-#  - apt install ~/gobdump.deb
+script:
+    - find usr/share -name "satdump.desktop" -execdir mv {} gobdump.desktop \; || true
+    - find usr/share -name "satdump.png" -execdir mv {} gobdump.png \; || true
+    - find usr/share -name "gobdump.desktop" -exec sed -i 's/Name=SatDump/Name=GobDump/g' {} \; || true
+    - find usr/share -name "gobdump.desktop" -exec sed -i 's/Icon=satdump/Icon=gobdump/g' {} \; || true

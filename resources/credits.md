@@ -1,4 +1,6 @@
-# SatDump
+# GobDump
+
+This is a fork of SatDump. It should function exactly same, below are links for the original project and credits.
 
 First time here? See the reference documents below to get started using SatDump.
 [About](https://www.satdump.org/about/) | [Basic Usage](https://www.satdump.org/posts/basic-usage/) | [Docs](https://docs.satdump.org/)
@@ -6,6 +8,7 @@ First time here? See the reference documents below to get started using SatDump.
 # Libraries
 
 **Libraries included in libsatdump_core**
+
 - [bzip2](https://github.com/libarchive/bzip2), for BZIP2 decompression utilized on MetOp admin messages and Himawaricast
 - [ctpl](https://github.com/vit-vit/ctpl), for thread pools used over the program
 - [deepspace-turbo](https://github.com/geeanlooca/deepspace-turbo), used for Turbo decoding
@@ -32,6 +35,7 @@ First time here? See the reference documents below to get started using SatDump.
 - [xdsopl's LDPC](https://github.com/xdsopl/LDPC), utilized for LDPC codes encoding/decoding
 
 ### Libraries included in plugins / Code taken from and in plugins
+
 - Elektro/Arktika, [DecompWT](https://gitlab.eumetsat.int/open-source/PublicDecompWT), custom wavelet compression/decompression library originally used for MSG xRIT
 - GK-2A, [libtomcrypt](https://github.com/libtom/libtomcrypt), for DES decryption
 - Inmarsat, [libacars](https://github.com/szpajder/libacars), for ACARS parsing
@@ -39,15 +43,17 @@ First time here? See the reference documents below to get started using SatDump.
 - Inmarsat, [libaeroambe](https://github.com/jontio/libaeroambe), not the library itself, but the code was adapted (for Ambe decoding)
 - Inmarsat, [Scytale-C](https://bitbucket.org/scytalec/scytalec), for STD-C packet formats and parsing
 
-*Those libraries above are included directly as they are either header-only, not already present on most systems or required some modifications for the purpose of this software. For the code included, the licenses of each respective library applies.*
+_Those libraries above are included directly as they are either header-only, not already present on most systems or required some modifications for the purpose of this software. For the code included, the licenses of each respective library applies._
 
 ### Projects some code was taken from and included in libsatdump_core
+
 - [GNU Radio](https://github.com/gnuradio/gnuradio), for the convolutional decoding / encoding (quite heavily modified) and a few other bits
 - [gr-dvbs2rx](https://github.com/igorauad/gr-dvbs2rx), for TS Parsing and a few other bits
 - [LeanDVB](https://github.com/pabr/leansdr), for some definitions
 - [SDR++](https://github.com/AlexandreRouma/SDRPlusPlus), for the DSP stream implementation (thanks Ryzerth for the tip back then!) and a few other things, such as the SpyServer client
 
 ### Libraries linked against
+
 - [curl](https://curl.se/), for HTTP(S) support
 - [fftw3](http://fftw.org/), used for all FFT operations
 - [hdf5](https://github.com/HDFGroup/hdf5), for supporting official products and services like GeoNetCast
@@ -59,6 +65,7 @@ First time here? See the reference documents below to get started using SatDump.
 - [zlib](https://github.com/madler/zlib), required by libpng
 
 ### SDR Libraries
+
 - [Aaronia](https://aaronia.com/en/support/downloads#rtsa-suite)
 - [libairspy](https://github.com/airspy/airspyone_host)
 - [libairspyhf](https://github.com/airspy/airspyhf)
@@ -73,27 +80,32 @@ First time here? See the reference documents below to get started using SatDump.
 - [UHD](https://github.com/EttusResearch/uhd)
 
 ### UI Libraries
+
 - [OpenGL ES](https://www.khronos.org/opengles/) and [EGL](https://www.khronos.org/egl), for OpenGL on Android
 - [gl3w](https://github.com/skaslev/gl3w) and [glfw3](https://www.glfw.org/), for OpenGL on Desktop
 
 ### Fonts
+
 - [Roboto](https://fonts.google.com/specimen/Roboto), for default font
 - [3270 Nerd Font](https://www.nerdfonts.com/font-downloads), for icons and symbols
 - [Liberation Serif](https://www.fontsquirrel.com/fonts/liberation-serif), for Solaris Motif theme
 - [Perfect DOS VGA 437](https://www.dafont.com/perfect-dos-vga-437.font), for Phosphor theme
 - [PX Sans Nouveaux](https://www.dafont.com/px-sans-nouveaux.font), for Windows 98 theme
-*3270 Nerd Font and Roboto have been merged into a single font.ttf*
+  _3270 Nerd Font and Roboto have been merged into a single font.ttf_
 
 # Developers
+
 **Lead Developer:** Aang23 (F4LAU)
 
 ### Additional Developers
+
 - crosswalkersam
 - Jamie Vital (KC3TWZ)
 - lego11 (IU1QPT)
 - Zbychu (SP5EWS)
 
 ### Contributors
+
 - Arved MØKDS
 - Aria Horak (@aweeri)
 - Blobtoe
@@ -121,8 +133,10 @@ First time here? See the reference documents below to get started using SatDump.
 - Thomas Douwes
 
 ### Special Thanks to
+
 - microp11 (Paul Maxan), for the reverse-engineering work & Scytale-C
 
 ### GNU
-I'd just like to interject for a moment. What you're refering to as SatDump, is in fact, GNU/SatDump, or as I've recently taken to calling it, GNU plus SatDump...   
-*Reader falls asleep*
+
+I'd just like to interject for a moment. What you're refering to as SatDump, is in fact, GNU/SatDump, or as I've recently taken to calling it, GNU plus SatDump...  
+_Reader falls asleep_

@@ -358,7 +358,7 @@ namespace satdump
 
                 std::string title = lego_debug_mode ?                                                                                                                //
                                         std::string{0x57, 0x65, 0x6c, 0x63, 0x6f, 0x6d, 0x65, 0x20, 0x74, 0x6f, 0x20, 0x42, 0x75, 0x67, 0x44, 0x75, 0x6d, 0x70, '?'} //
-                                                    : "Welcome to SatDump!";
+                                                    : "Welcome to GobDump!";
 
                 {
                     ImGui::PushFont(style::bigFont);
