@@ -1,20 +1,22 @@
-# SatDump
+# Sat2Dump
 
 <img src='./icon.png' width='500px' />
 
 A generic satellite data processing software.
-*Thanks Crosswalkersam for the icon!*
+_Thanks Crosswalkersam for the icon!_
 
 There now also is a [Matrix](https://matrix.to/#/#satdump:altillimity.com) room if you want to chat! Otherwise, a [Discord](https://discord.gg/ctt3M8pRYG) bridge to the Matrix is also available.
 
 # Introduction
 
-*Note : This is a very basic "how-to" skipping details and assuming some knowledge of what you are doing. For more details and advanced use cases, please see the [detailed documentation](https://docs.satdump.org).* 
+_Note : This is a very basic "how-to" skipping details and assuming some knowledge of what you are doing. For more details and advanced use cases, please see the [detailed documentation](https://docs.satdump.org)._
 
 ## GUI Version
 
 ### Processing recorded data
+
 Quick-Start :
+
 - Open the processing menu by selecting `File` > `Processing`
 - Select the appropriate pipeline
 - Select the input file (baseband, frames, soft symbols...)
@@ -25,19 +27,19 @@ Quick-Start :
 ![Image showing the processing window](gui-menu.png)
 
 ![As described below](gui-processing.png)
-*SatDump (1.0) demodulating a DVB-S2 baseband*
+_SatDump (1.0) demodulating a DVB-S2 baseband_
 
 ### Live processing or recording (directly from your SDR)
 
 Quick-Start :
+
 - Add a recorder by selecting `Add` > `Recorder`
 - Select and start your SDR Device
 - Choose a pipeline
 - Start it, and done!
 
-
 ![SatDump as described below](gui-live-source.png)
-*SatDump tuned to 103 MHz using a HydraSDR*
+_SatDump tuned to 103 MHz using a HydraSDR_
 
 ## CLI Version
 
@@ -47,7 +49,7 @@ Quick-Start :
 
 ```
 Usage : satdump pipeline [pipeline_id] [input_level] [input_file] [output_file_or_directory] [additional options as required]
-Extra options can be found by adding --help to the end of the command 
+Extra options can be found by adding --help to the end of the command
 Sample command :
 satdump pipeline metop_ahrpt baseband /home/user/metop_baseband.cs16 metop_output_directory --samplerate 6e6 --baseband_format cs16
 ```
@@ -80,15 +82,15 @@ Sample command :
 satdump legacy record baseband_name --source airspy --samplerate 6e6 --frequency 1701.3e6 --general_gain 18 --bias --timeout 780 --baseband_format cf32
 ```
 
-
 # Building / Installing
 
 ### Windows
+
 The fastest way to get started is to head over to the [Releases](https://github.com/altillimity/SatDump/releases) page, where you can download SatDump's installer or portable app - no compilation necessary.
 
-Our builds are made with Visual Studio 2019 for x64, so the appropriate Visual C++ Runtime will be required (though, likely to be already installed). You can get it [here](https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0).   Once downloaded, run either satdump-ui.exe or satdump.exe (CLI) to get started!
+Our builds are made with Visual Studio 2019 for x64, so the appropriate Visual C++ Runtime will be required (though, likely to be already installed). You can get it [here](https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0). Once downloaded, run either satdump-ui.exe or satdump.exe (CLI) to get started!
 
-For compilation information, see the dedicated documentation [here](https://docs.satdump.org/build_windows.html). *Note : Mingw builds are NOT supported, VOLK will not work.*
+For compilation information, see the dedicated documentation [here](https://docs.satdump.org/build_windows.html). _Note : Mingw builds are NOT supported, VOLK will not work._
 
 ### macOS
 
@@ -188,6 +190,7 @@ sudo dnf install git cmake g++ fftw-devel volk-devel libpng-devel jemalloc-devel
                  libzstd-devel rtl-sdr-devel hackrf-devel airspyone_host-devel libomp-devel \
                  ocl-icd intel-opencl
 ```
+
 </details>
 <details>
 
@@ -207,13 +210,14 @@ sudo apk add hdf5-dev                                                  # Only if
 sudo apk add librtlsdr-dev hackrf-dev airspyone-host-dev airspyhf-dev  # All libraries required for live processing
 sudo apk add opencl-dev                                                # Optional, but recommended as it drastically increases speed of some operations. Installs OpenCL. Community repo required.
 ```
+
 </details>
 <details>
 
 <summary>Install Dependencies - Gentoo</summary>
 
 ```bash
-# Assumes you already have gcc, g++, pkgconf, and cmake installed. 
+# Assumes you already have gcc, g++, pkgconf, and cmake installed.
 # Using Gentoo, you probably do!
 #
 # NOTE: You will need to build nng yourself. See below for details.
@@ -250,7 +254,7 @@ sudo emerge --ask dev-vcs/git sci-libs/fftw dev-libs/jemalloc sci-libs/volk \
 ```bash
 sudo zypper install git gcc-c++ cmake g++ pkgconf fftw3-devel libpng-devel \
                     libtiff-devel jemalloc-devel libcurl-devel volk-devel  \
-                    nng-devel sqlite3-devel 
+                    nng-devel sqlite3-devel
 
 # (Optional)
 sudo zypper install libglfw-devel zenity dbus-1-devel                                                # Only if you want to build the GUI Version
@@ -278,6 +282,7 @@ sudo zypper install git gcc-c++ cmake g++ pkgconf fftw3-devel libpng-devel libti
 ---
 
 If nng is not available for your distro, you will have to build it from source
+
 ```bash
 git clone https://github.com/nanomsg/nng.git -b v1.9.0
 cd nng
@@ -290,6 +295,7 @@ rm -rf nng
 ```
 
 #### Build SatDump
+
 ```
 git clone https://github.com/SatDump/SatDump.git
 cd SatDump
@@ -312,8 +318,8 @@ sudo make install
 
 ### Raspberry Pi
 
-In case you are using RPi3 (any revision) and older, run ```make -j1 ``` instead of ```make -j`nproc` ``` **otherwise the system will crash**.
-  
+In case you are using RPi3 (any revision) and older, run `make -j1 ` instead of ``make -j`nproc` `` **otherwise the system will crash**.
+
 ### Android
 
 On Android, the preferred source is F-Droid.
@@ -322,17 +328,16 @@ On Android, the preferred source is F-Droid.
     alt="Get it on F-Droid"
     height="80">](https://f-droid.org/packages/org.satdump.SatDump)
 
-
 If this is not an option for you, APKs are also available on the [Release](https://github.com/altillimity/SatDump/releases) page.
 
 Do keep in mind that while pretty much all features perfectly function on Android, there may be some limitations (either due to the hardware) in some places. For example, not all SDR Devices can be used.
 Supported SDR devices are :
+
 - RTL-SDR
 - Airspy
 - AirspyHF
 - LimeSDR Mini
 - HackRF
-
 
 ### Docker
 
@@ -344,7 +349,7 @@ To match the system user for the shared files get the same owner, set these in `
 The user inside the container will always be named `satdump`, but the uid and gid will match the system user.
 
 ```bash
-# set the current uid and gid 
+# set the current uid and gid
 printf "HOST_UID: $(id -u)\nHOST_GID: $(id -g)\n" > .env
 
 # create the shared directory
@@ -357,7 +362,7 @@ docker compose build --build-arg CMAKE_BUILD_PARALLEL_LEVEL=8
 docker compose run --rm -it satdump
 ```
 
-The command that is started inside the container can either be specified at the end on the commandline mentioned above, 
+The command that is started inside the container can either be specified at the end on the commandline mentioned above,
 or put in the `.env` with for example `COMMAND: satdump_sdr_server`. If you want to run the sdr server in the background
 and have it start automatically on boot, simply launch the container with `docker compose up -d` and check the logs with
 `docker compose logs -f`
@@ -367,10 +372,11 @@ and have it start automatically on boot, simply launch the container with `docke
 To use the `satdump-ui` under docker you need to make a few changes.
 It is possible to run this on WSL2 as well, change the source to `/run/desktop/mnt/host/wslg/.X11-unix` instead.
 In the [docker-compose.yml](docker-compose.yml) you need to uncomment a few lines and make it looks like this:
+
 ```yaml
-      - type: 'bind'
-        source: '/tmp/.X11-unix'
-        target: '/tmp/.X11-unix'
+- type: "bind"
+  source: "/tmp/.X11-unix"
+  target: "/tmp/.X11-unix"
 ```
 
 If the user in the container is not authorized for X11, you will probably get this error message:
