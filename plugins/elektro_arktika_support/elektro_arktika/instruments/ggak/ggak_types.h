@@ -1,14 +1,27 @@
 #pragma once
 
-// GGAK-VE / GGAK-E space environment telemetry types.
-// 224-byte CADUs: 4B ASM + 9B proprietary header + 209B payload + 2B checksum.
-// NOT standard CCSDS AOS/TM.
+/**
+ * @file ggak_types.h
+ * @brief GGAK-VE / GGAK-E space environment telemetry protocol types and constants.
+ *
+ * Frame structure: 224-byte CADUs with 4B ASM + 9B proprietary header + 209B payload + 2B checksum.
+ * NOT standard CCSDS AOS/TM. The 9-byte header contains frame_type, master/channel counters,
+ * source_id (0x30 BND-E / 0x31 BND-VE), and a coarse+fine timestamp pair.
+ *
+ * Instruments carried:
+ *   - FM-VE: Fluxgate magnetometer (0x70 frames, 13 readings/frame)
+ *   - GALS-VE: Particle telescope, 7 channels (0x40 frames)
+ *   - SKIF-VE: Electrostatic analyzer + MIP channel (0x20/0x30/0x40 frames)
+ *   - SKL-E: Spectrometer (0x5C/0x50 frames)
+ *   - Housekeeping/ISP-2M (0x00/0x10 frames)
+ */
 
 #include <array>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <vector>
+#include "common/big_endian.h"
 
 namespace elektro_arktika
 {
@@ -21,12 +34,10 @@ namespace elektro_arktika
         constexpr size_t CHECKSUM_SIZE = 2;
         constexpr size_t PAYLOAD_OFFSET = ASM_SIZE + HEADER_SIZE; // byte 13
 
-        constexpr uint8_t FILL_BYTE = 0x33;
         constexpr uint8_t FILL_BYTE_N2 = 0xAA;
-        constexpr uint8_t FILL_BYTE_N5 = 0x33;
 
-        constexpr int SYMBOL_RATE = 5000;
         constexpr int FINE_TIME_STEPS = 256;
+        constexpr int COUNTER_GAP_WRAP_THRESHOLD = 60000;
         constexpr double TIME_TICK_SECONDS = 254.84;
         constexpr double FINE_TIME_STEP = TIME_TICK_SECONDS / FINE_TIME_STEPS;
 
@@ -57,10 +68,17 @@ namespace elektro_arktika
             0.05, 0.25, 0.45, 0.80, 1.30, 2.50,
             4.50, 7.50, 10.00, 13.00, 16.00, 20.00,
         };
+        constexpr int SKIF_ESA_PKT_SIZE = 69;
+        constexpr int SKIF_ESA_DATA_LEN = 65;
+        constexpr std::array<size_t, 3> SKIF_ESA_OFFSETS = {0, 69, 138};
+
+        // Housekeeping
+        constexpr int HK_BLK_SIZE = 12;
+        constexpr int HK_CHANNELS = 5;
 
         inline uint16_t read_be16(const uint8_t *p)
         {
-            return (static_cast<uint16_t>(p[0]) << 8) | p[1];
+            return *reinterpret_cast<const be_uint16_t *>(p);
         }
 
         inline int16_t read_be16s(const uint8_t *p)
@@ -81,7 +99,7 @@ namespace elektro_arktika
             return true;
         }
 
-        inline bool validate_checksum(const uint8_t *cadu)
+        [[nodiscard]] inline bool validate_checksum(const uint8_t *cadu)
         {
             uint32_t sum = 0;
             for (size_t i = 0; i < CADU_SIZE - CHECKSUM_SIZE; i++)
@@ -150,9 +168,7 @@ namespace elektro_arktika
             "GGAK-E (Elektro-L N1/N2)", "BND-E", 0x30, FILL_BYTE_N2, 0x50, SPECTRAL_CAL_MARKER};
 
         constexpr SatelliteProfile PROFILE_BND_VE = {
-            "GGAK-VE (Elektro-L N3+)", "BND-VE", 0x31, FILL_BYTE_N5, 0x5C, SPECTRAL_MARKER};
-
-        constexpr uint8_t DEFAULT_SOURCE_ID = 0x31;
+            "GGAK-VE (Elektro-L N3+, Arktika-M)", "BND-VE", 0x31, 0x33, 0x5C, SPECTRAL_MARKER};
 
         // 9-byte proprietary header (bytes 4-12): frame_type, master/channel counter,
         // source_id (0x30/0x31/0x33), coarse_time (uint16 BE), fine_time (0-255)
@@ -181,6 +197,35 @@ namespace elektro_arktika
                 read_be16(cadu + 10),
                 cadu[12],
             };
+        }
+
+        // Geomagnetic activity classification based on deviation from quiet-time
+        // baseline |B| at GEO. Thresholds derived from GOES Hp index ranges:
+        //   Level 1 (Normal): <5 nT deviation
+        //   Level 2 (Slight): 5-20 nT
+        //   Level 3 (Moderate): 20-50 nT (minor storm onset)
+        //   Level 4 (Strong): 50-100 nT
+        //   Level 5 (Extreme): >100 nT (severe storm)
+        inline int geomagnetic_activity_level(double bt_nT)
+        {
+            double dev = std::abs(bt_nT - MAG_BASELINE_NT);
+            if (dev < 5.0) return 1;
+            if (dev < 20.0) return 2;
+            if (dev < 50.0) return 3;
+            if (dev < 100.0) return 4;
+            return 5;
+        }
+
+        inline const char *geomagnetic_activity_label(int level)
+        {
+            switch (level)
+            {
+            case 1: return "Normal";
+            case 2: return "Slight";
+            case 3: return "Moderate";
+            case 4: return "Strong";
+            default: return "Extreme";
+            }
         }
 
         // FM-VE magnetometer reading: 15 bytes per sample, up to 13 per 0x70 frame
@@ -220,24 +265,12 @@ namespace elektro_arktika
 
             int activity_level() const
             {
-                double dev = std::abs(mag_total_nt() - MAG_BASELINE_NT);
-                if (dev < 5.0) return 1;
-                if (dev < 20.0) return 2;
-                if (dev < 50.0) return 3;
-                if (dev < 100.0) return 4;
-                return 5;
+                return geomagnetic_activity_level(mag_total_nt());
             }
 
             const char *activity_label() const
             {
-                switch (activity_level())
-                {
-                case 1: return "Normal";
-                case 2: return "Slight";
-                case 3: return "Moderate";
-                case 4: return "Strong";
-                default: return "Extreme";
-                }
+                return geomagnetic_activity_label(activity_level());
             }
         };
 

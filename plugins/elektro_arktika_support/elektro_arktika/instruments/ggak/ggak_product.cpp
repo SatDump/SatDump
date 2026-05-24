@@ -1,94 +1,83 @@
 #include "ggak_product.h"
 #include "logger.h"
 
+#include <algorithm>
 #include <filesystem>
-#include <fstream>
 
 namespace elektro_arktika
 {
     namespace ggak
     {
-        namespace
+        GGAKChannel with_gap_markers(const GGAKChannel &src)
         {
-            void save_channels_binary(const std::string &path,
-                                      const std::vector<GGAKChannel> &channels)
+            GGAKChannel ch = src;
+            if (ch.timestamps.size() < 2)
+                return ch;
+
+            std::vector<double> deltas;
+            deltas.reserve(ch.timestamps.size());
+            for (size_t i = 1; i < ch.timestamps.size(); i++)
             {
-                std::ofstream f(path, std::ios::binary);
-                if (!f.is_open())
-                    return;
-                uint32_t n_ch = static_cast<uint32_t>(channels.size());
-                f.write(reinterpret_cast<const char *>(&n_ch), sizeof(n_ch));
-                for (auto &ch : channels)
+                double dt = ch.timestamps[i] - ch.timestamps[i - 1];
+                if (dt > 0.01)
+                    deltas.push_back(dt);
+            }
+            if (deltas.empty())
+                return ch;
+
+            std::sort(deltas.begin(), deltas.end());
+            double cadence = deltas[deltas.size() / 2];
+            double gap_threshold = 1.5 * cadence;
+
+            std::vector<double> new_ts, new_vals;
+            new_ts.reserve(ch.timestamps.size() * 2);
+            new_vals.reserve(new_ts.capacity());
+
+            new_ts.push_back(ch.timestamps[0]);
+            new_vals.push_back(ch.values[0]);
+
+            for (size_t i = 1; i < ch.timestamps.size(); i++)
+            {
+                double dt = ch.timestamps[i] - ch.timestamps[i - 1];
+                if (dt > gap_threshold)
                 {
-                    uint32_t n = static_cast<uint32_t>(ch.values.size());
-                    f.write(reinterpret_cast<const char *>(&n), sizeof(n));
-                    f.write(reinterpret_cast<const char *>(ch.timestamps.data()),
-                            n * sizeof(double));
-                    f.write(reinterpret_cast<const char *>(ch.values.data()),
-                            n * sizeof(double));
+                    double nan = std::numeric_limits<double>::quiet_NaN();
+                    new_ts.push_back(nan);
+                    new_vals.push_back(nan);
                 }
+                new_ts.push_back(ch.timestamps[i]);
+                new_vals.push_back(ch.values[i]);
             }
 
-            std::vector<GGAKChannel> load_channels_binary(const std::string &path,
-                                                           const nlohmann::json &meta)
-            {
-                std::vector<GGAKChannel> channels;
-                std::ifstream f(path, std::ios::binary);
-                if (!f.is_open())
-                    return channels;
+            ch.timestamps = std::move(new_ts);
+            ch.values = std::move(new_vals);
+            return ch;
+        }
 
-                uint32_t n_ch = 0;
-                f.read(reinterpret_cast<char *>(&n_ch), sizeof(n_ch));
-
-                for (uint32_t i = 0; i < n_ch && i < meta.size(); i++)
-                {
-                    GGAKChannel ch;
-                    ch.name = meta[i]["name"].get<std::string>();
-                    ch.unit = meta[i]["unit"].get<std::string>();
-                    if (meta[i].contains("group"))
-                        ch.group = meta[i]["group"].get<std::string>();
-
-                    uint32_t n = 0;
-                    f.read(reinterpret_cast<char *>(&n), sizeof(n));
-                    ch.timestamps.resize(n);
-                    ch.values.resize(n);
-                    f.read(reinterpret_cast<char *>(ch.timestamps.data()),
-                           n * sizeof(double));
-                    f.read(reinterpret_cast<char *>(ch.values.data()),
-                           n * sizeof(double));
-                    ch.updateMinMax();
-                    channels.push_back(std::move(ch));
-                }
-                return channels;
-            }
-
-            nlohmann::json make_channel_meta(const std::vector<GGAKChannel> &channels)
-            {
-                nlohmann::json j = nlohmann::json::array();
-                for (auto &ch : channels)
-                {
-                    nlohmann::json jc;
-                    jc["name"] = ch.name;
-                    jc["unit"] = ch.unit;
-                    if (!ch.group.empty())
-                        jc["group"] = ch.group;
-                    jc["count"] = ch.values.size();
-                    j.push_back(jc);
-                }
-                return j;
-            }
-        } // anonymous namespace
+        std::vector<GGAKChannel> with_gap_markers(const std::vector<GGAKChannel> &src)
+        {
+            std::vector<GGAKChannel> out;
+            out.reserve(src.size());
+            for (const auto &ch : src)
+                out.push_back(with_gap_markers(ch));
+            return out;
+        }
 
         void GGAKProduct::save(std::string directory)
         {
-            save_channels_binary(directory + "/mag.bin", mag_channels);
-            save_channels_binary(directory + "/particles.bin", particle_channels);
-            save_channels_binary(directory + "/subpackets.bin", subpacket_channels);
+            auto warn_inconsistent = [](const std::vector<GGAKChannel> &channels, const char *group) {
+                for (auto &ch : channels)
+                    if (!ch.isConsistent())
+                        logger->warn("GGAKProduct::save: channel '%s' in %s has mismatched sizes (ts=%zu, vals=%zu)",
+                                     ch.name.c_str(), group, ch.timestamps.size(), ch.values.size());
+            };
+            warn_inconsistent(mag_channels, "mag_channels");
+            warn_inconsistent(particle_channels, "particle_channels");
+            warn_inconsistent(subpacket_channels, "subpacket_channels");
 
-            contents["channel_format"] = "binary";
-            contents["mag_channels"] = make_channel_meta(mag_channels);
-            contents["particle_channels"] = make_channel_meta(particle_channels);
-            contents["subpacket_channels"] = make_channel_meta(subpacket_channels);
+            contents["mag_channels"] = mag_channels;
+            contents["particle_channels"] = particle_channels;
+            contents["subpacket_channels"] = subpacket_channels;
             contents["stats"] = stats;
             Product::save(directory);
         }
@@ -96,34 +85,15 @@ namespace elektro_arktika
         void GGAKProduct::load(std::string file)
         {
             Product::load(file);
-            std::string directory = std::filesystem::path(file).parent_path().string();
 
             try
             {
-                bool binary = contents.contains("channel_format") &&
-                              contents["channel_format"] == "binary";
-
-                if (binary)
-                {
-                    if (contents.contains("mag_channels"))
-                        mag_channels = load_channels_binary(
-                            directory + "/mag.bin", contents["mag_channels"]);
-                    if (contents.contains("particle_channels"))
-                        particle_channels = load_channels_binary(
-                            directory + "/particles.bin", contents["particle_channels"]);
-                    if (contents.contains("subpacket_channels"))
-                        subpacket_channels = load_channels_binary(
-                            directory + "/subpackets.bin", contents["subpacket_channels"]);
-                }
-                else
-                {
-                    if (contents.contains("mag_channels"))
-                        mag_channels = contents["mag_channels"].get<std::vector<GGAKChannel>>();
-                    if (contents.contains("particle_channels"))
-                        particle_channels = contents["particle_channels"].get<std::vector<GGAKChannel>>();
-                    if (contents.contains("subpacket_channels"))
-                        subpacket_channels = contents["subpacket_channels"].get<std::vector<GGAKChannel>>();
-                }
+                if (contents.contains("mag_channels"))
+                    mag_channels = contents["mag_channels"].get<std::vector<GGAKChannel>>();
+                if (contents.contains("particle_channels"))
+                    particle_channels = contents["particle_channels"].get<std::vector<GGAKChannel>>();
+                if (contents.contains("subpacket_channels"))
+                    subpacket_channels = contents["subpacket_channels"].get<std::vector<GGAKChannel>>();
 
                 if (contents.contains("stats"))
                     stats = contents["stats"].get<GGAKFrameStats>();

@@ -1,10 +1,14 @@
 #include "ggak_product_handler.h"
+#include "ggak_types.h"
 #include "core/style.h"
 #include "imgui/implot/implot.h"
 #include "logger.h"
+#include "nlohmann/json_utils.h"
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <limits>
+#include <unordered_map>
 
 namespace elektro_arktika
 {
@@ -12,49 +16,7 @@ namespace elektro_arktika
     {
         namespace
         {
-            void insert_gap_markers(GGAKChannel &ch)
-            {
-                if (ch.timestamps.size() < 2)
-                    return;
-
-                std::vector<double> deltas;
-                deltas.reserve(ch.timestamps.size());
-                for (size_t i = 1; i < ch.timestamps.size(); i++)
-                {
-                    double dt = ch.timestamps[i] - ch.timestamps[i - 1];
-                    if (dt > 0.01)
-                        deltas.push_back(dt);
-                }
-                if (deltas.empty())
-                    return;
-
-                std::sort(deltas.begin(), deltas.end());
-                double cadence = deltas[deltas.size() / 2];
-                double gap_threshold = 1.5 * cadence;
-
-                std::vector<double> new_ts, new_vals;
-                new_ts.reserve(ch.timestamps.size() + ch.timestamps.size() / 8);
-                new_vals.reserve(new_ts.capacity());
-
-                new_ts.push_back(ch.timestamps[0]);
-                new_vals.push_back(ch.values[0]);
-
-                for (size_t i = 1; i < ch.timestamps.size(); i++)
-                {
-                    double dt = ch.timestamps[i] - ch.timestamps[i - 1];
-                    if (dt > gap_threshold)
-                    {
-                        double nan = std::numeric_limits<double>::quiet_NaN();
-                        new_ts.push_back(nan);
-                        new_vals.push_back(nan);
-                    }
-                    new_ts.push_back(ch.timestamps[i]);
-                    new_vals.push_back(ch.values[i]);
-                }
-
-                ch.timestamps = std::move(new_ts);
-                ch.values = std::move(new_vals);
-            }
+            constexpr float SCROLLBAR_MARGIN = 16.0f;
         } // anonymous namespace
 
         GGAKProductHandler::GGAKProductHandler(std::shared_ptr<satdump::products::Product> p, bool dataset_mode)
@@ -69,29 +31,24 @@ namespace elektro_arktika
             }
             particle_visible.resize(ggak_product->particle_channels.size(), 1);
 
-            for (int i = 0; i < (int)ggak_product->subpacket_channels.size(); i++)
+            plot_mag_channels = with_gap_markers(ggak_product->mag_channels);
+            plot_particle_channels = with_gap_markers(ggak_product->particle_channels);
+            plot_subpacket_channels = with_gap_markers(ggak_product->subpacket_channels);
+
+            std::unordered_map<std::string, int> group_to_index;
+            for (int i = 0; i < static_cast<int>(ggak_product->subpacket_channels.size()); i++)
             {
                 auto &ch = ggak_product->subpacket_channels[i];
                 std::string grp = ch.group.empty() ? ch.name : ch.group;
-                auto it = std::find_if(subpacket_group_info.begin(), subpacket_group_info.end(),
-                                       [&](const SubpacketGroupInfo &g) { return g.name == grp; });
-                if (it != subpacket_group_info.end())
-                    it->channel_indices.push_back(i);
+                auto it = group_to_index.find(grp);
+                if (it != group_to_index.end())
+                    subpacket_group_info[it->second].channel_indices.push_back(i);
                 else
+                {
+                    group_to_index[grp] = static_cast<int>(subpacket_group_info.size());
                     subpacket_group_info.push_back({grp, {i}});
+                }
             }
-
-            for (int i = 0; i < (int)ggak_product->particle_channels.size(); i++)
-                particle_labels.push_back(ggak_product->particle_channels[i].name + "##ptcl_" + std::to_string(i));
-            for (int i = 0; i < (int)subpacket_group_info.size(); i++)
-                subpacket_rb_labels.push_back(subpacket_group_info[i].name + "##spkt_" + std::to_string(i));
-
-            for (auto &ch : ggak_product->mag_channels)
-                insert_gap_markers(ch);
-            for (auto &ch : ggak_product->particle_channels)
-                insert_gap_markers(ch);
-            for (auto &ch : ggak_product->subpacket_channels)
-                insert_gap_markers(ch);
 
             tryApplyDefaultPreset();
         }
@@ -100,6 +57,9 @@ namespace elektro_arktika
 
         void GGAKProductHandler::drawMenu()
         {
+            if (!ggak_product)
+                return;
+
             if (ImGui::CollapsingHeader("View", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 if (ImGui::RadioButton("Magnetometer", current_view == VIEW_MAGNETOMETER))
@@ -134,11 +94,13 @@ namespace elektro_arktika
                 {
                     ImGui::Checkbox("Overlay##ptcl_overlay", &particle_overlay);
                     ImGui::Separator();
-                    for (int i = 0; i < (int)ggak_product->particle_channels.size(); i++)
+                    for (int i = 0; i < static_cast<int>(ggak_product->particle_channels.size()); i++)
                     {
                         bool vis = particle_visible[i] != 0;
-                        if (ImGui::Checkbox(particle_labels[i].c_str(), &vis))
+                        ImGui::PushID(i);
+                        if (ImGui::Checkbox(ggak_product->particle_channels[i].name.c_str(), &vis))
                             particle_visible[i] = vis ? 1 : 0;
+                        ImGui::PopID();
                     }
                 }
             }
@@ -146,18 +108,26 @@ namespace elektro_arktika
             {
                 if (ImGui::CollapsingHeader("Spectrometer##spectrometer_ch", ImGuiTreeNodeFlags_DefaultOpen))
                 {
-                    for (int i = 0; i < (int)subpacket_group_info.size(); i++)
+                    for (int i = 0; i < static_cast<int>(subpacket_group_info.size()); i++)
                     {
-                        if (ImGui::RadioButton(subpacket_rb_labels[i].c_str(), selected_subpacket_group == i))
+                        ImGui::PushID(i);
+                        if (ImGui::RadioButton(subpacket_group_info[i].name.c_str(), selected_subpacket_group == i))
                             selected_subpacket_group = i;
+                        ImGui::PopID();
                     }
                 }
             }
 
+            renderPresetMenu();
         }
 
         void GGAKProductHandler::drawContents(ImVec2 win_size)
         {
+            if (!ggak_product)
+                return;
+
+            plot_id_counter = 0;
+
             switch (current_view)
             {
             case VIEW_MAGNETOMETER:
@@ -181,7 +151,7 @@ namespace elektro_arktika
                 value = 0.0;
             else if (value > 2e9)
                 value = 2e9;
-            int total_s = (int)value;
+            int total_s = static_cast<int>(value);
             int d = total_s / 86400;
             int h = (total_s % 86400) / 3600;
             int m = (total_s % 3600) / 60;
@@ -193,14 +163,14 @@ namespace elektro_arktika
             return 0;
         }
 
-        void GGAKProductHandler::drawChannelPlot(const GGAKChannel &ch, ImVec2 size, const char *y_label)
+        void GGAKProductHandler::drawChannelPlot(const GGAKChannel &ch, ImVec2 size, int plot_idx, const char *y_label)
         {
             if (ch.values.empty())
                 return;
 
             char title_buf[128];
-            snprintf(title_buf, sizeof(title_buf), "%s (%s)##plot_%p",
-                     ch.name.c_str(), ch.unit.c_str(), (const void *)&ch);
+            snprintf(title_buf, sizeof(title_buf), "%s (%s)##plot_%d",
+                     ch.name.c_str(), ch.unit.c_str(), plot_idx);
             if (ImPlot::BeginPlot(title_buf, size))
             {
                 ImPlot::SetupAxes("Elapsed", y_label ? y_label : ch.unit.c_str(),
@@ -208,28 +178,30 @@ namespace elektro_arktika
                 ImPlot::SetupAxisFormat(ImAxis_X1, ggak_time_formatter_cb);
                 ImPlot::PlotLine(ch.name.c_str(),
                                  ch.timestamps.data(), ch.values.data(),
-                                 (int)ch.values.size());
+                                 static_cast<int>(ch.values.size()));
                 ImPlot::EndPlot();
             }
         }
 
         void GGAKProductHandler::drawMagnetometerPlots(ImVec2 win_size)
         {
-            if (ggak_product->mag_channels.empty())
+            if (plot_mag_channels.empty())
             {
                 ImGui::TextColored(style::theme.orange, "No magnetometer data available.");
                 return;
             }
 
-            bool *show_flags[] = {&mag_show_btotal, &mag_show_bx, &mag_show_by, &mag_show_bz};
-            int mag_field_count = std::min(4, (int)ggak_product->mag_channels.size());
+            constexpr int MAG_FIELD_COUNT = 4;
+            std::array<bool*, MAG_FIELD_COUNT> show_flags = {
+                &mag_show_btotal, &mag_show_bx, &mag_show_by, &mag_show_bz};
+            int mag_field_count = std::min(MAG_FIELD_COUNT, static_cast<int>(plot_mag_channels.size()));
 
             int visible_count = 0;
             for (int i = 0; i < mag_field_count; i++)
                 if (*show_flags[i])
                     visible_count++;
 
-            bool has_voltage = mag_show_voltage && (int)ggak_product->mag_channels.size() > 4;
+            bool has_voltage = mag_show_voltage && static_cast<int>(plot_mag_channels.size()) > 4;
 
             int aux_count = has_voltage ? 1 : 0;
 
@@ -248,18 +220,18 @@ namespace elektro_arktika
                     {
                         if (!*show_flags[i])
                             continue;
-                        auto &ch = ggak_product->mag_channels[i];
+                        auto &ch = plot_mag_channels[i];
                         if (ch.values.empty())
                             continue;
                         ImPlot::PlotLine(ch.name.c_str(),
                                          ch.timestamps.data(), ch.values.data(),
-                                         (int)ch.values.size());
+                                         static_cast<int>(ch.values.size()));
                     }
                     ImPlot::EndPlot();
                 }
 
                 if (has_voltage)
-                    drawChannelPlot(ggak_product->mag_channels[4], ImVec2(win_size.x, per_aux_h), "V");
+                    drawChannelPlot(plot_mag_channels[4], ImVec2(win_size.x, per_aux_h), plot_id_counter++, "V");
             }
             else
             {
@@ -273,24 +245,24 @@ namespace elektro_arktika
                 {
                     if (!*show_flags[i])
                         continue;
-                    drawChannelPlot(ggak_product->mag_channels[i], ImVec2(win_size.x, plot_h), "nT");
+                    drawChannelPlot(plot_mag_channels[i], ImVec2(win_size.x, plot_h), plot_id_counter++, "nT");
                 }
 
                 if (has_voltage)
-                    drawChannelPlot(ggak_product->mag_channels[4], ImVec2(win_size.x, plot_h), "V");
+                    drawChannelPlot(plot_mag_channels[4], ImVec2(win_size.x, plot_h), plot_id_counter++, "V");
             }
         }
 
         void GGAKProductHandler::drawParticlePlots(ImVec2 win_size)
         {
-            if (ggak_product->particle_channels.empty())
+            if (plot_particle_channels.empty())
             {
                 ImGui::TextColored(style::theme.orange, "No particle data available.");
                 return;
             }
 
             int visible = 0;
-            for (int i = 0; i < (int)particle_visible.size(); i++)
+            for (int i = 0; i < static_cast<int>(particle_visible.size()); i++)
                 if (particle_visible[i])
                     visible++;
 
@@ -308,16 +280,16 @@ namespace elektro_arktika
                                       ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
                     ImPlot::SetupAxisFormat(ImAxis_X1, ggak_time_formatter_cb);
 
-                    for (int i = 0; i < (int)ggak_product->particle_channels.size(); i++)
+                    for (int i = 0; i < static_cast<int>(plot_particle_channels.size()); i++)
                     {
                         if (!particle_visible[i])
                             continue;
-                        auto &ch = ggak_product->particle_channels[i];
+                        auto &ch = plot_particle_channels[i];
                         if (ch.values.empty())
                             continue;
                         ImPlot::PlotLine(ch.name.c_str(),
                                          ch.timestamps.data(), ch.values.data(),
-                                         (int)ch.values.size());
+                                         static_cast<int>(ch.values.size()));
                     }
                     ImPlot::EndPlot();
                 }
@@ -331,12 +303,12 @@ namespace elektro_arktika
                 if (total_h > win_size.y)
                     ImGui::BeginChild("##ptcl_scroll", win_size, false, ImGuiWindowFlags_NoBackground);
 
-                for (int i = 0; i < (int)ggak_product->particle_channels.size(); i++)
+                for (int i = 0; i < static_cast<int>(plot_particle_channels.size()); i++)
                 {
                     if (!particle_visible[i])
                         continue;
-                    drawChannelPlot(ggak_product->particle_channels[i],
-                                    ImVec2(win_size.x - 16, plot_h), "Counts");
+                    drawChannelPlot(plot_particle_channels[i],
+                                    ImVec2(win_size.x - SCROLLBAR_MARGIN, plot_h), plot_id_counter++, "Counts");
                 }
 
                 if (total_h > win_size.y)
@@ -352,14 +324,14 @@ namespace elektro_arktika
                 return;
             }
 
-            if (selected_subpacket_group < 0 || selected_subpacket_group >= (int)subpacket_group_info.size())
+            if (selected_subpacket_group < 0 || selected_subpacket_group >= static_cast<int>(subpacket_group_info.size()))
             {
                 ImGui::Text("Selected group has no data.");
                 return;
             }
 
             auto &grp = subpacket_group_info[selected_subpacket_group];
-            int n_channels = (int)grp.channel_indices.size();
+            int n_channels = static_cast<int>(grp.channel_indices.size());
             if (n_channels == 0)
             {
                 ImGui::Text("No data in this group.");
@@ -375,20 +347,20 @@ namespace elektro_arktika
 
             for (int idx : grp.channel_indices)
             {
-                auto &ch = ggak_product->subpacket_channels[idx];
+                auto &ch = plot_subpacket_channels[idx];
                 if (ch.values.empty())
                     continue;
                 char sp_title[128];
                 snprintf(sp_title, sizeof(sp_title), "%s (%s)##subpkt_%d",
                          ch.name.c_str(), ch.unit.c_str(), idx);
-                if (ImPlot::BeginPlot(sp_title, ImVec2(win_size.x - 16, plot_h)))
+                if (ImPlot::BeginPlot(sp_title, ImVec2(win_size.x - SCROLLBAR_MARGIN, plot_h)))
                 {
                     ImPlot::SetupAxes("Elapsed", ch.unit.c_str(),
                                       ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
                     ImPlot::SetupAxisFormat(ImAxis_X1, ggak_time_formatter_cb);
                     ImPlot::PlotLine(ch.name.c_str(),
                                      ch.timestamps.data(), ch.values.data(),
-                                     (int)ch.values.size());
+                                     static_cast<int>(ch.values.size()));
                     ImPlot::EndPlot();
                 }
             }
@@ -420,7 +392,7 @@ namespace elektro_arktika
             {
                 auto &bt = ggak_product->mag_channels[0];
                 double last_bt = std::numeric_limits<double>::quiet_NaN();
-                for (int i = (int)bt.values.size() - 1; i >= 0; i--)
+                for (int i = static_cast<int>(bt.values.size()) - 1; i >= 0; i--)
                 {
                     if (!std::isnan(bt.values[i]))
                     {
@@ -430,18 +402,20 @@ namespace elektro_arktika
                 }
                 if (!std::isnan(last_bt))
                 {
-                    double dev = std::abs(last_bt - 103.0);
-                    int level = dev < 5.0 ? 1 : dev < 20.0 ? 2 : dev < 50.0 ? 3 : dev < 100.0 ? 4 : 5;
-                    const char *labels[] = {"Normal", "Slight", "Moderate", "Strong", "Extreme"};
+                    double dev = std::abs(last_bt - MAG_BASELINE_NT);
+                    int level = geomagnetic_activity_level(last_bt);
+                    const char *label = geomagnetic_activity_label(level);
                     ImVec4 colors[] = {
                         (ImVec4)style::theme.green, (ImVec4)style::theme.light_green,
                         (ImVec4)style::theme.yellow, (ImVec4)style::theme.orange,
                         (ImVec4)style::theme.red};
+                    int color_idx = std::max(0, std::min(level - 1, 4));
                     ImGui::Spacing();
                     ImGui::Text("Geomagnetic Activity:");
                     ImGui::SameLine();
-                    ImGui::TextColored(colors[level - 1], "Level %d - %s", level, labels[level - 1]);
-                    ImGui::Text("|B| = %.1f nT (baseline 103 nT, dev %.1f nT)", last_bt, dev);
+                    ImGui::TextColored(colors[color_idx], "Level %d - %s", level, label);
+                    ImGui::Text("|B| = %.1f nT (baseline %.0f nT, dev %.1f nT)",
+                                last_bt, MAG_BASELINE_NT, dev);
                 }
             }
 
@@ -449,7 +423,6 @@ namespace elektro_arktika
             ImGui::Separator();
             ImGui::Spacing();
 
-            // Channel overview table
             ImGui::TextColored(style::theme.cyan, "Channel Overview");
             ImGui::Spacing();
 
@@ -471,7 +444,10 @@ namespace elektro_arktika
                     {
                         ImGui::TableNextRow();
                         ImGui::TableSetColumnIndex(0);
-                        ImGui::TextUnformatted(group);
+                        if (group)
+                            ImGui::TextUnformatted(group);
+                        else
+                            ImGui::TextUnformatted(ch.group.empty() ? ch.name.c_str() : ch.group.c_str());
                         ImGui::TableSetColumnIndex(1);
                         ImGui::TextUnformatted(ch.name.c_str());
                         ImGui::TableSetColumnIndex(2);
@@ -488,28 +464,74 @@ namespace elektro_arktika
 
                 draw_channel_rows("FM-VE", ggak_product->mag_channels);
                 draw_channel_rows("GALS-VE + SKIF-VE MIP", ggak_product->particle_channels);
-
-                for (auto &ch : ggak_product->subpacket_channels)
-                {
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::TextUnformatted(ch.group.empty() ? ch.name.c_str() : ch.group.c_str());
-                    ImGui::TableSetColumnIndex(1);
-                    ImGui::TextUnformatted(ch.name.c_str());
-                    ImGui::TableSetColumnIndex(2);
-                    ImGui::TextUnformatted(ch.unit.c_str());
-                    ImGui::TableSetColumnIndex(3);
-                    ImGui::Text("%d", ch.cached_valid_count);
-                    ImGui::TableSetColumnIndex(4);
-                    if (ch.cached_valid_count > 0)
-                        ImGui::Text("%.2f .. %.2f", ch.cached_min, ch.cached_max);
-                    else
-                        ImGui::TextDisabled("--");
-                }
+                draw_channel_rows(nullptr, ggak_product->subpacket_channels);
 
                 ImGui::EndTable();
             }
 
+        }
+
+        void GGAKProductHandler::setConfig(nlohmann::json p)
+        {
+            if (p.contains("view"))
+            {
+                std::string v = p["view"].get<std::string>();
+                if (v == "magnetometer")
+                    current_view = VIEW_MAGNETOMETER;
+                else if (v == "particles")
+                    current_view = VIEW_PARTICLES;
+                else if (v == "spectrometer")
+                    current_view = VIEW_SUBPACKETS;
+                else if (v == "summary")
+                    current_view = VIEW_SUMMARY;
+            }
+            if (p.contains("mag_overlay"))
+                mag_overlay = p["mag_overlay"].get<bool>();
+            if (p.contains("particle_overlay"))
+                particle_overlay = p["particle_overlay"].get<bool>();
+            if (p.contains("selected_subpacket_group"))
+                selected_subpacket_group = p["selected_subpacket_group"].get<int>();
+            if (p.contains("mag_show_btotal"))
+                mag_show_btotal = p["mag_show_btotal"].get<bool>();
+            if (p.contains("mag_show_bx"))
+                mag_show_bx = p["mag_show_bx"].get<bool>();
+            if (p.contains("mag_show_by"))
+                mag_show_by = p["mag_show_by"].get<bool>();
+            if (p.contains("mag_show_bz"))
+                mag_show_bz = p["mag_show_bz"].get<bool>();
+            if (p.contains("mag_show_voltage"))
+                mag_show_voltage = p["mag_show_voltage"].get<bool>();
+            if (p.contains("particle_visible") && p["particle_visible"].is_array())
+            {
+                auto arr = p["particle_visible"];
+                for (size_t i = 0; i < arr.size() && i < particle_visible.size(); i++)
+                    particle_visible[i] = arr[i].get<int>();
+            }
+        }
+
+        nlohmann::json GGAKProductHandler::getConfig()
+        {
+            nlohmann::json p;
+
+            switch (current_view)
+            {
+            case VIEW_MAGNETOMETER: p["view"] = "magnetometer"; break;
+            case VIEW_PARTICLES:    p["view"] = "particles"; break;
+            case VIEW_SUBPACKETS:   p["view"] = "spectrometer"; break;
+            case VIEW_SUMMARY:      p["view"] = "summary"; break;
+            }
+
+            p["mag_overlay"] = mag_overlay;
+            p["mag_show_btotal"] = mag_show_btotal;
+            p["mag_show_bx"] = mag_show_bx;
+            p["mag_show_by"] = mag_show_by;
+            p["mag_show_bz"] = mag_show_bz;
+            p["mag_show_voltage"] = mag_show_voltage;
+            p["particle_overlay"] = particle_overlay;
+            p["particle_visible"] = particle_visible;
+            p["selected_subpacket_group"] = selected_subpacket_group;
+
+            return p;
         }
     } // namespace ggak
 } // namespace elektro_arktika

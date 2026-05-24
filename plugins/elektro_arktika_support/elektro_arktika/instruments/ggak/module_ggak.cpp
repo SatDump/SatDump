@@ -1,6 +1,8 @@
 #include "module_ggak.h"
+#include "core/style.h"
 #include "imgui/imgui.h"
 #include "logger.h"
+#include "nlohmann/json.hpp"
 
 namespace elektro_arktika
 {
@@ -25,7 +27,7 @@ namespace elektro_arktika
                 ImGui::Text("Instrument");
                 ImGui::TableSetColumnIndex(1);
                 ImGui::Text("Frames");
-                ImGui::TableSetColumnIndex(2); 
+                ImGui::TableSetColumnIndex(2);
                 ImGui::Text("Status");
 
                 ImGui::TableNextRow();
@@ -74,8 +76,8 @@ namespace elektro_arktika
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                if (profile_detected)
-                    ImGui::Text("%s", sat_profile.generation);
+                if (reader.profile_detected)
+                    ImGui::Text("%s", reader.sat_profile.generation);
                 else
                     ImGui::Text("Telemetry Mux");
                 ImGui::TableSetColumnIndex(1);
@@ -96,6 +98,11 @@ namespace elektro_arktika
         std::string GGAKDecoderModule::getID()
         {
             return "elektro_arktika_ggak";
+        }
+
+        nlohmann::json GGAKDecoderModule::getParams()
+        {
+            return {{"interpolate_mag_gaps", false}};
         }
 
         std::shared_ptr<satdump::pipeline::ProcessingModule>

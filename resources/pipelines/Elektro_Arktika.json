@@ -265,6 +265,7 @@
             "products": {
                 "module": "elektro_arktika_ggak",
                 "parameters": {
+                    "interpolate_mag_gaps": false
                 }
             }
         }
@@ -309,6 +310,7 @@
             "products": {
                 "module": "elektro_arktika_ggak",
                 "parameters": {
+                    "interpolate_mag_gaps": false
                 }
             }
         }
@@ -353,6 +355,7 @@
             "products": {
                 "module": "elektro_arktika_ggak",
                 "parameters": {
+                    "interpolate_mag_gaps": false
                 }
             }
         }

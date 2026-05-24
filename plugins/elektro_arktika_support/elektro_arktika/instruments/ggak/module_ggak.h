@@ -1,6 +1,16 @@
 #pragma once
 
-#include "ggak_types.h"
+/**
+ * @file module_ggak.h
+ * @brief GGAK space environment decoder pipeline module.
+ *
+ * Reads 224-byte CADUs from the GGAK-VE / GGAK-E telemetry stream,
+ * decodes magnetometer, particle, and spectrometer data, and produces
+ * a GGAKProduct for the SatDump explorer.
+ */
+
+#include "ggak_reader.h"
+#include "ggak_product.h"
 #include "pipeline/modules/base/filestream_to_filestream.h"
 #include "pipeline/modules/instrument_utils.h"
 
@@ -14,27 +24,12 @@ namespace elektro_arktika
         class GGAKDecoderModule : public satdump::pipeline::base::FileStreamToFileStreamModule
         {
         protected:
-            // Per-instrument accumulated readings
-            std::vector<MagReading> mag_readings;
-            std::vector<ParticleReading> particle_readings;
-            std::vector<SubPacket> subpackets_20; // SKIF-VE/V ESA
-            std::vector<SubPacket> subpackets_30; // SKIF-VE/G ESA
-            std::vector<SubPacket> subpackets_5c; // SKL-E spectral
-            std::vector<SubPacket> subpackets_00; // Housekeeping-A
-            std::vector<SubPacket> subpackets_10; // SKIF-VE SER summary
+            GGAKReader reader;
 
-            // Frame accounting
-            std::map<uint8_t, int> frame_counts;
-            std::vector<uint16_t> master_counters;
-            std::map<uint8_t, std::vector<uint16_t>> channel_counters;
-            int total_frames = 0;
-            int fill_frames = 0;
-            int checksum_pass = 0;
-            int checksum_fail = 0;
-
-            // Detected satellite profile
-            SatelliteProfile sat_profile = PROFILE_BND_VE;
-            bool profile_detected = false;
+            // Shared state for decomposed process() phases
+            CounterGapInfo master_gap_info{0, 0, 0};
+            std::map<std::string, int> per_inst_gaps;
+            std::map<std::string, int> per_inst_missing;
 
             // Instrument processing status (for drawUI)
             enum
@@ -60,6 +55,12 @@ namespace elektro_arktika
             std::atomic<int> ui_subpackets_00_count{0};
             std::atomic<int> ui_subpackets_10_count{0};
 
+        private:
+            void decodeFrames();
+            void refreshUiCounters();
+            void logSummary();
+            void buildProduct(GGAKProduct &product);
+
         public:
             GGAKDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
             void process();
@@ -68,7 +69,7 @@ namespace elektro_arktika
         public:
             static std::string getID();
             virtual std::string getIDM() { return getID(); };
-            static nlohmann::json getParams() { return {}; }
+            static nlohmann::json getParams();
             static std::shared_ptr<ProcessingModule> getInstance(std::string input_file,
                                                                  std::string output_file_hint,
                                                                  nlohmann::json parameters);
