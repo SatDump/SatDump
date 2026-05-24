@@ -2,6 +2,10 @@ name: Build All
 
 on: [push]
 
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
 env:
     # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
     BUILD_TYPE: Release
@@ -173,6 +177,7 @@ jobs:
                   path: ${{runner.workspace}}/build/Release/*
 
     build_android:
+        if: false
         runs-on: ubuntu-latest
 
         steps:
@@ -224,7 +229,7 @@ jobs:
               run: sudo apt update
 
             - name: Install dependencies
-              run: sudo apt install -y libdbus-1-dev libcurl4-openssl-dev libglfw3-dev libfftw3-dev libvolk2-dev build-essential cmake pkgconf libjpeg-dev libpng-dev libtiff-dev libairspy-dev libairspyhf-dev libhackrf-dev librtlsdr-dev libomp-dev libnng-dev libiio-dev libzstd-dev libad9361-dev libbladerf-dev libuhd-dev liblimesuite-dev ocl-icd-opencl-dev libjemalloc-dev portaudio19-dev libhdf5-dev
+              run: sudo apt install -y libdbus-1-dev libcurl4-openssl-dev libglfw3-dev libfftw3-dev libvolk2-dev build-essential cmake pkgconf libjpeg-dev libpng-dev libtiff-dev libairspy-dev libairspyhf-dev libhackrf-dev librtlsdr-dev libomp-dev libnng-dev libiio-dev libzstd-dev libad9361-dev libbladerf-dev libuhd-dev liblimesuite-dev ocl-icd-opencl-dev libjemalloc-dev portaudio19-dev libhdf5-dev ninja-build
 
             - name: Create Build Environment
               # Some projects don't allow in-source building, so create a separate build directory
@@ -239,19 +244,17 @@ jobs:
               # Note the current convention is to use the -S and -B options here to specify source
               # and build directories, but this is only available with CMake 3.13 and higher.
               # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-              run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr
+              run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr -G Ninja
 
             - name: Build
               working-directory: ${{runner.workspace}}/build
               shell: bash
-              # Execute the build.  You can specify a specific target with "--target <NAME>"
-              run: make -j8
+              run: ninja
 
             - name: Package
               working-directory: ${{runner.workspace}}/build
               shell: bash
-              # Execute the build.  You can specify a specific target with "--target <NAME>"
-              run: make package
+              run: ninja package
 
             - name: Upload ZIP
               uses: actions/upload-artifact@v4
@@ -291,7 +294,7 @@ jobs:
               run: sudo apt update
 
             - name: Install dependencies
-              run: sudo apt install -y libdbus-1-dev libcurl4-openssl-dev libglfw3-dev libfftw3-dev libvolk-dev build-essential cmake pkgconf libjpeg-dev libpng-dev libtiff-dev libairspy-dev libairspyhf-dev libhackrf-dev librtlsdr-dev libomp-dev libnng-dev libiio-dev libzstd-dev libad9361-dev libbladerf-dev libuhd-dev liblimesuite-dev ocl-icd-opencl-dev libjemalloc-dev portaudio19-dev libhdf5-dev
+              run: sudo apt install -y libdbus-1-dev libcurl4-openssl-dev libglfw3-dev libfftw3-dev libvolk-dev build-essential cmake pkgconf libjpeg-dev libpng-dev libtiff-dev libairspy-dev libairspyhf-dev libhackrf-dev librtlsdr-dev libomp-dev libnng-dev libiio-dev libzstd-dev libad9361-dev libbladerf-dev libuhd-dev liblimesuite-dev ocl-icd-opencl-dev libjemalloc-dev portaudio19-dev libhdf5-dev ninja-build
 
             - name: Create Build Environment
               # Some projects don't allow in-source building, so create a separate build directory
@@ -306,19 +309,17 @@ jobs:
               # Note the current convention is to use the -S and -B options here to specify source
               # and build directories, but this is only available with CMake 3.13 and higher.
               # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-              run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr
+              run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr -G Ninja
 
             - name: Build
               working-directory: ${{runner.workspace}}/build
               shell: bash
-              # Execute the build.  You can specify a specific target with "--target <NAME>"
-              run: make -j8
+              run: ninja
 
             - name: Package
               working-directory: ${{runner.workspace}}/build
               shell: bash
-              # Execute the build.  You can specify a specific target with "--target <NAME>"
-              run: make package
+              run: ninja package
 
             - name: Upload ZIP
               uses: actions/upload-artifact@v4
@@ -340,7 +341,7 @@ jobs:
               run: sudo apt update
 
             - name: Install dependencies
-              run: sudo apt install -y libdbus-1-dev libcurl4-openssl-dev libglfw3-dev libfftw3-dev libvolk2-dev build-essential cmake pkgconf libjpeg-dev libpng-dev libtiff-dev libairspy-dev libairspyhf-dev libhackrf-dev librtlsdr-dev libomp-dev libnng-dev libiio-dev libzstd-dev libad9361-dev libbladerf-dev libuhd-dev liblimesuite-dev ocl-icd-opencl-dev libjemalloc-dev portaudio19-dev libhdf5-dev libsqlite3-dev
+              run: sudo apt install -y libdbus-1-dev libcurl4-openssl-dev libglfw3-dev libfftw3-dev libvolk2-dev build-essential cmake pkgconf libjpeg-dev libpng-dev libtiff-dev libairspy-dev libairspyhf-dev libhackrf-dev librtlsdr-dev libomp-dev libnng-dev libiio-dev libzstd-dev libad9361-dev libbladerf-dev libuhd-dev liblimesuite-dev ocl-icd-opencl-dev libjemalloc-dev portaudio19-dev libhdf5-dev libsqlite3-dev ninja-build
 
             - name: Delete build dir
               run: rm -rf ${{runner.workspace}}/build
@@ -358,19 +359,17 @@ jobs:
               # Note the current convention is to use the -S and -B options here to specify source
               # and build directories, but this is only available with CMake 3.13 and higher.
               # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-              run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+              run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -G Ninja
 
             - name: Build
               working-directory: ${{runner.workspace}}/build
               shell: bash
-              # Execute the build.  You can specify a specific target with "--target <NAME>"
-              run: make -j4
+              run: ninja
 
             - name: Package
               working-directory: ${{runner.workspace}}/build
               shell: bash
-              # Execute the build.  You can specify a specific target with "--target <NAME>"
-              run: make package
+              run: ninja package
 
             - name: Upload ZIP
               uses: actions/upload-artifact@v4
@@ -391,7 +390,7 @@ jobs:
               # These are preinstalled in the GitHub runners, cause needless warnings to appear
               # Add these back if these ever become missing for some reason
               # sqlite3 libtool autoconf libjpeg-turbo libtiff libusb libpng zstd
-              run: brew install dylibbundler automake meson orc libxml2 zlib portaudio boost nng volk libomp glfw3 fftw libxml2 portaudio jemalloc nng armadillo hdf5
+              run: brew install ninja dylibbundler automake meson orc libxml2 zlib portaudio boost nng volk libomp glfw3 fftw libxml2 portaudio jemalloc nng armadillo hdf5
 
             - name: Create Build Environment
               # Some projects don't allow in-source building, so create a separate build directory
@@ -416,13 +415,12 @@ jobs:
               # Note the current convention is to use the -S and -B options here to specify source
               # and build directories, but this is only available with CMake 3.13 and higher.
               # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-              run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUNDLING_MODE=ON -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+              run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUNDLING_MODE=ON -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -G Ninja
 
             - name: Build
               working-directory: ${{runner.workspace}}/build
               shell: bash
-              # Execute the build.  You can specify a specific target with "--target <NAME>"
-              run: make -j6
+              run: ninja
 
             - name: Bundle
               working-directory: ${{runner.workspace}}/build
@@ -454,7 +452,7 @@ jobs:
               # These are preinstalled in the GitHub runners, cause needless warnings to appear
               # Add these back if these ever become missing for some reason
               # sqlite3 zstd libpng libtiff libjpeg-turbo libusb
-              run: brew install dylibbundler libtool autoconf automake meson orc libxml2 zlib portaudio boost nng volk libomp glfw3 fftw libxml2 portaudio jemalloc nng armadillo hdf5
+              run: brew install ninja dylibbundler libtool autoconf automake meson orc libxml2 zlib portaudio boost nng volk libomp glfw3 fftw libxml2 portaudio jemalloc nng armadillo hdf5
 
             - name: Create Build Environment
               # Some projects don't allow in-source building, so create a separate build directory
@@ -479,13 +477,12 @@ jobs:
               # Note the current convention is to use the -S and -B options here to specify source
               # and build directories, but this is only available with CMake 3.13 and higher.
               # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-              run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUNDLING_MODE=ON -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+              run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUNDLING_MODE=ON -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -G Ninja
 
             - name: Build
               working-directory: ${{runner.workspace}}/build
               shell: bash
-              # Execute the build.  You can specify a specific target with "--target <NAME>"
-              run: make -j6
+              run: ninja
 
             - name: Bundle
               working-directory: ${{runner.workspace}}/build
@@ -507,7 +504,7 @@ jobs:
 
     # Yes, since I was asked to do like SDR++ for this I did look at how Ryzerth has done it :-)
     update_nightly_release:
-        needs: ["build_windows_x64", "build_windows_arm64", "build_ubuntu_2204", "build_ubuntu_2404", "build_macos_intel", "build_macos_silicon", "build_linux_arm64", "build_android"]
+        needs: ["build_windows_x64", "build_windows_arm64", "build_ubuntu_2204", "build_ubuntu_2404", "build_macos_intel", "build_macos_silicon", "build_linux_arm64"]
         runs-on: ubuntu-latest
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
 
@@ -519,7 +516,7 @@ jobs:
               run: sudo apt install -y unzip
 
             - name: Copy files
-              run: mkdir satdump_out && cp SatDump-Ubuntu-22.04/satdump*.deb satdump_out/satdump_ubuntu_22.04_amd64.deb && cp SatDump-Ubuntu-24.04/satdump*.deb satdump_out/satdump_ubuntu_24.04_amd64.deb && cp SatDump-macOS-Intel/SatDump-macOS-Intel.dmg satdump_out/SatDump-macOS-Intel.dmg && cp SatDump-macOS-Silicon/SatDump-macOS-Silicon.dmg satdump_out/SatDump-macOS-Silicon.dmg && (cd SatDump-Windows_x64_Portable && zip -r ../satdump_out/SatDump-Windows_x64_Portable.zip *) && cp SatDump-Windows_x64_Installer/SatDump-*.exe satdump_out/SatDump-Windows_x64_Installer.exe && cp SatDump-Pi64-Latest/satdump*.deb satdump_out/satdump_rpi64_latest_arm64.deb && cp SatDump-release.apk/app-release.apk satdump_out/SatDump-Android.apk && cp SatDump-AppImage/*.AppImage satdump_out/SatDump.AppImage && (cd SatDump-Windows_arm64_Portable && zip -r ../satdump_out/SatDump-Windows_arm64_Portable.zip *) && cp SatDump-Windows_arm64_Installer/SatDump-*.exe satdump_out/SatDump-Windows_arm64_Installer.exe
+              run: mkdir satdump_out && cp SatDump-Ubuntu-22.04/satdump*.deb satdump_out/satdump_ubuntu_22.04_amd64.deb && cp SatDump-Ubuntu-24.04/satdump*.deb satdump_out/satdump_ubuntu_24.04_amd64.deb && cp SatDump-macOS-Intel/SatDump-macOS-Intel.dmg satdump_out/SatDump-macOS-Intel.dmg && cp SatDump-macOS-Silicon/SatDump-macOS-Silicon.dmg satdump_out/SatDump-macOS-Silicon.dmg && (cd SatDump-Windows_x64_Portable && zip -r ../satdump_out/SatDump-Windows_x64_Portable.zip *) && cp SatDump-Windows_x64_Installer/SatDump-*.exe satdump_out/SatDump-Windows_x64_Installer.exe && cp SatDump-Pi64-Latest/satdump*.deb satdump_out/satdump_rpi64_latest_arm64.deb && cp SatDump-AppImage/*.AppImage satdump_out/SatDump.AppImage && (cd SatDump-Windows_arm64_Portable && zip -r ../satdump_out/SatDump-Windows_arm64_Portable.zip *) && cp SatDump-Windows_arm64_Installer/SatDump-*.exe satdump_out/SatDump-Windows_arm64_Installer.exe
 
             - name: Update Nightly
               run: gh release upload nightly satdump_out/* -R ${{github.repository}} --clobber
