@@ -141,6 +141,16 @@ typedef struct {
 predict_orbital_elements_t* predict_parse_tle(const char *tle_line_1, const char *tle_line_2);
 
 /**
+ * Create predict_orbital_elements_t from CCSDS OMM strings.
+ * Added by Aang23
+ *
+ * \param omm_str CCSDS OMM String
+ * \return Processed OMM parameters
+ * \copyright GPLv2+
+ **/
+predict_orbital_elements_t* predict_parse_omm(const char *omm_str);
+
+/**
  * Free memory allocated in orbital elements structure.
  * \param orbital_elements Orbit to free
  **/
