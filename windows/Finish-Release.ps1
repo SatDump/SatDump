@@ -36,7 +36,7 @@ cd $BuildPath
 mkdir Release\plugins | Out-Null
 cp plugins\Release\*.dll Release\plugins
 cp -r $SourcePath\resources Release
-cp $SourcePath\satdump_cfg.json Release
+cp $SourcePath\gobdump_cfg.json Release
 cd Release
 
 $input_dlls = Get-ChildItem -Recurse -Filter *.dll

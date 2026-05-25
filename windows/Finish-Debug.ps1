@@ -44,7 +44,7 @@ cp -r ..\..\..\resources Debug
 mkdir Debug\plugins | Out-Null
 cp -force plugins\Debug\*.dll Debug\plugins
 cp -force plugins\Debug\*.pdb Debug\plugins
-cp -force ..\..\..\satdump_cfg.json Debug
+cp -force ..\..\..\gobdump_cfg.json Debug
 
 if(-not $fast)
 {

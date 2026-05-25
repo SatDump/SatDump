@@ -32,7 +32,7 @@ echo "Making app shell..."
 mkdir -p MacApp/GobDump.app/Contents/MacOS
 mkdir -p MacApp/GobDump.app/Contents/Resources/plugins
 cp -r $GITHUB_WORKSPACE/resources MacApp/GobDump.app/Contents/Resources/resources
-cp $GITHUB_WORKSPACE/satdump_cfg.json MacApp/GobDump.app/Contents/Resources
+cp $GITHUB_WORKSPACE/gobdump_cfg.json MacApp/GobDump.app/Contents/Resources
 cp $GITHUB_WORKSPACE/macOS/Info.plist MacApp/GobDump.app/Contents
 cp $GITHUB_WORKSPACE/macOS/Readme.rtf MacApp/Readme.rtf
 
