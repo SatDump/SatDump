@@ -272,7 +272,16 @@ jobs:
               working-directory: ${{runner.workspace}}/build
               shell: bash
               # Execute the build.  You can specify a specific target with "--target <NAME>"
-              run: cp *.deb /tmp/gobdump.deb && cp $GITHUB_WORKSPACE/SatDump.yml . && ./pkg2appimage SatDump.yml
+              run: |
+                  cp *.deb /tmp/gobdump.deb
+                  dpkg-deb -R /tmp/gobdump.deb /tmp/gobdump_ext
+                  find /tmp/gobdump_ext/usr/share -name "satdump.desktop" -execdir mv {} gobdump.desktop \; || true
+                  find /tmp/gobdump_ext/usr/share -name "satdump.png" -execdir mv {} gobdump.png \; || true
+                  find /tmp/gobdump_ext/usr/share -name "gobdump.desktop" -exec sed -i 's/Name=SatDump/Name=GobDump/g' {} \; || true
+                  find /tmp/gobdump_ext/usr/share -name "gobdump.desktop" -exec sed -i 's/Icon=satdump/Icon=gobdump/g' {} \; || true
+                  dpkg-deb -b /tmp/gobdump_ext /tmp/gobdump.deb
+                  cp $GITHUB_WORKSPACE/SatDump.yml .
+                  ./pkg2appimage SatDump.yml
 
             - name: Upload AppImage
               uses: actions/upload-artifact@v4
