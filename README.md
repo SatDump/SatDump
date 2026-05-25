@@ -2,8 +2,12 @@
 
 <img src='./icon.png' width='100px' />
 
+GobDump is a fork of SatDump, one of the best open-source satellite data processing software.
+The goal of this fork is to have _more stable_ releases of v2 branch that will work on Windows no matter what, and I can write guides for it without worrying about breaking changes. It will also be used to test new features and decoders, mostly for my weather balloon experiments.
+
+Code quality of new features will be abysmal compared to SatDump, but as long as they work and don't break anything, I don't care. I will also likely not merge all features to SatDump, if any at all.
+
 A generic satellite data processing software.
-_Thanks Crosswalkersam for the icon!_
 
 There now also is a [Matrix](https://matrix.to/#/#satdump:altillimity.com) room if you want to chat! Otherwise, a [Discord](https://discord.gg/ctt3M8pRYG) bridge to the Matrix is also available.
 
