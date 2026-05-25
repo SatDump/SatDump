@@ -12,7 +12,7 @@
 #include <filesystem>
 #include <shlwapi.h>
 #define LIBRARIES_SEARCH_PATH "\\..\\lib\\gobdump\\"
-#define RESOURCES_SEARCH_PATH "\\..\\resources\\"
+#define RESOURCES_SEARCH_PATH "\\..\\"
 #endif
 
 namespace satdump
