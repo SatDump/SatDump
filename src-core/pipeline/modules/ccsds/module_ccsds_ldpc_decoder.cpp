@@ -301,6 +301,8 @@ namespace satdump
 
                 ImGui::Begin("CCSDS LDPC Decoder", NULL, window ? 0 : NOWINDOW_FLAGS);
 
+                ImGui::Dummy({0, 0}); // Stupid ImGui stuff?
+
                 ImGui::BeginGroup();
                 if (!d_is_streaming_input)
                 {
@@ -397,9 +399,7 @@ namespace satdump
             std::string CCSDSLDPCDecoderModule::getID() { return "ccsds_ldpc_decoder"; }
 
             std::shared_ptr<ProcessingModule> CCSDSLDPCDecoderModule::getInstance(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
-            {
-                return std::make_shared<CCSDSLDPCDecoderModule>(input_file, output_file_hint, parameters);
-            }
+            { return std::make_shared<CCSDSLDPCDecoderModule>(input_file, output_file_hint, parameters); }
         } // namespace ccsds
     } // namespace pipeline
 } // namespace satdump

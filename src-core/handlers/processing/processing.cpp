@@ -91,9 +91,8 @@ namespace satdump
                 }
             }
 
-            eventBus->fire_event<SetIsDoneProcessingEvent>({});
-
         exit_handler:
+            eventBus->fire_event<SetIsDoneProcessingEvent>({});
             pipeline_name = "PROCESSING_DONE"; // TODOREWORK MASSIVE HACK!
         }
 

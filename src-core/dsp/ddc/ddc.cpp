@@ -116,6 +116,7 @@ namespace satdump
 
                     oblk.size = i->filter.process(oblk.getSamples<complex_t>(), iblk.size, oblk.getSamples<complex_t>());
 
+#if 0
                     if (i->decimation > 1)
                     {
                         int size_out = 0;
@@ -156,6 +157,7 @@ namespace satdump
                     {
                         oblk.size = iblk.size;
                     }
+#endif
 
                     o.fifo->wait_enqueue(oblk);
                 }

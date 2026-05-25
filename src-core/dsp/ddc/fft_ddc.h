@@ -1,115 +1,55 @@
 #pragma once
 
-#include "common/dsp/filter/firdes.h"
-#include "core/exception.h"
+#include "common/dsp/complex.h"
 #include "dsp/block.h"
 #include "dsp/block_helpers.h"
-#include "dsp/filter/decimating_fir.h"
-#include "dsp/filter/fir.h"
-#include <memory>
-#include <mutex>
-#include <string>
+#include "dsp/ddc/calc_filt.h"
+#include "dsp/ddc/fft_helper.h"
+#include <fftw3.h>
+#include <volk/volk_alloc.hh>
 
 namespace satdump
 {
     namespace ndsp
     {
-        namespace
-        {
-            double bessi0(double x)
-            /*------------------------------------------------------------*/
-            /* PURPOSE: Evaluate modified Bessel function In(x) and n=0.  */
-            /*------------------------------------------------------------*/
-            {
-                double ax, ans;
-                double y;
-
-                if ((ax = fabs(x)) < 3.75)
-                {
-                    y = x / 3.75, y = y * y;
-                    ans = 1.0 + y * (3.5156229 + y * (3.0899424 + y * (1.2067492 + y * (0.2659732 + y * (0.360768e-1 + y * 0.45813e-2)))));
-                }
-                else
-                {
-                    y = 3.75 / ax;
-                    ans = (exp(ax) / sqrt(ax)) *
-                          (0.39894228 +
-                           y * (0.1328592e-1 + y * (0.225319e-2 + y * (-0.157565e-2 + y * (0.916281e-2 + y * (-0.2057706e-1 + y * (0.2635537e-1 + y * (-0.1647633e-1 + y * 0.392377e-2))))))));
-                }
-                return ans;
-            }
-
-            //%  Fs=Sampling frequency
-            //%      * Fa=Low freq ideal cut off (0=low pass)
-            //%      * Fb=High freq ideal cut off (Fs/2=high pass)
-            //%      * Att=Minimum stop band attenuation (>21dB)
-            std::vector<double> calc_filter(double Fs, double Fa, double Fb, int M, double Att)
-            {
-                std::vector<double> _H;
-
-                int k, j;
-
-                int len = 2 * M + 1;
-                double Alpha, C, x, y;
-                double *W;
-
-                _H.resize(len * sizeof(double));
-                Alpha = .1102 * (Att - 8.7);
-
-                // compute kaiser window of length 2M+1
-                W = (double *)malloc(len * sizeof(double));
-                assert(W != nullptr);
-                C = bessi0(Alpha * M_PI);
-
-                for (k = 0; k < len; k++)
-                {
-                    y = k * 1.0 / M - 1.0;
-                    x = M_PI * Alpha * sqrt(1 - y * y);
-                    W[k] = bessi0(x) / C;
-                    // printf("h(%d)=%0.8f;\n", k+1, W[k]);
-                }
-
-                k = 0;
-                for (j = -M; j <= M; j++)
-                {
-                    if (j == 0)
-                    {
-                        _H[k] = 2 * (Fb - Fa) / Fs;
-                    }
-                    else
-                    {
-                        _H[k] = 1 / (M_PI * j) * (sin(2 * M_PI * j * Fb / Fs) - sin(2 * M_PI * j * Fa / Fs)) * W[k];
-                    }
-                    k++;
-                }
-
-                //  *Ntaps = len;
-                //    for( k=0 ; k < len ; k++ ) {
-                //        printf("h(%d)=%0.8f;\n", k+1, H[k]*1000000);
-                //    }
-                free(W);
-                return _H;
-            }
-        } // namespace
-
-        class DDC_Block : public Block
+        class FFTDDCBlock : public Block
         {
         public:
+            bool needs_reinit = false;
+
             int p_noutputs = 0;
             double frequency = 100e6;
             double samplerate = 6e6;
             std::mutex vfos_mtx;
 
+        private:
+            int buffer_size = 0;
+            volk::vector<complex_t> buffer;
+
+            size_t in_buffer;
+
+            int d_filter_m = 7200;
+            int d_ntaps = 0;
+            int d_fftsize = 0;
+            int d_nsamples = 0;
+
+            std::shared_ptr<FFTHelper> fft_fwd;
+
         public:
             struct IOInfo
             {
+            public:
                 std::string id;
                 bool forward_terminator;
 
+            public:
                 double frequency = 0;
                 double bandwidth = 0;
                 int decimation = 1;
 
+                int sample_index = 0;
+
+            public:
                 void recalc_freq(double sr, double cf)
                 {
                     double freq_shift = cf - frequency;
@@ -117,23 +57,45 @@ namespace satdump
                     phase_delta = complex_t(cos(2.0 * M_PI * (freq_shift / sr)), sin(2.0 * M_PI * (freq_shift / sr)));
                 }
 
-                int sample_index = 0;
-                complex_t phase_delta = 0;
-                complex_t phase = 0;
+                complex_t phase = 0, phase_delta = 0;
 
-                void recalc_bw(double sr)
+            public:
+                std::shared_ptr<FFTHelper> fft_inv;
+
+                volk::vector<complex_t> tail;
+                volk::vector<complex_t> ffttaps_buffer;
+
+                void initFFTFilter(FFTDDCBlock *tthis)
                 {
-                    if (bandwidth == 0)
+                    if (!tthis->fft_fwd)
                         return;
 
-                    auto v = calc_filter(sr, 0, bandwidth / 2, 300, 80);
+                    // Init FFT
+                    if (!fft_inv || fft_inv->size != tthis->d_fftsize)
+                        fft_inv = std::make_shared<FFTHelper>(tthis->d_fftsize, false);
 
-                    filter.set_cfg("taps", v /*dsp::firdes::low_pass(1, sr, bandwidth / 2, 1e3)*/);
-                    filter.set_cfg("decimation", decimation);
+                    // Generate taps
+                    double freq_off = frequency - tthis->frequency;
+                    double fwT0 = 2 * M_PI * (freq_off / tthis->samplerate);
+                    auto taps = filt::generateTaps(tthis->samplerate, 0, bandwidth / 2., tthis->d_filter_m, 50, fwT0);
+
+                    // Init taps
+                    float scale = 1.0 / tthis->d_fftsize;
+                    for (int i = 0; i < tthis->d_ntaps; i++)
+                        ((complex_t *)tthis->fft_fwd->fft_in)[i] = taps[i] * scale;
+                    for (int i = tthis->d_ntaps; i < tthis->d_fftsize; i++)
+                        ((complex_t *)tthis->fft_fwd->fft_in)[i] = complex_t(0.0f, 0.0f);
+
+                    tthis->fft_fwd->execute();
+
+                    ffttaps_buffer.resize(tthis->d_fftsize);
+                    for (int i = 0; i < tthis->d_fftsize; i++)
+                        ffttaps_buffer[i] = ((complex_t *)tthis->fft_fwd->fft_out)[i];
+
+                    tail.resize(tthis->d_ntaps - 1);
                 }
 
-                DecimatingFIRBlock<complex_t> filter;
-
+            public:
                 IOInfo(std::string id, bool forward_terminator, double f = 0, double b = 0, double d = 0) : id(id), forward_terminator(forward_terminator), frequency(f), bandwidth(b), decimation(d) {}
             };
 
@@ -141,11 +103,12 @@ namespace satdump
             bool work();
 
         public:
-            DDC_Block();
-            ~DDC_Block();
+            FFTDDCBlock();
+            ~FFTDDCBlock();
 
-            void init() {}
+            void init();
 
+        public:
             nlohmann::ordered_json get_cfg_list()
             {
                 nlohmann::ordered_json p;
@@ -194,7 +157,10 @@ namespace satdump
                 {
                     frequency = v;
                     for (int i = 0; i < outputs.size(); i++)
+                    {
                         ((IOInfo *)outputs[i].blkdata.get())->recalc_freq(samplerate, frequency);
+                        ((IOInfo *)outputs[i].blkdata.get())->initFFTFilter(this);
+                    }
                 }
                 else if (key == "samplerate")
                 {
@@ -202,7 +168,7 @@ namespace satdump
                     for (int i = 0; i < outputs.size(); i++)
                     {
                         ((IOInfo *)outputs[i].blkdata.get())->recalc_freq(samplerate, frequency);
-                        ((IOInfo *)outputs[i].blkdata.get())->recalc_bw(samplerate);
+                        ((IOInfo *)outputs[i].blkdata.get())->initFFTFilter(this);
                     }
                 }
                 else if (key == "noutputs")
@@ -221,6 +187,8 @@ namespace satdump
                             BlockIO o = {"out" + std::to_string(i + 1), getTypeSampleType<complex_t>()};
                             o.blkdata = std::make_shared<IOInfo>(std::to_string(i + 1), true);
                             o.fifo = std::make_shared<DSPStream>(4); // TODOREWORK
+                            ((IOInfo *)o.blkdata.get())->recalc_freq(samplerate, frequency);
+                            ((IOInfo *)o.blkdata.get())->initFFTFilter(this);
                             Block::outputs.push_back(o);
                         }
                     }
@@ -231,16 +199,20 @@ namespace satdump
                     auto &i = *((IOInfo *)outputs[o_n].blkdata.get());
                     i.frequency = v;
                     i.recalc_freq(samplerate, frequency);
+                    i.initFFTFilter(this);
                 }
                 else if (sscanf(key.c_str(), "output_%d_bw%n", &o_n, &o_s) == 1 && o_s == key.size())
                 {
                     auto &i = *((IOInfo *)outputs[o_n].blkdata.get());
                     i.bandwidth = v;
-                    i.recalc_bw(samplerate);
+                    i.initFFTFilter(this);
                 }
                 else if (sscanf(key.c_str(), "output_%d_dec%n", &o_n, &o_s) == 1 && o_s == key.size())
                 {
-                    ((IOInfo *)outputs[o_n].blkdata.get())->decimation = v;
+                    int dec = v;
+                    if (dec < 1)
+                        dec = 1;
+                    ((IOInfo *)outputs[o_n].blkdata.get())->decimation = dec;
                 }
                 else
                     throw satdump_exception(key);
@@ -255,6 +227,8 @@ namespace satdump
                 BlockIO o = {id, getTypeSampleType<complex_t>()};
                 o.blkdata = std::make_shared<IOInfo>(id, forward_terminator, freq, bw, dec);
                 o.fifo = std::make_shared<DSPStream>(4); // TODOREWORK
+                ((IOInfo *)o.blkdata.get())->recalc_freq(samplerate, frequency);
+                ((IOInfo *)o.blkdata.get())->initFFTFilter(this);
                 Block::outputs.push_back(o);
                 return outputs[outputs.size() - 1];
             }
@@ -294,6 +268,7 @@ namespace satdump
                     {
                         i.frequency = freq;
                         i.recalc_freq(samplerate, frequency);
+                        i.initFFTFilter(this);
                     }
                 }
             }
@@ -322,7 +297,7 @@ namespace satdump
                     if (i.id == id)
                     {
                         i.bandwidth = bw;
-                        i.recalc_bw(samplerate);
+                        i.initFFTFilter(this);
                     }
                 }
             }

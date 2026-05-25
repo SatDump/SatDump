@@ -6,6 +6,7 @@
 #include "core/exception.h"
 #include "dsp/block.h"
 #include "dsp/ddc/ddc.h"
+#include "dsp/ddc/fft_ddc.h"
 #include "dsp/device/dev.h"
 #include "dsp/fft/fft_pan.h"
 #include "dsp/hier/audio_demod.h"
@@ -35,7 +36,7 @@ namespace satdump
         private:
             std::shared_ptr<ndsp::DeviceBlock> dev_blk;
 
-            std::shared_ptr<ndsp::DDC_Block> splitter;
+            std::shared_ptr<ndsp::FFTDDCBlock> splitter;
 
             std::shared_ptr<ndsp::FFTPanBlock> fftp;
 
@@ -94,16 +95,16 @@ namespace satdump
                 nvfo.demod = std::make_shared<ndsp::AudioDemodHierBlock>();
                 nvfo.sink = getBlock("portaudio_sink_f");
 
-                nvfo.demod->set_cfg("samplerate", dev_blk->getStreamSamplerate(0, false) / 30.);
+                nvfo.demod->set_cfg("samplerate", dev_blk->getStreamSamplerate(0, false) / 20.);
                 nvfo.demod->set_cfg("audio_samplerate", 48e3);
                 nvfo.demod->set_cfg("mode", "nfm");
                 nvfo.sink->set_cfg("samplerate", 48e3);
 
+                nvfo.demod->set_input(splitter->add_output(id, 98.4e6, 200e3, 20, false), 0);
                 nvfo.sink->link(nvfo.demod.get(), 0, 0, 4);
-                nvfo.sink->start();
 
-                nvfo.demod->set_input(splitter->add_output(id, 98.4e6, 0, 30), 0);
                 nvfo.demod->start();
+                nvfo.sink->start();
 
                 logger->info("Added audio!");
                 avfos.push_back(nvfo);
@@ -114,7 +115,7 @@ namespace satdump
             {
                 available_devices = ndsp::getDeviceList(ndsp::DeviceBlock::MODE_SINGLE_RX);
 
-                splitter = std::make_shared<ndsp::DDC_Block>();
+                splitter = std::make_shared<ndsp::FFTDDCBlock>();
 
                 fftp = std::make_shared<ndsp::FFTPanBlock>();
                 fftp->set_input(splitter->add_output("main_fft", 0, 0, 0), 0);
@@ -262,6 +263,10 @@ namespace satdump
                         v[i] = getVFOJson(avfos[i]);
                     return v;
                 }
+                else if (key == "frequency")
+                    return dev_blk ? dev_blk->getStreamFrequency(0, false) : 0;
+                else if (key == "bandwidth")
+                    return dev_blk ? dev_blk->getStreamSamplerate(0, false) : 1;
                 else
                     return nlohmann::json();
             }
@@ -341,6 +346,18 @@ namespace satdump
                 else if (key == "add_audio")
                 {
                     add_audio_vfo("avfo_test");
+                }
+                else if (key == "set_audio_vfo_freq")
+                {
+                    std::string id = v["id"];
+                    double f = v["f"];
+                    splitter->set_vfo_freq(id, f);
+                }
+                else if (key == "set_audio_vfo_bw")
+                {
+                    std::string id = v["id"];
+                    double b = v["b"];
+                    splitter->set_vfo_bandwidth(id, b);
                 }
                 else
                     throw satdump_exception("Oops");

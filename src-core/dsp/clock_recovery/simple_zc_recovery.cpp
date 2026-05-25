@@ -5,7 +5,7 @@ namespace satdump
 {
     namespace ndsp
     {
-        SimpleZeroCrossingRecoveryBlock::SimpleZeroCrossingRecoveryBlock() : BlockSimple<float, float>("simple_zc_recovery", {{"in", DSP_SAMPLE_TYPE_F32}}, {{"out", DSP_SAMPLE_TYPE_F32}}) {}
+        SimpleZeroCrossingRecoveryBlock::SimpleZeroCrossingRecoveryBlock() : BlockSimple<float, float>("simple_zc_recovery_f", {{"in", DSP_SAMPLE_TYPE_F32}}, {{"out", DSP_SAMPLE_TYPE_F32}}) {}
 
         SimpleZeroCrossingRecoveryBlock::~SimpleZeroCrossingRecoveryBlock() {}
 

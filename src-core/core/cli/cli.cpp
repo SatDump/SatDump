@@ -1,4 +1,5 @@
 #include "cli.h"
+#include "core/cli/dsp_bench/dsp_bench.h"
 #include "core/cli/experimental/hserver.h"
 #include "core/plugin.h"
 #include "libs/CLI11.hpp"
@@ -38,6 +39,7 @@ namespace satdump
 
             // Everything
             cmd_handlers.push_back(std::make_shared<satdump::PipelineCmdHandler>());
+            cmd_handlers.push_back(std::make_shared<satdump::DspBenchCmdHandler>());
 
             if (is_gui) // GUI Only
             {

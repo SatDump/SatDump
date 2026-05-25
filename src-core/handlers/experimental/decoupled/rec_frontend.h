@@ -11,8 +11,10 @@
 #include "dsp/device/options_displayer.h"
 #include "dsp/io/iq_types.h"
 #include "handlers/experimental/decoupled/fft_wat_widget/fft_waterfall.h"
+#include "handlers/experimental/decoupled/rec_backend.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
+#include "nlohmann/json.hpp"
 #include "utils/task_queue.h"
 #include <cstddef>
 #include <mutex>
@@ -53,6 +55,18 @@ namespace satdump
             size_t rec_size = 0;
 
             bool show_waterfall = true;
+
+            struct VFOInfo
+            {
+                std::string id;
+                double freq;
+                double band;
+
+                NLOHMANN_DEFINE_TYPE_INTRUSIVE(VFOInfo, id, freq, band)
+            };
+
+            bool vfo_need_upd = false;
+            std::vector<VFOInfo> cvfos;
 
         protected:
             bool mustUpdate = true;
@@ -104,8 +118,34 @@ namespace satdump
                 wip_fft_widget.set_waterfall_rate(30, 20);
                 wip_fft_widget.set_waterfall_palette(colormaps::loadMap(resources::getResourcePath("waterfall/classic.json")));
 
-                wip_fft_widget.band_callback = [](auto v) { logger->critical("BAND %s %f", v.id.c_str(), v.b); };
-                wip_fft_widget.freq_callback = [](auto v) { logger->critical("FREQ %s %f", v.id.c_str(), v.f); };
+                wip_fft_widget.band_callback = [this, bkd](auto v)
+                {
+                    logger->critical("BAND %s %f", v.id.c_str(), v.b);
+
+                    tq.push(
+                        [this, v, bkd]()
+                        {
+                            std::scoped_lock l(fm);
+                            nlohmann::json vv;
+                            vv["id"] = v.id;
+                            vv["b"] = v.b;
+                            bkd->set_cfg("set_audio_vfo_bw", vv);
+                        });
+                };
+                wip_fft_widget.freq_callback = [this, bkd](auto v)
+                {
+                    logger->critical("FREQ %s %f", v.id.c_str(), v.f);
+
+                    tq.push(
+                        [this, v, bkd]()
+                        {
+                            std::scoped_lock l(fm);
+                            nlohmann::json vv;
+                            vv["id"] = v.id;
+                            vv["f"] = v.f;
+                            bkd->set_cfg("set_audio_vfo_freq", vv);
+                        });
+                };
             }
             ~RecFrontendHandler() {}
 
@@ -155,6 +195,12 @@ namespace satdump
 
                             recording = bkd->get_cfg("recording");
                             rec_size = bkd->get_cfg("rec_size");
+
+                            wip_fft_widget.frequency = bkd->get_cfg("frequency");
+                            wip_fft_widget.bandwidth = bkd->get_cfg("bandwidth");
+
+                            cvfos = bkd->get_cfg("avfos");
+                            vfo_need_upd = true;
                         });
 
                     mustUpdate = false;
@@ -320,6 +366,18 @@ namespace satdump
 
             void drawContents(ImVec2 win_size)
             {
+                if (vfo_need_upd && !wip_fft_widget.isBeingInteractedWith())
+                {
+                    wip_fft_widget.vfo_freqs.clear();
+
+                    for (auto &vf : cvfos)
+                    {
+                        wip_fft_widget.vfo_freqs.push_back({vf.id, vf.freq, vf.band == 0 ? -1 : vf.band});
+                    }
+
+                    vfo_need_upd = false;
+                }
+
                 ImGui::BeginChild("RecorderFFT", win_size, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
                 wip_fft_widget.draw(win_size, show_waterfall);
                 ImGui::EndChild();

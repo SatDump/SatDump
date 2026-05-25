@@ -2,8 +2,12 @@
 #include "common/dsp_source_sink/format_notated.h"
 #include "common/utils.h"
 #include "dsp/agc/agc_fast.h"
+#include "dsp/block_helpers.h"
 #include "dsp/clock_recovery/clock_recovery_mm.h"
 #include "dsp/clock_recovery/clock_recovery_mm_fast.h"
+#include "dsp/clock_recovery/simple_gardner_recovery.h"
+#include "dsp/clock_recovery/simple_zc_recovery.h"
+#include "dsp/ddc/fft_ddc.h"
 #include "dsp/path/splitter.h"
 #include "dsp/pll/costas.h"
 #include "dsp/pll/costas_fast.h"
@@ -77,12 +81,12 @@
 #include "dsp/filter/fir.h"
 
 template <typename T>
-void benchmarkNDSPBlock(std::shared_ptr<satdump::ndsp::Block> ptr, int duration, std::string blkname)
+void benchmarkNDSPBlock(std::shared_ptr<satdump::ndsp::Block> ptr, int duration, std::string blkname, double ratio = 1)
 {
     satdump::ndsp::BlockIO istr;
     istr.fifo = std::make_shared<satdump::ndsp::DSPStream>(4); // TODOREWORK FIFONUM?
     istr.name = "o";
-    istr.type = satdump::ndsp::DSP_SAMPLE_TYPE_CF32;
+    istr.type = satdump::ndsp::getTypeSampleType<T>();
 
     ptr->set_input(istr, 0);
 
@@ -138,7 +142,7 @@ void benchmarkNDSPBlock(std::shared_ptr<satdump::ndsp::Block> ptr, int duration,
         consumer_th.join();
 
     double throughput = received / (end_time - start_time);
-    //   throughput *= MULTIPICATOR;
+    throughput *= ratio;
     logger->warn((std::string) "Performance (" + blkname + ") %s", format_notated(throughput, "S/s").c_str());
 }
 
@@ -150,6 +154,32 @@ int main(int argc, char *argv[])
     satdump::initSatDump();
     completeLoggerInit();
     logger->set_level(slog::LOG_TRACE);
+
+    logger->debug("Benchmarking FFT DDC...");
+    for (int decim : {2, 8, 16, 32, 50, 64, 128, 256})
+    {
+        auto p = std::make_shared<satdump::ndsp::FFTDDCBlock>();
+        p->set_cfg("frequency", 100e6);
+        p->set_cfg("samplerate", 6e6);
+        p->add_output("out1", 101e6, 200e3, decim);
+        benchmarkNDSPBlock<complex_t>(p, 10, "FFT DDC, 1 output, decim " + std::to_string(decim), decim);
+    }
+
+    logger->debug("Benchmarking Simple Gardner Recovery...");
+    for (float v : {1.2, 2.0, 3.0, 40.})
+    {
+        auto p = std::make_shared<satdump::ndsp::SimpleGardnerRecoveryBlock>();
+        p->set_cfg("sps", v);
+        benchmarkNDSPBlock<complex_t>(p, 10, "Simple Gardner Recovery, omega " + std::to_string(v));
+    }
+
+    logger->debug("Benchmarking Simple Zero Crossing Recovery...");
+    for (float v : {1.2, 2.0, 3.0, 40.})
+    {
+        auto p = std::make_shared<satdump::ndsp::SimpleZeroCrossingRecoveryBlock>();
+        p->set_cfg("sps", v);
+        benchmarkNDSPBlock<float>(p, 10, "Simple Zero Crossing Recovery, omega " + std::to_string(v));
+    }
 
     logger->debug("Benchmarking AGC...");
     benchmarkBlock(complex_t, complex_t, dsp::AGCBlock<complex_t>, 10, "AGC, Default", 1.0, /**/ 0.01, 1.0, 1.0, 65535);

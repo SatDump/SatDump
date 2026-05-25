@@ -300,7 +300,10 @@
                 }
             },
             "products": {
-                // "satellite": "proba3"
+                "module": "proba_instruments",
+                "parameters": {
+                    "satellite": "proba3"
+                }
             }
         }
     },
@@ -342,7 +345,10 @@
                 }
             },
             "products": {
-                // "satellite": "proba3"
+                "module": "proba_instruments",
+                "parameters": {
+                    "satellite": "proba3"
+                }
             }
         }
     },
@@ -383,7 +389,10 @@
                 }
             },
             "products": {
-                // "satellite": "proba3"
+                "module": "proba_instruments",
+                "parameters": {
+                    "satellite": "proba3"
+                }
             }
         }
     }

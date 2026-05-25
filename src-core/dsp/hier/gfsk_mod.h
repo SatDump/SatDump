@@ -53,10 +53,10 @@ namespace satdump
                 vco_blk.start();
             }
 
-            void stop(bool stop_snow, bool force)
+            void stop(bool stop_snow = false, bool force = false)
             {
-                fir_blk.stop(stop_snow);
-                vco_blk.stop(stop_snow);
+                fir_blk.stop(stop_snow, force);
+                vco_blk.stop(stop_snow, force);
             }
 
             nlohmann::ordered_json get_cfg_list()
