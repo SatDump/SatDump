@@ -99,7 +99,7 @@
 		},
 		"advanced_mode": {
 			"type": "bool",
-			"value": false,
+			"value": true,
 			"name": "Advanced Mode",
 			"description": "Allows full editing of all SatDump options. Be warned: invalid configurations\nmay result in crashes, corruption of data, and more. Use at your own risk!"
 		},
