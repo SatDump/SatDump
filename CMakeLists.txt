@@ -289,9 +289,17 @@ add_subdirectory(plugins)
 
 # Install configuration
 if((NOT ANDROID) AND ENABLE_INSTALL)
-    install(DIRECTORY ${CMAKE_SOURCE_DIR}/resources DESTINATION share/gobdump)
-    install(FILES ${CMAKE_SOURCE_DIR}/gobdump_cfg.json DESTINATION share/gobdump)
-    install(FILES ${CMAKE_SOURCE_DIR}/icon.png DESTINATION share/gobdump)
+    if(MSVC OR BUILD_MSVC)
+        # On Windows, install resources adjacent to executables for easier portability
+        install(DIRECTORY ${CMAKE_SOURCE_DIR}/resources DESTINATION ./)
+        install(FILES ${CMAKE_SOURCE_DIR}/gobdump_cfg.json DESTINATION ./)
+        install(FILES ${CMAKE_SOURCE_DIR}/icon.png DESTINATION ./)
+    else()
+        # On Unix-like systems, follow FHS standards
+        install(DIRECTORY ${CMAKE_SOURCE_DIR}/resources DESTINATION share/gobdump)
+        install(FILES ${CMAKE_SOURCE_DIR}/gobdump_cfg.json DESTINATION share/gobdump)
+        install(FILES ${CMAKE_SOURCE_DIR}/icon.png DESTINATION share/gobdump)
+    endif()
     configure_file(${CMAKE_SOURCE_DIR}/satdump.desktop ${CMAKE_CURRENT_BINARY_DIR}/gobdump.desktop @ONLY)
 
     if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")

@@ -11,8 +11,8 @@
 #include <Windows.h>
 #include <filesystem>
 #include <shlwapi.h>
-#define LIBRARIES_SEARCH_PATH "\\..\\lib\\satdump\\"
-#define RESOURCES_SEARCH_PATH "\\..\\share\\satdump\\"
+#define LIBRARIES_SEARCH_PATH "\\..\\lib\\gobdump\\"
+#define RESOURCES_SEARCH_PATH "\\..\\resources\\"
 #endif
 
 namespace satdump
