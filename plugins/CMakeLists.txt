@@ -4,7 +4,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins)
 # We need those to be available for plugins!
 include_directories(../src-core ../src-interface)
 
-option(PLUGINS_ALL "Enable all plugins by default" ON)
+option(PLUGINS_ALL "Enable all plugins by default" OFF)
 
 option(PLUGIN_SPACEX "Enable the SpaceX support plugin" OFF)
 
@@ -21,57 +21,57 @@ if(PLUGIN_SPACEX OR PLUGINS_ALL)
   add_subdirectory(spacex_support)
 endif()
 
-option(PLUGIN_FY2 "Enable the FengYun-2 (S-VISSR, etc) support plugin" OFF)
+option(PLUGIN_FY2 "Enable the FengYun-2 (S-VISSR, etc) support plugin" ON)
 
 if(PLUGIN_FY2 OR PLUGINS_ALL)
   add_subdirectory(fengyun2_support)
 endif()
 
 option(PLUGIN_FY3 "Enable the FengYun-3 (AHRPT, MPT, DPT, etc) support plugin"
-       OFF)
+       ON)
 
 if(PLUGIN_FY3 OR PLUGINS_ALL)
   add_subdirectory(fengyun3_support)
 endif()
 
-option(PLUGIN_FY4 "Enable the FengYun-4 (LRIT, HRIT) support plugin" OFF)
+option(PLUGIN_FY4 "Enable the FengYun-4 (LRIT, HRIT) support plugin" ON)
 
 if(PLUGIN_FY4 OR PLUGINS_ALL)
   add_subdirectory(fengyun4_support)
 endif()
 
-option(PLUGIN_PROBA "Enable the Proba (1, 2, V, etc) support plugin" OFF)
+option(PLUGIN_PROBA "Enable the Proba (1, 2, V, etc) support plugin" ON)
 
 if(PLUGIN_PROBA OR PLUGINS_ALL)
   add_subdirectory(proba_support)
 endif()
 
-option(PLUGIN_EOS "Enable the EOS (Aqua, Terra, Aura) support plugin" OFF)
+option(PLUGIN_EOS "Enable the EOS (Aqua, Terra, Aura) support plugin" ON)
 
 if(PLUGIN_EOS OR PLUGINS_ALL)
   add_subdirectory(eos_support)
 endif()
 
-option(PLUGIN_METEOR "Enable the Meteor (HRPT, LRPT, etc) support plugin" OFF)
+option(PLUGIN_METEOR "Enable the Meteor (HRPT, LRPT, etc) support plugin" ON)
 
 if(PLUGIN_METEOR OR PLUGINS_ALL)
   add_subdirectory(meteor_support)
 endif()
 
-option(PLUGIN_JPSS "Enable the JPSS (SNPP, JPSS-1, etc) support plugin" OFF)
+option(PLUGIN_JPSS "Enable the JPSS (SNPP, JPSS-1, etc) support plugin" ON)
 
 if(PLUGIN_JPSS OR PLUGINS_ALL)
   add_subdirectory(jpss_support)
 endif()
 
-option(PLUGIN_GOES "Enable the GOES (GVAR, HRIT, GRB, etc) support plugin" OFF)
+option(PLUGIN_GOES "Enable the GOES (GVAR, HRIT, GRB, etc) support plugin" ON)
 
 if(PLUGIN_GOES OR PLUGINS_ALL)
   add_subdirectory(goes_support)
 endif()
 
 option(PLUGIN_ELEKTRO_ARKTIKA
-       "Enable the Elektro/Arktika (RDAS, xRIT, etc) support plugin" OFF)
+       "Enable the Elektro/Arktika (RDAS, xRIT, etc) support plugin" ON)
 
 if(PLUGIN_ELEKTRO_ARKTIKA OR PLUGINS_ALL)
   add_subdirectory(elektro_arktika_support)
@@ -83,7 +83,7 @@ if(PLUGIN_GK2A OR PLUGINS_ALL)
   add_subdirectory(gk2a_support)
 endif()
 
-option(PLUGIN_XRIT "Enable the Generic XRIT support plugin" OFF)
+option(PLUGIN_XRIT "Enable the Generic XRIT support plugin" ON)
 
 if(PLUGIN_XRIT OR PLUGINS_ALL)
   add_subdirectory(xrit_support)
@@ -92,7 +92,7 @@ endif()
 option(
   PLUGIN_NOAA_METOP
   "Enable the NOAA/MetOp POES (AHRPT, HRPT, X-Band dumps, GAC, etc) support plugin"
-  OFF)
+  ON)
 
 if(PLUGIN_NOAA_METOP OR PLUGINS_ALL)
   add_subdirectory(noaa_metop_support)
@@ -110,7 +110,7 @@ if(PLUGIN_DMSP OR PLUGINS_ALL)
   add_subdirectory(dmsp_support)
 endif()
 
-option(PLUGIN_JASON3 "Enable the Jason-3 (S-Band dumps) support plugin" OFF)
+option(PLUGIN_JASON3 "Enable the Jason-3 (S-Band dumps) support plugin" ON)
 
 if(PLUGIN_JASON3 OR PLUGINS_ALL)
   add_subdirectory(jason3_support)
@@ -128,7 +128,7 @@ if(PLUGIN_WSF OR PLUGINS_ALL)
   add_subdirectory(wsf_support)
 endif()
 
-option(PLUGIN_AWS "Enable the AWS (Sterna) support plugin" OFF)
+option(PLUGIN_AWS "Enable the AWS (Sterna) support plugin" ON)
 
 if(PLUGIN_AWS OR PLUGINS_ALL)
   add_subdirectory(aws_support)
@@ -140,7 +140,7 @@ if(PLUGIN_MATS OR PLUGINS_ALL)
   add_subdirectory(mats_support)
 endif()
 
-option(PLUGIN_HINODE "Enable the Hinode support plugin" OFF)
+option(PLUGIN_HINODE "Enable the Hinode support plugin" ON)
 
 if(PLUGIN_HINODE OR PLUGINS_ALL)
   add_subdirectory(hinode_support)
@@ -176,21 +176,21 @@ if(PLUGIN_BLUEWALKER3 OR PLUGINS_ALL)
   add_subdirectory(bluewalker3_support)
 endif()
 
-option(PLUGIN_UVSQ "Enable the UVSQ support plugin" OFF)
+option(PLUGIN_UVSQ "Enable the UVSQ support plugin" ON)
 
 if(PLUGIN_UVSQ OR PLUGINS_ALL)
   add_subdirectory(uvsq_support)
 endif()
 
 option(PLUGIN_ANALOG
-       "Enable the support plugin for analog protocols such as NOAA APT" OFF)
+       "Enable the support plugin for analog protocols such as NOAA APT" ON)
 
 if(PLUGIN_ANALOG OR PLUGINS_ALL)
   add_subdirectory(analog_support)
 endif()
 
 option(PLUGIN_ORBCOMM "Enable the support plugin for the Orbcomm constellation"
-       OFF)
+       ON)
 
 if(PLUGIN_ORBCOMM OR PLUGINS_ALL)
   add_subdirectory(orbcomm_support)
@@ -209,7 +209,7 @@ if(PLUGIN_TUBSAT OR PLUGINS_ALL)
   add_subdirectory(tubsat_support)
 endif()
 
-option(PLUGIN_UMKA "Enable the support plugin for the UmKA satellite" OFF)
+option(PLUGIN_UMKA "Enable the support plugin for the UmKA satellite" ON)
 
 if(PLUGIN_UMKA OR PLUGINS_ALL)
   add_subdirectory(umka_support)
@@ -227,20 +227,20 @@ if(PLUGIN_STEREO OR PLUGINS_ALL)
   add_subdirectory(stereo_support)
 endif()
 
-option(PLUGIN_INMARSAT "Enable the support plugin for Inmarsat" OFF)
+option(PLUGIN_INMARSAT "Enable the support plugin for Inmarsat" ON)
 
 if(PLUGIN_INMARSAT OR PLUGINS_ALL)
   add_subdirectory(inmarsat_support)
 endif()
 
-option(PLUGIN_CUBESAT "Enable the support plugin for CubeSats" OFF)
+option(PLUGIN_CUBESAT "Enable the support plugin for CubeSats" ON)
 
 if(PLUGIN_CUBESAT OR PLUGINS_ALL)
   add_subdirectory(cubesat_support)
 endif()
 
 option(PLUGIN_OTHERS
-       "Enable the support plugin for a few other random satellites" OFF)
+       "Enable the support plugin for a few other random satellites" ON)
 
 if(PLUGIN_OTHERS OR PLUGINS_ALL)
   add_subdirectory(others_support)
@@ -254,7 +254,7 @@ if(PLUGIN_FIRSTPARTY_SUPPORT OR PLUGINS_ALL)
 endif()
 
 option(PLUGIN_DVB "Enable the support plugin for DVB Standards (DVB-S, DVB-S2)"
-       OFF)
+       ON)
 
 if(PLUGIN_DVB OR PLUGINS_ALL)
   add_subdirectory(dvb_support)
@@ -284,13 +284,13 @@ if(PLUGIN_SEAWIFS OR PLUGINS_ALL)
   add_subdirectory(seawifs_support)
 endif()
 
-option(PLUGIN_KANOPUS "Enable the Kanopus support plugin" OFF)
+option(PLUGIN_KANOPUS "Enable the Kanopus support plugin" ON)
 
 if(PLUGIN_KANOPUS OR PLUGINS_ALL)
   add_subdirectory(kanopus_support)
 endif()
 
-option(PLUGIN_OMINOUS "Enable the Ominous support plugin" OFF)
+option(PLUGIN_OMINOUS "Enable the Ominous support plugin" ON)
 
 if(PLUGIN_OMINOUS)
   add_subdirectory(ominous_support)
@@ -345,7 +345,7 @@ if(PLUGIN_LIMESDR_SDR_SUPPORT)
   add_subdirectory(sdr_sources/limesdr_sdr_support)
 endif()
 
-option(PLUGIN_SDRPLAY_SDR_SUPPORT "Enable SDRPlay SDR Support plugin" ON)
+option(PLUGIN_SDRPLAY_SDR_SUPPORT "Enable SDRPlay SDR Support plugin" OFF)
 
 if(PLUGIN_SDRPLAY_SDR_SUPPORT)
   add_subdirectory(sdr_sources/sdrplay_sdr_support)
@@ -387,7 +387,7 @@ if(PLUGIN_MIRISDR_SDR_SUPPORT)
   add_subdirectory(sdr_sources/mirisdr_sdr_support)
 endif()
 
-option(PLUGIN_SPYSERVER_SUPPORT "Enable SpyServer Support plugin" ON)
+option(PLUGIN_SPYSERVER_SUPPORT "Enable SpyServer Support plugin" OFF)
 
 if(PLUGIN_SPYSERVER_SUPPORT)
   add_subdirectory(sdr_sources/spyserver_support)
@@ -405,7 +405,7 @@ if(PLUGIN_SDRPP_SERVER_SUPPORT)
   add_subdirectory(sdr_sources/sdrpp_server_support)
 endif()
 
-option(PLUGIN_AARONIA_SDR_SUPPORT "Enable Aaronia Spectran Support plugin" ON)
+option(PLUGIN_AARONIA_SDR_SUPPORT "Enable Aaronia Spectran Support plugin" OFF)
 
 if(PLUGIN_AARONIA_SDR_SUPPORT)
   add_subdirectory(sdr_sources/aaronia_sdr_support)
@@ -423,7 +423,7 @@ if(PLUGIN_RFNM_SDR_SUPPORT)
   add_subdirectory(sdr_sources/rfnm_sdr_support)
 endif()
 
-option(PLUGIN_FOBOSSDR_SDR_SUPPORT "Enable FobosSDR Support plugin" ON)
+option(PLUGIN_FOBOSSDR_SDR_SUPPORT "Enable FobosSDR Support plugin" OFF)
 
 if(PLUGIN_FOBOSSDR_SDR_SUPPORT)
   add_subdirectory(sdr_sources/fobos_sdr_support)
@@ -489,14 +489,14 @@ if(PLUGIN_BOCHUM_SUPPORT)
   add_subdirectory(bochum_support)
 endif()
 
-option(PLUGIN_EXPERIMENTAL_DEVICES_SUPPORT "Enable Experimental Devices support (SatDump DC and more later)" ON)
+option(PLUGIN_EXPERIMENTAL_DEVICES_SUPPORT "Enable Experimental Devices support (SatDump DC and more later)" OFF)
 
 if(PLUGIN_EXPERIMENTAL_DEVICES_SUPPORT)
   add_subdirectory(experimental_devices_support)
 endif()
 
 # ##############################################################################
-option(PLUGIN_BITVIEW_APP "Enable BitView Application (Very WIP)" OFF)
+option(PLUGIN_BITVIEW_APP "Enable BitView Application (Very WIP)" ON)
 
 if(PLUGIN_BITVIEW_APP OR PLUGINS_ALL)
   add_subdirectory(bitview_app)
@@ -508,7 +508,7 @@ if(PLUGIN_TOOLS_APP)
   add_subdirectory(tools_app)
 endif()
 
-option(PLUGIN_WIPTRACKING_APP "Enable WIP Tracking Application" OFF)
+option(PLUGIN_WIPTRACKING_APP "Enable WIP Tracking Application" ON)
 
 if(PLUGIN_WIPTRACKING_APP)
   add_subdirectory(wip_tracking_app)
