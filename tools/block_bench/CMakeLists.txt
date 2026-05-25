@@ -6,4 +6,4 @@ add_executable(block_bench ${SatDump_testing_CPPS})
 target_include_directories(block_bench PUBLIC src-testing src-core)
 
 # Link against the core
-target_link_libraries(block_bench PUBLIC satdump_core)
+target_link_libraries(block_bench PUBLIC gobdump_core)

@@ -6,4 +6,4 @@ add_executable(apply_mapoverlay ${SatDump_testing_CPPS})
 target_include_directories(apply_mapoverlay PUBLIC src-testing src-core)
 
 # Link against the core
-target_link_libraries(apply_mapoverlay PUBLIC satdump_core)
+target_link_libraries(apply_mapoverlay PUBLIC gobdump_core)

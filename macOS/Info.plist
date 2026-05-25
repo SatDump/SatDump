@@ -5,11 +5,11 @@
   <key>CFBundleGetInfoString</key>
   <string>2.0.0</string>
   <key>CFBundleExecutable</key>
-  <string>satdump-ui</string>
+  <string>gobdump-ui</string>
   <key>CFBundleIdentifier</key>
-  <string>com.altillimity.satdump</string>
+  <string>eu.mrtalon.gobdump</string>
   <key>CFBundleName</key>
-  <string>SatDump</string>
+  <string>GobDump</string>
   <key>CFBundleIconFile</key>
   <string>icon.icns</string>
   <key>NSHighResolutionCapable</key>

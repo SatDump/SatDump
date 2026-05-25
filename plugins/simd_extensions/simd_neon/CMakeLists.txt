@@ -22,7 +22,7 @@ if(NEON_FOUND)
 
     file(GLOB_RECURSE simd_neon_CPPS *.cpp)
     add_library(simd_neon SHARED ${simd_neon_CPPS})
-    target_link_libraries(simd_neon PUBLIC satdump_core)
+    target_link_libraries(simd_neon PUBLIC gobdump_core)
     target_include_directories(simd_neon PUBLIC src)
 
     if(UNIX OR ANDROID)
@@ -38,7 +38,7 @@ if(NEON_FOUND)
         endif()
     endforeach()
 
-    install(TARGETS simd_neon DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+    install(TARGETS simd_neon DESTINATION ${CMAKE_INSTALL_LIBDIR}/gobdump/plugins)
 else()
     message("NEON Features not found! This is only an error on ARM CPUs that should support NEON")
 endif()

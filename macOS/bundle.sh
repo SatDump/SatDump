@@ -26,14 +26,14 @@ then
 fi
 
 rm -rf MacApp
-rm -rf SatDump-macOS-$PLATFORM.dmg
+rm -rf GobDump-macOS-$PLATFORM.dmg
 
 echo "Making app shell..." 
-mkdir -p MacApp/SatDump.app/Contents/MacOS
-mkdir -p MacApp/SatDump.app/Contents/Resources/plugins
-cp -r $GITHUB_WORKSPACE/resources MacApp/SatDump.app/Contents/Resources/resources
-cp $GITHUB_WORKSPACE/satdump_cfg.json MacApp/SatDump.app/Contents/Resources
-cp $GITHUB_WORKSPACE/macOS/Info.plist MacApp/SatDump.app/Contents
+mkdir -p MacApp/GobDump.app/Contents/MacOS
+mkdir -p MacApp/GobDump.app/Contents/Resources/plugins
+cp -r $GITHUB_WORKSPACE/resources MacApp/GobDump.app/Contents/Resources/resources
+cp $GITHUB_WORKSPACE/satdump_cfg.json MacApp/GobDump.app/Contents/Resources
+cp $GITHUB_WORKSPACE/macOS/Info.plist MacApp/GobDump.app/Contents
 cp $GITHUB_WORKSPACE/macOS/Readme.rtf MacApp/Readme.rtf
 
 echo "Creating app icon..." 
@@ -48,14 +48,14 @@ sips -z 256 256   $GITHUB_WORKSPACE/icon.png --out macOSIcon.iconset/icon_256x25
 sips -z 512 512   $GITHUB_WORKSPACE/icon.png --out macOSIcon.iconset/icon_256x256@2x.png
 sips -z 512 512   $GITHUB_WORKSPACE/icon.png --out macOSIcon.iconset/icon_512x512.png
 sips -z 1024 1024 $GITHUB_WORKSPACE/icon.png --out macOSIcon.iconset/icon_512x512@2x.png
-iconutil -c icns -o MacApp/SatDump.app/Contents/Resources/icon.icns macOSIcon.iconset
+iconutil -c icns -o MacApp/GobDump.app/Contents/Resources/icon.icns macOSIcon.iconset
 rm -rf macOSIcon.iconset
 
 echo "Copying binaries..."
-cp satdump-ui MacApp/SatDump.app/Contents/MacOS
-cp satdump MacApp/SatDump.app/Contents/MacOS
-cp satdump_sdr_server MacApp/SatDump.app/Contents/MacOS
-cp plugins/*.dylib MacApp/SatDump.app/Contents/Resources/plugins
+cp gobdump-ui MacApp/GobDump.app/Contents/MacOS
+cp gobdump MacApp/GobDump.app/Contents/MacOS
+cp satdump_sdr_server MacApp/GobDump.app/Contents/MacOS
+cp plugins/*.dylib MacApp/GobDump.app/Contents/Resources/plugins
 
 if [[ -n "$MACOS_SIGNING_SIGNATURE" ]]
 then
@@ -64,7 +64,7 @@ fi
 
 # Omp, openblas, and gfortran are not in $HOMEBREW_LIB/lib for some ungodly reason; we include their full paths instead
 echo "Packaging and re-linking libraries..."
-plugin_args=$(ls MacApp/SatDump.app/Contents/Resources/plugins | xargs printf -- '-x MacApp/SatDump.app/Contents/Resources/plugins/%s ')
+plugin_args=$(ls MacApp/GobDump.app/Contents/Resources/plugins | xargs printf -- '-x MacApp/GobDump.app/Contents/Resources/plugins/%s ')
 dylibbundler $SIGN_FLAG \
   -cd \
   -b \
@@ -75,21 +75,21 @@ dylibbundler $SIGN_FLAG \
   -s $HOMEBREW_LIB/opt/libomp/lib \
   -s $HOMEBREW_LIB/opt/openblas/lib \
   -s $HOMEBREW_LIB/opt/gfortran/lib/gcc/current \
-  -d MacApp/SatDump.app/Contents/libs \
-  -x MacApp/SatDump.app/Contents/MacOS/satdump-ui \
-  -x MacApp/SatDump.app/Contents/MacOS/satdump_sdr_server \
-  -x MacApp/SatDump.app/Contents/MacOS/satdump \
+  -d MacApp/GobDump.app/Contents/libs \
+  -x MacApp/GobDump.app/Contents/MacOS/gobdump-ui \
+  -x MacApp/GobDump.app/Contents/MacOS/satdump_sdr_server \
+  -x MacApp/GobDump.app/Contents/MacOS/gobdump \
   $plugin_args
 
 # SDRPlay is custom, not staticaly linked; we can copy it manually
-cp $GITHUB_WORKSPACE/deps/lib/libsdrplay*.dylib MacApp/SatDump.app/Contents/libs
+cp $GITHUB_WORKSPACE/deps/lib/libsdrplay*.dylib MacApp/GobDump.app/Contents/libs
 
 
 # Some libraries are processed more than once, dylibbundler is silly and doesn't check whether
 # it injects multiple LC_RPATH entries. MacOS is pissy about it and refuses to work with more than one,
 # so we have to remove the duplicates manually.
 echo "Removing duplicate RPATH entries..."
-find MacApp/SatDump.app/Contents/libs -name "*.dylib" | while read lib; do
+find MacApp/GobDump.app/Contents/libs -name "*.dylib" | while read lib; do
     rpaths=($(otool -l "$lib" | awk '/LC_RPATH/{getline; getline; sub(/.*path /,""); sub(/ .*/,""); print}'))
     seen=()
     for rp in "${rpaths[@]}"; do
@@ -108,41 +108,41 @@ done
 if [[ -n "$MACOS_SIGNING_SIGNATURE" ]]
 then
     echo "Signing code using proper signature..."
-    for dylib in MacApp/SatDump.app/Contents/libs/*.dylib
+    for dylib in MacApp/GobDump.app/Contents/libs/*.dylib
     do
 	    codesign -v --force --timestamp --sign "$MACOS_SIGNING_SIGNATURE" $dylib
     done
 
-    for dylib in MacApp/SatDump.app/Contents/Resources/plugins/*.dylib
+    for dylib in MacApp/GobDump.app/Contents/Resources/plugins/*.dylib
     do
 	    codesign -v --force --timestamp --sign "$MACOS_SIGNING_SIGNATURE" $dylib
     done
 
-    codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign "$MACOS_SIGNING_SIGNATURE" MacApp/SatDump.app/Contents/MacOS/satdump
-    codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign "$MACOS_SIGNING_SIGNATURE" MacApp/SatDump.app/Contents/MacOS/satdump_sdr_server
-    codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign "$MACOS_SIGNING_SIGNATURE" MacApp/SatDump.app/Contents/MacOS/satdump-ui
+    codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign "$MACOS_SIGNING_SIGNATURE" MacApp/GobDump.app/Contents/MacOS/gobdump
+    codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign "$MACOS_SIGNING_SIGNATURE" MacApp/GobDump.app/Contents/MacOS/satdump_sdr_server
+    codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign "$MACOS_SIGNING_SIGNATURE" MacApp/GobDump.app/Contents/MacOS/gobdump-ui
 else 
     echo "No signature found, signing with ad-hoc signature..."
 
-    codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign - MacApp/SatDump.app/Contents/MacOS/satdump
-    codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign - MacApp/SatDump.app/Contents/MacOS/satdump_sdr_server
-    codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign - MacApp/SatDump.app/Contents/MacOS/satdump-ui
+    codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign - MacApp/GobDump.app/Contents/MacOS/gobdump
+    codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign - MacApp/GobDump.app/Contents/MacOS/satdump_sdr_server
+    codesign -v --force --options runtime --entitlements $GITHUB_WORKSPACE/macOS/Entitlements.plist --timestamp --sign - MacApp/GobDump.app/Contents/MacOS/gobdump-ui
 
-    codesign --force --deep --sign - MacApp/SatDump.app
+    codesign --force --deep --sign - MacApp/GobDump.app
 fi
 
-echo "Creating SatDump.dmg..."
-hdiutil create -srcfolder MacApp/ -volname SatDump SatDump-macOS-$PLATFORM.dmg
+echo "Creating GobDump.dmg..."
+hdiutil create -srcfolder MacApp/ -volname GobDump GobDump-macOS-$PLATFORM.dmg
 
 if [[ -n "$MACOS_SIGNING_SIGNATURE" ]]
 then
-    codesign -v --force --timestamp --sign "$MACOS_SIGNING_SIGNATURE" SatDump-macOS-$PLATFORM.dmg
+    codesign -v --force --timestamp --sign "$MACOS_SIGNING_SIGNATURE" GobDump-macOS-$PLATFORM.dmg
 
     if [[ -n "$MACOS_NOTARIZATION_UN" && -n "$MACOS_NOTARIZATION_PWD" && -n "$MACOS_TEAM" ]]
     then
         echo "Notarizing DMG..."
-        xcrun notarytool submit SatDump-macOS-$PLATFORM.dmg --apple-id $MACOS_NOTARIZATION_UN --password $MACOS_NOTARIZATION_PWD --team-id $MACOS_TEAM --wait
-        xcrun stapler staple SatDump-macOS-$PLATFORM.dmg
+        xcrun notarytool submit GobDump-macOS-$PLATFORM.dmg --apple-id $MACOS_NOTARIZATION_UN --password $MACOS_NOTARIZATION_PWD --team-id $MACOS_TEAM --wait
+        xcrun stapler staple GobDump-macOS-$PLATFORM.dmg
     fi
 fi
 

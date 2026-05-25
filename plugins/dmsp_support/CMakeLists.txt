@@ -4,7 +4,7 @@ project(dmsp_support)
 
 file(GLOB_RECURSE dmsp_support_CPPS *.cpp instruments/mhs/*.cpp)
 add_library(dmsp_support SHARED ${dmsp_support_CPPS})
-target_link_libraries(dmsp_support PUBLIC satdump_core)
+target_link_libraries(dmsp_support PUBLIC gobdump_core)
 target_include_directories(dmsp_support PUBLIC src .)
 
-install(TARGETS dmsp_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+install(TARGETS dmsp_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/gobdump/plugins)

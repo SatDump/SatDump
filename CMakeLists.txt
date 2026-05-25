@@ -26,7 +26,7 @@ if(MSVC OR BUILD_MSVC)
     set(VCPKG_APPLOCAL_DEPS CACHE BOOL FALSE)
 endif()
 
-project(SatDump)
+project(GobDump)
 
 option(BUILD_GUI "Build the GUI" ON)
 option(BUILD_TESTING "Build the testing program" OFF)
@@ -164,8 +164,8 @@ if((NOT DEFINED ENV{CI}) AND NOT DEFINED ANDROID)
     endif()
 endif()
 
-project(SatDump VERSION "2.0.0")
-set(SATDUMP_VERSION_TYPE "alpha")
+project(GobDump VERSION "2.0.0")
+set(GOBDUMP_VERSION_TYPE "alpha")
 
 # Check if the current commit has a tag
 execute_process(
@@ -194,25 +194,25 @@ execute_process(
 # Set version
 if(GIT_HAS_TAG STREQUAL "undefined" OR GIT_HAS_TAG STREQUAL "nightly")
     message("-- Commit has no tag/nightly tag (${GIT_HAS_TAG}). Assume dev build")
-    if(NOT SATDUMP_VERSION_TYPE STREQUAL "")
-        set(SATDUMP_VERSION "${PROJECT_VERSION}-${SATDUMP_VERSION_TYPE}-${GIT_HASH}")
+    if(NOT GOBDUMP_VERSION_TYPE STREQUAL "")
+        set(GOBDUMP_VERSION "${PROJECT_VERSION}-${GOBDUMP_VERSION_TYPE}-${GIT_HASH}")
     else()
-        set(SATDUMP_VERSION "${PROJECT_VERSION}-${GIT_HASH}")
+        set(GOBDUMP_VERSION "${PROJECT_VERSION}-${GIT_HASH}")
     endif()
 else()
     message("-- Commit has tag (${GIT_HAS_TAG}). Assume release build")
-    if(NOT SATDUMP_VERSION_TYPE STREQUAL "")
-        set(SATDUMP_VERSION "${PROJECT_VERSION}")
+    if(NOT GOBDUMP_VERSION_TYPE STREQUAL "")
+        set(GOBDUMP_VERSION "${PROJECT_VERSION}")
     else()
-        set(SATDUMP_VERSION "${PROJECT_VERSION}-${SATDUMP_VERSION_TYPE}")
+        set(GOBDUMP_VERSION "${PROJECT_VERSION}-${GOBDUMP_VERSION_TYPE}")
     endif()
 endif()
 
 # Set branch
 if(GIT_HAS_BRANCH STREQUAL "master")
-    set(SATDUMP_VERSION_TAG "")
+    set(GOBDUMP_VERSION_TAG "")
 else()
-    set(SATDUMP_VERSION_TAG "${GIT_HAS_BRANCH}/${CMAKE_BUILD_TYPE}")
+    set(GOBDUMP_VERSION_TAG "${GIT_HAS_BRANCH}/${CMAKE_BUILD_TYPE}")
 endif()
 
 # Used for error messages
@@ -289,13 +289,13 @@ add_subdirectory(plugins)
 
 # Install configuration
 if((NOT ANDROID) AND ENABLE_INSTALL)
-    install(DIRECTORY ${CMAKE_SOURCE_DIR}/resources DESTINATION share/satdump)
-    install(FILES ${CMAKE_SOURCE_DIR}/satdump_cfg.json DESTINATION share/satdump)
-    install(FILES ${CMAKE_SOURCE_DIR}/icon.png DESTINATION share/satdump)
-    configure_file(${CMAKE_SOURCE_DIR}/satdump.desktop ${CMAKE_CURRENT_BINARY_DIR}/satdump.desktop @ONLY)
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/resources DESTINATION share/gobdump)
+    install(FILES ${CMAKE_SOURCE_DIR}/satdump_cfg.json DESTINATION share/gobdump)
+    install(FILES ${CMAKE_SOURCE_DIR}/icon.png DESTINATION share/gobdump)
+    configure_file(${CMAKE_SOURCE_DIR}/satdump.desktop ${CMAKE_CURRENT_BINARY_DIR}/gobdump.desktop @ONLY)
 
     if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/satdump.desktop DESTINATION share/applications)
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/gobdump.desktop DESTINATION share/applications)
     endif()
 
     # Create uninstall target
@@ -303,10 +303,10 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
     add_custom_target(uninstall ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 
     # CPack Configuration
-    set(CPACK_PACKAGE_NAME ${PROJECT_NAME} CACHE STRING "satdump-${PROJECT_VERSION}")
+    set(CPACK_PACKAGE_NAME ${PROJECT_NAME} CACHE STRING "gobdump-${PROJECT_VERSION}")
     set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A satellite data processing software" CACHE STRING "")
-    set(CPACK_PACKAGE_VENDOR "SatDump")
-    set(CPACK_PACKAGE_CONTACT "Aang23")
+    set(CPACK_PACKAGE_VENDOR "GobDump")
+    set(CPACK_PACKAGE_CONTACT "Your Name")
 
     set(CPACK_DEBIAN_PACKAGE_DEPENDS "libfftw3-bin, libvolk-bin | libvolk2-bin, libpng16-16, libnng1, librtlsdr0 | librtlsdr2, libhackrf0, libairspy0, libairspyhf1, libglfw3 | libglfw3-wayland, libzstd1, libjemalloc2 | libjemalloc1, libportaudiocpp0, libhdf5-hl-100t64 | libhdf5-hl-100 | libhdf5-103 | libhdf5-100, libdbus-1-dev")
     set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "libomp5-14, ocl-icd-libopencl1, intel-opencl-icd, mesa-opencl-icd")
@@ -323,7 +323,7 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
     #set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
     #set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
     #set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
-    set(CPACK_PACKAGE_VERSION ${SATDUMP_VERSION})
+    set(CPACK_PACKAGE_VERSION ${GOBDUMP_VERSION})
 
     if(MSVC OR BUILD_MSVC)
         # Customize NSIS template
@@ -338,24 +338,24 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
 
         # Generate Installer
         set(CPACK_GENERATOR NSIS)
-        set(CPACK_PACKAGE_INSTALL_DIRECTORY SatDump)
+        set(CPACK_PACKAGE_INSTALL_DIRECTORY GobDump)
         set(CPACK_NSIS_MANIFEST_DPI_AWARE ON)
         set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
         set(CPACK_NSIS_MODIFY_PATH ON)
-        set(CPACK_NSIS_BRANDING_TEXT "SatDump - General Purpose Satellite Data Processor")
+        set(CPACK_NSIS_BRANDING_TEXT "GobDump - General Purpose Satellite Data Processor")
         set(CPACK_NSIS_MUI_HEADERIMAGE "${PROJECT_SOURCE_DIR}\\\\windows\\\\installer-header.bmp")
         set(CPACK_NSIS_MUI_ICON "${PROJECT_SOURCE_DIR}\\\\windows\\\\icon.ico")
         if(BUILD_GUI)
-            set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\satdump-ui.exe")
-            set(CPACK_PACKAGE_EXECUTABLES ${CPACK_PACKAGE_EXECUTABLES} "satdump-ui" "SatDump")
-            list(APPEND CPACK_NSIS_CREATE_ICONS_EXTRA "CreateShortCut \\\"$DESKTOP\\\\SatDump.lnk\\\" \\\"$INSTDIR\\\\bin\\\\satdump-ui.exe\\\"")
-            list(APPEND CPACK_NSIS_DELETE_ICONS_EXTRA "Delete \\\"$DESKTOP\\\\SatDump.lnk\\\"")
+            set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\gobdump-ui.exe")
+            set(CPACK_PACKAGE_EXECUTABLES ${CPACK_PACKAGE_EXECUTABLES} "gobdump-ui" "GobDump")
+            list(APPEND CPACK_NSIS_CREATE_ICONS_EXTRA "CreateShortCut \\\"$DESKTOP\\\\GobDump.lnk\\\" \\\"$INSTDIR\\\\bin\\\\gobdump-ui.exe\\\"")
+            list(APPEND CPACK_NSIS_DELETE_ICONS_EXTRA "Delete \\\"$DESKTOP\\\\GobDump.lnk\\\"")
         endif()
         if(PLUGIN_REMOTE_SDR_SUPPORT)
-            set(CPACK_PACKAGE_EXECUTABLES ${CPACK_PACKAGE_EXECUTABLES} "satdump_sdr_server" "SatDump SDR Server")
+            set(CPACK_PACKAGE_EXECUTABLES ${CPACK_PACKAGE_EXECUTABLES} "satdump_sdr_server" "GobDump SDR Server")
         endif()
 
-        install(RUNTIME_DEPENDENCY_SET satdump_deps
+        install(RUNTIME_DEPENDENCY_SET gobdump_deps
             PRE_EXCLUDE_REGEXES
             "api-ms-.*"
             "ext-ms-.*"
@@ -364,8 +364,8 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
             "^vc.*"
             "^msvcp.*"
             "^concrt.*"
-            "satdump_core.dll"
-            "satdump_interface.dll"
+            "gobdump_core.dll"
+            "gobdump_interface.dll"
             POST_EXCLUDE_REGEXES
             ".*system32/.*\\.dll"
             DIRECTORIES

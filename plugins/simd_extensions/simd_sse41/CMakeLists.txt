@@ -22,7 +22,7 @@ if(SSE41_FOUND)
 
     file(GLOB_RECURSE simd_sse41_CPPS *.cpp)
     add_library(simd_sse41 SHARED ${simd_sse41_CPPS})
-    target_link_libraries(simd_sse41 PUBLIC satdump_core)
+    target_link_libraries(simd_sse41 PUBLIC gobdump_core)
     target_include_directories(simd_sse41 PUBLIC src)
 
     if(UNIX OR ANDROID)
@@ -38,7 +38,7 @@ if(SSE41_FOUND)
         endif()
     endforeach()
 
-    install(TARGETS simd_sse41 DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+    install(TARGETS simd_sse41 DESTINATION ${CMAKE_INSTALL_LIBDIR}/gobdump/plugins)
 else()
     message("SSE41 Features not found! This is only an error on x86 CPUs that should support SSE41")
 endif()

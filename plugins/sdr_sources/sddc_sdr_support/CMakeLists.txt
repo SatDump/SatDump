@@ -23,7 +23,7 @@ if(UNIX)
     target_link_libraries(sddc_sdr_support PRIVATE ${LIBUSB_LIBRARIES})
 endif()
 
-target_link_libraries(sddc_sdr_support PUBLIC satdump_core)
+target_link_libraries(sddc_sdr_support PUBLIC gobdump_core)
 target_include_directories(sddc_sdr_support PUBLIC src)
 
-install(TARGETS sddc_sdr_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+install(TARGETS sddc_sdr_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/gobdump/plugins)

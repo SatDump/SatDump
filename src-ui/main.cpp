@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
 #endif
 
 #if GLFW_VERSION_MAJOR > 3 || (GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 4)
-    glfwWindowHintString(GLFW_WAYLAND_APP_ID, "satdump");
+    glfwWindowHintString(GLFW_WAYLAND_APP_ID, "gobdump");
 #endif
 
     // Decide GL+GLSL versions

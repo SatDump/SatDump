@@ -6,43 +6,43 @@ option(USE_VIDEO_ENCODER "Build the video encoder module, links against libav." 
 
 file(GLOB_RECURSE spacex_support_CPPS *.cpp)
 add_library(spacex_support SHARED ${spacex_support_CPPS})
-target_link_libraries(spacex_support PUBLIC satdump_core)
+target_link_libraries(spacex_support PUBLIC gobdump_core)
 target_include_directories(spacex_support PUBLIC src)
 
 if(MSVC)
     if(USE_VIDEO_ENCODER)
-        target_link_libraries(satdump_core PUBLIC libavcodec.dll)
-        target_link_libraries(satdump_core PUBLIC libavformat.dll)
-        target_link_libraries(satdump_core PUBLIC libavutil.dll)
-        target_link_libraries(satdump_core PUBLIC libavfilter.dll)
+        target_link_libraries(gobdump_core PUBLIC libavcodec.dll)
+        target_link_libraries(gobdump_core PUBLIC libavformat.dll)
+        target_link_libraries(gobdump_core PUBLIC libavutil.dll)
+        target_link_libraries(gobdump_core PUBLIC libavfilter.dll)
 
         # Enable it
-        target_compile_definitions(satdump_core PUBLIC USE_VIDEO_ENCODER="1")
+        target_compile_definitions(gobdump_core PUBLIC USE_VIDEO_ENCODER="1")
     endif()
-    install(TARGETS spacex_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins RUNTIME_DEPENDENCY_SET satdump_deps)
+    install(TARGETS spacex_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/gobdump/plugins RUNTIME_DEPENDENCY_SET gobdump_deps)
 elseif(ANDROID)
 # NO encoder on Android
-install(TARGETS spacex_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+install(TARGETS spacex_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/gobdump/plugins)
 else()
     if(USE_VIDEO_ENCODER)
         # libavcodec
         find_library(AVCODEC_LIBRARY avcodec REQUIRED)
-        target_link_libraries(satdump_core PUBLIC ${AVCODEC_LIBRARY})
+        target_link_libraries(gobdump_core PUBLIC ${AVCODEC_LIBRARY})
 
         # libavformat
         find_library(AVFORMAT_LIBRARY avformat REQUIRED)
-        target_link_libraries(satdump_core PUBLIC ${AVFORMAT_LIBRARY})
+        target_link_libraries(gobdump_core PUBLIC ${AVFORMAT_LIBRARY})
 
         # libavutil
         find_library(AVUTIL_LIBRARY avutil REQUIRED)
-        target_link_libraries(satdump_core PUBLIC ${AVUTIL_LIBRARY})
+        target_link_libraries(gobdump_core PUBLIC ${AVUTIL_LIBRARY})
 
         # libavfilter
         find_library(AVFILTER_LIBRARY avfilter REQUIRED)
-        target_link_libraries(satdump_core PUBLIC ${AVFILTER_LIBRARY})
+        target_link_libraries(gobdump_core PUBLIC ${AVFILTER_LIBRARY})
 
         # Enable it
-        target_compile_definitions(satdump_core PUBLIC USE_VIDEO_ENCODER="1")
+        target_compile_definitions(gobdump_core PUBLIC USE_VIDEO_ENCODER="1")
     endif()
-    install(TARGETS spacex_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+    install(TARGETS spacex_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/gobdump/plugins)
 endif()

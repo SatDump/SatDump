@@ -8,8 +8,8 @@ if(BUILD_GUI)
 
     target_link_libraries(wipsettings_app
         PUBLIC
-            satdump_core
-            satdump_interface
+            gobdump_core
+            gobdump_interface
     )
 
     target_include_directories(wipsettings_app
@@ -21,6 +21,6 @@ if(BUILD_GUI)
     )
 
     install(TARGETS wipsettings_app
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/gobdump/plugins
     )
 endif()

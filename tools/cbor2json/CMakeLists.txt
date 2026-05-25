@@ -6,4 +6,4 @@ add_executable(cbor2json ${SatDump_testing_CPPS})
 target_include_directories(cbor2json PUBLIC src-testing src-core)
 
 # Link against the core
-target_link_libraries(cbor2json PUBLIC satdump_core)
+target_link_libraries(cbor2json PUBLIC gobdump_core)

@@ -4,7 +4,7 @@ project(eos_support)
 
 file(GLOB_RECURSE eos_support_CPPS *.cpp)
 add_library(eos_support SHARED ${eos_support_CPPS})
-target_link_libraries(eos_support PUBLIC satdump_core)
+target_link_libraries(eos_support PUBLIC gobdump_core)
 target_include_directories(eos_support PUBLIC src)
 
-install(TARGETS eos_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+install(TARGETS eos_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/gobdump/plugins)

@@ -22,7 +22,7 @@ if(LibHTRA_FOUND)
 
     # Link against the SatDump core and the HTRA library
     # Using the imported target LibHTRA::LibHTRA handles include directories automatically
-    target_link_libraries(harogic_sdr_support PUBLIC satdump_core LibHTRA::LibHTRA)
+    target_link_libraries(harogic_sdr_support PUBLIC gobdump_core LibHTRA::LibHTRA)
     
     # Explicitly add include directories (good practice, though handled by imported target)
     target_include_directories(harogic_sdr_support PUBLIC 
@@ -31,7 +31,7 @@ if(LibHTRA_FOUND)
     )
     
     # Install the final plugin library to the correct location
-    install(TARGETS harogic_sdr_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+    install(TARGETS harogic_sdr_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/gobdump/plugins)
 else()
     message(WARNING "Harogic HTRA library could not be found! Not building harogic_sdr_support plugin.")
 endif()

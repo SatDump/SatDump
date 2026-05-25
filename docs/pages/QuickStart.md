@@ -4,17 +4,17 @@ This page is designed to explain the basic operations and controls needed for ba
 
 ## Notes for users of previous SatDump versions below 2.0.0 (Legacy SatDump)
 
-* `Recorder` tab moved to its own item (added via the `Recorder` button or with `Add -> Recorder`)
-* `Offline processing` tab moved to its own item (`File -> Processing` or with the `Processing` button). Multiple `Processing` tasks can be performed at once.
-* `Viewer` tab removed. Satellite data appears under the `Root`.
-* `Projections` changed.
-* `Settings` tab moved to a floating window accessed with `File -> Settings`.
+- `Recorder` tab moved to its own item (added via the `Recorder` button or with `Add -> Recorder`)
+- `Offline processing` tab moved to its own item (`File -> Processing` or with the `Processing` button). Multiple `Processing` tasks can be performed at once.
+- `Viewer` tab removed. Satellite data appears under the `Root`.
+- `Projections` changed.
+- `Settings` tab moved to a floating window accessed with `File -> Settings`.
 
 ## Welcome screen
 
 ![Welcome screen](quick_start/splash.png)
 
-The *Welcome screen* provides a way to quickly access frequently used functions, as well as provide useful tips on how to best use the software. It is organized in several sections:
+The _Welcome screen_ provides a way to quickly access frequently used functions, as well as provide useful tips on how to best use the software. It is organized in several sections:
 
 ### Menu bar
 
@@ -45,8 +45,7 @@ The `Recorder` is used to record new satellites from a software-defined radio, e
 Compared to legacy SatDump, multiple `Recorder` items can be added and operated at once.
 
 > [!note]
->  It is not currently possible to use multiple `Recorder` items at once on a single SDR.
-
+> It is not currently possible to use multiple `Recorder` items at once on a single SDR.
 
 ### Device
 
@@ -67,7 +66,7 @@ Select a satellite pipeline and start it there, to process the satellite link li
 This panel allows the recording of a baseband (can be used together with the Live Decode functionality).
 
 > [!note]
->  The output directory for recordings can be selected in the `Settings`. 
+> The output directory for recordings can be selected in the `Settings`.
 
 ### Tracking
 
@@ -83,14 +82,13 @@ Shows a "magic-eye" constellation to help tune the gain, especially on X-band li
 
 ![Magic Eye patterns](quick_start/magic-eye.png)
 
-
 ## Processing
 
 With the Processing window, basebands, frames or other satellite data from a pre-existing recording can be decoded. This is identical to the `Offline Processing` tab in legacy SatDump.
 
 ![Processing window](quick_start/processing.png)
 
-Once the necessary data is input and the process is started, the full-screen window will close and a new `Processing` item will be added to the `Root`. 
+Once the necessary data is input and the process is started, the full-screen window will close and a new `Processing` item will be added to the `Root`.
 
 ![Decoding NOAA-15](quick_start/decoding.png)
 
@@ -118,8 +116,9 @@ To add overlays, such as country lines or cities, use `Current -> Add Overlay` a
 ### Projections
 
 Projections can be added either:
-* by clicking on the `Add to Proj` button on an instrument, which will add the **currently shown** composite or channel
-* by adding a `Projection` with `Add -> Projection` in the Menu Bar, then selecting an instrument, selecting `Current -> Image To Handler`, and dragging the image on the Projection.
+
+- by clicking on the `Add to Proj` button on an instrument, which will add the **currently shown** composite or channel
+- by adding a `Projection` with `Add -> Projection` in the Menu Bar, then selecting an instrument, selecting `Current -> Image To Handler`, and dragging the image on the Projection.
 
 ![To project this *AVHRR 221 False Color* composite, the `Add To Proj` button is used. The projection is automatically added in the `Others` section.](quick_start/proj1.png)
 
@@ -131,7 +130,8 @@ Clicking on `Project` will project the image.
 
 #### To project more than one instrument or satellite
 
-To project more than one instrument or satellite: 
+To project more than one instrument or satellite:
+
 1. Select the new instrument (either in the same satellite or in another satellite)
 2. Apply a composite or select the desired channel
 3. Click on `Current -> Image to Handler`

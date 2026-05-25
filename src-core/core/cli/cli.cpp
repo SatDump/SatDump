@@ -27,7 +27,7 @@ namespace satdump
             return verbose;
         }
 
-        CommandHandler::CommandHandler(bool is_gui) : is_gui(is_gui), app("SatDump v" + satdump::SATDUMP_VERSION)
+        CommandHandler::CommandHandler(bool is_gui) : is_gui(is_gui), app("GobDump v" + satdump::SATDUMP_VERSION)
         {
             // Command basics
             app.set_help_all_flag("--help-all", "Expand all help");

@@ -6,4 +6,4 @@ add_executable(imager_simulator ${SatDump_testing_CPPS})
 target_include_directories(imager_simulator PUBLIC src-testing src-core)
 
 # Link against the core
-target_link_libraries(imager_simulator PUBLIC satdump_core)
+target_link_libraries(imager_simulator PUBLIC gobdump_core)

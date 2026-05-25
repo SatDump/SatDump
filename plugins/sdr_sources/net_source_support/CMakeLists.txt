@@ -4,11 +4,11 @@ project(net_source_support)
 message("Building with Network Source support")
 file(GLOB_RECURSE net_source_support_CPPS *.cpp)
 add_library(net_source_support SHARED ${net_source_support_CPPS})
-target_link_libraries(net_source_support PUBLIC satdump_core)
+target_link_libraries(net_source_support PUBLIC gobdump_core)
 target_include_directories(net_source_support PUBLIC src)
 
 if(MSVC)
     target_link_libraries(net_source_support PUBLIC ws2_32)
 endif()
 
-install(TARGETS net_source_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+install(TARGETS net_source_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/gobdump/plugins)

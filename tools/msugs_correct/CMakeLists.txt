@@ -6,4 +6,4 @@ add_executable(msugs_correct ${SatDump_testing_CPPS})
 target_include_directories(msugs_correct PUBLIC src-testing src-core)
 
 # Link against the core
-target_link_libraries(msugs_correct PUBLIC satdump_core)
+target_link_libraries(msugs_correct PUBLIC gobdump_core)

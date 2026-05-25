@@ -25,7 +25,7 @@ if(${HDF5_FOUND})
 
   add_library(firstparty_support SHARED
               ${firstparty_support_CPPS})
-  target_link_libraries(firstparty_support PUBLIC satdump_core)
+  target_link_libraries(firstparty_support PUBLIC gobdump_core)
   target_include_directories(firstparty_support PUBLIC src ${CMAKE_SOURCE_DIR}/plugins/xrit_support)
 
   target_include_directories(firstparty_support
@@ -36,11 +36,11 @@ if(${HDF5_FOUND})
   if(MSVC OR BUILD_MSVC)
     install(
       TARGETS firstparty_support
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins
-      RUNTIME_DEPENDENCY_SET satdump_deps)
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/gobdump/plugins
+      RUNTIME_DEPENDENCY_SET gobdump_deps)
   else()
     install(TARGETS firstparty_support
-            DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/gobdump/plugins)
   endif()
 
   # Loader plugin
@@ -48,16 +48,16 @@ if(${HDF5_FOUND})
     file(GLOB_RECURSE loader_CPPS main_loader.cpp loader/*.cpp main_loader_handle.cpp)
     add_library(firstparty_loader_support SHARED ${loader_CPPS})
     target_link_libraries(firstparty_loader_support
-                          PUBLIC firstparty_support satdump_interface)
+                          PUBLIC firstparty_support gobdump_interface)
 
     if(MSVC OR BUILD_MSVC)
       install(
         TARGETS firstparty_loader_support
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins
-        RUNTIME_DEPENDENCY_SET satdump_deps)
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/gobdump/plugins
+        RUNTIME_DEPENDENCY_SET gobdump_deps)
     else()
       install(TARGETS firstparty_loader_support
-              DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+              DESTINATION ${CMAKE_INSTALL_LIBDIR}/gobdump/plugins)
     endif()
   endif()
 

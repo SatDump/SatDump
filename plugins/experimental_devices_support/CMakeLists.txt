@@ -4,10 +4,10 @@ project(experimental_devices_support)
 if(NOT ANDROID)
   file(GLOB_RECURSE experimental_devices_support_CPPS *.cpp)
   add_library(experimental_devices_support SHARED ${experimental_devices_support_CPPS})
-  target_link_libraries(experimental_devices_support PUBLIC satdump_core)
+  target_link_libraries(experimental_devices_support PUBLIC gobdump_core)
   target_include_directories(experimental_devices_support PUBLIC .)
 
-  install(TARGETS experimental_devices_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+  install(TARGETS experimental_devices_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/gobdump/plugins)
 
   if(MSVC)
     target_link_libraries(${PROJECT_NAME} PRIVATE setupapi)

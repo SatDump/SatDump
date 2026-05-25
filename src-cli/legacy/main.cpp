@@ -1,12 +1,12 @@
 #include "logger.h"
 
+#include "autotrack/autotrack.h"
 #include "live.h"
 #include "offline.h"
 #include "record.h"
-#include "autotrack/autotrack.h"
 
-#include "sdr_probe.h"
 #include "help_general.h"
+#include "sdr_probe.h"
 
 // TODOREWORK #include "project/project.h"
 #include "satdump_vars.h"
@@ -56,7 +56,7 @@ int main_old(int argc, char *argv[])
     }TODOREWORK*/
     else if (std::string(argv[1]) == "version" || std::string(argv[1]) == "--v")
     {
-        logger->info("This is SatDump v" + (std::string)satdump::SATDUMP_VERSION);
+        logger->info("This is GobDump v" + (std::string)satdump::SATDUMP_VERSION);
         return 0;
     }
     //////////////

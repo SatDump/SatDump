@@ -4,7 +4,7 @@ project(others_support)
 
 file(GLOB_RECURSE others_support_CPPS *.cpp)
 add_library(others_support SHARED ${others_support_CPPS})
-target_link_libraries(others_support PUBLIC satdump_core)
+target_link_libraries(others_support PUBLIC gobdump_core)
 target_include_directories(others_support PUBLIC src)
 
-install(TARGETS others_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+install(TARGETS others_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/gobdump/plugins)

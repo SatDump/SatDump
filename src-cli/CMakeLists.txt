@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.12)
 
-file(GLOB_RECURSE SatDump_cli_CPPS *.cpp)
+file(GLOB_RECURSE GobDump_cli_CPPS *.cpp)
 
-add_executable(satdump ${SatDump_cli_CPPS})
-target_include_directories(satdump PUBLIC src-cli src-core)
+add_executable(gobdump ${GobDump_cli_CPPS})
+target_include_directories(gobdump PUBLIC src-cli src-core)
 
 # Link against the core
-target_link_libraries(satdump PUBLIC satdump_core)
+target_link_libraries(gobdump PUBLIC gobdump_core)
 
-install(TARGETS satdump DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS gobdump DESTINATION ${CMAKE_INSTALL_BINDIR})

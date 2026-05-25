@@ -4,7 +4,7 @@ project(scripting_support)
 
 file(GLOB_RECURSE scripting_support_CPPS *.cpp)
 add_library(scripting_support SHARED ${scripting_support_CPPS})
-target_link_libraries(scripting_support PUBLIC satdump_core)
+target_link_libraries(scripting_support PUBLIC gobdump_core)
 target_include_directories(scripting_support PUBLIC src)
 
-install(TARGETS scripting_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+install(TARGETS scripting_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/gobdump/plugins)

@@ -6,4 +6,4 @@ add_executable(stereo_merger ${SatDump_testing_CPPS})
 target_include_directories(stereo_merger PUBLIC src-testing src-core)
 
 # Link against the core
-target_link_libraries(stereo_merger PUBLIC satdump_core)
+target_link_libraries(stereo_merger PUBLIC gobdump_core)

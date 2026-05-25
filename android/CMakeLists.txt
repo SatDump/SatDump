@@ -172,6 +172,6 @@ target_link_libraries(android_imgui PRIVATE
   EGL
   GLESv3
   log
-  satdump_core
-  satdump_interface
+  gobdump_core
+  gobdump_interface
 )

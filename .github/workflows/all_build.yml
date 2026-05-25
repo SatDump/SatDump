@@ -84,8 +84,8 @@ jobs:
             - name: Upload Installer
               uses: actions/upload-artifact@v4
               with:
-                  name: SatDump-Windows_x64_Installer
-                  path: ${{runner.workspace}}/build/SatDump-*.exe
+                  name: GobDump-Windows_x64_Installer
+                  path: ${{runner.workspace}}/build/GobDump-*.exe
 
             - name: Add dumpbin to PATH
               run: echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\$((Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC" | Sort-Object Name -Descending | Select-Object -First 1).Name)\bin\Hostx64\x64" >> $env:GITHUB_PATH
@@ -97,7 +97,7 @@ jobs:
             - name: Upload Portable
               uses: actions/upload-artifact@v4
               with:
-                  name: SatDump-Windows_x64_Portable
+                  name: GobDump-Windows_x64_Portable
                   path: ${{runner.workspace}}/build/Release/*
 
     build_windows_arm64:
@@ -160,8 +160,8 @@ jobs:
             - name: Upload Installer
               uses: actions/upload-artifact@v4
               with:
-                  name: SatDump-Windows_arm64_Installer
-                  path: ${{runner.workspace}}/build/SatDump-*.exe
+                  name: GobDump-Windows_arm64_Installer
+                  path: ${{runner.workspace}}/build/GobDump-*.exe
 
             - name: Add dumpbin to PATH
               run: echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\$((Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC" | Sort-Object Name -Descending | Select-Object -First 1).Name)\bin\Hostx64\x64" >> $env:GITHUB_PATH
@@ -173,7 +173,7 @@ jobs:
             - name: Upload Portable
               uses: actions/upload-artifact@v4
               with:
-                  name: SatDump-Windows_arm64_Portable
+                  name: GobDump-Windows_arm64_Portable
                   path: ${{runner.workspace}}/build/Release/*
 
     build_android:
@@ -212,8 +212,8 @@ jobs:
             - name: Upload APK
               uses: actions/upload-artifact@v4
               with:
-                  name: SatDump-release.apk
-                  path: ${{runner.workspace}}/SatDump/android/app/build/outputs/apk/release/app-release.apk
+                  name: GobDump-release.apk
+                  path: ${{github.workspace}}/android/app/build/outputs/apk/release/app-release.apk
 
     build_ubuntu_2204:
         # The CMake configure and build commands are platform agnostic and should work equally
@@ -259,35 +259,8 @@ jobs:
             - name: Upload ZIP
               uses: actions/upload-artifact@v4
               with:
-                  name: SatDump-Ubuntu-22.04
+                  name: GobDump-Ubuntu-22.04
                   path: ${{runner.workspace}}/build/*.deb
-
-            - name: Setup pkg2appimage
-              working-directory: ${{runner.workspace}}/build
-              shell: bash
-              # Execute the build.  You can specify a specific target with "--target <NAME>"
-              run: wget https://raw.githubusercontent.com/probonopd/AppImages/master/pkg2appimage && chmod +x pkg2appimage && sudo apt install -y imagemagick desktop-file-utils libfuse2
-
-            - name: Make AppImage
-              working-directory: ${{runner.workspace}}/build
-              shell: bash
-              # Execute the build.  You can specify a specific target with "--target <NAME>"
-              run: |
-                  cp *.deb /tmp/gobdump.deb
-                  dpkg-deb -R /tmp/gobdump.deb /tmp/gobdump_ext
-                  find /tmp/gobdump_ext/usr/share -name "satdump.desktop" -execdir mv {} gobdump.desktop \; || true
-                  find /tmp/gobdump_ext/usr/share -name "satdump.png" -execdir mv {} gobdump.png \; || true
-                  find /tmp/gobdump_ext/usr/share -name "gobdump.desktop" -exec sed -i 's/Name=SatDump/Name=GobDump/g' {} \; || true
-                  find /tmp/gobdump_ext/usr/share -name "gobdump.desktop" -exec sed -i 's/Icon=satdump/Icon=gobdump/g' {} \; || true
-                  dpkg-deb -b /tmp/gobdump_ext /tmp/gobdump.deb
-                  cp $GITHUB_WORKSPACE/SatDump.yml .
-                  ./pkg2appimage SatDump.yml
-
-            - name: Upload AppImage
-              uses: actions/upload-artifact@v4
-              with:
-                  name: SatDump-AppImage
-                  path: ${{runner.workspace}}/build/out/*.AppImage
 
     build_ubuntu_2404:
         # The CMake configure and build commands are platform agnostic and should work equally
@@ -333,7 +306,7 @@ jobs:
             - name: Upload ZIP
               uses: actions/upload-artifact@v4
               with:
-                  name: SatDump-Ubuntu-24.04
+                  name: GobDump-Ubuntu-24.04
                   path: ${{runner.workspace}}/build/*.deb
 
     build_linux_arm64:
@@ -383,7 +356,7 @@ jobs:
             - name: Upload ZIP
               uses: actions/upload-artifact@v4
               with:
-                  name: SatDump-Pi64-Latest
+                  name: GobDump-Pi64-Latest
                   path: ${{runner.workspace}}/build/*.deb
 
     build_macos_intel:
@@ -446,7 +419,7 @@ jobs:
             - name: Upload DMG
               uses: actions/upload-artifact@v4
               with:
-                  name: SatDump-macOS-Intel
+                  name: GobDump-macOS-Intel
                   path: ${{runner.workspace}}/build/*.dmg
 
     build_macos_silicon:
@@ -508,7 +481,7 @@ jobs:
             - name: Upload DMG
               uses: actions/upload-artifact@v4
               with:
-                  name: SatDump-macOS-Silicon
+                  name: GobDump-macOS-Silicon
                   path: ${{runner.workspace}}/build/*.dmg
 
     # Yes, since I was asked to do like SDR++ for this I did look at how Ryzerth has done it :-)
@@ -525,7 +498,7 @@ jobs:
               run: sudo apt install -y unzip
 
             - name: Copy files
-              run: mkdir satdump_out && cp SatDump-Ubuntu-22.04/satdump*.deb satdump_out/satdump_ubuntu_22.04_amd64.deb && cp SatDump-Ubuntu-24.04/satdump*.deb satdump_out/satdump_ubuntu_24.04_amd64.deb && cp SatDump-macOS-Intel/SatDump-macOS-Intel.dmg satdump_out/SatDump-macOS-Intel.dmg && cp SatDump-macOS-Silicon/SatDump-macOS-Silicon.dmg satdump_out/SatDump-macOS-Silicon.dmg && (cd SatDump-Windows_x64_Portable && zip -r ../satdump_out/SatDump-Windows_x64_Portable.zip *) && cp SatDump-Windows_x64_Installer/SatDump-*.exe satdump_out/SatDump-Windows_x64_Installer.exe && cp SatDump-Pi64-Latest/satdump*.deb satdump_out/satdump_rpi64_latest_arm64.deb && cp SatDump-AppImage/*.AppImage satdump_out/SatDump.AppImage && (cd SatDump-Windows_arm64_Portable && zip -r ../satdump_out/SatDump-Windows_arm64_Portable.zip *) && cp SatDump-Windows_arm64_Installer/SatDump-*.exe satdump_out/SatDump-Windows_arm64_Installer.exe
+              run: mkdir gobdump_out && cp GobDump-Ubuntu-22.04/gobdump*.deb gobdump_out/gobdump_ubuntu_22.04_amd64.deb && cp GobDump-Ubuntu-24.04/gobdump*.deb gobdump_out/gobdump_ubuntu_24.04_amd64.deb && cp GobDump-macOS-Intel/GobDump-macOS-Intel.dmg gobdump_out/GobDump-macOS-Intel.dmg && cp GobDump-macOS-Silicon/GobDump-macOS-Silicon.dmg gobdump_out/GobDump-macOS-Silicon.dmg && (cd GobDump-Windows_x64_Portable && zip -r ../gobdump_out/GobDump-Windows_x64_Portable.zip *) && cp GobDump-Windows_x64_Installer/GobDump-*.exe gobdump_out/GobDump-Windows_x64_Installer.exe && cp GobDump-Pi64-Latest/gobdump*.deb gobdump_out/gobdump_rpi64_latest_arm64.deb && (cd GobDump-Windows_arm64_Portable && zip -r ../gobdump_out/GobDump-Windows_arm64_Portable.zip *) && cp GobDump-Windows_arm64_Installer/GobDump-*.exe gobdump_out/GobDump-Windows_arm64_Installer.exe
 
             - name: Update Nightly
-              run: gh release upload nightly satdump_out/* -R ${{github.repository}} --clobber
+              run: gh release upload nightly gobdump_out/* -R ${{github.repository}} --clobber

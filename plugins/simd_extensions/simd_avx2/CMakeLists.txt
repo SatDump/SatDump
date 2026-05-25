@@ -22,7 +22,7 @@ if(CXX_HAS_AVX_2)
 
     file(GLOB_RECURSE simd_avx2_CPPS *.cpp)
     add_library(simd_avx2 SHARED ${simd_avx2_CPPS})
-    target_link_libraries(simd_avx2 PUBLIC satdump_core)
+    target_link_libraries(simd_avx2 PUBLIC gobdump_core)
     target_include_directories(simd_avx2 PUBLIC src)
 
     if(UNIX OR ANDROID)
@@ -38,7 +38,7 @@ if(CXX_HAS_AVX_2)
         endif()
     endforeach()
 
-    install(TARGETS simd_avx2 DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins)
+    install(TARGETS simd_avx2 DESTINATION ${CMAKE_INSTALL_LIBDIR}/gobdump/plugins)
 else()
     message("AVX2 Features not found! This is only an error on x86 CPUs that should support AVX2")
 endif()

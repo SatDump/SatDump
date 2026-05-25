@@ -1,0 +1,391 @@
+{
+	// Settings for the SatDump UI
+	"user_interface": {
+		// Parameters shown in the default UI table, for everything
+		"default_offline_parameters": {
+			"baseband_format": {
+				"type": "baseband_type",
+				"value": "cs8",
+				"name": "Baseband Format",
+				"description": "The sample format of the recorded baseband.\nThis depends on the settings of your recording software,\nbut some common formats are cs16 (SDR#, etc),\ncf32 (GQRX), cu8 (HDSDR), etc",
+				"no_live": true
+			},
+			"samplerate": {
+				"type": "notated_int",
+				"value": 6000000,
+				"units": "sps",
+				"name": "Samplerate",
+				"no_live": true
+			},
+			"dc_block": {
+				"type": "bool",
+				"value": false,
+				"name": "DC Blocking",
+				"description": "DC Blocking allows removing a DC Spike / Offset present on some SDRs.\n A classic example would be the HackRF which often has this sort of issue."
+			},
+			"iq_swap": {
+				"type": "bool",
+				"value": false,
+				"name": "IQ Swap",
+				"description": "In some cases, the I and Q branches can be swapped.\nThat can happen when using some downconverters,\nor perhaps some software that records the file in an unusual way."
+			},
+			"freq_shift": {
+				"type": "notated_int",
+				"value": 0,
+				"units": "Hz",
+				"name": "Frequency Shift",
+				"description": "Can be used to offset the signal."
+			}
+		},
+		//
+		//
+		// Other settings. We utilize the same parameter system, easier that way :-)
+		"theme": {
+			"value": "Dark"
+		},
+		"manual_dpi_scaling": {
+			"type": "float",
+			"value": 1.0,
+			"name": "UI Scaling",
+			"description": "Defines the overall UI scale. This can be used to make UI elements bigger or smaller\n\n1.0 = normal\n0.5 = half size\n2.0 = double size"
+		},
+		"play_audio": {
+			"type": "bool",
+			"value": true,
+			"name": "Play Audio",
+			"description": "Automatically play audio from pipelines that support it,\nlike NOAA APT and Inmarsat Aero"
+		},
+		"finish_processing_after_live": {
+			"type": "bool",
+			"value": true,
+			"name": "Finish processing when stopping live",
+			"description": "Launch an offline processing task when you press \"Stop\",\nto finish processing down to the end of the pipeline."
+		},
+		"open_explorer_post_processing": {
+			"type": "bool",
+			"value": true,
+			"name": "Open Explorer after decoding",
+			"description": "Open the decoded data in the explorer after decoding is done"
+		},
+		"show_waterfall_demod_fft": {
+			"type": "bool",
+			"value": true,
+			"name": "Demod FFT Waterfall",
+			"description": "Enable the FFT Waterfall shown in the small FFT available in demodulators\nThis does increase CPU usage"
+		},
+		"recorder_floating_windows": {
+			"type": "bool",
+			"value": false,
+			"name": "Recorder Floating Windows",
+			"description": "Make module windows in the recorder float.\nThis allows dragging them around at will"
+		},
+		"recorder_baseband_filename_millis_precision": {
+			"type": "bool",
+			"value": false,
+			"name": "Recorder Baseband Filename Milliseconds",
+			"description": "Add milliseconds to the output filenames for basebands recorded in the recorder"
+		},
+		"status_bar": {
+			"type": "bool",
+			"value": true,
+			"name": "Show Status Bar",
+			"description": "Show status bar with last log at the bottom of the UI"
+		},
+		"lock_xconverter_input": {
+			"type": "bool",
+			"value": true,
+			"name": "Lock LO setting",
+			"description": "Decides if the LO setting should accept input while the source is running."
+		},
+		"advanced_mode": {
+			"type": "bool",
+			"value": false,
+			"name": "Advanced Mode",
+			"description": "Allows full editing of all SatDump options. Be warned: invalid configurations\nmay result in crashes, corruption of data, and more. Use at your own risk!"
+		},
+		"remaining_disk_space_time": {
+			"type": "int",
+			"value": 30,
+			"name": "Recorder: Time for disk space warning (in seconds)",
+			"description": "Defines the time when should the user be warned about not enough disk space.\nSet to 0 to disable"
+		}
+	},
+	// More generic SatDump settings
+	"satdump_general": {
+		"log_level": {
+			"type": "options",
+			"value": "trace",
+			"name": "Log Level",
+			"options": ["trace", "debug", "info", "warn", "error", "critical"],
+			"description": "The logger level of SatDump in the console.\nEg, if you wish to only show errors\nor every little thing that's going on",
+			"no_live": true
+		},
+		"log_to_file": {
+			"type": "bool",
+			"value": true,
+			"name": "Save log file",
+			"description": "Save ALL SatDump logs to a file.\nThis is useful to send in\nbug reports and such."
+		},
+		"product_format": {
+			"type": "labeled_options",
+			"value": "png",
+			"name": "Product Image Format",
+			"options": [
+				["png", "PNG Image (*.png)"],
+				["tif", "TIFF Image (*.tif, *.tiff)"],
+				["j2k", "JPEG 2000 Image (*.j2k)"],
+				["jpg", "JPEG Image (*.jpg, *.jpeg)"],
+				["pbm", "PBM Image (*.pbm, *.pgm)"],
+				["qoi", "Quite OK Image (*.qoi)"]
+			],
+			"description": "Image format for raw image products\n\n - png: PNG Image (recommended)\n - j2k: JPEG 2000\n - jpg: JPEG Image (not recommended; may result\n   in low-quality composites and projections)\n - pbm : Really fast, but will result is very big files\n - qoi: A very fast image format with compression.\n   8-bit only!"
+		},
+		"image_format": {
+			"type": "labeled_options",
+			"value": "png",
+			"name": "Processed Image Format",
+			"options": [
+				["png", "PNG Image (*.png)"],
+				["tif", "TIFF Image (*.tif, *.tiff)"],
+				["j2k", "JPEG 2000 Image (*.j2k)"],
+				["jpg", "JPEG Image (*.jpg, *.jpeg)"],
+				["pbm", "PBM Image (*.pbm, *.pgm)"],
+				["qoi", "Quite OK Image (*.qoi)"]
+			],
+			"description": "Default format for processed images\n\nDoes not apply to raw image products or images\ntransmitted in an already viewable format"
+		},
+		"opencl_device": {
+			"platform": 0,
+			"device": 0
+		},
+		"auto_process_products": {
+			"type": "bool",
+			"value": true,
+			"name": "Automatically Process Products",
+			"description": "Process products once the pipeline is done."
+		},
+		"qth_lat": {
+			"type": "float",
+			"value": 0.0,
+			"name": "QTH Latitude",
+			"description": "Latitude of your station's QTH (North is positive; South is negative)"
+		},
+		"qth_lon": {
+			"type": "float",
+			"value": 0.0,
+			"name": "QTH Longitude",
+			"description": "Longitude of your station's QTH (East is positive; West is negative)"
+		},
+		"qth_alt": {
+			"type": "float",
+			"value": 0.0,
+			"name": "QTH Altitude",
+			"description": "Altitude (meters above sea level) of your station's QTH"
+		},
+		"default_qth_label": {
+			"type": "string",
+			"value": "QTH",
+			"name": "Default QTH Label",
+			"description": "Default map label for QTH marker"
+		},
+		"tle_update_interval": {
+			"type": "options",
+			"value": "1 day",
+			"name": "TLE Auto Update Interval",
+			"options": ["4 hours", "1 day", "3 days", "7 days", "14 days", "Never"],
+			"description": "Frequency to update TLEs. Auto update happens at launch only\n\nWarning: The older your TLEs, the more inaccurate projections\nmay be."
+		},
+		"tle_space_track_login": {
+			"type": "string",
+			"value": "yourloginemail",
+			"name": "Space-Track Login (Optional)",
+			"description": "Optional, Space-Track account for historical TLEs"
+		},
+		"tle_space_track_password": {
+			"type": "password",
+			"value": "yourpassword",
+			"name": "Space-Track Password (Optional)",
+			"description": "Optional, Space-Track password for historical TLEs"
+		}
+	},
+	// Input/Output Directories
+	"satdump_directories": {
+		"recording_path": {
+			"type": "path",
+			"is_directory": true,
+			"value": ".",
+			"name": "Baseband Recorder directory",
+			"description": "Path to a folder where I/Q recordings will be saved"
+		},
+		"live_processing_autogen": {
+			"type": "bool",
+			"value": true,
+			"name": "Live Processing Output Autogeneration",
+			"description": "Should live processing automatically generate an output folder?"
+		},
+		"live_processing_path": {
+			"type": "path",
+			"is_directory": true,
+			"value": "./live_output",
+			"name": "Live Processing Directory",
+			"description": "Path to the default folder to use to store live processing\nOnly valid when automatic generation is enabled!"
+		},
+		//////////////////////////////////////////////////////////////
+		"default_input_directory": {
+			"type": "path",
+			"is_directory": true,
+			"value": ".",
+			"name": "Default Input Directory",
+			"description": "Path to the default folder to open when selecting an input file in offline processing."
+		},
+		"default_output_directory": {
+			"type": "path",
+			"is_directory": true,
+			"value": ".",
+			"name": "Default Output Directory",
+			"description": "Path to the default folder to open when selecting an output directory in offline processing."
+		},
+		"default_image_output_directory": {
+			"type": "path",
+			"is_directory": true,
+			"value": ".",
+			"name": "Default Img Output Directory",
+			"description": "Path to the default folder to open when saving an image in the explorer."
+		},
+		"default_projection_output_directory": {
+			"type": "path",
+			"is_directory": true,
+			"value": ".",
+			"name": "Default Proj Output Directory",
+			"description": "Path to the default folder to open when saving a projection in the explorer."
+		},
+		"image_filename_template": {
+			"type": "labeled_options",
+			"value": "$i_$c",
+			"name": "Image Filename Template",
+			"manual": true,
+			"options": [
+				["$i_$c", "Default"],
+				["$i_$y-$M-$d_$h-$m-$sZ_$c", "Detailed"],
+				["$y$M$d$h$m_$O_$C", "Compact Detailed"],
+				["$y-$M-$d $h$m UTC - $o", "Satellite and Time"],
+				["Z_SATDUMP_C_----_$y$M$d$h$m$s_$O_$I_$a", "WMO"]
+			],
+			"description": "Template used when saving images in the explorer. Variables available:\n - $y - year\n - $M - month\n - $d - day\n - $h - hour\n - $m - minute\n - $s - second\n - $t - unix timestamp\n - $c - composite/channel name\n - $C - composite/channel name (caps)\n - $a - composite/channel name (abbreviated)\n - $i - instrument name\n - $I - instrument name (caps)\n - $o - satellite/object\n - $O - satellite/object (caps)"
+		}
+	},
+	// TLE settings
+	"tle_settings": {
+		"urls_to_fetch": [
+			"http://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle" // Most sats
+		],
+		"url_template": "http://celestrak.org/NORAD/elements/gp.php?CATNR=%NORAD%",
+		"tles_to_fetch": [
+			63251, // UVSQSat-NG
+			6235, // NOAA-2
+			29499, // MetOp-A
+			// 38771, // MetOp-B
+			// 43689, // MetOp-C
+			// 28054, // DMSP-F16
+			// 29522, // DMSP-F17
+			// 35951, // DMSP-F18
+			// 25338, // NOAA-15
+			// 28654, // NOAA-18
+			// 33591, // NOAA-19
+			// 32958, // FengYun-3A
+			// 37214, // FengYun-3B
+			// 39260, // FengYun-3C
+			// 43010, // FengYun-3D
+			// 49008, // FengYun-3E
+			// 57490, // FengYun-3F
+			// 56232, // FengYun-3G
+			35865, // METEOR-M1
+			// 40069, // METEOR-M2
+			// 44387, // METEOR-M2-2
+			// 57166, // METEOR-M2-3
+			// 25994, // Terra
+			// 27424, // Aqua
+			// 28376, // Aura
+			// 37849, // Suomi-NPP
+			// 43013, // JPSS-1
+			// 54234, // JPSS-2
+			// 41240, // Jason-3
+			// 43662, // CFOSAT-1
+			// 27640, // Coriolis
+			// 26958, // Proba-1
+			// 36037, // Proba-2
+			// 39159, // Proba-V
+			// 29107, // CloudSat
+			// 25544, // ISS (Zarya)
+			// 48274, // CSS (Tianhe-1)
+			// 38337, // GCOM-W1
+			// 43065, // GCOM-C1
+			// 29155, // GOES-13 (EWS-G1)
+			// 35491, // GOES-14
+			// 36411, // GOES-15 (EWS-G2)
+			// 41866, // GOES-16
+			// 43226, // GOES-17
+			// 51850, // GOES-18
+			// 47719, // Arktika-M 1
+			// 41105, // Elektro-L 2
+			// 44903, // Elektro-L 3
+			// 55506, // Elektro-L 4
+			// 40367, // FENGYUN-2G
+			// 43491, // FENGYUN-2H
+			// 41882, // FENGYUN-4A
+			// 48808, // FENGYUN-4B
+			// 43823, // GK-2A
+			// 31304, // AIM
+			// 53807, // BlueWalker-3
+			// 53323, // COSMOS-2558
+			// 42719, // COSMOS-2518
+			// 29479, // HINODE
+			// 39197, // IRIS
+			// 44406, // Lucky-7
+			// 54227, // MATS
+			// 35931, // Oceansat-2
+			// 54361, // Oceansat-3 (EOS-6)
+			// 39086, // SARAL
+			// 44876, // ANGELS
+			// 54023, // OTB-3 (Gazelle)
+			// 29273, // Syracuse-3B
+			// 27858, // SciSat-1
+			// 37388, // YouthSat
+			// 46984, // Sentinel-6
+			// 48900, // TUBIN
+			// 57172, // UmKA-1 (RS40S)
+			// 40376, // SMAP
+			// 44874, // CHEOPS
+			// 36036, // SMOS
+			// 39089, // NEOSSat
+			// 42920, // Formosat-5
+			// 44878, // OPS-SAT
+			// 54754, // SWOT
+			// 43215, // PAZ
+			// 29108, // Calipso
+			// 43476, // Grace-FO 1
+			// 43477, // Grace-FO 2
+			// 36508, // Cryosat-2
+			// 44072, // PRISMA
+			// 39084, // LandSat-8
+			// 49260, // LandSat-9
+			// 41857, // Yunhai 1
+			// 44547, // Yunhai 1-02
+			// 53877 // Yunhai 1-03
+			// 59051 // M2-4
+			65159 // MetOp-SG A1
+		]
+	},
+	// Advanced user settings
+	// Should NOT be touched by the average user
+	"advanced_settings": {
+		// DSP Buffer size. The default 1MB uses
+		// too much RAM for operation on some SBCs
+		// with only 256MB or such.
+		// Changing this will drastically reduce
+		// RAM utilization, but be careful to NOT go
+		// too low or things will break!
+		// ------------------------------------------------------
+		// "default_buffer_size": 100e3
+	}
+}

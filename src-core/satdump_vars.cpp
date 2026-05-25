@@ -77,5 +77,5 @@ namespace satdump
     std::string RESPATH = init_res_path();
     std::string LIBPATH = init_lib_path();
 
-    std::string getSatDumpVersionName() { return "SatDump v" + (std::string)SATDUMP_VERSION + (satdump::SATDUMP_VERSION_TAG.size() ? " (" + satdump::SATDUMP_VERSION_TAG + ")" : ""); }
+    std::string getSatDumpVersionName() { return "GobDump v" + (std::string)SATDUMP_VERSION + (satdump::SATDUMP_VERSION_TAG.size() ? " (" + satdump::SATDUMP_VERSION_TAG + ")" : ""); }
 } // namespace satdump
