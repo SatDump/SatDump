@@ -502,26 +502,26 @@ if(PLUGIN_BITVIEW_APP OR PLUGINS_ALL)
   add_subdirectory(bitview_app)
 endif()
 
-option(PLUGIN_TOOLS_APP "Enable Tools Applications (Very WIP)" ON)
+option(PLUGIN_TOOLS_APP "Enable Tools Applications (Very WIP)" OFF)
 
 if(PLUGIN_TOOLS_APP)
   add_subdirectory(tools_app)
 endif()
 
-option(PLUGIN_WIPTRACKING_APP "Enable WIP Tracking Application" ON)
+option(PLUGIN_WIPTRACKING_APP "Enable WIP Tracking Application" OFF)
 
 if(PLUGIN_WIPTRACKING_APP)
   add_subdirectory(wip_tracking_app)
 endif()
 
 option(PLUGIN_WIPSETTINGS_EDITOR_APP "Enable WIP Settings Editor Application"
-       ON)
+       OFF)
 
 if(PLUGIN_WIPSETTINGS_EDITOR_APP)
   add_subdirectory(wip_settings_editor_app)
 endif()
 
-option(PLUGIN_WEBHOOK_APP "Enable Webhook Application" ON)
+option(PLUGIN_WEBHOOK_APP "Enable Webhook Application" OFF)
 
 if(BUILD_GUI AND PLUGIN_WEBHOOK_APP)
   add_subdirectory(webhook_app)
