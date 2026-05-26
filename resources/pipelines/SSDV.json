@@ -1,0 +1,129 @@
+{
+	"ssdv_bpsk_concat": {
+		"name": "SSDV-NG Concatenated",
+		"live": [1, 2, 3],
+		"frequencies": [],
+		"parameters": {},
+		"work": {
+			"baseband": {},
+			"soft": {
+				"module": "psk_demod",
+				"parameters": {
+					"constellation": "bpsk",
+					"symbolrate": 1e6,
+					"pll_bw": 0.02,
+					"rrc_alpha": 0.5
+				}
+			},
+			"cadu": {
+				"module": "ccsds_conv_concat_decoder",
+				"parameters": {
+					"ccsds": true,
+					"constellation": "bpsk",
+					"conv_rate": "7/8",
+					"cadu_size": 8192,
+					"viterbi_ber_thresold": 0.3,
+					"viterbi_outsync_after": 20,
+					"derandomize": true,
+					"nrzm": false,
+					"rs_i": 4,
+					"rs_type": "rs223",
+					"rs_dualbasis": false
+				}
+			},
+			"products": {
+				"module": "ssdv_instruments",
+				"parameters": {
+					"server_address": "0.0.0.0",
+					"server_port_apid_10": 9010,
+					"server_port_apid_20": 9020,
+					"server_port_apid_100": 9100
+				}
+			}
+		}
+	},
+	"ssdv_bpsk_ldpc": {
+		"name": "SSDV-NG LDPC",
+		"live": [1, 2, 3],
+		"frequencies": [],
+		"parameters": {},
+		"work": {
+			"baseband": {},
+			"soft": {
+				"module": "psk_demod",
+				"parameters": {
+					"constellation": "bpsk",
+					"symbolrate": 1e6,
+					"pll_bw": 0.02,
+					"rrc_alpha": 0.5
+				}
+			},
+			"cadu": {
+				"module": "ccsds_ldpc_decoder",
+				"parameters": {
+					"constellation": "bpsk",
+					"ldpc_rate": "7/8",
+					"ldpc_iterations": 10,
+					"derandomize": false,
+					"internal_stream": false,
+					"internal_cadu_size": 0
+				}
+			},
+			"products": {
+				"module": "ssdv_instruments",
+				"parameters": {
+					"server_address": "0.0.0.0",
+					"server_port_apid_10": 9010,
+					"server_port_apid_20": 9020,
+					"server_port_apid_100": 9100
+				}
+			}
+		}
+	},
+	"ssdv_bpsk_net": {
+		"name": "SSDV Network Server",
+		"live": [1, 2, 3],
+		"frequencies": [],
+		"parameters": {
+			"samplerate": {
+				"value": 48000
+			}
+		},
+		"work": {
+			"baseband": {},
+			"soft": {
+				"module": "psk_demod",
+				"parameters": {
+					"constellation": "bpsk",
+					"symbolrate": 50000,
+					"pll_bw": 0.02,
+					"rrc_alpha": 0.5
+				}
+			},
+			"cadu": {
+				"module": "ccsds_conv_concat_decoder",
+				"parameters": {
+					"ccsds": false,
+					"constellation": "bpsk",
+					"cadu_size": 8192,
+					"viterbi_ber_thresold": 0.3,
+					"viterbi_outsync_after": 20,
+					"derandomize": true,
+					"nrzm": false,
+					"rs_i": 4,
+					"rs_type": "rs223",
+					"rs_dualbasis": false
+				}
+			},
+			"products": {
+				"module": "network_server",
+				"parameters": {
+					"server_mode": "udp_send",
+					"pkt_size": 8,
+					"server_address": "0.0.0.0",
+					"server_port": 9000
+				}
+			}
+		}
+	}
+}
