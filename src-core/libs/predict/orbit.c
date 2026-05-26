@@ -2,6 +2,10 @@
 #include <string.h>
 #include <time.h>
 
+#ifdef _WIN32
+#define timegm _mkgmtime
+#endif
+
 #include "defs.h"
 #include "sdp4.h"
 #include "sgp4.h"
