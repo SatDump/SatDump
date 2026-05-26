@@ -41,7 +41,6 @@ namespace satdump
         char iers_last_update[80];
         char tle_last_update[80];
 
-        bool show_imgui_demo = false;
         bool advanced_mode = false;
 
         widgets::TimedMessage saved_message;
@@ -129,15 +128,6 @@ namespace satdump
                     // Standard user interface settings
                     for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_user_interface)
                         p.second.draw();
-
-                    // ImGui Demo
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("Show ImGui Demo");
-                    if (ImGui::IsItemHovered())
-                        ImGui::SetTooltip("For developers only!");
-                    ImGui::TableSetColumnIndex(1);
-                    ImGui::Checkbox("##showimguidebugcheckbox", &show_imgui_demo);
 
                     ImGui::EndTable();
                 }
