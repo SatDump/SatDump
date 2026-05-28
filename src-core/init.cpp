@@ -1,8 +1,9 @@
+#include "db/kepler/kepler_handler.h"
 #define SATDUMP_DLL_EXPORT 1
-#include "init.h"
 #include "core/config.h"
 #include "core/plugin.h"
 #include "core/resources.h"
+#include "init.h"
 #include "logger.h"
 #include "satdump_vars.h"
 #include <filesystem>
@@ -40,6 +41,7 @@ namespace satdump
 
     SATDUMP_DLL std::shared_ptr<DBHandler> db;
     SATDUMP_DLL std::shared_ptr<TleDBHandler> db_tle;
+    SATDUMP_DLL std::shared_ptr<KeplerDBHandler> db_keplers;
     SATDUMP_DLL std::shared_ptr<IersDBHandler> db_iers;
 
     void initSatDump(bool is_gui)
@@ -133,6 +135,7 @@ namespace satdump
 
         // Database : TLEs, IERS stuff, etc...
         db->subhandlers.push_back(db_tle = std::make_shared<TleDBHandler>(db));
+        db->subhandlers.push_back(db_keplers = std::make_shared<KeplerDBHandler>(db));
         db->subhandlers.push_back(db_iers = std::make_shared<IersDBHandler>(db));
         db->init();
 
