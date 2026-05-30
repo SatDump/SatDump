@@ -26,7 +26,7 @@ namespace satdump
 
         // Thread Safety
         upcoming_satellite_passes_mtx.lock();
-        auto tle_registry = db_tle->all;
+        auto tle_registry = db_keplers->all();
         int num_objects = std::min(tle_registry.size(), satoptions.size()); // These can temporarily get out of sync on update
 
         if (autotrack_engaged)
@@ -167,7 +167,7 @@ namespace satdump
                         double cpass_xe = ((cpass.los_time - curr_time) / (12.0 * 3600.0)) * d_pplot_size;
 
                         std::string name = "NORAD " + norad;
-                        std::optional<TLE> this_tle = db_tle->get_from_norad(norad);
+                        std::optional<TLE> this_tle = db_keplers->get_from_norad(norad);
                         if (this_tle.has_value())
                             name = this_tle->name;
 
@@ -240,7 +240,7 @@ namespace satdump
             for (auto &cpass : enabled_satellites)
             {
                 int dl_pos = 0;
-                std::optional<satdump::TLE> thisTLE = db_tle->get_from_norad(cpass.norad);
+                std::optional<satdump::TLE> thisTLE = db_keplers->get_from_norad(cpass.norad);
                 std::string object_name = (thisTLE.has_value() ? thisTLE->name : "NORAD #" + std::to_string(cpass.norad));
                 for (auto &downlink : cpass.downlinks)
                 {
@@ -427,7 +427,7 @@ namespace satdump
                         double cpass_xs = ((cpass.aos_time - curr_time) / (12.0 * 3600.0)) * d_pplot_size;
                         double cpass_xe = ((cpass.los_time - curr_time) / (12.0 * 3600.0)) * d_pplot_size;
 
-                        std::string name = db_tle->get_from_norad(norad)->name;
+                        std::string name = db_keplers->get_from_norad(norad)->name;
 
                         if (cpass_xs < 0)
                             cpass_xs = 0;

@@ -94,7 +94,7 @@ namespace webhook_app
 
     void WebhookSender::handle_event(const satdump::events::TrackingSchedulerAOSEvent &evt)
     {
-        std::string object_name = satdump::db_tle->get_from_norad(evt.pass.norad)->name;
+        std::string object_name = satdump::db_keplers->get_from_norad(evt.pass.norad)->name;
 
         std::stringstream elevation;
         elevation << std::fixed << std::setprecision(2) << evt.pass.max_elevation;
@@ -110,7 +110,7 @@ namespace webhook_app
 
     void WebhookSender::handle_event(const satdump::events::TrackingSchedulerLOSEvent &evt)
     {
-        std::string object_name = satdump::db_tle->get_from_norad(evt.pass.norad)->name;
+        std::string object_name = satdump::db_keplers->get_from_norad(evt.pass.norad)->name;
         send_webhook(url, payload_key, "LOS **" + object_name + "**");
     }
 }

@@ -83,7 +83,7 @@ namespace jason3
             dataset.satellite_name = "Jason-3";
             dataset.timestamp = satdump::get_median(amr2_reader.timestamps);
 
-            std::optional<satdump::TLE> satellite_tle = satdump::db_tle->get_from_norad_time(41240, dataset.timestamp);
+            std::optional<satdump::TLE> satellite_tle = satdump::db_keplers->get_from_norad_time(41240, dataset.timestamp);
 
             /* // AMR-2
              {

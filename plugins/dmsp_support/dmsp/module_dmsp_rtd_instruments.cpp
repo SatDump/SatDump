@@ -145,7 +145,7 @@ namespace dmsp
         dataset.satellite_name = "DMSP-F1x";
         dataset.timestamp = last_timestamp == -1 ? time(0) : last_timestamp;
 
-        std::optional<satdump::TLE> satellite_tle = satdump::db_tle->get_from_norad_time(norad, dataset.timestamp);
+        std::optional<satdump::TLE> satellite_tle = satdump::db_keplers->get_from_norad_time(norad, dataset.timestamp);
 
         // OLS
         {

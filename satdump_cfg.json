@@ -231,7 +231,7 @@
             "name": "Default QTH Label",
             "description": "Default map label for QTH marker"
         },
-        "tle_update_interval": {
+        "kepler_update_interval": {
             "type": "options",
             "value": "1 day",
             "name": "TLE Auto Update Interval",
@@ -339,13 +339,13 @@
             "description": "Template used when saving images in the explorer. Variables available:\n - $y - year\n - $M - month\n - $d - day\n - $h - hour\n - $m - minute\n - $s - second\n - $t - unix timestamp\n - $c - composite/channel name\n - $C - composite/channel name (caps)\n - $a - composite/channel name (abbreviated)\n - $i - instrument name\n - $I - instrument name (caps)\n - $o - satellite/object\n - $O - satellite/object (caps)"
         }
     },
-    // TLE settings
-    "tle_settings": {
+    // Kepler (used to be TLE) settings
+    "kepler_settings": {
         "urls_to_fetch": [
-            "http://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle" // Most sats
+            "http://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=omm" // Most sats
         ],
-        "url_template": "http://celestrak.org/NORAD/elements/gp.php?CATNR=%NORAD%",
-        "tles_to_fetch": [
+        "url_template": "http://celestrak.org/NORAD/elements/gp.php?CATNR=%NORAD%&FORMAT=omm",
+        "norads_to_fetch": [
             63251, // UVSQSat-NG
             6235, // NOAA-2
             29499, // MetOp-A

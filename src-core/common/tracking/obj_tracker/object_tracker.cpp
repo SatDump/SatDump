@@ -9,7 +9,7 @@ namespace satdump
 {
     ObjectTracker::ObjectTracker(bool is_gui) : is_gui(is_gui)
     {
-        auto tle_registry = db_tle->all;
+        auto tle_registry = db_keplers->all();
         if (tle_registry.size() > 0)
             has_tle = true;
 
@@ -24,7 +24,7 @@ namespace satdump
             {
                 general_mutex.lock();
 
-                auto tle_registry = db_tle->all;
+                auto tle_registry = db_keplers->all();
                 if (tle_registry.size() > 0)
                     has_tle = true;
 
@@ -90,7 +90,7 @@ namespace satdump
         }
         else if (mode == TRACKING_SATELLITE)
         {
-            auto tle_registry = db_tle->all;
+            auto tle_registry = db_keplers->all();
             for (int i = 0; i < (int)satoptions.size(); i++)
             {
                 if (tle_registry[i].norad == objid)

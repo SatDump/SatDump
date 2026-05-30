@@ -124,7 +124,7 @@ namespace meteosat
             else if (scid == METEOSAT_11_SCID)
                 norad = METEOSAT_11_NORAD;
 
-            std::optional<satdump::TLE> satellite_tle = satdump::db_tle->get_from_norad_time(norad, last_timestamp);
+            std::optional<satdump::TLE> satellite_tle = satdump::db_keplers->get_from_norad_time(norad, last_timestamp);
 
             seviri_products->instrument_name = "seviri";
             //           seviri_products->set_timestamps(timestamps_nrm);

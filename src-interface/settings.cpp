@@ -150,28 +150,28 @@ namespace satdump
                     for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_general)
                         p.second.draw();
 
-                    // TLEs
+                    // Keplers (used to be TLEs)
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("Update TLEs Now");
+                    ImGui::Text("Update Keplers Now");
                     ImGui::TableSetColumnIndex(1);
                     bool disable_update_button = tles_are_update;
                     if (disable_update_button)
                         style::beginDisabled();
-                    if (ImGui::Button("Update###updateTLEs"))
+                    if (ImGui::Button("Update###updateKeplers"))
                     {
                         ui_thread_pool.push(
                             [](int)
                             {
                                 tles_are_update = true;
-                                db_tle->updateTLEDatabase();
+                                db_keplers->updateKeplerDatabase();
                                 tles_are_update = false;
                             });
                     }
                     if (disable_update_button)
                         style::endDisabled();
 
-                    time_t last_update = std::stod(db->get_meta("tles_last_updated", "0"));
+                    time_t last_update = std::stod(db->get_meta("kepler_last_updated", "0"));
                     if (last_update == 0)
                         strcpy(tle_last_update, "Never");
                     else

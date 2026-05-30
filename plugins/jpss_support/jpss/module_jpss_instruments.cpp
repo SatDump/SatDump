@@ -158,7 +158,7 @@ namespace jpss
             dataset.satellite_name = sat_name;
             dataset.timestamp = satdump::get_median(atms_reader.timestamps);
 
-            std::optional<satdump::TLE> satellite_tle = satdump::db_tle->get_from_norad_time(norad, dataset.timestamp);
+            std::optional<satdump::TLE> satellite_tle = satdump::db_keplers->get_from_norad_time(norad, dataset.timestamp);
 
             // Satellite ID
             {

@@ -43,7 +43,7 @@ namespace satdump
 
                 if (observer_station != nullptr && target_az >= 0 && target_el >= 0)
                 {
-                    auto reg = db_tle->all;
+                    auto reg = db_keplers->all();
                     for (const auto &tle : reg)
                     {
                         if (!containsSubstring(tle.name, blacklist.begin(), blacklist.end()))
