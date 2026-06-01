@@ -290,11 +290,12 @@ if(PLUGIN_KANOPUS OR PLUGINS_ALL)
   add_subdirectory(kanopus_support)
 endif()
 
-option(PLUGIN_OMINOUS "Enable the Ominous support plugin" OFF)
+option(PLUGIN_RADIOSONDE "Enable the Radiosonde (Heavily inspired by SondeDump by dbdexter) support plugin" OFF)
 
-if(PLUGIN_OMINOUS)
-  add_subdirectory(ominous_support)
+if(PLUGIN_RADIOSONDE OR PLUGINS_ALL)
+  add_subdirectory(radiosonde_support)
 endif()
+
 # ##############################################################################
 option(PLUGIN_SIMD_SSE41 "Enable SIMD SSE41 plugin" ON)
 
@@ -489,7 +490,8 @@ if(PLUGIN_BOCHUM_SUPPORT)
   add_subdirectory(bochum_support)
 endif()
 
-option(PLUGIN_EXPERIMENTAL_DEVICES_SUPPORT "Enable Experimental Devices support (SatDump DC and more later)" ON)
+option(PLUGIN_EXPERIMENTAL_DEVICES_SUPPORT
+       "Enable Experimental Devices support (SatDump DC and more later)" ON)
 
 if(PLUGIN_EXPERIMENTAL_DEVICES_SUPPORT)
   add_subdirectory(experimental_devices_support)
@@ -526,5 +528,3 @@ option(PLUGIN_WEBHOOK_APP "Enable Webhook Application" ON)
 if(BUILD_GUI AND PLUGIN_WEBHOOK_APP)
   add_subdirectory(webhook_app)
 endif()
-
-
