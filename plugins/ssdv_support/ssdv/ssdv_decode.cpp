@@ -74,7 +74,7 @@ namespace ssdv
                     }
                     else if (pkt.header.apid == 100)
                     {
-                        udp_apid_100_send.send(pkt.payload.data(), 10);
+                        pkt udp_apid_100_send.send(pkt.payload.data(), pkt.payload.size());
                     }
             }
         }
