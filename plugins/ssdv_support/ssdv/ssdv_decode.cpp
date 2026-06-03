@@ -34,11 +34,36 @@ namespace ssdv
             use_fecf = parameters["fecf"].get<bool>();
         else
             use_fecf = false;
+
+        int interleaving = 4;
+        if (parameters.count("rs_i") > 0)
+        {
+            interleaving = parameters["rs_i"].get<int>();
+        }
+
+        if (interleaving > 0)
+        {
+            cadu_size = (4 + interleaving * 255) * 8;
+            mpdu_data_size = (interleaving * 223) - 8 - (use_fecf ? 2 : 0);
+        }
+        else
+        {
+            if (parameters.count("cadu_size") > 0)
+                cadu_size = parameters["cadu_size"].get<int>();
+            else
+                cadu_size = 8192;
+
+            if (parameters.count("mpdu_size") > 0)
+                mpdu_data_size = parameters["mpdu_size"].get<int>();
+            else
+                mpdu_data_size = (use_fecf) ? 882 : 884;
+        }
     }
 
     void SSDVInstrumentsDecoderModule::process()
     {
-        uint8_t cadu[1024];
+        uint8_t *cadu;
+        cadu = (uint8_t *)malloc(cadu_size / 8);
 
         net::UDPClient udp_apid_10_send((char *)addr.c_str(), port_apid_10);
         net::UDPClient udp_apid_20_send((char *)addr.c_str(), port_apid_20);
@@ -47,11 +72,11 @@ namespace ssdv
         logger->info("Meow :3");
         logger->info("Demultiplexing and deframing...");
 
-        ccsds::ccsds_aos::Demuxer demuxer_vcid0((use_fecf) ? 882 : 884, false);
+        ccsds::ccsds_aos::Demuxer demuxer_vcid0(mpdu_data_size, false);
 
         while (should_run())
         {
-            read_data((uint8_t *)cadu, 1024);
+            read_data((uint8_t *)cadu, cadu_size / 8);
 
             ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
@@ -74,11 +99,12 @@ namespace ssdv
                     }
                     else if (pkt.header.apid == 100)
                     {
-                        udp_apid_100_send.send(pkt.payload.data(), pkt.payload.size());
+                        udp_apid_100_send.send(pkt.payload.data(), static_cast<int>(pkt.payload.size()));
                     }
             }
         }
 
+        free(cadu);
         // delete[] net_buf;
 
         cleanup();

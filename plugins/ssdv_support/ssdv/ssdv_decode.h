@@ -26,6 +26,8 @@ namespace ssdv
         int port_apid_10;
         int port_apid_20;
         int port_apid_100;
+        int cadu_size;
+        int mpdu_data_size;
 
     public:
         SSDVInstrumentsDecoderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters);
