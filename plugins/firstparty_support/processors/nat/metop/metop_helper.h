@@ -38,7 +38,7 @@ namespace satdump
             else if (sat_id == "M03")
                 info.norad = 43689;
 
-            info.satellite_tle = satdump::db_tle->get_from_norad_time(info.norad, prod_timestamp);
+            info.satellite_tle = satdump::db_keplers->get_from_norad_time(info.norad, prod_timestamp);
 
             return info;
         }

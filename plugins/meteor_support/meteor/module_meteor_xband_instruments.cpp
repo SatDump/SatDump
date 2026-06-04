@@ -156,7 +156,7 @@ namespace meteor
                     satdump::products::ImageProduct mtvza_products;
                     mtvza_products.instrument_name = "mtvza";
                     mtvza_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-3_mtvza_dump.json")),
-                                                               satdump::db_tle->get_from_norad(norad), timestamps);
+                                                               satdump::db_keplers->get_from_norad(norad), timestamps);
 
                     for (int i = 0; i < 46; i++)
                         mtvza_products.images.push_back({i, "MTVZA-" + std::to_string(i + 1), std::to_string(i + 1), image::Image(mtvza_channels[i].data(), 16, 200, mtvza_lines, 1), 16});
@@ -301,7 +301,7 @@ namespace meteor
                     satdump::products::ImageProduct kmss_product;
                     kmss_product.instrument_name = "kmss_msu100";
                     kmss_product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_kmss_msu100_1.json")),
-                                                             satdump::db_tle->get_from_norad(norad), timestamps);
+                                                             satdump::db_keplers->get_from_norad(norad), timestamps);
 
                     std::vector<satdump::ChannelTransform> transforms_def = {satdump::ChannelTransform().init_none(), satdump::ChannelTransform().init_none(), satdump::ChannelTransform().init_none()};
 
@@ -337,7 +337,7 @@ namespace meteor
                     satdump::products::ImageProduct kmss_product;
                     kmss_product.instrument_name = "kmss_msu100";
                     kmss_product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2-2_kmss_msu100_2.json")),
-                                                             satdump::db_tle->get_from_norad(norad), timestamps);
+                                                             satdump::db_keplers->get_from_norad(norad), timestamps);
 
                     std::vector<satdump::ChannelTransform> transforms_def = {satdump::ChannelTransform().init_none(), satdump::ChannelTransform().init_none(), satdump::ChannelTransform().init_none()};
 

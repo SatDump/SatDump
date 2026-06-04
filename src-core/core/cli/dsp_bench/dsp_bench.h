@@ -6,6 +6,9 @@ namespace satdump
 {
     class DspBenchCmdHandler : public CmdHandler
     {
+    private:
+        std::vector<std::string> cats_to_use;
+
     public:
         DspBenchCmdHandler() : CmdHandler("dsp_bench") {}
 

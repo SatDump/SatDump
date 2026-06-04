@@ -1,7 +1,7 @@
 #pragma once
 
 #include "db/iers/iers_handler.h"
-#include "db/tle/tle_handler.h"
+#include "db/kepler/kepler_handler.h"
 #include "dll_export.h"
 #include <memory>
 #include <string>
@@ -17,6 +17,6 @@ namespace satdump
     void exitSatDump();
 
     SATDUMP_DLL extern std::shared_ptr<DBHandler> db;
-    SATDUMP_DLL extern std::shared_ptr<TleDBHandler> db_tle;
+    SATDUMP_DLL extern std::shared_ptr<KeplerDBHandler> db_keplers;
     SATDUMP_DLL extern std::shared_ptr<IersDBHandler> db_iers;
 } // namespace satdump

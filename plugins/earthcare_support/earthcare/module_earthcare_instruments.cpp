@@ -105,7 +105,7 @@ namespace earthcare
                 satdump::products::ImageProduct msi_products;
                 msi_products.instrument_name = "earthcare_msi";
                 msi_products.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/earthcare_msi.json")),
-                                                         satdump::db_tle->get_from_norad_time(norad, dataset.timestamp), msi_reader.timestamps);
+                                                         satdump::db_keplers->get_from_norad_time(norad, dataset.timestamp), msi_reader.timestamps);
 
                 for (int i = 0; i < 7; i++)
                     msi_products.images.push_back({i, "MSI-" + std::to_string(i + 1), std::to_string(i + 1), msi_reader.getChannel(i), 16});

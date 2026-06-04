@@ -33,7 +33,7 @@ namespace meteor
             auto msu_cfg = loadJsonFile(resources::getResourcePath("calibration/MSU-MR.json"));
 
             product.instrument_name = "msu_mr";
-            auto tle = satdump::db_tle->get_from_norad_time(norad, timestamp);
+            auto tle = satdump::db_keplers->get_from_norad_time(norad, timestamp);
             if (msumr_serial_number == 0) // M2
                 product.set_proj_cfg_tle_timestamps(loadJsonFile(resources::getResourcePath("projections_settings/meteor_m2_msumr_lrpt.json")), tle, timestamps);
             else if (msumr_serial_number == 3) // M2-3

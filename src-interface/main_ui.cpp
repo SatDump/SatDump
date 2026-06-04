@@ -40,6 +40,10 @@ namespace satdump
     std::shared_ptr<NotifyLoggerSink> notify_logger_sink;
     std::shared_ptr<StatusLoggerSink> status_logger_sink;
 
+    bool show_imgui_demo = false;
+    bool show_implot_demo = false;
+    bool show_implot3d_demo = false;
+
     // Stuff
     std::string major_ui_constant;
     bool major_ui_constant2 = false;
@@ -188,6 +192,17 @@ namespace satdump
                         major_ui_constant2 = true;
                     ImGui::PopStyleColor();
 
+                    if (ImGui::BeginMenu("Demos"))
+                    {
+                        if (ImGui::MenuItem("ImGui Demo", NULL, show_imgui_demo))
+                            show_imgui_demo = !show_imgui_demo;
+                        if (ImGui::MenuItem("ImPlot Demo", NULL, show_implot_demo))
+                            show_implot_demo = !show_implot_demo;
+                        if (ImGui::MenuItem("ImPlot3D Demo", NULL, show_implot3d_demo))
+                            show_implot3d_demo = !show_implot3d_demo;
+                        ImGui::EndMenu();
+                    }
+
                     ImGui::EndMenu();
                 }
 
@@ -254,12 +269,12 @@ namespace satdump
             ImGuiUtils_SendCurrentWindowToBack();
             ImGui::End();
 
-            if (settings::show_imgui_demo)
-            {
+            if (show_imgui_demo)
                 ImGui::ShowDemoWindow();
+            if (show_implot_demo)
                 ImPlot::ShowDemoWindow();
+            if (show_implot3d_demo)
                 ImPlot3D::ShowDemoWindow();
-            }
         }
 
         // Show stuff?

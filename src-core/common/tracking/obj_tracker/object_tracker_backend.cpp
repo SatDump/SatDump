@@ -74,7 +74,7 @@ namespace satdump
                     if (satellite_object != nullptr)
                         predict_destroy_orbital_elements(satellite_object);
 
-                    auto reg = db_tle->all;
+                    auto reg = db_keplers->all();
                     auto &tle = reg[current_satellite_id];
 
                     satellite_object = predict_parse_tle(tle.line1.c_str(), tle.line2.c_str());

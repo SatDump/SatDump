@@ -260,7 +260,7 @@ namespace satdump
 
             if (ImGui::IsItemHovered())
             {
-                auto reg = db_tle->all;
+                auto reg = db_keplers->all();
                 ImGui::SetTooltip("NORAD ID %d", reg[current_satellite_id].norad);
             }
         }

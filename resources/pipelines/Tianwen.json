@@ -41,5 +41,48 @@
             },
             "products": {}
         }
+    },
+    "tianwen2_link": {
+        "name": "Tianwen-2 Link",
+        "live": [
+            1,
+            2
+        ],
+        "frequencies": [
+            [
+                "Telemetry",
+                8431e6
+            ]
+        ],
+        "parameters": {},
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "pm_demod",
+                "parameters": {
+                    "resample_after_pll": true,
+                    "symbolrate": 16384,
+                    "pll_bw": 0.002,
+                    "rrc_alpha": 0.35,
+                    "costas_bw": 0.001,
+                    "subcarrier_offset": 65536,
+                    "pll_max_offset": 3.14
+                }
+            },
+            "cadu": {
+                "module": "ccsds_conv_concat_decoder",
+                "parameters": {
+                    "constellation": "bpsk_90",
+                    "cadu_size": 8192,
+                    "viterbi_ber_thresold": 0.390,
+                    "viterbi_outsync_after": 100,
+                    "derandomize": true,
+                    "rs_i": 4,
+                    "rs_dualbasis": true,
+                    "rs_type": "rs223"
+                }
+            },
+            "products": {}
+        }
     }
 }
