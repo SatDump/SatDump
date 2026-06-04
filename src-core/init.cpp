@@ -1,9 +1,9 @@
-#include "db/kepler/kepler_handler.h"
 #define SATDUMP_DLL_EXPORT 1
+#include "init.h"
 #include "core/config.h"
 #include "core/plugin.h"
 #include "core/resources.h"
-#include "init.h"
+#include "db/kepler/kepler_handler.h"
 #include "logger.h"
 #include "satdump_vars.h"
 #include <filesystem>
