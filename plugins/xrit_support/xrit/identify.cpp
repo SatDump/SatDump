@@ -1,4 +1,5 @@
 #include "identify.h"
+#include "common/utils.h"
 #include "logger.h"
 #include "msg/msg_headers.h"
 #include "utils/string.h"

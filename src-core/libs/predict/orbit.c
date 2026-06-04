@@ -2,8 +2,12 @@
 #include <string.h>
 #include <time.h>
 
-#ifdef _WIN32
-#define timegm _mkgmtime
+#if defined(_WIN32)
+
+inline time_t timegm(struct tm *const t)
+{
+    return _mkgmtime(t);
+}
 #endif
 
 #include "defs.h"

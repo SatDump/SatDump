@@ -1,11 +1,14 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 #include <ctime>
+#include <string>
 
-#ifdef _MSC_VER
-#define timegm _mkgmtime
+
+#if defined(_WIN32)
+#include <time.h>
+
+inline time_t timegm(struct tm *const t) { return _mkgmtime(t); }
 #endif
 
 // Return filesize

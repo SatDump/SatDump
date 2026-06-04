@@ -8,6 +8,12 @@
 #include <exception>
 #include <thread>
 
+#if defined(_WIN32)
+#include <time.h>
+
+inline time_t timegm(struct tm *const t) { return _mkgmtime(t); }
+#endif
+
 namespace satdump
 {
     template <typename T>

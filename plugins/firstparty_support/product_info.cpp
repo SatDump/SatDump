@@ -1,4 +1,5 @@
 #include "product_info.h"
+#include "common/utils.h"
 #include "core/exception.h"
 #include "logger.h"
 #include "processors/hdf/dmsp/ssmis_hdf.h"

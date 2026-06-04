@@ -4,8 +4,10 @@
 #include "imgui/imgui_stdlib.h"
 #include <cmath>
 
-#ifdef _WIN32
-#define timegm _mkgmtime
+#if defined(_WIN32)
+#include <time.h>
+
+inline time_t timegm(struct tm *const t) { return _mkgmtime(t); }
 #endif
 
 namespace satdump
