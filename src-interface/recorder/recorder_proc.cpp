@@ -35,6 +35,13 @@ namespace satdump
 #if defined(BUILD_ZIQ) || defined(BUILD_ZIQ2)
         out["ziq_depth"] = baseband_format.ziq_depth;
 #endif
+
+        if (!pipeline_selector.selected_pipeline.id.empty())
+        {
+            out["live_pipeline_id"] = pipeline_selector.selected_pipeline.id;
+            out["live_pipeline_level"] = pipeline_selector.pipelines_levels_select_id;
+            out["live_pipeline_params"] = pipeline_selector.getParameters();
+        }
         return out;
     }
 
@@ -77,6 +84,15 @@ namespace satdump
         if (in.contains("ziq_depth"))
             baseband_format.ziq_depth = in["ziq_depth"];
 #endif
+
+        if (in.contains("live_pipeline_id") && !in["live_pipeline_id"].get<std::string>().empty())
+        {
+            pipeline_selector.select_pipeline(in["live_pipeline_id"].get<std::string>());
+            if (in.contains("live_pipeline_level"))
+                pipeline_selector.pipelines_levels_select_id = in["live_pipeline_level"].get<int>();
+            if (in.contains("live_pipeline_params"))
+                pipeline_selector.setParameters(in["live_pipeline_params"]);
+        }
     }
 
     void RecorderApplication::start()
@@ -134,6 +150,8 @@ namespace satdump
         rec_cfg[sources[sdr_select_id].name]["xconverter_frequency"] = xconverter_frequency;
         rec_cfg[sources[sdr_select_id].name]["decimation"] = current_decimation;
         db->set_user_json("recorder_sdr_settings", rec_cfg);
+
+        save_settings();
     }
 
     void RecorderApplication::try_load_sdr_settings()
