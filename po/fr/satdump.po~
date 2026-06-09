@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-09 10:17+0200\n"
-"PO-Revision-Date: 2026-06-09 10:19+0200\n"
+"POT-Creation-Date: 2026-06-09 10:51+0200\n"
+"PO-Revision-Date: 2026-06-09 10:55+0200\n"
 "Last-Translator: Alan <alan@alan-desktop>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -40,6 +40,38 @@ msgstr "Visualisateur Binaire"
 msgid "Open binary file"
 msgstr "Ouvrir un fichier binaire"
 
+#: plugins/bitview_app/bitview.cpp:50
+msgid "Display"
+msgstr ""
+
+#: plugins/bitview_app/bitview.cpp:55
+msgid "Period (Bits)"
+msgstr ""
+
+#: plugins/bitview_app/bitview.cpp:80
+msgid "Bits"
+msgstr ""
+
+#: plugins/bitview_app/bitview.cpp:90
+msgid "Bytes"
+msgstr ""
+
+#: plugins/bitview_app/bitview.cpp:100
+msgid "Custom"
+msgstr ""
+
+#: plugins/bitview_app/bitview.cpp:108
+msgid "ASCII"
+msgstr ""
+
+#: plugins/bitview_app/bitview.cpp:117
+msgid "Bit Depth"
+msgstr ""
+
+#: plugins/bitview_app/bitview.cpp:129
+msgid "Reload"
+msgstr "Recharger"
+
 #: plugins/wip_tracking_app/main.cpp:25
 msgid "WIP Tracking"
 msgstr ""
@@ -69,6 +101,51 @@ msgstr "Fichier"
 #: plugins/firstparty_support/main_loader.cpp:81
 msgid "Load First-Party"
 msgstr "Charger un produit officiel"
+
+#: plugins/firstparty_support/loader/archive_loader.cpp:20
+msgid "Archive Loader"
+msgstr ""
+
+#: plugins/firstparty_support/loader/archive_loader.cpp:24
+msgid "NOAA AWS"
+msgstr ""
+
+#: plugins/firstparty_support/loader/archive_loader.cpp:29
+msgid "EUMETSAT"
+msgstr ""
+
+#: plugins/firstparty_support/loader/archive_loader.cpp:47
+msgid "Decode To:"
+msgstr ""
+
+#: plugins/firstparty_support/loader/archive_loader.cpp:49
+msgid "Temporary"
+msgstr ""
+
+#: plugins/firstparty_support/loader/archive_loader.cpp:51
+msgid "Selected Folder:"
+msgstr ""
+
+#: plugins/firstparty_support/loader/eumetsat.cpp:201
+msgid "Refresh##archiveloader_refresh"
+msgstr ""
+
+#: plugins/firstparty_support/loader/eumetsat.cpp:204
+msgid "Date: "
+msgstr ""
+
+#: plugins/firstparty_support/loader/eumetsat.cpp:225
+msgid "Load##archiveloadertablebutton_"
+msgstr ""
+
+#: plugins/firstparty_support/loader/downloader.cpp:21
+#, c-format
+msgid "Downloading : %s"
+msgstr ""
+
+#: plugins/firstparty_support/loader/downloader.cpp:31
+msgid "Abort"
+msgstr ""
 
 #: plugins/experimental_devices_support/main.cpp:23
 #: src-core/explorer/explorer.cpp:291
@@ -870,11 +947,11 @@ msgstr "Réduire"
 
 #: src-core/handlers/image/image_handler.cpp:226
 msgid "Fit"
-msgstr "Recardrer"
+msgstr "Recadrer"
 
 #: src-core/handlers/image/image_handler.cpp:227
 msgid "Crop"
-msgstr ""
+msgstr "Découper"
 
 #. Show a menu that allows putting this image on an existing or new projection
 #: src-core/handlers/image/image_handler.cpp:235
@@ -925,7 +1002,7 @@ msgstr ""
 #. TODOREWORK move out?!
 #: src-core/handlers/vector/addmenu.h:22
 msgid "Add Overlay"
-msgstr ""
+msgstr "Ajouter un calque"
 
 #: src-core/handlers/vector/addmenu.h:24
 msgid "Shores"
@@ -937,7 +1014,7 @@ msgstr ""
 
 #: src-core/handlers/vector/addmenu.h:36
 msgid "Cities"
-msgstr ""
+msgstr "Villes"
 
 #: src-core/handlers/vector/addmenu.h:42 src-core/handlers/vector/addmenu.h:45
 msgid "Lat/Lon Grid"
@@ -1062,19 +1139,19 @@ msgstr "Mode avancé"
 
 #: src-core/handlers/product/punctiform_product_handler.cpp:39
 msgid "Graph"
-msgstr ""
+msgstr "Graphique"
 
 #: src-core/handlers/product/punctiform_product_handler.cpp:45
 msgid "Dot Map"
-msgstr ""
+msgstr "Carte à points"
 
 #: src-core/handlers/product/punctiform_product_handler.cpp:51
 msgid "Fill Map"
-msgstr ""
+msgstr "Carte remplie"
 
 #: src-core/handlers/product/punctiform_product_handler.cpp:57
 msgid "Channel##selectechannel"
-msgstr ""
+msgstr "Canal##selectechannel"
 
 #: src-core/handlers/product/punctiform_product_handler.cpp:72
 msgid "Range Min"
@@ -1106,7 +1183,7 @@ msgstr ""
 
 #: src-core/handlers/handler.cpp:60
 msgid "Delete"
-msgstr ""
+msgstr "Supprimer"
 
 #: src-core/handlers/handler.cpp:99
 msgid "Can't drag parent onto child handler!"
