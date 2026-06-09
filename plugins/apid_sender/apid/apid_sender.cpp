@@ -59,10 +59,11 @@ namespace apid
         cadu = (uint8_t *)malloc(cadu_size / 8);
 
         // Build one UDP client per configured APID
-        std::vector<net::UDPClient> udp_senders;
+        // UDPClient is non-copyable and non-movable, so store behind unique_ptr
+        std::vector<std::unique_ptr<net::UDPClient>> udp_senders;
         udp_senders.reserve(apid_configs.size());
         for (auto &cfg : apid_configs)
-            udp_senders.emplace_back((char *)addr.c_str(), cfg.port);
+            udp_senders.push_back(std::make_unique<net::UDPClient>((char *)addr.c_str(), cfg.port));
 
         logger->info("Meow :3");
         logger->info("Demultiplexing and deframing...");
@@ -94,7 +95,7 @@ namespace apid
                                             ? cfg.packet_size
                                             : static_cast<int>(pkt.payload.size());
 
-                        udp_senders[i].send(pkt.payload.data(), send_size);
+                        udp_senders[i]->send(pkt.payload.data(), send_size);
                         break; // Matched — no need to check further configs
                     }
                 }
