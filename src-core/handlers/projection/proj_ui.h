@@ -1,5 +1,6 @@
 #pragma once
 
+#include "i18n.h"
 #include "imgui/imgui.h"
 #include "nlohmann/json.hpp"
 #include "projection/projection.h"
@@ -120,7 +121,7 @@ namespace satdump
 
             void drawUI()
             {
-                ImGui::Text("Output image : ");
+                ImGui::Text(_("Output image : "));
                 ImGui::SetNextItemWidth(ImGui::GetWindowWidth() * 0.40f);
                 ImGui::InputInt("##width", &projections_image_width, 0);
                 ImGui::SameLine();
@@ -146,56 +147,56 @@ namespace satdump
                 {
                     if (!projection_auto_mode)
                     {
-                        ImGui::Text("Top Left Coordinates :");
-                        ImGui::InputFloat("Lat##tl", &projections_equirectangular_tl_lat);
-                        ImGui::InputFloat("Lon##tl", &projections_equirectangular_tl_lon);
+                        ImGui::Text(_("Top Left Coordinates :"));
+                        ImGui::InputFloat(_("Lat##tl"), &projections_equirectangular_tl_lat);
+                        ImGui::InputFloat(_("Lon##tl"), &projections_equirectangular_tl_lon);
                         ImGui::Spacing();
-                        ImGui::Text("Bottom Right Coordinates :");
-                        ImGui::InputFloat("Lat##br", &projections_equirectangular_br_lat);
-                        ImGui::InputFloat("Lon##br", &projections_equirectangular_br_lon);
+                        ImGui::Text(_("Bottom Right Coordinates :"));
+                        ImGui::InputFloat(_("Lat##br"), &projections_equirectangular_br_lat);
+                        ImGui::InputFloat(_("Lon##br"), &projections_equirectangular_br_lon);
                     }
                 }
                 else if (projections_current_selected_proj == 1)
                 {
-                    ImGui::InputInt("UTM Zone###projutmzone", &projections_utm_zone);
+                    ImGui::InputInt(_("UTM Zone###projutmzone"), &projections_utm_zone);
                     if (projections_utm_zone > 60)
                         projections_utm_zone = 60;
                     if (projections_utm_zone < 1)
                         projections_utm_zone = 1;
-                    ImGui::Checkbox("South###projutmsouth", &projections_utm_south);
-                    ImGui::InputFloat("Northing (m)##utm", &projections_utm_offset_y);
+                    ImGui::Checkbox(_("South###projutmsouth"), &projections_utm_south);
+                    ImGui::InputFloat(_("Northing (m)##utm"), &projections_utm_offset_y);
                     ImGui::Spacing();
-                    ImGui::InputFloat("Scale (m/px)##utm", &projections_utm_scale);
+                    ImGui::InputFloat(_("Scale (m/px)##utm"), &projections_utm_scale);
                 }
                 else if (projections_current_selected_proj == 2)
                 {
-                    ImGui::Text("Center Coordinates :");
-                    ImGui::InputFloat("Lat##stereo", &projections_stereo_center_lat);
-                    ImGui::InputFloat("Lon##stereo", &projections_stereo_center_lon);
+                    ImGui::Text(_("Center Coordinates :"));
+                    ImGui::InputFloat(_("Lat##stereo"), &projections_stereo_center_lat);
+                    ImGui::InputFloat(_("Lon##stereo"), &projections_stereo_center_lon);
                     ImGui::Spacing();
-                    ImGui::InputFloat("Scale (m/px)##stereo", &projections_stereo_scale);
+                    ImGui::InputFloat(_("Scale (m/px)##stereo"), &projections_stereo_scale);
                 }
                 else if (projections_current_selected_proj == 3)
                 {
-                    ImGui::Text("Center Coordinates :");
-                    ImGui::InputFloat("Lat##tpers", &projections_tpers_lat);
-                    ImGui::InputFloat("Lon##tpers", &projections_tpers_lon);
+                    ImGui::Text(_("Center Coordinates :"));
+                    ImGui::InputFloat(_("Lat##tpers"), &projections_tpers_lat);
+                    ImGui::InputFloat(_("Lon##tpers"), &projections_tpers_lon);
                     ImGui::Spacing();
-                    ImGui::InputFloat("Altitude (m)##tpers", &projections_tpers_alt);
-                    ImGui::InputFloat("Angle##tpers", &projections_tpers_ang);
-                    ImGui::InputFloat("Azimuth##tpers", &projections_tpers_azi);
+                    ImGui::InputFloat(_("Altitude (m)##tpers"), &projections_tpers_alt);
+                    ImGui::InputFloat(_("Angle##tpers"), &projections_tpers_ang);
+                    ImGui::InputFloat(_("Azimuth##tpers"), &projections_tpers_azi);
                     ImGui::Spacing();
-                    ImGui::InputFloat("Scale##tpers", &projections_tpers_scale);
+                    ImGui::InputFloat(_("Scale##tpers"), &projections_tpers_scale);
                 }
 
                 if (projections_current_selected_proj == 0 || projections_current_selected_proj == 2)
                 {
-                    ImGui::Checkbox("Auto Mode###pojautomode", &projection_auto_mode);
-                    ImGui::Checkbox("Auto Scale Mode##projautoscalemode", &projection_auto_scale_mode);
+                    ImGui::Checkbox(_("Auto Mode###pojautomode"), &projection_auto_mode);
+                    ImGui::Checkbox(_("Auto Scale Mode##projautoscalemode"), &projection_auto_scale_mode);
                     if (projection_auto_scale_mode)
                     {
-                        ImGui::InputDouble("Scale X (m/px)##projscalexauto", &projection_autoscale_x);
-                        ImGui::InputDouble("Scale Y (m/px)##projscalexauto", &projection_autoscale_y);
+                        ImGui::InputDouble(_("Scale X (m/px)##projscalexauto"), &projection_autoscale_x);
+                        ImGui::InputDouble(_("Scale Y (m/px)##projscalexauto"), &projection_autoscale_y);
                     }
                 }
             }

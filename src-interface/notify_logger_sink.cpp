@@ -1,4 +1,5 @@
 #include "notify_logger_sink.h"
+#include "i18n.h"
 #include "imgui/imgui.h"
 #include "imgui_notify/imgui_notify.h"
 #include "logger.h"
@@ -13,7 +14,7 @@ namespace satdump
     {
         if (log.lvl == slog::LOG_WARN || log.lvl == slog::LOG_ERROR)
         {
-            std::string title = log.lvl == slog::LOG_CRIT ? "Critical" : (log.lvl == slog::LOG_WARN ? "Warning" : "Error");
+            std::string title = log.lvl == slog::LOG_CRIT ? _("Critical") : (log.lvl == slog::LOG_WARN ? _("Warning") : _("Error"));
             ImGuiToastType type = log.lvl == slog::LOG_WARN ? ImGuiToastType_Warning : ImGuiToastType_Error;
             notify_mutex.lock();
 

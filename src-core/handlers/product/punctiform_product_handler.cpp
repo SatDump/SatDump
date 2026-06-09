@@ -7,6 +7,7 @@
 
 #include "image/io.h" // TODOREWORK
 #include "products/punctiform/product_dotmap.h"
+#include "i18n.h"
 
 namespace satdump
 {
@@ -30,30 +31,30 @@ namespace satdump
             bool needs_to_be_disabled = is_processing;
             bool needs_to_update = false;
 
-            if (ImGui::CollapsingHeader("Channels", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::CollapsingHeader(_("Channels"), ImGuiTreeNodeFlags_DefaultOpen))
             {
                 if (needs_to_be_disabled)
                     style::beginDisabled();
 
-                if (ImGui::RadioButton("Graph", current_mode == MODE_GRAPH))
+                if (ImGui::RadioButton(_("Graph"), current_mode == MODE_GRAPH))
                 {
                     current_mode = MODE_GRAPH;
                     needs_to_update = true;
                 }
                 ImGui::SameLine();
-                if (ImGui::RadioButton("Dot Map", current_mode == MODE_DOTMAP))
+                if (ImGui::RadioButton(_("Dot Map"), current_mode == MODE_DOTMAP))
                 {
                     current_mode = MODE_DOTMAP;
                     needs_to_update = true;
                 }
                 ImGui::SameLine();
-                if (ImGui::RadioButton("Fill Map", current_mode == MODE_FILLMAP))
+                if (ImGui::RadioButton(_("Fill Map"), current_mode == MODE_FILLMAP))
                 {
                     current_mode = MODE_FILLMAP;
                     needs_to_update = true;
                 }
 
-                if (ImGui::BeginCombo("Channel##selectechannel", selected_channel.c_str()))
+                if (ImGui::BeginCombo(_("Channel##selectechannel"), selected_channel.c_str()))
                 {
                     for (auto &p : product->data)
                     {
@@ -68,11 +69,11 @@ namespace satdump
 
                 if (current_mode == MODE_DOTMAP || current_mode == MODE_FILLMAP)
                 {
-                    ImGui::InputDouble("Range Min", &range_min);
-                    ImGui::InputDouble("Range Max", &range_max);
+                    ImGui::InputDouble(_("Range Min"), &range_min);
+                    ImGui::InputDouble(_("Range Max"), &range_max);
                 }
 
-                needs_to_update |= ImGui::Button("Update");
+                needs_to_update |= ImGui::Button(_("Update"));
 
                 if (needs_to_be_disabled)
                     style::endDisabled();
@@ -182,7 +183,7 @@ namespace satdump
                         std::vector<double> t;
                         for (int i = 0; i < ch.timestamps.size(); i++)
                             t.push_back(i);
-                        ImPlot::PlotLine(std::string("Channel " + ch.channel_name).c_str(), t.data(), ch.data.data(), ch.timestamps.size());
+                        ImPlot::PlotLine(std::string(_("Channel ") + ch.channel_name).c_str(), t.data(), ch.data.data(), ch.timestamps.size());
                     }
                 }
 

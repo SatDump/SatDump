@@ -41,14 +41,14 @@ namespace satdump
 
             pipeline_selector->renderParamTable();
 
-            if (ImGui::Button("Start"))
+            if (ImGui::Button(_("Start")))
             {
                 nlohmann::json params2 = pipeline_selector->getParameters();
 
                 if (!pipeline_selector->inputfileselect.isValid())
-                    error_message.set_message(style::theme.red, "Input file is invalid!");
+                    error_message.set_message(style::theme.red, _("Input file is invalid!"));
                 else if (!pipeline_selector->outputdirselect.isValid())
-                    error_message.set_message(style::theme.red, "Output folder is invalid!");
+                    error_message.set_message(style::theme.red, _("Output folder is invalid!"));
                 else
                 {
                     eventBus->fire_event<explorer::ExplorerAddHandlerEvent>(

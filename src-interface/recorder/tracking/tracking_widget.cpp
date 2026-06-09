@@ -97,10 +97,10 @@ namespace satdump
 
         ImGui::Spacing();
 
-        if (ImGui::CollapsingHeader("Object Information"))
+        if (ImGui::CollapsingHeader(_("Object Information")))
             object_tracker.renderObjectStatus();
 
-        if (ImGui::CollapsingHeader("Rotator Configuration"))
+        if (ImGui::CollapsingHeader(_("Rotator Configuration")))
         {
             object_tracker.renderRotatorStatus();
             ImGui::SameLine();
@@ -108,7 +108,7 @@ namespace satdump
             if (rotator_handler->is_connected())
                 style::beginDisabled();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            if (ImGui::Combo("Type##rotatortype", &selected_rotator_handler, rotator_options_str.c_str()))
+            if (ImGui::Combo(_("Type##rotatortype"), &selected_rotator_handler, rotator_options_str.c_str()))
             {
                 rotator_handler = rotator_options[selected_rotator_handler].construct();
                 object_tracker.setRotator(rotator_handler);
@@ -137,12 +137,12 @@ namespace satdump
         float centered_pos = width_available / 2.0f - ImGui::CalcTextSize(std::string("Autotrack Engaged: " + is_engaged).c_str()).x / 2.0f;
         if (centered_pos > 0)
             ImGui::SetCursorPosX(centered_pos);
-        ImGui::TextUnformatted("Autotrack Engaged:");
+        ImGui::TextUnformatted(_("Autotrack Engaged:"));
         ImGui::SameLine();
         ImGui::TextColored(auto_scheduler.getEngaged() ? style::theme.green : style::theme.red, "%s", is_engaged.c_str());
-        if (ImGui::Button("Schedule and Config", ImVec2(width_available, 0.0f)))
+        if (ImGui::Button(_("Schedule and Config"), ImVec2(width_available, 0.0f)))
             config_window_was_asked = show_window_config = true;
-        if (ImGui::Button("Satellite finder", ImVec2(width_available, 0.0f)))
+        if (ImGui::Button(_("Satellite finder"), ImVec2(width_available, 0.0f)))
             show_satellite_finder_window = satellite_finder_was_asked = true;
         ImGui::Spacing();
         renderConfig();
@@ -154,24 +154,24 @@ namespace satdump
         if (show_window_config)
         {
             ImGui::SetNextWindowSizeConstraints(ImVec2(800 * ui_scale, 300 * ui_scale), ImVec2(INFINITY, INFINITY));
-            ImGui::Begin("Tracking Configuration", &show_window_config);
+            ImGui::Begin(_("Tracking Configuration"), &show_window_config);
             ImGui::SetWindowSize(ImVec2(800 * ui_scale, 550 * ui_scale), ImGuiCond_FirstUseEver);
 
             if (ImGui::BeginTabBar("##trackingtabbar"))
             {
-                if (ImGui::BeginTabItem("Scheduling"))
+                if (ImGui::BeginTabItem(_("Scheduling")))
                 {
                     ImGui::BeginChild("##trackingbarschedule", ImVec2(0, 0), false, ImGuiWindowFlags_NoResize);
                     auto_scheduler.renderAutotrackConfig(getTime());
                     ImGui::EndChild();
                     ImGui::EndTabItem();
                 }
-                if (ImGui::BeginTabItem("Rotator Config"))
+                if (ImGui::BeginTabItem(_("Rotator Config")))
                 {
                     object_tracker.renderRotatorConfig();
                     ImGui::EndTabItem();
                 }
-                if (ImGui::BeginTabItem("Export/Import"))
+                if (ImGui::BeginTabItem(_("Export/Import")))
                 {
                     ImGui::BeginChild("##trackingimportexport", ImVec2(0, 0), false, ImGuiWindowFlags_NoResize);
                     if (config_import_export.draw_export())
@@ -203,7 +203,7 @@ namespace satdump
     {
         if (show_satellite_finder_window)
         {
-            ImGui::Begin("Satellite finder", &show_satellite_finder_window);
+            ImGui::Begin(_("Satellite finder"), &show_satellite_finder_window);
             ImGui::SetWindowSize(ImVec2(800, 550), ImGuiCond_FirstUseEver);
             if (satellite_finder_was_asked)
                 ImGuiUtils_BringCurrentWindowToFront();

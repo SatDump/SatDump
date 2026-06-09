@@ -5,6 +5,7 @@
 #include "core/plugin.h"
 #include "core/resources.h"
 #include "core/style.h"
+#include "i18n.h"
 #include "image/image.h"
 #include "image/io.h"
 #include "imgui/imgui.h"
@@ -161,7 +162,7 @@ namespace satdump
 
             bool handler_present = false;
 
-            if (ImGui::CollapsingHeader("Root", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::CollapsingHeader(_("Root"), ImGuiTreeNodeFlags_DefaultOpen))
             {
                 if (ImGui::BeginTable("##masterhandlertable", 1, ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders))
                 {
@@ -174,7 +175,7 @@ namespace satdump
                     {
                         ImGui::TableNextRow();
                         ImGui::TableSetColumnIndex(0);
-                        ImGui::SeparatorText("Processing");
+                        ImGui::SeparatorText(_("Processing"));
 
                         handler_present |= processing_handler->drawTreeMenu(curr_handler);
                         for (auto &h : processing_handler->getAllSubHandlers())
@@ -201,7 +202,7 @@ namespace satdump
                     {
                         ImGui::TableNextRow();
                         ImGui::TableSetColumnIndex(0);
-                        ImGui::SeparatorText("Others");
+                        ImGui::SeparatorText(_("Others"));
                     }
 
                     handler_present |= master_handler->drawTreeMenu(curr_handler);
@@ -215,7 +216,7 @@ namespace satdump
                     {
                         ImGui::TableNextRow();
                         ImGui::TableSetColumnIndex(0);
-                        ImGui::TextDisabled("Handlers will appear here...");
+                        ImGui::TextDisabled(_("Handlers will appear here..."));
                     }
 
                     ImGui::EndTable();
@@ -239,29 +240,29 @@ namespace satdump
                     if (prod_path.size() > 0)
                         tryOpenFileInExplorer(prod_path);
                     else
-                        logger->trace("No file selected");
+                        logger->trace(_("No file selected"));
                 }
             }
 
             if (ImGui::BeginMenuBar())
             {
                 // Main "Open" menu, for files, other handlers, etc
-                if (ImGui::BeginMenu("File"))
+                if (ImGui::BeginMenu(_("File")))
                 {
-                    file_open_dialog.render("Open File", "Open File", "", {{"All Files", "*"}});
+                    file_open_dialog.render(_("Open File"), _("Open File"), "", {{"All Files", "*"}});
 
-                    if (ImGui::BeginMenu("Quick Open"))
+                    if (ImGui::BeginMenu(_("Quick Open")))
                     {
                         ImGui::InputText("##quickvieweropen", &quickOpenString);
                         bool go = ImGui::IsItemDeactivatedAfterEdit();
                         ImGui::SameLine();
-                        if (ImGui::Button("Go##loadfromhttpgo") || go)
+                        if (ImGui::Button(_("Go##loadfromhttpgo")) || go)
                         {
                             tryOpenFileInExplorer(quickOpenString);
                             quickOpenString.clear();
                         }
                         ImGui::SameLine();
-                        if (ImGui::Button("Paste & Load"))
+                        if (ImGui::Button(_("Paste & Load")))
                         {
                             // Returns nullptr if clipboard didn't have text or failed for some reason
                             if (ImGui::GetClipboardText() != nullptr)
@@ -275,19 +276,19 @@ namespace satdump
                     ImGui::EndMenu();
                 }
 
-                if (ImGui::BeginMenu("Add"))
+                if (ImGui::BeginMenu(_("Add")))
                 {
-                    if (ImGui::MenuItem("Projection"))
+                    if (ImGui::MenuItem(_("Projection")))
                         addHandler(std::make_shared<handlers::ProjectionHandler>());
 
-                    if (ImGui::BeginMenu("Tools"))
+                    if (ImGui::BeginMenu(_("Tools")))
                     { // TODOREWORK?
-                        if (ImGui::MenuItem("DSP Flowgraph"))
+                        if (ImGui::MenuItem(_("DSP Flowgraph")))
                             addHandler(std::make_shared<handlers::DSPFlowGraphHandler>());
                         ImGui::EndMenu();
                     }
 
-                    if (ImGui::BeginMenu("Experimental"))
+                    if (ImGui::BeginMenu(_("Experimental")))
                     { // TODOREWORK?
                         if (ImGui::MenuItem("NewRec TEST"))
                             addHandler(std::make_shared<handlers::NewRecHandler>());
@@ -305,7 +306,7 @@ namespace satdump
                     ImGui::EndMenu();
                 }
 
-                if (ImGui::BeginMenu("Handler", bool(curr_handler)))
+                if (ImGui::BeginMenu(_("Handler"), bool(curr_handler)))
                 {
                     if (curr_handler && ImGui::BeginMenu("Config"))
                     {
@@ -358,7 +359,7 @@ namespace satdump
 
                 std::string title = lego_debug_mode ?                                                                                                                //
                                         std::string{0x57, 0x65, 0x6c, 0x63, 0x6f, 0x6d, 0x65, 0x20, 0x74, 0x6f, 0x20, 0x42, 0x75, 0x67, 0x44, 0x75, 0x6d, 0x70, '?'} //
-                                                    : "Welcome to SatDump!";
+                                                    : _("Welcome to SatDump!");
 
                 {
                     ImGui::PushFont(style::bigFont);
@@ -408,9 +409,9 @@ namespace satdump
                     }
 
                     {
-                        ImVec2 line_size = ImGui::CalcTextSize("Start Processing");
+                        ImVec2 line_size = ImGui::CalcTextSize(_("Start Processing"));
                         ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), last_pos + (26 * 1) * scale});
-                        if (ImGui::Button("Start Processing"))
+                        if (ImGui::Button(_("Start Processing")))
                             eventBus->fire_event<ShowProcesingEvent>({}); // TODOREWORK do not bind this directly.
                     }
 
@@ -424,9 +425,9 @@ namespace satdump
                     }
                     else
                     {
-                        ImVec2 line_size = ImGui::CalcTextSize("Add Recorder");
+                        ImVec2 line_size = ImGui::CalcTextSize(_("Add Recorder"));
                         ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), last_pos + (26 * 2) * scale});
-                        if (ImGui::Button("Add Recorder"))
+                        if (ImGui::Button(_("Add Recorder")))
                             eventBus->fire_event<AddRecorderEvent>({}); // TODOREWORK do not bind this directly.
                     }
                 }

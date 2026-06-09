@@ -8,6 +8,7 @@
 #include "handlers/projection/projection_handler.h"
 #include "handlers/vector/addmenu.h"
 #include "handlers/vector/shapefile_handler.h"
+#include "i18n.h"
 #include "image/brightness_contrast.h"
 #include "image/earth_curvature.h"
 #include "image/hue_saturation.h"
@@ -39,7 +40,7 @@ namespace satdump
             {
                 if (is_processing)
                 {
-                    logger->error("Cannot crop while processing!"); // TODOREWORK see when adding other functions - maybe a global image lock?
+                    logger->error(_("Cannot crop while processing!")); // TODOREWORK see when adding other functions - maybe a global image lock?
                     return;
                 }
 
@@ -69,7 +70,7 @@ namespace satdump
                 geocorrect_image = false;
 
                 auto sh = std::make_shared<ImageHandler>(img);
-                sh->image_name = image_name + " Crop";
+                sh->image_name = image_name + _(" Crop");
                 addSubHandler(sh);
                 eventBus->fire_event<explorer::ExplorerSelectHandlerEvent>({sh});
             };
@@ -89,50 +90,50 @@ namespace satdump
         {
             bool needs_to_be_disabled = is_processing;
 
-            if (ImGui::CollapsingHeader("Image"))
+            if (ImGui::CollapsingHeader(_("Image")))
             {
                 bool needs_to_update = false;
 
                 if (needs_to_be_disabled)
                     style::beginDisabled();
 
-                needs_to_update |= ImGui::Checkbox("Median Blur", &median_blur_img);
-                needs_to_update |= ImGui::Checkbox("Despeckle", &despeckle_img);
-                needs_to_update |= ImGui::Checkbox("Rotate 180", &rotate180_image);
+                needs_to_update |= ImGui::Checkbox(_("Median Blur"), &median_blur_img);
+                needs_to_update |= ImGui::Checkbox(_("Despeckle"), &despeckle_img);
+                needs_to_update |= ImGui::Checkbox(_("Rotate 180"), &rotate180_image);
                 if (image_proj_valid)
-                    needs_to_update |= ImGui::Checkbox("Geo Correct", &geocorrect_image); // TODOREWORK Disable if it can't be?
-                needs_to_update |= ImGui::Checkbox("Equalize", &equalize_img);
-                needs_to_update |= ImGui::Checkbox("Individual Equalize", &equalize_perchannel_img);
-                needs_to_update |= ImGui::Checkbox("White Balance", &white_balance_img);
-                needs_to_update |= ImGui::Checkbox("Normalize", &normalize_img);
-                needs_to_update |= ImGui::Checkbox("Invert", &invert_img);
+                    needs_to_update |= ImGui::Checkbox(_("Geo Correct"), &geocorrect_image); // TODOREWORK Disable if it can't be?
+                needs_to_update |= ImGui::Checkbox(_("Equalize"), &equalize_img);
+                needs_to_update |= ImGui::Checkbox(_("Individual Equalize"), &equalize_perchannel_img);
+                needs_to_update |= ImGui::Checkbox(_("White Balance"), &white_balance_img);
+                needs_to_update |= ImGui::Checkbox(_("Normalize"), &normalize_img);
+                needs_to_update |= ImGui::Checkbox(_("Invert"), &invert_img);
 
-                needs_to_update |= ImGui::Checkbox("Brightness/contrast", &brightness_contrast_image);
+                needs_to_update |= ImGui::Checkbox(_("Brightness/contrast"), &brightness_contrast_image);
                 if (brightness_contrast_image)
                 {
-                    ImGui::SliderFloat("Brightness", &brightness_contrast_brightness_image, -2, 2);
+                    ImGui::SliderFloat(_("Brightness"), &brightness_contrast_brightness_image, -2, 2);
                     needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
-                    ImGui::SliderFloat("Contrast", &brightness_contrast_contrast_image, -2, 2);
+                    ImGui::SliderFloat(_("Contrast"), &brightness_contrast_contrast_image, -2, 2);
                     needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
                 }
 
                 if (image_proj_valid)
-                    needs_to_update |= ImGui::Checkbox("Remove Background", &remove_background_img);
+                    needs_to_update |= ImGui::Checkbox(_("Remove Background"), &remove_background_img);
 
-                needs_to_update |= ImGui::Checkbox("Hue/Saturation", &huesaturation_img);
+                needs_to_update |= ImGui::Checkbox(_("Hue/Saturation"), &huesaturation_img);
                 if (huesaturation_img)
                 {
                     for (int i = 0; i < 7; i++)
                     {
-                        std::string cname[] = {"All", "Red", "Yellow", "Green", "Cyan", "Blue", "Magenta"};
+                        std::string cname[] = {_("All"), _("Red"), _("Yellow"), _("Green"), _("Cyan"), _("Blue"), _("Magenta")};
                         float hue = huesaturation_cfg_img.hue[i] * 180.0;
                         float saturation = huesaturation_cfg_img.saturation[i] * 100.0;
                         float lightness = huesaturation_cfg_img.lightness[i] * 100.0;
-                        ImGui::SliderFloat(std::string(cname[i] + " Hue").c_str(), &hue, -180, 180);
+                        ImGui::SliderFloat(std::string(cname[i] + _(" Hue")).c_str(), &hue, -180, 180);
                         needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
-                        ImGui::SliderFloat(std::string(cname[i] + " Saturation").c_str(), &saturation, -100, 100);
+                        ImGui::SliderFloat(std::string(cname[i] + _(" Saturation")).c_str(), &saturation, -100, 100);
                         needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
-                        ImGui::SliderFloat(std::string(cname[i] + " Lightness").c_str(), &lightness, -100, 100);
+                        ImGui::SliderFloat(std::string(cname[i] + _(" Lightness")).c_str(), &lightness, -100, 100);
                         needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
                         huesaturation_cfg_img.hue[i] = hue / 180.0;
                         huesaturation_cfg_img.saturation[i] = saturation / 100.0;
@@ -140,7 +141,7 @@ namespace satdump
                     }
 
                     float overlap = huesaturation_cfg_img.overlap;
-                    ImGui::SliderFloat("Overlap", &overlap, -100.0, 100.0);
+                    ImGui::SliderFloat(_("Overlap"), &overlap, -100.0, 100.0);
                     needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
                     huesaturation_cfg_img.overlap = overlap;
                 }
@@ -150,15 +151,15 @@ namespace satdump
 
                 if (image_calib_valid)
                 {
-                    ImGui::Text("Calibration Unit %s", image_calib.unit.c_str());
-                    ImGui::Text("Calibration Min %f", image_calib.min);
-                    ImGui::Text("Calibration Max %f", image_calib.max);
+                    ImGui::Text(_("Calibration Unit %s"), image_calib.unit.c_str());
+                    ImGui::Text(_("Calibration Min %f"), image_calib.min);
+                    ImGui::Text(_("Calibration Max %f"), image_calib.max);
                 }
 
                 if (needs_to_update)
                 {
                     if (file_save_thread_running)
-                        logger->error("Please wait for saving to end first!");
+                        logger->error(_("Please wait for saving to end first!"));
                     else
                         asyncProcess();
                 }
@@ -173,7 +174,7 @@ namespace satdump
             if (needs_to_be_disabled)
                 style::beginDisabled();
 
-            if (widgets::MenuItemTooltip(u8"\ueb4b", "Save Image"))
+            if (widgets::MenuItemTooltip(u8"\ueb4b", _("Save Image")))
             {
                 auto fun = [this]()
                 {
@@ -183,11 +184,11 @@ namespace satdump
                     std::string save_type = "png";
                     satdump_cfg.tryAssignValueFromSatDumpGeneral(save_type, "image_format");
                     std::string default_path = satdump_cfg.getValueFromSatDumpDirectories<std::string>("default_image_output_directory");
-                    std::string saved_at = save_image_dialog(getSaneName(), default_path, "Save Image", &getImage(), &save_type);
+                    std::string saved_at = save_image_dialog(getSaneName(), default_path, _("Save Image"), &getImage(), &save_type);
                     if (saved_at == "")
-                        logger->info("Save cancelled");
+                        logger->info(_("Save cancelled"));
                     else
-                        logger->info("Saved current image at %s", saved_at.c_str());
+                        logger->info(_("Saved current image at %s"), saved_at.c_str());
                     file_save_thread_running = false;
                     set_is_processing(false);
                 };
@@ -195,7 +196,7 @@ namespace satdump
                 if (file_save_thread.joinable())
                     file_save_thread.join();
                 if (file_save_thread_running)
-                    logger->error("Please wait for processing to end first!");
+                    logger->error(_("Please wait for processing to end first!"));
                 else
                     file_save_thread = std::thread(fun);
             }
@@ -216,14 +217,14 @@ namespace satdump
             /////////////
 
             // Refresh button
-            if (widgets::MenuItemTooltip(u8"\uf01e", "Refresh (Image Only)"))
+            if (widgets::MenuItemTooltip(u8"\uf01e", _("Refresh (Image Only)")))
                 asyncProcess();
 
             // Basic controls
-            image_view.zoom_in_next |= widgets::MenuItemTooltip(u8"\ueb81", "Zoom In");
-            image_view.zoom_out_next |= widgets::MenuItemTooltip(u8"\ueb82", "Zoom Out");
-            image_view.autoFitNextFrame |= widgets::MenuItemTooltip(u8"\uF69E", "Fit");
-            image_view.select_crop_next |= widgets::MenuItemTooltip(u8"\uF69D", "Crop", NULL, image_view.select_crop_next);
+            image_view.zoom_in_next |= widgets::MenuItemTooltip(u8"\ueb81", _("Zoom In"));
+            image_view.zoom_out_next |= widgets::MenuItemTooltip(u8"\ueb82", _("Zoom Out"));
+            image_view.autoFitNextFrame |= widgets::MenuItemTooltip(u8"\uF69E", _("Fit"));
+            image_view.select_crop_next |= widgets::MenuItemTooltip(u8"\uF69D", _("Crop"), NULL, image_view.select_crop_next);
 
             if (image_proj_valid)
             {
@@ -231,7 +232,7 @@ namespace satdump
                     style::beginDisabled();
 
                 // Show a menu that allows putting this image on an existing or new projection
-                if (widgets::BeginMenuTooltip(u8"\uf484", "Add to projection"))
+                if (widgets::BeginMenuTooltip(u8"\uf484", _("Add to projection")))
                 {
                     std::vector<std::shared_ptr<Handler>> hs;
                     eventBus->fire_event<explorer::GetAllOfTypeEvent>({"projection_handler", hs});
@@ -247,7 +248,7 @@ namespace satdump
                     if (n > 0)
                         ImGui::Separator();
 
-                    if (ImGui::MenuItem("New Projection"))
+                    if (ImGui::MenuItem(_("New Projection")))
                     {
                         auto p = std::make_shared<ProjectionHandler>();
                         p->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()), true);
@@ -275,7 +276,7 @@ namespace satdump
                 {
                     auto &img = getImage();
                     ImGui::BeginTooltip();
-                    ImGui::Text("Raw : %d", img.get(0, x, y));
+                    ImGui::Text(_("Raw : %d"), img.get(0, x, y));
                     if (image_calib_valid && image.channels() == 1)
                     {
                         int xc = x; // Correction only needs to be undone for calib
@@ -283,20 +284,20 @@ namespace satdump
                             xc = correct_fwd_lut[x];
 
                         double val = image_calib.getVal(img.getf(0, xc, y));
-                        ImGui::Text("Unit : %f %s", val, image_calib.unit.c_str());
+                        ImGui::Text(_("Unit : %f %s"), val, image_calib.unit.c_str());
                     }
                     if (image_proj_valid)
                     {
                         geodetic::geodetic_coords_t pos;
                         if (image_proj.inverse(x, y, pos))
                         {
-                            ImGui::Text("Lat : Invalid!");
-                            ImGui::Text("Lon : Invalid!");
+                            ImGui::Text(_("Lat : Invalid!"));
+                            ImGui::Text(_("Lon : Invalid!"));
                         }
                         else
                         {
-                            ImGui::Text("Lat : %f", pos.lat);
-                            ImGui::Text("Lon : %f", pos.lon);
+                            ImGui::Text(_("Lat : %f"), pos.lat);
+                            ImGui::Text(_("Lon : %f"), pos.lon);
                         }
                     }
                     additionalMouseCallback(x, y);
@@ -416,7 +417,7 @@ namespace satdump
                         curr_image = image::earth_curvature::perform_geometric_correction(curr_image, success, &correct_rev_lut, &correct_fwd_lut);
                         if (!success)
                         {
-                            logger->error("Failed Geo-Correcting image!");
+                            logger->error(_("Failed Geo-Correcting image!"));
                             correct_fwd_lut.clear();
                             correct_rev_lut.clear();
                         }
@@ -424,7 +425,7 @@ namespace satdump
                 }
                 catch (std::exception &e)
                 {
-                    logger->error("Error processing image! %s", e.what());
+                    logger->error(_("Error processing image! %s"), e.what());
                 }
             }
             else

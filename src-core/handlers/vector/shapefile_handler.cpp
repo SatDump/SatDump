@@ -2,6 +2,7 @@
 
 #include "core/resources.h"
 #include "dbf_file/dbf_file.h"
+#include "i18n.h"
 #include "image/text.h"
 #include "imgui/imgui.h"
 #include "init.h"
@@ -39,13 +40,13 @@ namespace satdump
 
         void ShapefileHandler::drawMenu()
         {
-            if (ImGui::CollapsingHeader("Settings", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::CollapsingHeader(_("Settings"), ImGuiTreeNodeFlags_DefaultOpen))
             {
-                ImGui::ColorEdit3("Draw Color##shapefilecolor", (float *)&color_to_draw, ImGuiColorEditFlags_NoInputs /*| ImGuiColorEditFlags_NoLabel*/);
-                ImGui::Checkbox("Anti-Alias", &antialias);
-                ImGui::InputInt("Font Size", &font_size);
+                ImGui::ColorEdit3(_("Draw Color##shapefilecolor"), (float *)&color_to_draw, ImGuiColorEditFlags_NoInputs /*| ImGuiColorEditFlags_NoLabel*/);
+                ImGui::Checkbox(_("Anti-Alias"), &antialias);
+                ImGui::InputInt(_("Font Size"), &font_size);
                 if (has_dbf)
-                    ImGui::InputInt("Scale Rank (Cities Only)", &scalerank_filter);
+                    ImGui::InputInt(_("Scale Rank (Cities Only)"), &scalerank_filter);
             }
         }
 
@@ -66,7 +67,7 @@ namespace satdump
                             line_y.push_back(coordinates[i].y);
                         }
 
-                        std::string shapeID = "Polygon " + std::to_string(num);
+                        std::string shapeID = _("Polygon ") + std::to_string(num);
                         if (has_dbf)
                         {
                             if (dbf_file[num]["NAME_1"].is_string())
@@ -81,7 +82,7 @@ namespace satdump
 
                 auto pointDraw = [this](shapefile::point_t coordinates, int num)
                 {
-                    std::string shapeID = "Point " + std::to_string(num);
+                    std::string shapeID = _("Point ") + std::to_string(num);
                     if (has_dbf)
                     {
                         if (dbf_file[num]["NAME_1"].is_string())

@@ -1,4 +1,5 @@
 #include "db/kepler/kepler_handler.h"
+#include "i18n.h"
 #define SATDUMP_DLL_EXPORT 1
 #include "core/config.h"
 #include "core/plugin.h"
@@ -44,6 +45,10 @@ namespace satdump
 
     void initSatDump(bool is_gui)
     {
+        setlocale(LC_ALL, "");
+        bindtextdomain("satdump", "/home/alan/Documents/SatDump_GetText");
+        textdomain("satdump");
+
         auto lvl = logger->get_level();
         logger->set_level(slog::LOG_INFO);
         logger->info("   _____       __  ____                      ");
@@ -52,7 +57,7 @@ namespace satdump
         logger->info(" ___/ / /_/ / /_/ /_/ / /_/ / / / / / / /_/ /");
         logger->info("/____/\\__,_/\\__/_____/\\__,_/_/ /_/ /_/ .___/ ");
         logger->info("                                    /_/      ");
-        logger->info("Starting " + getSatDumpVersionName());
+        logger->info(_("Starting ") + getSatDumpVersionName());
         logger->info("");
         logger->set_level(lvl);
 
@@ -78,7 +83,7 @@ namespace satdump
         }
         catch (std::exception &e)
         {
-            logger->critical("Error loading SatDump config! SatDump will now exit. Error:\n%s", e.what());
+            logger->critical(_("Error loading SatDump config! SatDump will now exit. Error:\n%s"), e.what());
             // if (is_gui)
             //    pfd::message("SatDump", "Error loading SatDump config! SatDump will now exit. Error:\n\n" + std::string(e.what()), pfd::choice::ok, pfd::icon::error); TODOREWORK bring this back
             exit(1);
@@ -122,7 +127,7 @@ namespace satdump
         pipeline::loadPipelines(resources::getResourcePath("pipelines"));
 
         // List them
-        logger->debug("Registered pipelines :");
+        logger->debug(_("Registered pipelines :"));
         for (auto &pipeline : pipeline::pipelines)
             logger->debug(" - " + pipeline.id);
 
@@ -147,7 +152,7 @@ namespace satdump
                 int new_sz = satdump_cfg.main_cfg["advanced_settings"]["default_buffer_size"].get<int>();
                 dsp::STREAM_BUFFER_SIZE = new_sz;
                 dsp::RING_BUF_SZ = new_sz;
-                logger->warn("DSP Buffer size was changed to %d", new_sz);
+                logger->warn(_("DSP Buffer size was changed to %d"), new_sz);
             }
         }
 
@@ -156,7 +161,7 @@ namespace satdump
         const char *spice_kernels[] = {de440_f.c_str()};
         t_calcephbin *de440 = calceph_open_array(1, spice_kernels); //// calceph_open("/home/alan/Downloads/de440s.bsp");
         if (!de440)
-            logger->error("Could not open ephemeris data! NOVAS will not work!");
+            logger->error(_("Could not open ephemeris data! NOVAS will not work!"));
         novas_use_calceph(de440);
 
         // Let plugins know we started
@@ -170,10 +175,10 @@ namespace satdump
         logger->error("██║  ██║██╔══██║██║╚██╗██║██║   ██║██╔══╝  ██╔══██╗");
         logger->error("██████╔╝██║  ██║██║ ╚████║╚██████╔╝███████╗██║  ██║");
         logger->error("╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝");
-        logger->error("SatDump has NOT been built in Release mode.");
-        logger->error("If you are not a developer but intending to use the software,");
-        logger->error("you probably do not want this. If so, make sure to");
-        logger->error("specify -DCMAKE_BUILD_TYPE=Release in CMake.");
+        logger->error(_("SatDump has NOT been built in Release mode."));
+        logger->error(_("If you are not a developer but intending to use the software,"));
+        logger->error(_("you probably do not want this. If so, make sure to"));
+        logger->error(_("specify -DCMAKE_BUILD_TYPE=Release in CMake."));
 #endif
 
         // Start task scheduler
@@ -182,7 +187,7 @@ namespace satdump
 
     void exitSatDump()
     {
-        logger->info("Exiting SatDump! Bye!");
+        logger->info(_("Exiting SatDump! Bye!"));
         taskScheduler.reset();
     }
 } // namespace satdump

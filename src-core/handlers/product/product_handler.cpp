@@ -9,6 +9,7 @@
 #include "utils/string.h"
 #include "utils/time.h"
 #include <regex>
+#include "i18n.h"
 
 namespace satdump
 {
@@ -109,11 +110,11 @@ namespace satdump
         {
             bool was_changed = false;
 
-            if (ImGui::CollapsingHeader("Presets", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::CollapsingHeader(_("Presets"), ImGuiTreeNodeFlags_DefaultOpen))
             {
                 if (ImGui::BeginCombo("##presetproductcombo", (preset_selection_curr_id >= 0 && preset_selection_curr_id < preset_selection_box_str.size())
                                                                   ? preset_selection_box_str[preset_selection_curr_id].c_str()
-                                                                  : "Select Preset..."))
+                                                                  : _("Select Preset...")))
                 {
                     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                     ImGui::InputTextWithHint("##searchpresets", u8"\uf422   Search", &preset_search_str);
@@ -151,7 +152,7 @@ namespace satdump
                 }
 
                 ImGui::SameLine();
-                if (ImGui::Button("Default"))
+                if (ImGui::Button(_("Default")))
                 {
                     tryApplyDefaultPreset();
                     was_changed = true;
@@ -170,7 +171,7 @@ namespace satdump
                 ImGuiIO &io = ImGui::GetIO();
                 ImGui::SetNextWindowSize({400 * ui_scale, 400 * ui_scale}, ImGuiCond_Appearing);
                 ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x / 2) - (400 * ui_scale / 2), (io.DisplaySize.y / 2) - (400 * ui_scale / 2)), ImGuiCond_Appearing);
-                ImGui::Begin("Preset Info", &show_markdown_description, ImGuiWindowFlags_NoSavedSettings);
+                ImGui::Begin(_("Preset Info"), &show_markdown_description, ImGuiWindowFlags_NoSavedSettings);
                 markdown_info.render();
                 ImGui::End();
             }
