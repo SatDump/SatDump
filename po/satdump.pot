@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-09 10:17+0200\n"
+"POT-Creation-Date: 2026-06-09 10:51+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -39,6 +39,38 @@ msgstr ""
 msgid "Open binary file"
 msgstr ""
 
+#: plugins/bitview_app/bitview.cpp:50
+msgid "Display"
+msgstr ""
+
+#: plugins/bitview_app/bitview.cpp:55
+msgid "Period (Bits)"
+msgstr ""
+
+#: plugins/bitview_app/bitview.cpp:80
+msgid "Bits"
+msgstr ""
+
+#: plugins/bitview_app/bitview.cpp:90
+msgid "Bytes"
+msgstr ""
+
+#: plugins/bitview_app/bitview.cpp:100
+msgid "Custom"
+msgstr ""
+
+#: plugins/bitview_app/bitview.cpp:108
+msgid "ASCII"
+msgstr ""
+
+#: plugins/bitview_app/bitview.cpp:117
+msgid "Bit Depth"
+msgstr ""
+
+#: plugins/bitview_app/bitview.cpp:129
+msgid "Reload"
+msgstr ""
+
 #: plugins/wip_tracking_app/main.cpp:25
 msgid "WIP Tracking"
 msgstr ""
@@ -67,6 +99,51 @@ msgstr ""
 
 #: plugins/firstparty_support/main_loader.cpp:81
 msgid "Load First-Party"
+msgstr ""
+
+#: plugins/firstparty_support/loader/archive_loader.cpp:20
+msgid "Archive Loader"
+msgstr ""
+
+#: plugins/firstparty_support/loader/archive_loader.cpp:24
+msgid "NOAA AWS"
+msgstr ""
+
+#: plugins/firstparty_support/loader/archive_loader.cpp:29
+msgid "EUMETSAT"
+msgstr ""
+
+#: plugins/firstparty_support/loader/archive_loader.cpp:47
+msgid "Decode To:"
+msgstr ""
+
+#: plugins/firstparty_support/loader/archive_loader.cpp:49
+msgid "Temporary"
+msgstr ""
+
+#: plugins/firstparty_support/loader/archive_loader.cpp:51
+msgid "Selected Folder:"
+msgstr ""
+
+#: plugins/firstparty_support/loader/eumetsat.cpp:201
+msgid "Refresh##archiveloader_refresh"
+msgstr ""
+
+#: plugins/firstparty_support/loader/eumetsat.cpp:204
+msgid "Date: "
+msgstr ""
+
+#: plugins/firstparty_support/loader/eumetsat.cpp:225
+msgid "Load##archiveloadertablebutton_"
+msgstr ""
+
+#: plugins/firstparty_support/loader/downloader.cpp:21
+#, c-format
+msgid "Downloading : %s"
+msgstr ""
+
+#: plugins/firstparty_support/loader/downloader.cpp:31
+msgid "Abort"
 msgstr ""
 
 #: plugins/experimental_devices_support/main.cpp:23

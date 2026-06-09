@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-09 09:46+0200\n"
-"PO-Revision-Date: 2026-06-09 10:01+0200\n"
+"POT-Creation-Date: 2026-06-09 10:17+0200\n"
+"PO-Revision-Date: 2026-06-09 10:19+0200\n"
 "Last-Translator: Alan <alan@alan-desktop>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -90,6 +90,7 @@ msgstr "Traitement"
 
 #: src-interface/main_ui.cpp:171 src-interface/main_ui.cpp:227
 #: src-interface/main_ui.cpp:233
+#: src-core/handlers/vector/shapefile_handler.cpp:43
 msgid "Settings"
 msgstr "Paramètres"
 
@@ -565,6 +566,7 @@ msgid "Paste & Load"
 msgstr "Coller & Ouvrir"
 
 #: src-core/explorer/explorer.cpp:281
+#: src-core/handlers/projection/projection_handler.cpp:44
 msgid "Projection"
 msgstr "Projection"
 
@@ -587,6 +589,117 @@ msgstr "Bienvenue dans SatDump!"
 #: src-core/explorer/explorer.cpp:428 src-core/explorer/explorer.cpp:430
 msgid "Add Recorder"
 msgstr "Ajouter un enregistreur"
+
+#. needs_to_update |= TODO; // TODOREWORK move in top drawMenu?
+#: src-core/handlers/projection/projection_handler.cpp:52
+msgid "Project"
+msgstr "Projeter"
+
+#: src-core/handlers/projection/projection_handler.cpp:468
+#: src-core/handlers/product/image_product_handler.cpp:479
+msgid "Image To Handler"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:124
+msgid "Output image : "
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:150
+msgid "Top Left Coordinates :"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:151
+msgid "Lat##tl"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:152
+msgid "Lon##tl"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:154
+msgid "Bottom Right Coordinates :"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:155
+msgid "Lat##br"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:156
+msgid "Lon##br"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:161
+msgid "UTM Zone###projutmzone"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:166
+msgid "South###projutmsouth"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:167
+msgid "Northing (m)##utm"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:169
+msgid "Scale (m/px)##utm"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:173
+#: src-core/handlers/projection/proj_ui.h:181
+msgid "Center Coordinates :"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:174
+msgid "Lat##stereo"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:175
+msgid "Lon##stereo"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:177
+msgid "Scale (m/px)##stereo"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:182
+msgid "Lat##tpers"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:183
+msgid "Lon##tpers"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:185
+msgid "Altitude (m)##tpers"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:186
+msgid "Angle##tpers"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:187
+msgid "Azimuth##tpers"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:189
+msgid "Scale##tpers"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:194
+msgid "Auto Mode###pojautomode"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:195
+msgid "Auto Scale Mode##projautoscalemode"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:198
+msgid "Scale X (m/px)##projscalexauto"
+msgstr ""
+
+#: src-core/handlers/projection/proj_ui.h:199
+msgid "Scale Y (m/px)##projscalexauto"
+msgstr ""
 
 #: src-core/handlers/image/image_handler.cpp:43
 msgid "Cannot crop while processing!"
@@ -721,6 +834,7 @@ msgid "Please wait for saving to end first!"
 msgstr ""
 
 #: src-core/handlers/image/image_handler.cpp:177
+#: src-core/handlers/image/image_handler.cpp:187
 msgid "Save Image"
 msgstr "Enregistrer l'image"
 
@@ -808,7 +922,59 @@ msgstr ""
 msgid "Error processing image! %s"
 msgstr ""
 
+#. TODOREWORK move out?!
+#: src-core/handlers/vector/addmenu.h:22
+msgid "Add Overlay"
+msgstr ""
+
+#: src-core/handlers/vector/addmenu.h:24
+msgid "Shores"
+msgstr ""
+
+#: src-core/handlers/vector/addmenu.h:30
+msgid "Borders"
+msgstr ""
+
+#: src-core/handlers/vector/addmenu.h:36
+msgid "Cities"
+msgstr ""
+
+#: src-core/handlers/vector/addmenu.h:42 src-core/handlers/vector/addmenu.h:45
+msgid "Lat/Lon Grid"
+msgstr ""
+
+#: src-core/handlers/vector/addmenu.h:74 src-core/handlers/vector/addmenu.h:77
+#: src-core/handlers/vector/addmenu.h:86
+msgid "QTH"
+msgstr ""
+
+#: src-core/handlers/vector/shapefile_handler.cpp:45
+msgid "Draw Color##shapefilecolor"
+msgstr ""
+
+#. | ImGuiColorEditFlags_NoLabel
+#: src-core/handlers/vector/shapefile_handler.cpp:46
+msgid "Anti-Alias"
+msgstr ""
+
+#: src-core/handlers/vector/shapefile_handler.cpp:47
+msgid "Font Size"
+msgstr ""
+
+#: src-core/handlers/vector/shapefile_handler.cpp:49
+msgid "Scale Rank (Cities Only)"
+msgstr ""
+
+#: src-core/handlers/vector/shapefile_handler.cpp:70
+msgid "Polygon "
+msgstr ""
+
+#: src-core/handlers/vector/shapefile_handler.cpp:85
+msgid "Point "
+msgstr ""
+
 #: src-core/handlers/product/image_product_handler.cpp:35
+#: src-core/handlers/product/punctiform_product_handler.cpp:186
 msgid "Channel "
 msgstr "Canal "
 
@@ -827,6 +993,7 @@ msgid "%s : Invalid Value"
 msgstr "%s : Valeure invalide"
 
 #: src-core/handlers/product/image_product_handler.cpp:100
+#: src-core/handlers/product/punctiform_product_handler.cpp:34
 msgid "Channels"
 msgstr "Canaux"
 
@@ -889,16 +1056,60 @@ msgstr "Avancé"
 msgid "Could not process image! %s"
 msgstr "Erreur pendant le traitement de l'image! %s"
 
-#: src-core/handlers/product/image_product_handler.cpp:479
-msgid "Image To Handler"
-msgstr ""
-
 #: src-core/handlers/product/image_product_handler.cpp:490
 msgid "Advanced Mode"
 msgstr "Mode avancé"
 
+#: src-core/handlers/product/punctiform_product_handler.cpp:39
+msgid "Graph"
+msgstr ""
+
+#: src-core/handlers/product/punctiform_product_handler.cpp:45
+msgid "Dot Map"
+msgstr ""
+
+#: src-core/handlers/product/punctiform_product_handler.cpp:51
+msgid "Fill Map"
+msgstr ""
+
+#: src-core/handlers/product/punctiform_product_handler.cpp:57
+msgid "Channel##selectechannel"
+msgstr ""
+
+#: src-core/handlers/product/punctiform_product_handler.cpp:72
+msgid "Range Min"
+msgstr ""
+
+#: src-core/handlers/product/punctiform_product_handler.cpp:73
+msgid "Range Max"
+msgstr ""
+
+#: src-core/handlers/product/punctiform_product_handler.cpp:76
+msgid "Update"
+msgstr ""
+
+#: src-core/handlers/product/product_handler.cpp:113
+msgid "Presets"
+msgstr ""
+
+#: src-core/handlers/product/product_handler.cpp:117
+msgid "Select Preset..."
+msgstr ""
+
+#: src-core/handlers/product/product_handler.cpp:155
+msgid "Default"
+msgstr ""
+
+#: src-core/handlers/product/product_handler.cpp:174
+msgid "Preset Info"
+msgstr ""
+
 #: src-core/handlers/handler.cpp:60
 msgid "Delete"
+msgstr ""
+
+#: src-core/handlers/handler.cpp:99
+msgid "Can't drag parent onto child handler!"
 msgstr ""
 
 #: src-core/init.cpp:60

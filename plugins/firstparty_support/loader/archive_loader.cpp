@@ -1,6 +1,7 @@
 #include "archive_loader.h"
 #include "core/style.h"
 #include <filesystem>
+#include "i18n.h"
 
 namespace satdump
 {
@@ -16,16 +17,16 @@ namespace satdump
     void ArchiveLoader::drawUI(bool *_open)
     {
         ImGui::SetNextWindowSize({500 * ui_scale, 500 * ui_scale}, ImGuiCond_Once);
-        ImGui::Begin("Archive Loader", _open);
+        ImGui::Begin(_("Archive Loader"), _open);
 
         ImGui::BeginTabBar("##archiveloadertabbar");
         ImVec2 wsize = ImGui::GetWindowSize();
-        if (ImGui::BeginTabItem("NOAA AWS"))
+        if (ImGui::BeginTabItem(_("NOAA AWS")))
         {
             renderAWS(wsize);
             ImGui::EndTabItem();
         }
-        if (ImGui::BeginTabItem("EUMETSAT"))
+        if (ImGui::BeginTabItem(_("EUMETSAT")))
         {
             renderEumetsat(wsize);
             ImGui::EndTabItem();
@@ -43,11 +44,11 @@ namespace satdump
             if (disable_options)
                 style::beginDisabled();
 
-            ImGui::TextUnformatted("Decode To:");
+            ImGui::TextUnformatted(_("Decode To:"));
             ImGui::SameLine();
-            ImGui::RadioButton("Temporary", &download_location, 0);
+            ImGui::RadioButton(_("Temporary"), &download_location, 0);
             ImGui::SameLine();
-            ImGui::RadioButton("Selected Folder:", &download_location, 1);
+            ImGui::RadioButton(_("Selected Folder:"), &download_location, 1);
 
             if (download_location == 0)
                 style::beginDisabled();

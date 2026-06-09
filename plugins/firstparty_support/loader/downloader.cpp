@@ -4,6 +4,7 @@
 #include "imgui/imgui.h"
 #include "logger.h"
 #include "satdump_vars.h"
+#include "i18n.h"
 
 namespace satdump
 {
@@ -17,7 +18,7 @@ namespace satdump
 
         void FileDownloaderWidget::render()
         {
-            ImGui::Text("Downloading : %s", file_downloading.c_str());
+            ImGui::Text(_("Downloading : %s"), file_downloading.c_str());
             ImGui::Text("%s / %s", format_notated(curSize, "B", 2, false).c_str(), format_notated(downloadSize, "B", 2, false).c_str());
 
             ImGui::ProgressBar(progress, ImVec2(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("Abort").x - ImGui::GetStyle().ItemSpacing.x * 2.0f, 0));
@@ -27,7 +28,7 @@ namespace satdump
                 ImGui::PushStyleColor(ImGuiCol_Button, style::theme.red.Value);
             else
                 style::beginDisabled();
-            if (ImGui::Button("Abort"))
+            if (ImGui::Button(_("Abort")))
                 should_abort = true;
             if (is_downloading)
                 ImGui::PopStyleColor();
