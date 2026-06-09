@@ -46,7 +46,7 @@ namespace satdump
     void initSatDump(bool is_gui)
     {
         setlocale(LC_ALL, "");
-        bindtextdomain("satdump", "/home/alan/Documents/SatDump_GetText");
+        bindtextdomain("satdump", resources::getResourcePath("i18n").c_str());
         textdomain("satdump");
 
         auto lvl = logger->get_level();
