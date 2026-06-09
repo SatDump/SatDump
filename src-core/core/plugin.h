@@ -1,19 +1,17 @@
 #pragma once
 
 #include "dll_export.h"
-#include <memory>
 #include <map>
+#include <memory>
+#include <string>
 
 #include "utils/event_bus.h"
 #include "utils/task_scheduler.h"
 
-#define PLUGIN_LOADER(constructor)                       \
-    extern "C"                                           \
-    {                                                    \
-        satdump::Plugin *loader()                        \
-        {                                                \
-            return (satdump::Plugin *)new constructor(); \
-        }                                                \
+#define PLUGIN_LOADER(constructor)                                                                                                                                                                     \
+    extern "C"                                                                                                                                                                                         \
+    {                                                                                                                                                                                                  \
+        satdump::Plugin *loader() { return (satdump::Plugin *)new constructor(); }                                                                                                                     \
     }
 
 namespace satdump
@@ -28,7 +26,7 @@ namespace satdump
         Plugin() {}
         virtual std::string getID() = 0;
         virtual void init() = 0;
-        virtual ~Plugin(){};
+        virtual ~Plugin() {};
     };
 
     SATDUMP_DLL extern std::map<std::string, std::shared_ptr<satdump::Plugin>> loaded_plugins;

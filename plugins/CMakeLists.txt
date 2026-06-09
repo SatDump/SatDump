@@ -529,4 +529,4 @@ if(BUILD_GUI AND PLUGIN_WEBHOOK_APP)
   add_subdirectory(webhook_app)
 endif()
 
-add_subdirectory(ssdv_support)
+add_subdirectory(apid_sender)

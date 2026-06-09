@@ -1,7 +1,11 @@
 {
 	"ssdv_bpsk_concat": {
 		"name": "SSDV-NG Concatenated",
-		"live": [1, 2, 3],
+		"live": [
+			1,
+			2,
+			3
+		],
 		"frequencies": [],
 		"parameters": {},
 		"work": {
@@ -32,19 +36,44 @@
 				}
 			},
 			"products": {
-				"module": "ssdv_instruments",
+				"module": "apid_sender",
 				"parameters": {
-					"server_address": "0.0.0.0",
-					"server_port_apid_10": 9010,
-					"server_port_apid_20": 9020,
-					"server_port_apid_100": 9100
+					"server_address": "127.0.0.1",
+					"apids": [
+						{
+							"apid": 1,
+							"port": 9001
+						},
+						{
+							"apid": 2,
+							"port": 9002
+						},
+						{
+							"apid": 10,
+							"port": 9010,
+							"packet_size": 246
+						},
+						{
+							"apid": 20,
+							"port": 9020,
+							"packet_size": 752
+						},
+						{
+							"apid": 100,
+							"port": 9100
+						}
+					]
 				}
 			}
 		}
 	},
 	"ssdv_bpsk_ldpc": {
 		"name": "SSDV-NG LDPC",
-		"live": [1, 2, 3],
+		"live": [
+			1,
+			2,
+			3
+		],
 		"frequencies": [],
 		"parameters": {},
 		"work": {
@@ -70,19 +99,44 @@
 				}
 			},
 			"products": {
-				"module": "ssdv_instruments",
+				"module": "apid_sender",
 				"parameters": {
-					"server_address": "0.0.0.0",
-					"server_port_apid_10": 9010,
-					"server_port_apid_20": 9020,
-					"server_port_apid_100": 9100
+					"server_address": "127.0.0.1",
+					"apids": [
+						{
+							"apid": 1,
+							"port": 9001
+						},
+						{
+							"apid": 2,
+							"port": 9002
+						},
+						{
+							"apid": 10,
+							"port": 9010,
+							"packet_size": 246
+						},
+						{
+							"apid": 20,
+							"port": 9020,
+							"packet_size": 752
+						},
+						{
+							"apid": 100,
+							"port": 9100
+						}
+					]
 				}
 			}
 		}
 	},
 	"ssdv_bpsk_net": {
 		"name": "SSDV Network Server",
-		"live": [1, 2, 3],
+		"live": [
+			1,
+			2,
+			3
+		],
 		"frequencies": [],
 		"parameters": {
 			"samplerate": {
