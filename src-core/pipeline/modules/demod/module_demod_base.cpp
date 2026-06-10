@@ -3,7 +3,6 @@
 #include "core/config.h"
 #include "imgui/imgui.h"
 #include "logger.h"
-#include <string>
 
 namespace satdump
 {
