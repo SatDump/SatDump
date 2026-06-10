@@ -93,6 +93,11 @@ namespace satdump
                 bool showWaterfall = false;
                 void drawFFT();
                 
+                /** @brief Used to render the ETA nicely
+                *
+                * @param seconds Time to render as MM:SS or HH:MM:SS if we are at that point (DD seems excessive)
+                */
+                std::string render_eta_string(time_t seconds);
                 void drawETA();
                 time_t start_time;
                 double averaged_eta = -1;

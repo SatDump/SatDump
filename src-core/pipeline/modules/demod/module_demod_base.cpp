@@ -345,10 +345,6 @@ namespace satdump
                 }
             }
 
-            /** @brief Used to render the ETA nicely
-             *
-             * @arg seconds Time to render as MM:SS or HH:MM:SS if we are at that point (DD seems excessive)
-             */
             std::string render_eta_string(time_t seconds)
             {
                 int h = seconds / 3600;
