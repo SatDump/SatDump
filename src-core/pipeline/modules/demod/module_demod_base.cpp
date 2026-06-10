@@ -345,7 +345,7 @@ namespace satdump
                 }
             }
 
-            std::string render_eta_string(time_t seconds)
+            std::string BaseDemodModule::render_eta_string(time_t seconds)
             {
                 int h = seconds / 3600;
                 int m = (seconds % 3600) / 60;
