@@ -3,6 +3,7 @@
 #include "core/config.h"
 #include "imgui/imgui.h"
 #include "logger.h"
+#include <string>
 
 namespace satdump
 {
@@ -112,6 +113,9 @@ namespace satdump
 
                 if (d_dc_block)
                     dc_blocker = std::make_shared<dsp::CorrectIQBlock<complex_t>>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream);
+
+                // Mark start time for ETA
+                start_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
                 // Cleanup things a bit
                 std::shared_ptr<dsp::stream<complex_t>> input_data = d_dc_block ? dc_blocker->output_stream : (input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream);
@@ -291,7 +295,10 @@ namespace satdump
                 ImGui::EndGroup();
 
                 if (!d_is_streaming_input)
+                {
                     ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+                    drawETA();
+                }
 
                 drawStopButton();
 
@@ -337,6 +344,60 @@ namespace satdump
 
                     ImGui::End();
                 }
+            }
+
+            /** @brief Used to render the ETA nicely
+             *
+             * @arg seconds Time to render as MM:SS or HH:MM:SS if we are at that point (DD seems excessive)
+             */
+            std::string render_eta_string(time_t seconds)
+            {
+                int h = seconds / 3600;
+                int m = (seconds % 3600) / 60;
+                int s = seconds % 60;
+
+                // this sucks why can't we have std::format in this household
+                char buf[16];
+                if (h > 0)
+                {
+                    std::snprintf(buf, sizeof(buf), "%02d:%02d:%02d", h, m, s);
+                }
+                else
+                {
+                    std::snprintf(buf, sizeof(buf), "%02d:%02d", m, s);
+                }
+
+                return buf;
+            }
+
+            void BaseDemodModule::drawETA()
+            {
+                time_t current_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+                time_t elapsed = current_time - start_time;
+
+                double progress_fraction = (double)progress / (double)filesize;
+                double current_eta = elapsed * (1.0 - progress_fraction) / progress_fraction;
+
+                std::string eta_str;
+                if (progress_fraction > 0.001 && elapsed > 0)
+                {
+                    if (averaged_eta < 0)
+                        averaged_eta = current_eta;
+                    else
+                        // Exponential mean average as it fluctuates more than the average Briton's BAC
+                        averaged_eta = 0.01 * current_eta + 0.99 * averaged_eta;
+
+                    eta_str = render_eta_string(averaged_eta);
+                }
+                else
+                {
+                    eta_str = "--:--";
+                }
+
+                ImGui::Text("Elapsed: %s | Estimated remaining: %s",
+                            render_eta_string(elapsed).c_str(), //
+                            eta_str.c_str()                     //
+                );
             }
 
             void BaseDemodModule::drawStopButton()

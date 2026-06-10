@@ -16,8 +16,10 @@
 #include "common/widgets/waterfall_plot.h"
 #include "pipeline/module.h"
 #include <atomic>
+#include <ctime>
 #include <fstream>
-#include <thread>
+#include <chrono>
+#include <locale>
 
 namespace satdump
 {
@@ -90,6 +92,10 @@ namespace satdump
 
                 bool showWaterfall = false;
                 void drawFFT();
+                
+                void drawETA();
+                time_t start_time;
+                double averaged_eta = -1;
 
                 // Util
                 int8_t clamp(float x)
