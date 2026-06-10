@@ -40,7 +40,8 @@ namespace satdump
 
     void KeplerDBHandler::autoUpdateKeplers()
     {
-        std::string update_setting = satdump_cfg.getValueFromSatDumpGeneral<std::string>("kepler_update_interval");
+        std::string update_setting = "Never";
+        satdump_cfg.tryAssignValueFromSatDumpGeneral(update_setting, "kepler_update_interval");
         time_t last_update = std::stoull(h->get_meta("kepler_last_updated", "0"));
         bool honor_setting = true;
         time_t update_interval;
