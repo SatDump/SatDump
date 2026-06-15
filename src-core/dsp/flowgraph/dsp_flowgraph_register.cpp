@@ -14,6 +14,7 @@
 #include "dsp/clock_recovery/simple_gardner_recovery.h"
 #include "dsp/clock_recovery/simple_zc_recovery.h"
 #include "dsp/conv/char_to_float.h"
+#include "dsp/conv/complex_conjugate.h"
 #include "dsp/conv/complex_to_float.h"
 #include "dsp/conv/complex_to_ifloat.h"
 #include "dsp/conv/complex_to_imag.h"
@@ -377,6 +378,7 @@ namespace satdump
 
                 registerNodeSimple<ndsp::RealToComplexBlock>(flowgraph, "Conv/Real To Complex");
 
+                registerNodeSimple<ndsp::ComplexConjugateBlock>(flowgraph, "Conv/Complex Conjugate");
                 registerNodeSimple<ndsp::ComplexToFloatBlock>(flowgraph, "Conv/Complex To Float");
                 registerNodeSimple<ndsp::FloatToComplexBlock>(flowgraph, "Conv/Float To Complex");
                 registerNodeSimple<ndsp::ComplexToImagBlock>(flowgraph, "Conv/Complex To Imag");
