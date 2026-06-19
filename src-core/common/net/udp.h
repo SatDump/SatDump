@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <string.h>
+#include <string>
 
 #if defined(_WIN32)
 #include <stdio.h>
@@ -77,7 +78,11 @@ namespace net
             if (r < 0)
 #endif
 
+#if defined(_WIN32)
+                throw std::runtime_error("Error sending to UDP socket! WSA Error: " + std::to_string(WSAGetLastError()));
+#else
                 throw std::runtime_error("Error sending to UDP socket!");
+#endif
             return r;
         }
 
