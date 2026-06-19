@@ -117,10 +117,10 @@ namespace apid
                             int &err_cnt = err_cnts[cfg.apid];
                             if (err_cnt < 5)
                             {
-                                logger->error("UDP Send Error (APID {}): {}", cfg.apid, e.what());
+                                logger->error("UDP Send Error (APID %d): %s", cfg.apid, e.what());
                                 err_cnt++;
                                 if (err_cnt == 5)
-                                    logger->error("Suppressing further UDP Send Errors for APID {} to avoid log spam.", cfg.apid);
+                                    logger->error("Suppressing further UDP Send Errors for APID %d to avoid log spam.", cfg.apid);
                             }
                         }
 
