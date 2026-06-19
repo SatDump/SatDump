@@ -1,10 +1,12 @@
 #include "apid_sender.h"
+#include <map>
 
 namespace apid
 {
     APIDSenderModule::APIDSenderModule(std::string input_file, std::string output_file_hint, nlohmann::json parameters)
         : satdump::pipeline::base::FileStreamToFileStreamModule(input_file, output_file_hint, parameters)
     {
+        save_to_cadu = false;
         if (parameters.count("server_address") > 0)
             addr = parameters["server_address"].get<std::string>();
         else
@@ -29,6 +31,12 @@ namespace apid
             use_fecf = parameters["fecf"].get<bool>();
         else
             use_fecf = false;
+
+        if (parameters.count("save_cadu") > 0)
+            save_to_cadu = parameters["save_cadu"].get<bool>();
+
+        fsfsm_enable_output = save_to_cadu;
+        fsfsm_file_ext = ".cadu";
 
         int interleaving = 4;
         if (parameters.count("rs_i") > 0)
@@ -74,6 +82,11 @@ namespace apid
         {
             read_data((uint8_t *)cadu, cadu_size / 8);
 
+            if (save_to_cadu)
+            {
+                write_data(cadu, cadu_size / 8);
+            }
+
             ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
             if (vcdu.vcid == 0)
@@ -91,11 +104,26 @@ namespace apid
                         if (cfg.packet_size >= 0 && static_cast<int>(pkt.payload.size()) != cfg.packet_size)
                             continue;
 
-                        int send_size = (cfg.packet_size >= 0)
-                                            ? cfg.packet_size
-                                            : static_cast<int>(pkt.payload.size());
+                        int send_size = (cfg.packet_size >= 0) ? cfg.packet_size : static_cast<int>(pkt.payload.size());
 
-                        udp_senders[i]->send(pkt.payload.data(), send_size);
+                        static std::map<int, int> err_cnts;
+                        try
+                        {
+                            udp_senders[i]->send(pkt.payload.data(), send_size);
+                            err_cnts.clear(); // Reset all counters if any packet sends successfully
+                        }
+                        catch (std::exception &e)
+                        {
+                            int &err_cnt = err_cnts[cfg.apid];
+                            if (err_cnt < 5)
+                            {
+                                logger->error("UDP Send Error (APID {}): {}", cfg.apid, e.what());
+                                err_cnt++;
+                                if (err_cnt == 5)
+                                    logger->error("Suppressing further UDP Send Errors for APID {} to avoid log spam.", cfg.apid);
+                            }
+                        }
+
                         break; // Matched — no need to check further configs
                     }
                 }

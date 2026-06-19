@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <fstream>
 
 #include "common/ccsds/ccsds_aos/demuxer.h"
 #include "common/ccsds/ccsds_aos/vcdu.h"
@@ -29,6 +30,8 @@ namespace apid
         bool use_fecf;
         int cadu_size;
         int mpdu_data_size;
+
+        bool save_to_cadu;
 
         std::vector<ApidConfig> apid_configs;
 

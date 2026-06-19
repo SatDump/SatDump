@@ -39,6 +39,7 @@
 				"module": "apid_sender",
 				"parameters": {
 					"server_address": "127.0.0.1",
+					"save_cadu": true,
 					"apids": [
 						{
 							"apid": 1,
