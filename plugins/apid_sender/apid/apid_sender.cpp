@@ -96,7 +96,7 @@ namespace apid
                 {
                     for (size_t i = 0; i < apid_configs.size(); ++i)
                     {
-                        const ApidConfig &cfg = apid_configs[i];
+                        ApidConfig &cfg = apid_configs[i];
                         if (pkt.header.apid != cfg.apid)
                             continue;
 
@@ -111,6 +111,7 @@ namespace apid
                         {
                             udp_senders[i]->send(pkt.payload.data(), send_size);
                             err_cnts.clear(); // Reset all counters if any packet sends successfully
+                            cfg.total_pkts++; // Increment counter
                         }
                         catch (std::exception &e)
                         {
@@ -148,21 +149,29 @@ namespace apid
         {
             ImGui::TableSetupColumn("APID");
             ImGui::TableSetupColumn("Port");
-            ImGui::TableSetupColumn("Pkt Size");
+            ImGui::TableSetupColumn("Pkts / 10s");
             ImGui::TableHeadersRow();
 
             for (auto &cfg : apid_configs)
             {
+                auto now = std::chrono::steady_clock::now();
+                if (std::chrono::duration_cast<std::chrono::seconds>(now - cfg.last_history_update).count() >= 1) {
+                    cfg.history_pkts[cfg.history_idx] = cfg.total_pkts.load();
+                    cfg.history_idx = (cfg.history_idx + 1) % 10;
+                    cfg.last_history_update = now;
+                }
+
+                uint64_t current_pkts = cfg.total_pkts.load();
+                uint64_t oldest_pkts = cfg.history_pkts[cfg.history_idx]; // The oldest record is the next one to be overwritten
+                uint64_t pkts_last_10s = current_pkts - oldest_pkts;
+
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("%d", cfg.apid);
                 ImGui::TableSetColumnIndex(1);
                 ImGui::TextColored(style::theme.green, "%d", cfg.port);
                 ImGui::TableSetColumnIndex(2);
-                if (cfg.packet_size >= 0)
-                    ImGui::TextColored(style::theme.green, "%d", cfg.packet_size);
-                else
-                    ImGui::TextColored(style::theme.yellow, "dynamic");
+                ImGui::TextColored(style::theme.green, "%llu", (unsigned long long)pkts_last_10s);
             }
 
             ImGui::EndTable();
