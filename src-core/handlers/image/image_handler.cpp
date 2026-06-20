@@ -276,6 +276,7 @@ namespace satdump
                     auto &img = getImage();
                     ImGui::BeginTooltip();
                     ImGui::Text("Raw : %d", img.get(0, x, y));
+                    ImGui::Text("Raw F : %f", img.getf(0, x, y));
                     if (image_calib_valid && image.channels() == 1)
                     {
                         int xc = x; // Correction only needs to be undone for calib
