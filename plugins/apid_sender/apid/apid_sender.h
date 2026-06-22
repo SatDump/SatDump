@@ -45,6 +45,7 @@ namespace apid
     protected:
         std::string addr;
         bool use_fecf;
+        bool fecf_strict;
         int cadu_size;
         int mpdu_data_size;
 

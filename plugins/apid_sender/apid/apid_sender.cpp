@@ -1,5 +1,6 @@
 #include "apid_sender.h"
 #include <map>
+#include "common/codings/crc/crc_generic.h"
 
 namespace apid
 {
@@ -31,6 +32,11 @@ namespace apid
             use_fecf = parameters["fecf"].get<bool>();
         else
             use_fecf = false;
+
+        if (parameters.count("fecf_strict") > 0)
+            fecf_strict = parameters["fecf_strict"].get<bool>();
+        else
+            fecf_strict = true;
 
         if (parameters.count("save_cadu") > 0)
             save_to_cadu = parameters["save_cadu"].get<bool>();
@@ -82,12 +88,25 @@ namespace apid
         {
             read_data((uint8_t *)cadu, cadu_size / 8);
 
+            ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
+
+            if (use_fecf)
+            {
+                static codings::crc::GenericCRC fecf_crc(16, 0x1021, 0xFFFF, 0x0, false, false);
+                uint16_t computed_crc = fecf_crc.compute(cadu, (cadu_size / 8) - 2);
+                uint16_t expected_crc = (cadu[(cadu_size / 8) - 2] << 8) | cadu[(cadu_size / 8) - 1];
+                if (computed_crc != expected_crc)
+                {
+                    logger->warn("FECF check failed (vcdu_counter: %u).", vcdu.vcdu_counter + 1);
+                    if (fecf_strict)
+                        continue;
+                }
+            }
+
             if (save_to_cadu)
             {
                 write_data(cadu, cadu_size / 8);
             }
-
-            ccsds::ccsds_aos::VCDU vcdu = ccsds::ccsds_aos::parseVCDU(cadu);
 
             if (vcdu.vcid == 0)
             {
