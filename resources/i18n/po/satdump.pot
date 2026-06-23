@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-23 18:19+0200\n"
+"POT-Creation-Date: 2026-06-23 18:50+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -751,22 +751,32 @@ msgstr ""
 msgid "Add Recorder"
 msgstr ""
 
+#: ../../src-core/common/widgets/pipeline_selector.h:23
+#: ../../src-core/common/widgets/pipeline_selector.cpp:288
+msgid "Input File"
+msgstr ""
+
+#: ../../src-core/common/widgets/pipeline_selector.h:23
+msgid "Select Input File"
+msgstr ""
+
+#. TODOREWORKUI?
+#: ../../src-core/common/widgets/pipeline_selector.h:24
+#: ../../src-core/common/widgets/pipeline_selector.cpp:295
+#: ../../src-core/common/widgets/pipeline_selector.cpp:322
+msgid "Output Directory"
+msgstr ""
+
+#: ../../src-core/common/widgets/pipeline_selector.h:24
+msgid "Select Output Directory"
+msgstr ""
+
 #: ../../src-core/common/widgets/pipeline_selector.cpp:122
 msgid "   Search pipelines"
 msgstr ""
 
 #: ../../src-core/common/widgets/pipeline_selector.cpp:160
 msgid "Favourites"
-msgstr ""
-
-#: ../../src-core/common/widgets/pipeline_selector.cpp:288
-msgid "Input File"
-msgstr ""
-
-#. TODOREWORKUI?
-#: ../../src-core/common/widgets/pipeline_selector.cpp:295
-#: ../../src-core/common/widgets/pipeline_selector.cpp:322
-msgid "Output Directory"
 msgstr ""
 
 #: ../../src-core/common/widgets/pipeline_selector.cpp:301

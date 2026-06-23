@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-23 18:19+0200\n"
-"PO-Revision-Date: 2026-06-23 18:21+0200\n"
+"POT-Creation-Date: 2026-06-23 18:50+0200\n"
+"PO-Revision-Date: 2026-06-23 19:02+0200\n"
 "Last-Translator: Alan <alan@alan-desktop>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -126,7 +126,7 @@ msgstr ""
 
 #: ../../src-core/handlers/image/image_handler.cpp:102
 msgid "Rotate 180"
-msgstr ""
+msgstr "Retourner"
 
 #: ../../src-core/handlers/image/image_handler.cpp:104
 msgid "Geo Correct"
@@ -143,11 +143,11 @@ msgstr ""
 
 #: ../../src-core/handlers/image/image_handler.cpp:107
 msgid "White Balance"
-msgstr ""
+msgstr "Balancer les blancs"
 
 #: ../../src-core/handlers/image/image_handler.cpp:108
 msgid "Normalize"
-msgstr ""
+msgstr "Normaliser"
 
 #: ../../src-core/handlers/image/image_handler.cpp:109
 #: ../../plugins/tools_app/lutgen/lut_generator.cpp:84
@@ -460,7 +460,7 @@ msgstr ""
 
 #: ../../src-core/handlers/vector/shapefile_handler.cpp:47
 msgid "Font Size"
-msgstr ""
+msgstr "Taille de la police"
 
 #: ../../src-core/handlers/vector/shapefile_handler.cpp:49
 msgid "Scale Rank (Cities Only)"
@@ -722,19 +722,19 @@ msgstr "Expérimental"
 
 #: ../../src-core/explorer/explorer.cpp:313
 msgid "JSON To Clipboard"
-msgstr ""
+msgstr "JSON vers le presse-papier"
 
 #: ../../src-core/explorer/explorer.cpp:316
 msgid "Copied to clipboard!"
-msgstr ""
+msgstr "Copié dans le presse-papier!"
 
 #: ../../src-core/explorer/explorer.cpp:318
 msgid "JSON From Clipboard"
-msgstr ""
+msgstr "JSON depuis le presse-papier"
 
 #: ../../src-core/explorer/explorer.cpp:321
 msgid "Copied from clipboard!"
-msgstr ""
+msgstr "Copié depuis le presse-papier!"
 
 #.
 #.
@@ -752,6 +752,28 @@ msgstr "Lancer un traitement"
 msgid "Add Recorder"
 msgstr "Ajouter un enregistreur"
 
+#: ../../src-core/common/widgets/pipeline_selector.h:23
+#: ../../src-core/common/widgets/pipeline_selector.cpp:288
+msgid "Input File"
+msgstr "Fichier source"
+
+#: ../../src-core/common/widgets/pipeline_selector.h:23
+#, fuzzy
+msgid "Select Input File"
+msgstr "Fichier source"
+
+#. TODOREWORKUI?
+#: ../../src-core/common/widgets/pipeline_selector.h:24
+#: ../../src-core/common/widgets/pipeline_selector.cpp:295
+#: ../../src-core/common/widgets/pipeline_selector.cpp:322
+msgid "Output Directory"
+msgstr "Dossier "
+
+#: ../../src-core/common/widgets/pipeline_selector.h:24
+#, fuzzy
+msgid "Select Output Directory"
+msgstr "Dossier "
+
 #: ../../src-core/common/widgets/pipeline_selector.cpp:122
 msgid "   Search pipelines"
 msgstr "   Chercher des pipelines"
@@ -759,16 +781,6 @@ msgstr "   Chercher des pipelines"
 #: ../../src-core/common/widgets/pipeline_selector.cpp:160
 msgid "Favourites"
 msgstr "Favoris"
-
-#: ../../src-core/common/widgets/pipeline_selector.cpp:288
-msgid "Input File"
-msgstr "Fichier source"
-
-#. TODOREWORKUI?
-#: ../../src-core/common/widgets/pipeline_selector.cpp:295
-#: ../../src-core/common/widgets/pipeline_selector.cpp:322
-msgid "Output Directory"
-msgstr "Dossier "
 
 #: ../../src-core/common/widgets/pipeline_selector.cpp:301
 msgid "Input Level"
@@ -1156,15 +1168,15 @@ msgstr "ENREGISTREMENT"
 
 #: ../../src-interface/recorder/recorder.cpp:613
 msgid "Start###startrecording"
-msgstr ""
+msgstr "Démarrer###startrecording"
 
 #: ../../src-interface/recorder/recorder.cpp:618
 msgid "Stop##stoprecording"
-msgstr ""
+msgstr "Arrêter##stoprecording"
 
 #: ../../src-interface/recorder/recorder.cpp:623
 msgid "Tracking"
-msgstr ""
+msgstr "Suivi"
 
 #: ../../src-interface/recorder/recorder.cpp:630
 msgid "VFOs"
@@ -1213,7 +1225,7 @@ msgstr "Traitement en direct"
 
 #: ../../src-interface/recorder/tracking/tracking_widget.cpp:100
 msgid "Object Information"
-msgstr ""
+msgstr "Informations de l'objet"
 
 #: ../../src-interface/recorder/tracking/tracking_widget.cpp:103
 msgid "Rotator Configuration"
@@ -1225,7 +1237,7 @@ msgstr ""
 
 #: ../../src-interface/recorder/tracking/tracking_widget.cpp:140
 msgid "Autotrack Engaged:"
-msgstr ""
+msgstr "Suivi actif:"
 
 #: ../../src-interface/recorder/tracking/tracking_widget.cpp:143
 msgid "Schedule and Config"

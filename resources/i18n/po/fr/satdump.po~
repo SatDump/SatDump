@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-23 18:10+0200\n"
-"PO-Revision-Date: 2026-06-23 18:18+0200\n"
+"POT-Creation-Date: 2026-06-23 18:19+0200\n"
+"PO-Revision-Date: 2026-06-23 18:21+0200\n"
 "Last-Translator: Alan <alan@alan-desktop>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -62,6 +62,10 @@ msgstr "d'avoir spécifié -DCMAKE_BUILD_TYPE=Release dans CMake."
 #: ../../src-core/init.cpp:215
 msgid "Exiting SatDump! Bye!"
 msgstr "Fermeture de SatDump! Au revoir!"
+
+#: ../../src-core/imgui/dialogs/widget.cpp:22
+msgid "ﱮ Open##filepathselectionbutton"
+msgstr ""
 
 #: ../../src-core/products/image/calibration_converter.cpp:45
 msgid "No valid converter for : "
@@ -126,7 +130,7 @@ msgstr ""
 
 #: ../../src-core/handlers/image/image_handler.cpp:104
 msgid "Geo Correct"
-msgstr ""
+msgstr "Correction Géographique"
 
 #. TODOREWORK Disable if it can't be?
 #: ../../src-core/handlers/image/image_handler.cpp:105
@@ -757,28 +761,24 @@ msgid "Favourites"
 msgstr "Favoris"
 
 #: ../../src-core/common/widgets/pipeline_selector.cpp:288
-#, fuzzy
 msgid "Input File"
-msgstr "Ouvrir un fichier"
+msgstr "Fichier source"
 
 #. TODOREWORKUI?
 #: ../../src-core/common/widgets/pipeline_selector.cpp:295
 #: ../../src-core/common/widgets/pipeline_selector.cpp:322
-#, fuzzy
 msgid "Output Directory"
-msgstr "Dossier: %s"
+msgstr "Dossier "
 
 #: ../../src-core/common/widgets/pipeline_selector.cpp:301
 msgid "Input Level"
 msgstr "Niveau d'entrée"
 
 #: ../../src-core/common/widgets/pipeline_selector.cpp:312
-#, fuzzy
 msgid "Output Directory :"
-msgstr "Dossier: %s"
+msgstr "Dossier de sortie :"
 
 #: ../../src-core/common/widgets/pipeline_selector.cpp:336
-#, fuzzy
 msgid "Advanced Parameters"
 msgstr "Paramètres Avancés"
 
