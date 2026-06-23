@@ -1,0 +1,144 @@
+{
+	"goblin_low_rate": {
+		"name": "Goblin Low Rate Data",
+		"live": [
+			1,
+			2,
+			3
+		],
+		"frequencies": [],
+		"parameters": {},
+		"work": {
+			"baseband": {},
+			"soft": {
+				"module": "psk_demod",
+				"parameters": {
+					"constellation": "bpsk",
+					"symbolrate": 20000,
+					"pll_bw": 0.02,
+					"rrc_alpha": 0.5
+				}
+			},
+			"cadu": {
+				"module": "ccsds_conv_concat_decoder",
+				"parameters": {
+					"ccsds": true,
+					"constellation": "bpsk",
+					"conv_rate": "7/8",
+					"cadu_size": 8192,
+					"viterbi_ber_thresold": 0.2,
+					"viterbi_outsync_after": 20,
+					"derandomize": true,
+					"nrzm": false,
+					"rs_i": 4,
+					"rs_type": "rs223",
+					"rs_dualbasis": false,
+					"rs_usecheck": true
+				}
+			},
+			"products": {
+				"module": "apid_sender",
+				"parameters": {
+					"server_address": "127.0.0.1",
+					"save_cadu": true,
+					"apids": [
+						{
+							"apid": 1,
+							"port": 9001
+						},
+						{
+							"apid": 2,
+							"port": 9002
+						},
+						{
+							"apid": 10,
+							"port": 9010,
+							"packet_size": 246
+						},
+						{
+							"apid": 11,
+							"port": 9011,
+							"packet_size": 246
+						},
+						{
+							"apid": 20,
+							"port": 9020,
+							"packet_size": 752
+						}
+					]
+				}
+			}
+		}
+	},
+	"goblin_high_rate": {
+		"name": "Goblin High Rate Data",
+		"live": [
+			1,
+			2,
+			3
+		],
+		"frequencies": [],
+		"parameters": {},
+		"work": {
+			"baseband": {},
+			"soft": {
+				"module": "psk_demod",
+				"parameters": {
+					"constellation": "bpsk",
+					"symbolrate": 100000,
+					"pll_bw": 0.02,
+					"rrc_alpha": 0.25
+				}
+			},
+			"cadu": {
+				"module": "ccsds_conv_concat_decoder",
+				"parameters": {
+					"ccsds": true,
+					"constellation": "bpsk",
+					"conv_rate": "7/8",
+					"cadu_size": 8192,
+					"viterbi_ber_thresold": 0.2,
+					"viterbi_outsync_after": 20,
+					"derandomize": true,
+					"nrzm": false,
+					"rs_i": 4,
+					"rs_type": "rs223",
+					"rs_dualbasis": false,
+					"rs_usecheck": true
+				}
+			},
+			"products": {
+				"module": "apid_sender",
+				"parameters": {
+					"server_address": "127.0.0.1",
+					"save_cadu": true,
+					"apids": [
+						{
+							"apid": 1,
+							"port": 9001
+						},
+						{
+							"apid": 2,
+							"port": 9002
+						},
+						{
+							"apid": 10,
+							"port": 9010,
+							"packet_size": 246
+						},
+						{
+							"apid": 11,
+							"port": 9011,
+							"packet_size": 246
+						},
+						{
+							"apid": 20,
+							"port": 9020,
+							"packet_size": 752
+						}
+					]
+				}
+			}
+		}
+	}
+}
