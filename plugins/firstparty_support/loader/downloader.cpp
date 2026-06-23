@@ -97,7 +97,7 @@ namespace satdump
 
             output_filestream.close();
             is_downloading = false;
-            file_downloading = "IDLE";
+            file_downloading = _("IDLE");
             curSize = 0;
             downloadSize = 0;
 
