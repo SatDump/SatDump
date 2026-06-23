@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-09 10:51+0200\n"
-"PO-Revision-Date: 2026-06-09 10:55+0200\n"
+"POT-Creation-Date: 2026-06-09 11:39+0200\n"
+"PO-Revision-Date: 2026-06-09 11:42+0200\n"
 "Last-Translator: Alan <alan@alan-desktop>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -116,19 +116,19 @@ msgstr ""
 
 #: plugins/firstparty_support/loader/archive_loader.cpp:47
 msgid "Decode To:"
-msgstr ""
+msgstr "Décoder dans :"
 
 #: plugins/firstparty_support/loader/archive_loader.cpp:49
 msgid "Temporary"
-msgstr ""
+msgstr "Temporaire"
 
 #: plugins/firstparty_support/loader/archive_loader.cpp:51
 msgid "Selected Folder:"
-msgstr ""
+msgstr "Dossier sélectionné :"
 
 #: plugins/firstparty_support/loader/eumetsat.cpp:201
 msgid "Refresh##archiveloader_refresh"
-msgstr ""
+msgstr "Rafraichir##archiveloader_refresh"
 
 #: plugins/firstparty_support/loader/eumetsat.cpp:204
 msgid "Date: "
@@ -141,8 +141,9 @@ msgstr ""
 #: plugins/firstparty_support/loader/downloader.cpp:21
 #, c-format
 msgid "Downloading : %s"
-msgstr ""
+msgstr "Téléchargement : %s"
 
+#: plugins/firstparty_support/loader/downloader.cpp:24
 #: plugins/firstparty_support/loader/downloader.cpp:31
 msgid "Abort"
 msgstr ""
@@ -203,11 +204,11 @@ msgstr "Paramètres Principaux"
 
 #: src-interface/settings.cpp:115
 msgid "User Interface"
-msgstr ""
+msgstr "Interface Utilisateur"
 
 #: src-interface/settings.cpp:122
 msgid "Theme"
-msgstr ""
+msgstr "Thème"
 
 #: src-interface/settings.cpp:124
 msgid "Set the style and color of SatDump"
@@ -215,7 +216,7 @@ msgstr ""
 
 #: src-interface/settings.cpp:136
 msgid "General SatDump"
-msgstr ""
+msgstr "SatDump Général"
 
 #: src-interface/settings.cpp:143
 msgid "OpenCL Device"
@@ -237,7 +238,7 @@ msgstr "Rafraichir###updatekeplers"
 
 #: src-interface/settings.cpp:176 src-interface/settings.cpp:209
 msgid "Never"
-msgstr ""
+msgstr "Jamais"
 
 #: src-interface/settings.cpp:184 src-interface/settings.cpp:217
 #, c-format
@@ -305,6 +306,8 @@ msgid ""
 "Note : Some settings will require SatDump to be restarted\n"
 "to take effect!"
 msgstr ""
+"Note : Certains paramètres nécéssite un redémarrage de SatDump\n"
+"pour être appliqués!"
 
 #: src-interface/notify_logger_sink.cpp:17
 msgid "Critical"
