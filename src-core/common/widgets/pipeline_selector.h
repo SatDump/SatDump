@@ -1,5 +1,6 @@
 #pragma once
 #include "core/params.h"
+#include "i18n.h"
 #include "imgui/dialogs/widget.h"
 #include "pipeline/pipeline.h"
 #include <string>
@@ -19,8 +20,8 @@ namespace satdump
         void setParameters(nlohmann::json params);
         void select_pipeline(std::string id);
 
-        FileSelectWidget inputfileselect = FileSelectWidget("Input File", "Select Input File");
-        FileSelectWidget outputdirselect = FileSelectWidget("Output Directory", "Select Output Directory", true);
+        FileSelectWidget inputfileselect = FileSelectWidget(_("Input File"), _("Select Input File"));
+        FileSelectWidget outputdirselect = FileSelectWidget(_("Output Directory"), _("Select Output Directory"), true);
         pipeline::Pipeline selected_pipeline;
         int pipelines_levels_select_id = 0;
 
