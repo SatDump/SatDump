@@ -1,5 +1,6 @@
 #include "db/kepler/kepler_handler.h"
 #include "i18n.h"
+#include <cstdlib>
 #define SATDUMP_DLL_EXPORT 1
 #include "core/config.h"
 #include "core/plugin.h"
@@ -43,11 +44,29 @@ namespace satdump
     SATDUMP_DLL std::shared_ptr<KeplerDBHandler> db_keplers;
     SATDUMP_DLL std::shared_ptr<IersDBHandler> db_iers;
 
-    void initSatDump(bool is_gui)
+#if ENABLE_I18N
+    void initLanguage(std::string lang)
     {
+        if (lang.size())
+            setenv("LANGUAGE", lang.c_str(), true);
+        else
+            unsetenv("LANGUAGE");
+
         setlocale(LC_ALL, "");
         bindtextdomain("satdump", resources::getResourcePath("i18n").c_str());
         textdomain("satdump");
+
+        current_language = lang;
+    }
+
+    SATDUMP_DLL std::string current_language;
+#endif
+
+    void initSatDump(bool is_gui)
+    {
+#if ENABLE_I18N
+        initLanguage();
+#endif
 
         auto lvl = logger->get_level();
         logger->set_level(slog::LOG_INFO);
@@ -88,6 +107,12 @@ namespace satdump
             //    pfd::message("SatDump", "Error loading SatDump config! SatDump will now exit. Error:\n\n" + std::string(e.what()), pfd::choice::ok, pfd::icon::error); TODOREWORK bring this back
             exit(1);
         }
+
+#if ENABLE_I18N
+        std::string override_lang = db->get_user("language");
+        if (override_lang != "")
+            initLanguage();
+#endif
 
         if (satdump_cfg.main_cfg["satdump_general"].contains("log_to_file"))
         {

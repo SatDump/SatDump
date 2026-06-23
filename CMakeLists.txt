@@ -38,6 +38,12 @@ option(BUILD_OPENCL "Build with OpenCL GPU Accelerations" ON)
 option(BUILD_OPENMP "Build with OpenMP Optimizations" ON)
 option(BUILD_DOCS "Build with Doxygen Documentation" OFF)
 option(ENABLE_INSTALL "Enable INSTALL TARGET" ON)
+option(ENABLE_I18N "Enable internationalizaton (allows changing language)" ON)
+
+# I18N
+if(ENABLE_I18N)
+    add_compile_definitions(ENABLE_I18N=1)
+endif()
 
 if(ANDROID)
     # Build settings

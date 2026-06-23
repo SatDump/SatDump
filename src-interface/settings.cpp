@@ -1,6 +1,7 @@
 #include "settings.h"
 #include "core/params.h"
 #include "core/plugin.h"
+#include "i18n.h"
 #include "imgui/imgui.h"
 #include <string>
 
@@ -137,6 +138,39 @@ namespace satdump
             {
                 if (ImGui::BeginTable("##satdumpgeneralsettings", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
                 {
+#if ENABLE_I18N
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text(_("Language"));
+                    ImGui::TableSetColumnIndex(1);
+                    {
+                        std::vector<std::string> options = {"fr", "en", "it"};
+
+                        std::string lang = current_language == "" ? _("Auto") : current_language;
+                        if (ImGui::BeginCombo("##languageCombo", lang.c_str()))
+                        {
+                            if (ImGui::Selectable(_("Auto"), current_language == ""))
+                            {
+                                logger->info("Setting language to Auto");
+                                initLanguage();
+                                db->set_user("language", "");
+                            }
+
+                            for (auto &opt : options)
+                            {
+                                if (ImGui::Selectable(opt.c_str(), current_language == opt))
+                                {
+                                    logger->info("Setting language to : " + opt);
+                                    initLanguage(opt);
+                                    db->set_user("language", opt);
+                                }
+                            }
+
+                            ImGui::EndCombo();
+                        }
+                    }
+#endif
+
 #ifdef USE_OPENCL
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
