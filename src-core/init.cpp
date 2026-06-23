@@ -111,7 +111,7 @@ namespace satdump
 #if ENABLE_I18N
         std::string override_lang = db->get_user("language");
         if (override_lang != "")
-            initLanguage();
+            initLanguage(override_lang);
 #endif
 
         if (satdump_cfg.main_cfg["satdump_general"].contains("log_to_file"))
