@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-23 18:19+0200\n"
-"PO-Revision-Date: 2026-06-23 18:18+0200\n"
+"PO-Revision-Date: 2026-06-23 18:21+0200\n"
 "Last-Translator: Alan <alan@alan-desktop>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -130,7 +130,7 @@ msgstr ""
 
 #: ../../src-core/handlers/image/image_handler.cpp:104
 msgid "Geo Correct"
-msgstr ""
+msgstr "Correction Géographique"
 
 #. TODOREWORK Disable if it can't be?
 #: ../../src-core/handlers/image/image_handler.cpp:105
@@ -761,28 +761,24 @@ msgid "Favourites"
 msgstr "Favoris"
 
 #: ../../src-core/common/widgets/pipeline_selector.cpp:288
-#, fuzzy
 msgid "Input File"
-msgstr "Ouvrir un fichier"
+msgstr "Fichier source"
 
 #. TODOREWORKUI?
 #: ../../src-core/common/widgets/pipeline_selector.cpp:295
 #: ../../src-core/common/widgets/pipeline_selector.cpp:322
-#, fuzzy
 msgid "Output Directory"
-msgstr "Dossier: %s"
+msgstr "Dossier "
 
 #: ../../src-core/common/widgets/pipeline_selector.cpp:301
 msgid "Input Level"
 msgstr "Niveau d'entrée"
 
 #: ../../src-core/common/widgets/pipeline_selector.cpp:312
-#, fuzzy
 msgid "Output Directory :"
-msgstr "Dossier: %s"
+msgstr "Dossier de sortie :"
 
 #: ../../src-core/common/widgets/pipeline_selector.cpp:336
-#, fuzzy
 msgid "Advanced Parameters"
 msgstr "Paramètres Avancés"
 
