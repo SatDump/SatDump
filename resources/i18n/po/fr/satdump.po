@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-23 17:40+0200\n"
-"PO-Revision-Date: 2026-06-23 18:07+0200\n"
+"POT-Creation-Date: 2026-06-23 18:19+0200\n"
+"PO-Revision-Date: 2026-06-23 18:18+0200\n"
 "Last-Translator: Alan <alan@alan-desktop>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -63,9 +63,13 @@ msgstr "d'avoir spécifié -DCMAKE_BUILD_TYPE=Release dans CMake."
 msgid "Exiting SatDump! Bye!"
 msgstr "Fermeture de SatDump! Au revoir!"
 
+#: ../../src-core/imgui/dialogs/widget.cpp:22
+msgid "ﱮ Open##filepathselectionbutton"
+msgstr ""
+
 #: ../../src-core/products/image/calibration_converter.cpp:45
 msgid "No valid converter for : "
-msgstr ""
+msgstr "Pas de convertisseur valide pour : "
 
 #: ../../src-core/products/image/calibration_units.cpp:14
 msgid "Sun Angle"
@@ -102,11 +106,11 @@ msgstr ""
 
 #: ../../src-core/handlers/image/image_handler.cpp:43
 msgid "Cannot crop while processing!"
-msgstr ""
+msgstr "Le rognage n'est pas disponible quand un traitement est en cours!"
 
 #: ../../src-core/handlers/image/image_handler.cpp:73
 msgid " Crop"
-msgstr ""
+msgstr "Rognage"
 
 #: ../../src-core/handlers/image/image_handler.cpp:93
 msgid "Image"
@@ -357,20 +361,20 @@ msgstr "Zone UTM###projutmzone"
 
 #: ../../src-core/handlers/projection/proj_ui.h:166
 msgid "South###projutmsouth"
-msgstr ""
+msgstr "Sud###projutmsouth"
 
 #: ../../src-core/handlers/projection/proj_ui.h:167
 msgid "Northing (m)##utm"
-msgstr ""
+msgstr "Nord (m)##utm"
 
 #: ../../src-core/handlers/projection/proj_ui.h:169
 msgid "Scale (m/px)##utm"
-msgstr ""
+msgstr "Échelle (m/px)##utm"
 
 #: ../../src-core/handlers/projection/proj_ui.h:173
 #: ../../src-core/handlers/projection/proj_ui.h:181
 msgid "Center Coordinates :"
-msgstr ""
+msgstr "Coordonées du centre :"
 
 #: ../../src-core/handlers/projection/proj_ui.h:174
 msgid "Lat##stereo"
@@ -406,7 +410,7 @@ msgstr ""
 
 #: ../../src-core/handlers/projection/proj_ui.h:189
 msgid "Scale##tpers"
-msgstr ""
+msgstr "Échelle##tpers"
 
 #: ../../src-core/handlers/projection/proj_ui.h:194
 msgid "Auto Mode###pojautomode"
@@ -414,15 +418,15 @@ msgstr "Mode Auto###pojautomode"
 
 #: ../../src-core/handlers/projection/proj_ui.h:195
 msgid "Auto Scale Mode##projautoscalemode"
-msgstr ""
+msgstr "Mode échelle automatique##projautoscalemode"
 
 #: ../../src-core/handlers/projection/proj_ui.h:198
 msgid "Scale X (m/px)##projscalexauto"
-msgstr ""
+msgstr "Échelle X (m/px)##projscalexauto"
 
 #: ../../src-core/handlers/projection/proj_ui.h:199
 msgid "Scale Y (m/px)##projscalexauto"
-msgstr ""
+msgstr "Échelle Y (m/px)##projscalexauto"
 
 #: ../../src-core/handlers/projection/projection_handler.cpp:44
 #: ../../src-core/explorer/explorer.cpp:281
@@ -659,7 +663,7 @@ msgstr "Autres"
 
 #: ../../src-core/explorer/explorer.cpp:219
 msgid "Handlers will appear here..."
-msgstr ""
+msgstr "Les handlers apparaitrons ici..."
 
 #: ../../src-core/explorer/explorer.cpp:243
 msgid "No file selected"
@@ -747,6 +751,40 @@ msgstr "Lancer un traitement"
 #: ../../src-core/explorer/explorer.cpp:430
 msgid "Add Recorder"
 msgstr "Ajouter un enregistreur"
+
+#: ../../src-core/common/widgets/pipeline_selector.cpp:122
+msgid "   Search pipelines"
+msgstr "   Chercher des pipelines"
+
+#: ../../src-core/common/widgets/pipeline_selector.cpp:160
+msgid "Favourites"
+msgstr "Favoris"
+
+#: ../../src-core/common/widgets/pipeline_selector.cpp:288
+#, fuzzy
+msgid "Input File"
+msgstr "Ouvrir un fichier"
+
+#. TODOREWORKUI?
+#: ../../src-core/common/widgets/pipeline_selector.cpp:295
+#: ../../src-core/common/widgets/pipeline_selector.cpp:322
+#, fuzzy
+msgid "Output Directory"
+msgstr "Dossier: %s"
+
+#: ../../src-core/common/widgets/pipeline_selector.cpp:301
+msgid "Input Level"
+msgstr "Niveau d'entrée"
+
+#: ../../src-core/common/widgets/pipeline_selector.cpp:312
+#, fuzzy
+msgid "Output Directory :"
+msgstr "Dossier: %s"
+
+#: ../../src-core/common/widgets/pipeline_selector.cpp:336
+#, fuzzy
+msgid "Advanced Parameters"
+msgstr "Paramètres Avancés"
 
 #: ../../src-core/common/widgets/image_view.cpp:322
 msgid "Crop must be bigger than 0!"
@@ -909,16 +947,16 @@ msgstr "Téléchargement : %s"
 #: ../../plugins/firstparty_support/loader/downloader.cpp:24
 #: ../../plugins/firstparty_support/loader/downloader.cpp:31
 msgid "Abort"
-msgstr ""
+msgstr "Arrêt"
 
 #: ../../plugins/firstparty_support/loader/downloader.cpp:100
 #: ../../src-interface/recorder/recorder.cpp:605
 msgid "IDLE"
-msgstr ""
+msgstr "VEILLE"
 
 #: ../../plugins/firstparty_support/loader/archive_loader.cpp:20
 msgid "Archive Loader"
-msgstr ""
+msgstr "Chargeur d'archive"
 
 #: ../../plugins/firstparty_support/loader/archive_loader.cpp:24
 msgid "NOAA AWS"
@@ -1019,15 +1057,15 @@ msgstr ""
 
 #: ../../src-interface/recorder/recorder.cpp:370
 msgid "FFT Size"
-msgstr ""
+msgstr "Taille FFT"
 
 #: ../../src-interface/recorder/recorder.cpp:389
 msgid "FFT Rate"
-msgstr ""
+msgstr "Vitesse FFT"
 
 #: ../../src-interface/recorder/recorder.cpp:408
 msgid "Waterfall Rate"
-msgstr ""
+msgstr "Vitesse Cascade"
 
 #: ../../src-interface/recorder/recorder.cpp:425
 msgid "FFT Max"
@@ -1236,7 +1274,7 @@ msgstr "Thème"
 
 #: ../../src-interface/settings.cpp:125
 msgid "Set the style and color of SatDump"
-msgstr ""
+msgstr "Paramétrer le style et couleurs de SatDump"
 
 #: ../../src-interface/settings.cpp:137
 msgid "General SatDump"

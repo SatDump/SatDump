@@ -1,5 +1,6 @@
 #include "widget.h"
 #include "core/style.h"
+#include "i18n.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
 #include <filesystem>
@@ -18,7 +19,7 @@ FileSelectWidget::FileSelectWidget(std::string label, std::string selection_text
     url_valid = false;
     default_dir = ".";
     id = "##filepathselection" + label;
-    btnid = u8"\ufc6e Open##filepathselectionbutton" + label;
+    btnid = _(u8"\ufc6e Open##filepathselectionbutton") + label;
 }
 
 FileSelectWidget::~FileSelectWidget()
