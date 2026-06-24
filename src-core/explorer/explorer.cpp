@@ -438,11 +438,11 @@ namespace satdump
 
         void ExplorerApplication::draw()
         {
-            drawMenuBar();
-
             ImVec2 explorer_size = ImGui::GetContentRegionAvail();
-            if (explorer_size.x < 0.0f || explorer_size.y < 0.0f)
+            if (explorer_size.x <= 0.0f || explorer_size.y <= 0.0f)
                 return;
+
+            drawMenuBar();
 
             if (show_panel)
             {
