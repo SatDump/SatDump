@@ -43,6 +43,10 @@
 					"save_cadu": true,
 					"apids": [
 						{
+							"apid": 0,
+							"port": 9000
+						},
+						{
 							"apid": 1,
 							"port": 9001
 						},
@@ -113,6 +117,10 @@
 					"server_address": "127.0.0.1",
 					"save_cadu": true,
 					"apids": [
+						{
+							"apid": 0,
+							"port": 9000
+						},
 						{
 							"apid": 1,
 							"port": 9001
