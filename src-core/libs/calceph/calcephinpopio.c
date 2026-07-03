@@ -1525,7 +1525,7 @@ static int calceph_interpol_PV_planet(struct calcephbin_inpop *p_pbinfile, treal
 /*--------------------------------------------------------------------------*/
 void calceph_interpol_PV_lowlevel(stateType * X, const treal * A, treal Tc, treal scale, int N, int ncomp)
 {
-#if __STDC_VERSION__ > 199901L
+#if __STDC_VERSION__ > 199901L && !defined(_MSC_VER)
 #define NSTACK_INTERPOL (N + 1)
 #else
 #define NSTACK_INTERPOL 15000

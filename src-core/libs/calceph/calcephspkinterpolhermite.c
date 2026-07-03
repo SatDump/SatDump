@@ -167,7 +167,7 @@ void calceph_spk_interpol_Hermite(int S, const double *drecord, const double *de
 {
     int i, j, k, q, r, s;
 
-#if __STDC_VERSION__>199901L
+#if __STDC_VERSION__>199901L && !defined(_MSC_VER)
 #define NSTACK_INTERPOL (3*S+2)
 #else
 #define NSTACK_INTERPOL 1000

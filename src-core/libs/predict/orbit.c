@@ -3,7 +3,9 @@
 #include <time.h>
 
 #if defined(_WIN32)
-
+#ifdef timegm
+#undef timegm
+#endif
 inline time_t timegm(struct tm *const t)
 {
     return _mkgmtime(t);

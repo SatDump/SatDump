@@ -429,7 +429,7 @@ double ira_equinox(double jd_tdb, enum novas_equinox_type equinox, enum novas_ac
  * @sa e_tilt()
  */
 double ee_ct(double jd_tt_high, double jd_tt_low, enum novas_accuracy accuracy) {
-  static THREAD_LOCAL double last_tt = NAN, last_ee;
+  static THREAD_LOCAL double last_tt = 0.0, last_ee;
   static THREAD_LOCAL enum novas_accuracy last_acc = -1;
 
   // @formatter:off
@@ -611,7 +611,7 @@ int fund_args(double t, novas_delaunay_args *restrict a) {
  *     NOVAS_JD_B1950, NOVAS_JD_B1900
  */
 short precession(double jd_tdb_in, const double *in, double jd_tdb_out, double *out) {
-  static THREAD_LOCAL double djd_last[2] = { NAN, NAN };
+  static THREAD_LOCAL double djd_last[2] = { 0.0, 0.0 };
   static THREAD_LOCAL double xx[2], yx[2], zx[2], xy[2], yy[2], zy[2], xz[2], yz[2], zz[2];
 
   double t;

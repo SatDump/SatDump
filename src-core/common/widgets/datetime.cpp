@@ -7,6 +7,10 @@
 #if defined(_WIN32)
 #include <time.h>
 
+#ifdef timegm
+#undef timegm
+#endif
+
 inline time_t timegm(struct tm *const t) { return _mkgmtime(t); }
 #endif
 

@@ -158,7 +158,7 @@ short cio_location(double jd_tdb, enum novas_accuracy accuracy, double *restrict
 
   static THREAD_LOCAL enum novas_accuracy acc_last = -1;
   static THREAD_LOCAL short ref_sys_last = -1;
-  static THREAD_LOCAL double t_last = NAN, ra_last = NAN;
+  static THREAD_LOCAL double t_last = 0.0, ra_last = 0.0;
   static THREAD_LOCAL ra_of_cio cio[CIO_INTERP_POINTS];
 
   const enum novas_debug_mode saved_debug_state = novas_get_debug_mode();
@@ -269,7 +269,7 @@ short cio_basis(double jd_tdb, double ra_cio, enum novas_cio_location_type loc_t
         double *restrict x, double *restrict y, double *restrict z) {
   static const char *fn = "cio_basis";
   static THREAD_LOCAL enum novas_accuracy acc_last = -1;
-  static THREAD_LOCAL double t_last = NAN;
+  static THREAD_LOCAL double t_last = 0.0;
   static THREAD_LOCAL double xx[3], yy[3], zz[3];
 
   if(!x || !y || !z)

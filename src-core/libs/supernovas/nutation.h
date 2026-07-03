@@ -20,8 +20,14 @@
 #define _NUTATION_
 
 /// \cond PRIVATE
-#if __STDC_VERSION__ < 199901L
-#  define restrict                        ///< No 'restrict' keyword prior to C99
+#if (__STDC_VERSION__ < 199901L) || defined(_MSC_VER)
+#  ifdef _MSC_VER
+#    ifndef restrict
+#      define restrict
+#    endif
+#  else
+#    define restrict                        ///< No 'restrict' keyword prior to C99
+#  endif
 #endif
 /// \endcond
 

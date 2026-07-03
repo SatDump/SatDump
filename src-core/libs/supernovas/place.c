@@ -280,7 +280,7 @@ short place(double jd_tt, const object *restrict source, const observer *restric
   static const char *fn = "place";
 
   static THREAD_LOCAL enum novas_accuracy acc_last = -1;
-  static THREAD_LOCAL double tlast = NAN;
+  static THREAD_LOCAL double tlast = 0.0;
   static THREAD_LOCAL double peb[3], veb[3], psb[3];
 
   observer obs;

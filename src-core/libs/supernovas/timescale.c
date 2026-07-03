@@ -140,7 +140,7 @@ int strncasecmp(const char *s1, const char *s2, size_t n);
  * @sa tt2tdb()
  */
 int tdb2tt(double jd_tdb, double *restrict jd_tt, double *restrict secdiff) {
-  static THREAD_LOCAL double last_tdb = NAN;
+  static THREAD_LOCAL double last_tdb = 0.0;
   static THREAD_LOCAL double d;
 
   if(!novas_time_equals(jd_tdb, last_tdb)) {

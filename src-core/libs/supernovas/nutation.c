@@ -70,7 +70,7 @@ typedef struct {
  * @sa NOVAS_JD_J2000
  */
 int nutation_angles(double t, enum novas_accuracy accuracy, double *restrict dpsi, double *restrict deps) {
-  static THREAD_LOCAL double last_t = NAN, last_dpsi, last_deps;
+  static THREAD_LOCAL double last_t = 0.0, last_dpsi, last_deps;
   static THREAD_LOCAL enum novas_accuracy last_acc = -1;
 
   if(!dpsi || !deps) {

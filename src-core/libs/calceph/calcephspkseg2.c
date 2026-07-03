@@ -362,7 +362,7 @@ static void calceph_spk_interpol_PV_segment_20_an(const double *Coeff_Array, tre
                                                   treal Timerecordbeg, stateType * Planet, int N)
 {
 
-#if __STDC_VERSION__>199901L
+#if __STDC_VERSION__>199901L && !defined(_MSC_VER)
 #define NSTACK_INTERPOL (N+1)
 #else
 #define NSTACK_INTERPOL 15000

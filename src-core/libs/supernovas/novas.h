@@ -19,6 +19,12 @@
 #ifndef _NOVAS_
 #define _NOVAS_
 
+#ifdef _MSC_VER
+#ifndef restrict
+#define restrict
+#endif
+#endif
+
 #include <math.h>   // for sin, cos
 #include <stdlib.h> // NULL
 #include <stdint.h>

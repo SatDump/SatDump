@@ -46,6 +46,12 @@
 #ifndef _SOLSYS_
 #define _SOLSYS_
 
+#ifdef _MSC_VER
+#ifndef restrict
+#define restrict
+#endif
+#endif
+
 /**
  * Solar-system body IDs to use as object.number with NOVAS_EPHEM_OBJECT types. JPL ephemerides
  * use <a href="https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html">NAIF IDs</a>
