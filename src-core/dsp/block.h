@@ -218,8 +218,13 @@ namespace satdump
 
             virtual ~Block()
             {
-                if (blk_should_run || blk_th.joinable())
-                    throw satdump_exception("Block wasn't properly stopped before destructor was called!");
+                try
+                {
+                    stop(true, true);
+                }
+                catch (...)
+                {
+                }
             }
 
         public:
@@ -387,6 +392,11 @@ namespace satdump
                     work_should_exit = true;
                 if (force)
                     blk_should_run = false;
+
+                for (auto &in : inputs)
+                    if (in.fifo) in.fifo->stop();
+                for (auto &out : outputs)
+                    if (out.fifo) out.fifo->stop();
 
                 blk_th_mtx.lock();
                 if (blk_th.joinable())

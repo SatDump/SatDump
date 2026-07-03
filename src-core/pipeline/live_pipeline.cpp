@@ -158,6 +158,7 @@ namespace satdump
         void LivePipeline::stop()
         {
             logger->info("Stop processing");
+            // Pass 1: Signal stop to all modules to avoid deadlocks on full FIFOs
             for (int i = 0; i < (int)modules.size(); i++)
             {
                 std::shared_ptr<ProcessingModule> mod = modules[i];
@@ -175,6 +176,11 @@ namespace satdump
                     mod->input_fifo->stopWriter();
                 }
                 mod->stop();
+            }
+
+            // Pass 2: Join all processing threads
+            for (int i = 0; i < (int)modules.size(); i++)
+            {
                 module_futs[i].get();
             }
         }

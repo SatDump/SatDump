@@ -2,6 +2,7 @@
 
 #include "dsp_buffer.h"
 #include "readerwritercircularbuffer.h"
+#include <atomic>
 
 namespace satdump
 {
@@ -12,6 +13,7 @@ namespace satdump
         private:
             moodycamel::BlockingReaderWriterCircularBuffer<DSPBuffer> fifo;
             moodycamel::BlockingReaderWriterCircularBuffer<DSPBuffer> ufifo;
+            std::atomic<bool> stopped{false};
 
         public:
             DSPStream(int size) : fifo(size), ufifo(size)
@@ -34,13 +36,31 @@ namespace satdump
                         volk_free(b.ptr);
             }
 
-            inline void wait_enqueue(DSPBuffer b) { fifo.wait_enqueue(b); }
+            void stop()
+            {
+                stopped = true;
+            }
+
+            inline void wait_enqueue(DSPBuffer b)
+            {
+                while (!stopped)
+                {
+                    if (fifo.wait_enqueue_timed(b, 10000))
+                        return;
+                }
+            }
 
             inline DSPBuffer wait_dequeue()
             {
                 DSPBuffer b;
-                fifo.wait_dequeue(b);
-                return b;
+                while (!stopped)
+                {
+                    if (fifo.wait_dequeue_timed(b, 10000))
+                        return b;
+                }
+                DSPBuffer term;
+                term.type = DSP_BUFFER_TYPE_TERMINATOR_PROPAGATING;
+                return term;
             }
 
             inline bool try_dequeue(DSPBuffer &b) { return fifo.try_dequeue(b); }
@@ -48,7 +68,17 @@ namespace satdump
             DSPBuffer alloc(size_t size)
             {
                 DSPBuffer b;
-                ufifo.wait_dequeue(b);
+                while (!stopped)
+                {
+                    if (ufifo.wait_dequeue_timed(b, 10000))
+                        break;
+                }
+                if (stopped)
+                {
+                    DSPBuffer term;
+                    term.type = DSP_BUFFER_TYPE_TERMINATOR_PROPAGATING;
+                    return term;
+                }
                 if (b.ptr == nullptr)
                 {
                     b.ptr = volk_malloc(size, volk_get_alignment());
@@ -65,7 +95,14 @@ namespace satdump
                 return b;
             }
 
-            inline void free(DSPBuffer &b) { ufifo.wait_enqueue(b); }
+            inline void free(DSPBuffer &b)
+            {
+                while (!stopped)
+                {
+                    if (ufifo.wait_enqueue_timed(b, 10000))
+                        return;
+                }
+            }
 
             size_t size_approx() { return fifo.size_approx(); }
             size_t max_capacity() { return fifo.max_capacity(); }

@@ -16,6 +16,10 @@ namespace satdump
 
         void set_metadata(Image &img, nlohmann::json metadata)
         {
+            if (img.metadata_obj != nullptr)
+            {
+                delete ((nlohmann::json *)img.metadata_obj);
+            }
             img.metadata_obj = (nlohmann::json *)new nlohmann::json();
             *((nlohmann::json *)img.metadata_obj) = metadata;
         }

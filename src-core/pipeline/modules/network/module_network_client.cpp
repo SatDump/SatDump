@@ -7,6 +7,8 @@
 #include "pipeline/module.h"
 #include <nng/nng.h>
 #include <nng/protocol/pubsub0/sub.h>
+#include <thread>
+#include <chrono>
 
 namespace satdump
 {
@@ -62,7 +64,17 @@ namespace satdump
                     while (input_active.load())
                     {
                         size_t lpkt_size;
-                        nng_recv(sock, buffer, &lpkt_size, (int)0);
+                        int rv = nng_recv(sock, buffer, &lpkt_size, NNG_FLAG_NONBLOCK);
+                        if (rv == NNG_EAGAIN)
+                        {
+                            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                            continue;
+                        }
+                        else if (rv != 0)
+                        {
+                            logger->error("nng_recv error: " + std::to_string(rv));
+                            break;
+                        }
 
                         if (pkt_size != (int)lpkt_size)
                             continue;
@@ -75,10 +87,16 @@ namespace satdump
                 else if (mode == "udp_listen")
                 {
                     net::UDPServer udp_server(port);
+                    udp_server.enableTimeout();
 
                     while (input_active.load())
                     {
                         int lpkt_size = udp_server.recv(buffer, pkt_size);
+                        if (lpkt_size < 0)
+                        {
+                            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                            continue;
+                        }
                         output_fifo->write(buffer, lpkt_size);
                     }
                 }

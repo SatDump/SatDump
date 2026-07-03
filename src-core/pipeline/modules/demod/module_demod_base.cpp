@@ -113,11 +113,13 @@ namespace satdump
                 if (d_dc_block)
                     dc_blocker = std::make_shared<dsp::CorrectIQBlock<complex_t>>(input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream);
 
+                // Mark start time for ETA
+                start_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
                 // Cleanup things a bit
                 std::shared_ptr<dsp::stream<complex_t>> input_data = d_dc_block ? dc_blocker->output_stream : (input_data_type == DATA_DSP_STREAM ? input_stream : file_source->output_stream);
 
-                if (d_frequency_shift != 0)
-                    freq_shift = std::make_shared<dsp::FreqShiftBlock>(input_data, d_samplerate, d_frequency_shift);
+                freq_shift = std::make_shared<dsp::FreqShiftBlock>(input_data, d_samplerate, d_frequency_shift);
 
                 if (d_doppler_enable)
                 {
@@ -127,8 +129,7 @@ namespace satdump
                     else
                         throw satdump_exception("Satellite Frequency is required for doppler correction!");
 
-                    if (d_frequency_shift != 0)
-                        frequency += d_frequency_shift;
+                    frequency += d_frequency_shift;
 
                     int norad = -1;
                     if (d_parameters.count("satellite_norad"))
@@ -155,7 +156,7 @@ namespace satdump
                     if (d_parameters.count("qth_alt"))
                         qth_alt = d_parameters["qth_alt"].get<double>();
 
-                    doppler_shift = std::make_shared<dsp::DopplerCorrectBlock>(d_frequency_shift != 0 ? freq_shift->output_stream : input_data, d_samplerate, d_doppler_alpha, frequency, norad,
+                    doppler_shift = std::make_shared<dsp::DopplerCorrectBlock>(freq_shift->output_stream, d_samplerate, d_doppler_alpha, frequency, norad,
                                                                                qth_lon, qth_lat, qth_alt);
                     if (input_data_type == DATA_FILE)
                     {
@@ -170,31 +171,28 @@ namespace satdump
                     }
                 }
 
-                std::shared_ptr<dsp::stream<complex_t>> input_data_final = d_doppler_enable ? doppler_shift->output_stream : (d_frequency_shift != 0 ? freq_shift->output_stream : input_data);
+                std::shared_ptr<dsp::stream<complex_t>> input_data_final = d_doppler_enable ? doppler_shift->output_stream : freq_shift->output_stream;
 
-                if (input_data_type == DATA_FILE)
+                fft_splitter = std::make_shared<dsp::SplitterBlock>(input_data_final);
+                fft_splitter->add_output("fft");
+                fft_splitter->set_enabled("fft", show_fft);
+
+                if (d_dump_intermediate != "")
                 {
-                    fft_splitter = std::make_shared<dsp::SplitterBlock>(input_data_final);
-                    fft_splitter->add_output("fft");
-                    fft_splitter->set_enabled("fft", show_fft);
-
-                    if (d_dump_intermediate != "")
-                    {
-                        fft_splitter->add_output("intermediate");
-                        fft_splitter->set_enabled("intermediate", true);
-                        intermediate_file_sink = std::make_shared<dsp::FileSinkBlock>(fft_splitter->get_output("intermediate"));
-                    }
-
-                    fft_proc = std::make_shared<dsp::FFTPanBlock>(fft_splitter->get_output("fft"));
-                    fft_proc->set_fft_settings(8192, final_samplerate, 120);
-                    fft_proc->avg_num = 10;
-                    fft_plot = std::make_shared<widgets::FFTPlot>(fft_proc->output_stream->writeBuf, 8192, -10, 20, 10);
-                    waterfall_plot = std::make_shared<widgets::WaterfallPlot>(8192, 500);
-                    waterfall_plot->set_rate(120, 10);
-                    fft_proc->on_fft = [this](float *v) { waterfall_plot->push_fft(v); };
+                    fft_splitter->add_output("intermediate");
+                    fft_splitter->set_enabled("intermediate", true);
+                    intermediate_file_sink = std::make_shared<dsp::FileSinkBlock>(fft_splitter->get_output("intermediate"));
                 }
 
-                std::shared_ptr<dsp::stream<complex_t>> input_data_final_fft = input_data_type == DATA_FILE ? fft_splitter->output_stream : input_data_final;
+                fft_proc = std::make_shared<dsp::FFTPanBlock>(fft_splitter->get_output("fft"));
+                fft_proc->set_fft_settings(8192, final_samplerate, 120);
+                fft_proc->avg_num = 10;
+                fft_plot = std::make_shared<widgets::FFTPlot>(fft_proc->output_stream->writeBuf, 8192, -10, 20, 10);
+                waterfall_plot = std::make_shared<widgets::WaterfallPlot>(8192, 500);
+                waterfall_plot->set_rate(120, 10);
+                fft_proc->on_fft = [this](float *v) { waterfall_plot->push_fft(v); };
+
+                std::shared_ptr<dsp::stream<complex_t>> input_data_final_fft = fft_splitter->output_stream;
 
                 // Init resampler if required
                 if (resample && resample_here)
@@ -217,12 +215,10 @@ namespace satdump
                     file_source->start();
                 if (d_dc_block)
                     dc_blocker->start();
-                if (d_frequency_shift != 0)
-                    freq_shift->start();
+                freq_shift->start();
                 if (d_doppler_enable)
                     doppler_shift->start();
-                if (input_data_type == DATA_FILE)
-                    fft_splitter->start();
+                fft_splitter->start();
                 if (input_data_type == DATA_FILE && d_dump_intermediate != "")
                 {
                     intermediate_file_sink->start();
@@ -231,8 +227,7 @@ namespace satdump
                     logger->trace("Recording intermediate to " + int_file);
                     intermediate_file_sink->start_recording(int_file, d_samplerate);
                 }
-                if (input_data_type == DATA_FILE)
-                    fft_proc->start();
+                fft_proc->start();
                 if (resample && resampler)
                     resampler->start();
                 agc->start();
@@ -245,19 +240,17 @@ namespace satdump
                     file_source->stop();
                 if (d_dc_block)
                     dc_blocker->stop();
-                if (d_frequency_shift != 0)
-                    freq_shift->stop();
+                freq_shift->stop();
                 if (d_doppler_enable)
                     doppler_shift->stop();
-                if (input_data_type == DATA_FILE)
-                    fft_splitter->stop();
+                fft_proc->stop();
+                fft_splitter->stop();
                 if (input_data_type == DATA_FILE && d_dump_intermediate != "")
                 {
                     intermediate_file_sink->stop_recording();
                     intermediate_file_sink->stop();
                 }
-                if (input_data_type == DATA_FILE)
-                    fft_proc->stop();
+                fft_proc->stop();
                 if (resample && resampler)
                     resampler->stop();
                 agc->stop();
@@ -284,14 +277,81 @@ namespace satdump
                         ImGui::TextColored(style::theme.orange, "%s", format_notated(display_freq, "Hz", 4).c_str());
                     }
                     snr_plot.draw(snr, peak_snr);
-                    if (!d_is_streaming_input)
-                        if (ImGui::Checkbox("Show FFT", &show_fft))
-                            fft_splitter->set_enabled("fft", show_fft);
+                    if (ImGui::Checkbox("Show FFT", &show_fft))
+                        fft_splitter->set_enabled("fft", show_fft);
                 }
                 ImGui::EndGroup();
 
                 if (!d_is_streaming_input)
+                {
                     ImGui::ProgressBar((double)progress / (double)filesize, ImVec2(ImGui::GetContentRegionAvail().x, 20 * ui_scale));
+                    drawETA();
+                }
+
+                // Frequency Shift tuning controls
+                ImGui::Separator();
+                ImGui::Text("Frequency Shift:");
+                
+                int64_t current_shift = d_frequency_shift;
+                if (ImGui::InputScalar("Hz##freq_shift_input", ImGuiDataType_S64, &current_shift))
+                {
+                    d_frequency_shift = current_shift;
+                    freq_shift->set_freq(d_samplerate, d_frequency_shift);
+                }
+                
+                ImGui::Text("Tuning: ");
+                ImGui::SameLine();
+                if (ImGui::Button("-1M##freq_shift_tune")) { d_frequency_shift -= 1000000; freq_shift->set_freq(d_samplerate, d_frequency_shift); }
+                ImGui::SameLine();
+                if (ImGui::Button("-1K##freq_shift_tune")) { d_frequency_shift -= 1000; freq_shift->set_freq(d_samplerate, d_frequency_shift); }
+                ImGui::SameLine();
+                if (ImGui::Button("-100##freq_shift_tune")) { d_frequency_shift -= 100; freq_shift->set_freq(d_samplerate, d_frequency_shift); }
+                ImGui::SameLine();
+                if (ImGui::Button("-1##freq_shift_tune")) { d_frequency_shift -= 1; freq_shift->set_freq(d_samplerate, d_frequency_shift); }
+                ImGui::SameLine();
+                if (ImGui::Button("+1##freq_shift_tune")) { d_frequency_shift += 1; freq_shift->set_freq(d_samplerate, d_frequency_shift); }
+                ImGui::SameLine();
+                if (ImGui::Button("+100##freq_shift_tune")) { d_frequency_shift += 100; freq_shift->set_freq(d_samplerate, d_frequency_shift); }
+                ImGui::SameLine();
+                if (ImGui::Button("+1K##freq_shift_tune")) { d_frequency_shift += 1000; freq_shift->set_freq(d_samplerate, d_frequency_shift); }
+                ImGui::SameLine();
+                if (ImGui::Button("+1M##freq_shift_tune")) { d_frequency_shift += 1000000; freq_shift->set_freq(d_samplerate, d_frequency_shift); }
+                
+                if (fft_proc && fft_proc->output_stream)
+                {
+                    ImGui::SameLine();
+                    static double last_shift_time = 0.0;
+                    double current_time = ImGui::GetTime();
+                    bool cooldown_active = (current_time - last_shift_time) < 0.5;
+                    
+                    if (cooldown_active)
+                    {
+                        ImGui::BeginDisabled();
+                    }
+                    if (ImGui::Button("Shift to Peak##freq_shift_tune"))
+                    {
+                        last_shift_time = current_time;
+                        int peak_bin = 4096;
+                        float max_val = -1000.0f;
+                        for (int i = 819; i < 7373; i++)
+                        {
+                            float val = fft_proc->output_stream->writeBuf[i];
+                            if (val > max_val)
+                            {
+                                max_val = val;
+                                peak_bin = i;
+                            }
+                        }
+                        double peak_offset_hz = (double)(peak_bin - 4096) * ((double)final_samplerate / 8192.0);
+                        d_frequency_shift -= (long)peak_offset_hz;
+                        freq_shift->set_freq(d_samplerate, d_frequency_shift);
+                    }
+                    if (cooldown_active)
+                    {
+                        ImGui::EndDisabled();
+                    }
+                }
+                ImGui::Separator();
 
                 drawStopButton();
 
@@ -302,7 +362,7 @@ namespace satdump
 
             void BaseDemodModule::drawFFT()
             {
-                if (show_fft && !d_is_streaming_input)
+                if (show_fft)
                 {
                     ImGui::SetNextWindowSize({400 * (float)ui_scale, (float)(showWaterfall ? 400 : 200) * (float)ui_scale});
                     if (ImGui::Begin("Baseband FFT", NULL, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize))
@@ -337,6 +397,56 @@ namespace satdump
 
                     ImGui::End();
                 }
+            }
+
+            std::string BaseDemodModule::render_eta_string(time_t seconds)
+            {
+                int h = seconds / 3600;
+                int m = (seconds % 3600) / 60;
+                int s = seconds % 60;
+
+                // this sucks why can't we have std::format in this household
+                char buf[16];
+                if (h > 0)
+                {
+                    std::snprintf(buf, sizeof(buf), "%02d:%02d:%02d", h, m, s);
+                }
+                else
+                {
+                    std::snprintf(buf, sizeof(buf), "%02d:%02d", m, s);
+                }
+
+                return buf;
+            }
+
+            void BaseDemodModule::drawETA()
+            {
+                time_t current_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+                time_t elapsed = current_time - start_time;
+
+                double progress_fraction = (double)progress / (double)filesize;
+                double current_eta = elapsed * (1.0 - progress_fraction) / progress_fraction;
+
+                std::string eta_str;
+                if (progress_fraction > 0.001 && elapsed > 0)
+                {
+                    if (averaged_eta < 0)
+                        averaged_eta = current_eta;
+                    else
+                        // Exponential mean average as it fluctuates more than the average Briton's BAC
+                        averaged_eta = 0.01 * current_eta + 0.99 * averaged_eta;
+
+                    eta_str = render_eta_string(averaged_eta);
+                }
+                else
+                {
+                    eta_str = "--:--";
+                }
+
+                ImGui::Text("Elapsed: %s | Estimated remaining: %s",
+                            render_eta_string(elapsed).c_str(), //
+                            eta_str.c_str()                     //
+                );
             }
 
             void BaseDemodModule::drawStopButton()

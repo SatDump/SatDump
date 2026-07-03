@@ -10,47 +10,61 @@ namespace satdump
     {
         while (running)
         {
-            // Lock the mutex and set up
-            std::unique_lock<std::mutex> lock(task_mtx);
+            std::shared_ptr<void> evt = nullptr;
+            std::string evt_name;
+            std::string task_to_run_name;
             time_t sleep_for = std::numeric_limits<time_t>::max();
             time_t wait_began = time(0);
-            ScheduledTask *task_to_run = nullptr;
 
-            // Look for next task to run
-            for (auto &this_task : scheduled_tasks)
+            // Lock the mutex and look for next task to run
             {
-                // This task is already due! Run it
-                time_t next_run = this_task.second.last_run + this_task.second.run_interval;
-                if (next_run <= wait_began)
+                std::unique_lock<std::mutex> lock(task_mtx);
+
+                for (auto &this_task : scheduled_tasks)
                 {
-                    task_to_run = &this_task.second;
-                    sleep_for = 0;
-                    break;
+                    time_t next_run = this_task.second.last_run + this_task.second.run_interval;
+                    if (next_run <= wait_began)
+                    {
+                        evt = this_task.second.evt;
+                        evt_name = this_task.second.evt_name;
+                        task_to_run_name = this_task.first;
+                        sleep_for = 0;
+                        break;
+                    }
+                    else if (sleep_for > next_run - wait_began)
+                    {
+                        sleep_for = next_run - wait_began;
+                        evt = this_task.second.evt;
+                        evt_name = this_task.second.evt_name;
+                        task_to_run_name = this_task.first;
+                    }
                 }
 
-                // This task is the next one to run
-                else if (sleep_for > wait_began - next_run)
+                // Sleep until next task, or we are woken up
+                needs_update = false;
+                if (sleep_for > 0 && running && !needs_update)
                 {
-                    sleep_for = next_run - wait_began;
-                    task_to_run = &this_task.second;
+                    cv.wait_for(lock, std::chrono::seconds(sleep_for), [this] { return !running || needs_update; });
                 }
             }
 
-            // Sleep until next task, or we are woken up
-            needs_update = false;
-            if (sleep_for > 0)
-                cv.wait_for(lock, std::chrono::seconds(sleep_for), [this] { return !running || needs_update; });
             std::this_thread::sleep_for(std::chrono::milliseconds(10)); // TODOREWORK. Hogs CPU otherwise...
 
             // Stop/Restart loop if needed
-            if (!running || needs_update ||          // We were woken up because of a change in the program
-                task_to_run == nullptr ||            // Spurious wake when no task scheduled
-                wait_began + sleep_for > time(NULL)) // Spurious wake
+            if (!running || needs_update || evt == nullptr || wait_began + sleep_for > time(NULL))
                 continue;
 
-            // Run the task that should be due now, and mark it for next run
-            eventBus->fire_event(task_to_run->evt.get(), task_to_run->evt_name);
-            task_to_run->last_run = time(NULL);
+            // Run the task that should be due now (without holding the lock!)
+            eventBus->fire_event(evt.get(), evt_name);
+
+            // Mark it for next run
+            {
+                std::unique_lock<std::mutex> lock(task_mtx);
+                if (scheduled_tasks.count(task_to_run_name) > 0)
+                {
+                    scheduled_tasks[task_to_run_name].last_run = time(NULL);
+                }
+            }
         }
     }
 
