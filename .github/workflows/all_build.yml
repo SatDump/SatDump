@@ -1,6 +1,11 @@
 name: Build All
 
-on: [push]
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -488,7 +493,7 @@ jobs:
     update_nightly_release:
         needs: ["build_windows_x64", "build_windows_arm64", "build_ubuntu_2204", "build_ubuntu_2404", "build_macos_intel", "build_macos_silicon", "build_linux_arm64"]
         runs-on: ubuntu-latest
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/master' }}
 
         steps:
             - name: Download Artifacts
