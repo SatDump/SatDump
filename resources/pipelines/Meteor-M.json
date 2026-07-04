@@ -37,7 +37,13 @@
                 "module": "meteor_hrpt_decoder"
             },
             "products": {
-                "module": "meteor_instruments"
+                "module": "network_server",
+                "parameters": {
+                    "server_mode": "udp_send",
+                    "pkt_size": 1024,
+                    "server_address": "127.0.0.1",
+                    "server_port": 5001
+                }
             }
         }
     },
