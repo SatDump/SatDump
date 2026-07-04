@@ -50,8 +50,8 @@ namespace satdump
             work_mtx.lock();
             if (texture_id == 0 || active)
             {
-                curr_width = size.x > fft_size ? fft_size : size.x;
-                curr_height = size.y > fft_lines ? fft_lines : size.y;
+                curr_width = size.x > fft_size ? fft_size : (size.x < 1.0f ? 1 : (int)size.x);
+                curr_height = size.y > fft_lines ? fft_lines : (size.y < 1.0f ? 1 : (int)size.y);
             }
             if (texture_id == 0)
             {
