@@ -94,11 +94,16 @@ namespace satdump
                 return;
 
             FILE *fp = fopen(file.c_str(), "rb");
+            if (!fp)
+            {
+                logger->error("Could not open PNG file for reading: %s", file.c_str());
+                return;
+            }
 
             png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
             if (!png)
             {
-                fclose(fp);
+                if (fp) fclose(fp);
                 return;
             }
 
@@ -106,7 +111,7 @@ namespace satdump
             if (!info)
             {
                 png_destroy_read_struct(&png, NULL, NULL);
-                fclose(fp);
+                if (fp) fclose(fp);
                 return;
             }
 

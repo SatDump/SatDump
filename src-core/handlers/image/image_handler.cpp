@@ -71,7 +71,6 @@ namespace satdump
                 auto sh = std::make_shared<ImageHandler>(img);
                 sh->image_name = image_name + " Crop";
                 addSubHandler(sh);
-                eventBus->fire_event<explorer::ExplorerSelectHandlerEvent>({sh});
             };
         }
 
@@ -97,7 +96,57 @@ namespace satdump
                     style::beginDisabled();
 
                 needs_to_update |= ImGui::Checkbox("Median Blur", &median_blur_img);
+                needs_to_update |= ImGui::Checkbox("Switching Median", &switching_median_img);
+                if (switching_median_img)
+                {
+                    ImGui::SliderInt("Switching Threshold", &switching_median_threshold, 0, 500);
+                    needs_to_update |= ImGui::IsItemEdited();
+                }
+
+                needs_to_update |= ImGui::Checkbox("Adaptive Median", &adaptive_median_img);
+                if (adaptive_median_img)
+                {
+                    ImGui::SliderInt("Strong Threshold", &adaptive_median_threshold, 0, 500);
+                    needs_to_update |= ImGui::IsItemEdited();
+                }
+
+                needs_to_update |= ImGui::Checkbox("Bilateral Filter", &bilateral_filter_img);
+                if (bilateral_filter_img)
+                {
+                    ImGui::SliderInt("Bilateral Radius", &bilateral_filter_radius, 1, 10);
+                    needs_to_update |= ImGui::IsItemEdited();
+                    ImGui::SliderFloat("Bilateral Intensity Sigma", &bilateral_filter_sigma, 0.1f, 500.0f);
+                    needs_to_update |= ImGui::IsItemEdited();
+                }
+
+                needs_to_update |= ImGui::Checkbox("Inpainting", &simple_inpainting_img);
+                if (simple_inpainting_img)
+                {
+                    ImGui::SliderInt("Inpaint Threshold", &simple_inpainting_threshold, 0, 500);
+                    needs_to_update |= ImGui::IsItemEdited();
+                }
+
                 needs_to_update |= ImGui::Checkbox("Despeckle", &despeckle_img);
+
+                needs_to_update |= ImGui::Checkbox("Selective Impulse", &selective_impulse_img);
+                if (selective_impulse_img)
+                {
+                    ImGui::SliderInt("Impulse Threshold", &selective_impulse_threshold, 0, 1000);
+                    needs_to_update |= ImGui::IsItemEdited();
+                    ImGui::SliderInt("Impulse Window", &selective_impulse_window, 3, 7);
+                    if (selective_impulse_window % 2 == 0) selective_impulse_window++; // Ensure odd
+                    needs_to_update |= ImGui::IsItemEdited();
+                }
+
+                needs_to_update |= ImGui::Checkbox("Scanline Noise Remover", &scanline_noise_img);
+                if (scanline_noise_img)
+                {
+                    ImGui::SliderInt("Scanline Sigma (x10)", &scanline_noise_threshold, 10, 100);
+                    needs_to_update |= ImGui::IsItemEdited();
+                    ImGui::SliderInt("Scanline Radius", &scanline_noise_radius, 1, 50);
+                    needs_to_update |= ImGui::IsItemEdited();
+                }
+
                 needs_to_update |= ImGui::Checkbox("Rotate 180", &rotate180_image);
                 if (image_proj_valid)
                     needs_to_update |= ImGui::Checkbox("Geo Correct", &geocorrect_image); // TODOREWORK Disable if it can't be?
@@ -173,7 +222,7 @@ namespace satdump
             if (needs_to_be_disabled)
                 style::beginDisabled();
 
-            if (widgets::MenuItemTooltip(u8"\ueb4b", "Save Image"))
+            if (ImGui::MenuItem("Save Image"))
             {
                 auto fun = [this]()
                 {
@@ -208,63 +257,13 @@ namespace satdump
         {
             drawSaveMenu();
 
-            if (enableOverlayMenu && renderVectorOverlayMenu(this))
+            if (renderVectorOverlayMenu(this))
                 asyncProcess();
-
-            /////////////
-            // Image Controls
-            /////////////
-
-            // Refresh button
-            if (widgets::MenuItemTooltip(u8"\uf01e", "Refresh (Image Only)"))
-                asyncProcess();
-
-            // Basic controls
-            image_view.zoom_in_next |= widgets::MenuItemTooltip(u8"\ueb81", "Zoom In");
-            image_view.zoom_out_next |= widgets::MenuItemTooltip(u8"\ueb82", "Zoom Out");
-            image_view.autoFitNextFrame |= widgets::MenuItemTooltip(u8"\uF69E", "Fit");
-            image_view.select_crop_next |= widgets::MenuItemTooltip(u8"\uF69D", "Crop", NULL, image_view.select_crop_next);
-
-            if (image_proj_valid)
-            {
-                if (rotate180_image) // Projs do not work with rotated imagery
-                    style::beginDisabled();
-
-                // Show a menu that allows putting this image on an existing or new projection
-                if (widgets::BeginMenuTooltip(u8"\uf484", "Add to projection"))
-                {
-                    std::vector<std::shared_ptr<Handler>> hs;
-                    eventBus->fire_event<explorer::GetAllOfTypeEvent>({"projection_handler", hs});
-
-                    int n = 0;
-                    for (auto &h : hs)
-                    {
-                        std::string id = h->getName() + " (" + std::to_string(++n) + ")" + "##addtoproj";
-                        if (ImGui::MenuItem(id.c_str()))
-                            h->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()), true);
-                    }
-
-                    if (n > 0)
-                        ImGui::Separator();
-
-                    if (ImGui::MenuItem("New Projection"))
-                    {
-                        auto p = std::make_shared<ProjectionHandler>();
-                        p->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()), true);
-                        eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({p});
-                    }
-
-                    ImGui::EndMenu();
-                }
-
-                if (rotate180_image)
-                    style::endDisabled();
-            }
         }
 
         void ImageHandler::drawContents(ImVec2 win_size)
         {
-            ImGui::BeginChild("ContentChild", win_size, false, ImGuiWindowFlags_NoScrollbar);
+            ImGui::BeginChild("ContentChild", win_size, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_MenuBar);
 
             if (imgview_needs_update)
             {
@@ -304,7 +303,58 @@ namespace satdump
                 };
             }
 
-            image_view.draw({ImGui::GetWindowSize().x, ImGui::GetWindowSize().y + 14 * ui_scale});
+            if (ImGui::BeginMenuBar())
+            {
+                // Refresh button
+                if (widgets::MenuItemTooltip(u8"\uf01e", "Refresh (Image Only)"))
+                    asyncProcess();
+
+                // Basic controls
+                image_view.zoom_in_next |= ImGui::MenuItem(u8"\ueb81");
+                image_view.zoom_out_next |= ImGui::MenuItem(u8"\ueb82");
+                image_view.autoFitNextFrame |= ImGui::MenuItem("Fit");
+                image_view.select_crop_next |= ImGui::MenuItem("Crop");
+
+                if (image_proj_valid)
+                {
+                    if (rotate180_image) // Projs do not work with rotated imagery
+                        style::beginDisabled();
+
+                    // Show a menu that allows putting this image on an existing or new projection
+                    if (widgets::BeginMenuTooltip(u8"\uf484", "Add to projection"))
+                    {
+                        std::vector<std::shared_ptr<Handler>> hs;
+                        eventBus->fire_event<explorer::GetAllOfTypeEvent>({"projection_handler", hs});
+
+                        int n = 0;
+                        for (auto &h : hs)
+                        {
+                            std::string id = h->getName() + " (" + std::to_string(++n) + ")" + "##addtoproj";
+                            if (ImGui::MenuItem(id.c_str()))
+                                h->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()), true);
+                        }
+
+                        if (n > 0)
+                            ImGui::Separator();
+
+                        if (ImGui::MenuItem("New Projection"))
+                        {
+                            auto p = std::make_shared<ProjectionHandler>();
+                            p->addSubHandler(std::make_shared<ImageHandler>(getImage(), getName()), true);
+                            eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({p});
+                        }
+
+                        ImGui::EndMenu();
+                    }
+
+                    if (rotate180_image)
+                        style::endDisabled();
+                }
+
+                ImGui::EndMenuBar();
+            }
+
+            image_view.draw(ImGui::GetContentRegionMax());
 
             ImGui::EndChild();
         }
@@ -317,6 +367,21 @@ namespace satdump
             normalize_img = getValueOrDefault(p["normalize"], false);
             invert_img = getValueOrDefault(p["invert"], false);
             median_blur_img = getValueOrDefault(p["median_blur"], median_blur_img);
+            switching_median_img = getValueOrDefault(p["switching_median"], switching_median_img);
+            switching_median_threshold = getValueOrDefault(p["switching_median_threshold"], switching_median_threshold);
+            adaptive_median_img = getValueOrDefault(p["adaptive_median"], adaptive_median_img);
+            adaptive_median_threshold = getValueOrDefault(p["adaptive_median_threshold"], adaptive_median_threshold);
+            bilateral_filter_img = getValueOrDefault(p["bilateral_filter"], bilateral_filter_img);
+            bilateral_filter_radius = getValueOrDefault(p["bilateral_filter_radius"], bilateral_filter_radius);
+            bilateral_filter_sigma = getValueOrDefault(p["bilateral_filter_sigma"], bilateral_filter_sigma);
+            simple_inpainting_img = getValueOrDefault(p["simple_inpainting"], simple_inpainting_img);
+            simple_inpainting_threshold = getValueOrDefault(p["simple_inpainting_threshold"], simple_inpainting_threshold);
+            selective_impulse_img = getValueOrDefault(p["selective_impulse"], selective_impulse_img);
+            selective_impulse_threshold = getValueOrDefault(p["selective_impulse_threshold"], selective_impulse_threshold);
+            selective_impulse_window = getValueOrDefault(p["selective_impulse_window"], selective_impulse_window);
+            scanline_noise_img = getValueOrDefault(p["scanline_noise"], scanline_noise_img);
+            scanline_noise_threshold = getValueOrDefault(p["scanline_noise_threshold"], scanline_noise_threshold);
+            scanline_noise_radius = getValueOrDefault(p["scanline_noise_radius"], scanline_noise_radius);
             despeckle_img = getValueOrDefault(p["despeckle"], despeckle_img);
             rotate180_image = getValueOrDefault(p["rotate180"], rotate180_image);
             geocorrect_image = getValueOrDefault(p["geocorrect"], geocorrect_image);
@@ -338,6 +403,21 @@ namespace satdump
             p["normalize"] = normalize_img;
             p["invert"] = invert_img;
             p["median_blur"] = median_blur_img;
+            p["switching_median"] = switching_median_img;
+            p["switching_median_threshold"] = switching_median_threshold;
+            p["adaptive_median"] = adaptive_median_img;
+            p["adaptive_median_threshold"] = adaptive_median_threshold;
+            p["bilateral_filter"] = bilateral_filter_img;
+            p["bilateral_filter_radius"] = bilateral_filter_radius;
+            p["bilateral_filter_sigma"] = bilateral_filter_sigma;
+            p["simple_inpainting"] = simple_inpainting_img;
+            p["simple_inpainting_threshold"] = simple_inpainting_threshold;
+            p["selective_impulse"] = selective_impulse_img;
+            p["selective_impulse_threshold"] = selective_impulse_threshold;
+            p["selective_impulse_window"] = selective_impulse_window;
+            p["scanline_noise"] = scanline_noise_img;
+            p["scanline_noise_threshold"] = scanline_noise_threshold;
+            p["scanline_noise_radius"] = scanline_noise_radius;
             p["despeckle"] = despeckle_img;
             p["rotate180"] = rotate180_image;
             p["geocorrect"] = geocorrect_image;
@@ -375,8 +455,8 @@ namespace satdump
 
         void ImageHandler::do_process()
         {
-            bool image_needs_processing = huesaturation_img | equalize_img | equalize_perchannel_img | white_balance_img | normalize_img | invert_img | median_blur_img | rotate180_image |
-                                          geocorrect_image | despeckle_img | brightness_contrast_image | remove_background_img /*OVERLAY*/;
+            bool image_needs_processing = huesaturation_img | equalize_img | equalize_perchannel_img | white_balance_img | normalize_img | invert_img | median_blur_img |
+                                          switching_median_img | adaptive_median_img | bilateral_filter_img | simple_inpainting_img | selective_impulse_img | scanline_noise_img | rotate180_image | geocorrect_image | despeckle_img | brightness_contrast_image | remove_background_img /*OVERLAY*/;
 
             correct_fwd_lut.clear();
             correct_rev_lut.clear();
@@ -401,6 +481,18 @@ namespace satdump
                         image::linear_invert(curr_image);
                     if (median_blur_img)
                         image::median_blur(curr_image);
+                    if (switching_median_img)
+                        image::switching_median(curr_image, switching_median_threshold);
+                    if (adaptive_median_img)
+                        image::adaptive_median(curr_image, adaptive_median_threshold);
+                    if (bilateral_filter_img)
+                        image::bilateral_filter(curr_image, bilateral_filter_radius, bilateral_filter_sigma);
+                    if (simple_inpainting_img)
+                        image::simple_inpainting(curr_image, simple_inpainting_threshold);
+                    if (selective_impulse_img)
+                        image::selective_impulse_filter(curr_image, selective_impulse_threshold, selective_impulse_window);
+                    if (scanline_noise_img)
+                        image::scanline_noise_remover(curr_image, scanline_noise_threshold, scanline_noise_radius);
                     if (despeckle_img)
                         image::kuwahara_filter(curr_image);
                     if (brightness_contrast_image)

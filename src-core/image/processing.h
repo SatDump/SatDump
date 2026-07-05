@@ -61,5 +61,57 @@ namespace satdump
          * considered bad
          */
         void simple_despeckle(Image &img, int thresold = 10);
+
+        /**
+         * @brief Switching Median filter. Only replaces pixels
+         * considered bad (noise spikes) with the median.
+         * @param img image to process
+         * @param thresold difference over which the pixel is
+         * considered bad
+         */
+        void switching_median(Image &img, int thresold = 40);
+
+        /**
+         * @brief Adaptive (Cascaded) Median filter. Uses 3x3 or 5x5
+         * median depending on the noise level.
+         * @param img image to process
+         * @param threshold_strong difference over which the 5x5 median
+         * is preferred over 3x3
+         */
+        void adaptive_median(Image &img, int threshold_strong = 60);
+
+        /**
+         * @brief Bilateral Filter. Edge-preserving smoother.
+         * @param img image to process
+         * @param radius spatial radius
+         * @param sigma_intensity intensity difference sigma
+         */
+        void bilateral_filter(Image &img, int radius = 3, float sigma_intensity = 25.0f);
+
+        /**
+         * @brief Simple Inpainting (Noise filling).
+         * @param img image to process
+         * @param threshold difference over which the pixel is
+         * considered "bad" and needs to be filled
+         */
+        void simple_inpainting(Image &img, int threshold = 40);
+
+        /**
+         * @brief Selective Impulse Filter. Only replaces pixel if it's
+         * local min/max and exceeds threshold from median.
+         * @param img image to process
+         * @param threshold difference from median
+         * @param window_size size of the search window (3, 5, 7...)
+         */
+        void selective_impulse_filter(Image &img, int threshold = 50, int window_size = 3);
+
+        /**
+         * @brief Scanline Noise Remover (1D Horizontal Impulse filter).
+         * Optimized CPU implementation (Sliding window).
+         * @param img image to process
+         * @param threshold difference from local horizontal mean
+         * @param radius radius of the search window (1D)
+         */
+        void scanline_noise_remover(Image &img, int threshold = 40, int radius = 5);
     } // namespace image
 } // namespace satdump

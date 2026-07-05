@@ -98,6 +98,21 @@ namespace satdump
             bool normalize_img = false;
             bool invert_img = false;
             bool median_blur_img = false;
+            bool switching_median_img = false;
+            int switching_median_threshold = 40;
+            bool adaptive_median_img = false;
+            int adaptive_median_threshold = 60;
+            bool bilateral_filter_img = false;
+            int bilateral_filter_radius = 3;
+            float bilateral_filter_sigma = 25.0f;
+            bool simple_inpainting_img = false;
+            int simple_inpainting_threshold = 40;
+            bool selective_impulse_img = false;
+            int selective_impulse_threshold = 50;
+            int selective_impulse_window = 3;
+            bool scanline_noise_img = false;
+            int scanline_noise_threshold = 30;
+            int scanline_noise_radius = 5;
             bool despeckle_img = false;
             bool rotate180_image = false;
             bool geocorrect_image = false;
@@ -126,10 +141,6 @@ namespace satdump
             std::function<void(int x, int y)> additionalMouseCallback = [](int, int) {};
             // TODOREWORK
             bool wasMenuTriggered = false;
-
-        public:
-            // Allow disabling overlay menu, eg, for projections where they are separate
-            bool enableOverlayMenu = true;
 
         public:
             /**
@@ -164,6 +175,21 @@ namespace satdump
                 normalize_img = false;
                 invert_img = false;
                 median_blur_img = false;
+                switching_median_img = false;
+                switching_median_threshold = 40;
+                adaptive_median_img = false;
+                adaptive_median_threshold = 60;
+                bilateral_filter_img = false;
+                bilateral_filter_radius = 3;
+                bilateral_filter_sigma = 25.0f;
+                simple_inpainting_img = false;
+                simple_inpainting_threshold = 40;
+                selective_impulse_img = false;
+                selective_impulse_threshold = 50;
+                selective_impulse_window = 3;
+                scanline_noise_img = false;
+                scanline_noise_threshold = 40;
+                scanline_noise_radius = 5;
                 despeckle_img = false;
                 rotate180_image = false;
                 geocorrect_image = false;
