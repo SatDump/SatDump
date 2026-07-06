@@ -26,7 +26,7 @@ namespace satdump
 
         // Thread Safety
         upcoming_satellite_passes_mtx.lock();
-        auto tle_registry = db_keplers->all();
+        auto &tle_registry = db_keplers->all_;
         int num_objects = std::min(tle_registry.size(), satoptions.size()); // These can temporarily get out of sync on update
 
         if (autotrack_engaged)

@@ -86,15 +86,7 @@ namespace satdump
             return tles;
         }
 
-    private:
-        std::vector<TLE> all_;
-
     public:
-        std::vector<TLE> &all()
-        {
-            if (all_.size() == 0)
-                all_ = get_all_tles();
-            return all_;
-        }; // TODOREWORK remove! Temporary!
+        std::vector<TLE> all_;
     };
 } // namespace satdump

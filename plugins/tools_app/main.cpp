@@ -1,3 +1,5 @@
+#include "cli/hard2soft.h"
+#include "core/cli/cli.h"
 #include "core/plugin.h"
 #include "explorer/explorer.h"
 #include "lutgen/lut_generator.h"
@@ -11,7 +13,10 @@ public:
     {
         // TODOREWORK maybe a way to call up/init a handler?
         satdump::eventBus->register_handler<satdump::explorer::RenderLoadMenuElementsEvent>(renderExplorerLoaderButton);
+        satdump::eventBus->register_handler<satdump::cli::RegisterSubcommandEvent>(registerCliCommands);
     }
+
+    static void registerCliCommands(const satdump::cli::RegisterSubcommandEvent &evt) { evt.cmd_handlers.push_back(std::make_shared<satdump::HardToSoftCmdHandler>()); }
 
     static void renderExplorerLoaderButton(const satdump::explorer::RenderLoadMenuElementsEvent &evt)
     {

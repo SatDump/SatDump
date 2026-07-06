@@ -9,7 +9,7 @@ namespace satdump
 {
     AutoTrackScheduler::AutoTrackScheduler()
     {
-        auto tle_registry = db_keplers->all();
+        auto &tle_registry = db_keplers->all_;
         if (tle_registry.size() > 0)
             has_tle = true;
 
@@ -22,7 +22,7 @@ namespace satdump
             {
                 upcoming_satellite_passes_mtx.lock();
 
-                auto tle_registry = db_keplers->all();
+                auto &tle_registry = db_keplers->all_;
                 if (tle_registry.size() > 0)
                     has_tle = true;
 

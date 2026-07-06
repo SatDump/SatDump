@@ -36,6 +36,8 @@ namespace satdump
 
         // Start auto-update (or update now?)
         autoUpdateKeplers();
+
+        all_ = get_all_tles();
     }
 
     void KeplerDBHandler::autoUpdateKeplers()
@@ -140,7 +142,7 @@ namespace satdump
         // Update last update timestamp & other stuff
         h->set_meta("kepler_last_updated", std::to_string(time(0)));
         logger->info("%d Keplers in database!", h->get_table_size("kepler"));
-        all_.clear();
+        all_ = get_all_tles();
         eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
     }
 
