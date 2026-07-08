@@ -1,7 +1,10 @@
+#include "core/exception.h"
+#include "image/image.h"
 #include "image_utils.h"
 #include <algorithm>
 #include <cfloat>
 #include <cmath>
+#include <string>
 
 namespace satdump
 {
@@ -267,6 +270,45 @@ namespace satdump
                         }
                     }
                 }
+            }
+        }
+
+        void rotate(Image &img, int angle)
+        {
+            if (angle == 0) {}
+            else if (angle == 90)
+            {
+                image::Image img2(img.depth(), img.height(), img.width(), img.channels());
+
+                size_t h = img.height(), w = img.width();
+
+                for (size_t x = 0; x < img.width(); x++)
+                    for (size_t y = 0; y < img.height(); y++)
+                        for (size_t c = 0; c < img.channels(); c++)
+                            img2.set(c, y, x, img.get(c, x, (h - 1) - y));
+
+                img = img2;
+            }
+            else if (angle == 180)
+            {
+                img.mirror(1, 1);
+            }
+            else if (angle == 270)
+            {
+                image::Image img2(img.depth(), img.height(), img.width(), img.channels());
+
+                size_t h = img.height(), w = img.width();
+
+                for (size_t x = 0; x < img.width(); x++)
+                    for (size_t y = 0; y < img.height(); y++)
+                        for (size_t c = 0; c < img.channels(); c++)
+                            img2.set(c, y, x, img.get(c, (w - 1) - x, y));
+
+                img = img2;
+            }
+            else
+            {
+                throw satdump_exception("Invalid image rotation angle " + std::to_string(angle));
             }
         }
     } // namespace image

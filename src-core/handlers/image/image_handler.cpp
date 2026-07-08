@@ -98,7 +98,16 @@ namespace satdump
 
                 needs_to_update |= ImGui::Checkbox("Median Blur", &median_blur_img);
                 needs_to_update |= ImGui::Checkbox("Despeckle", &despeckle_img);
-                needs_to_update |= ImGui::Checkbox("Rotate 180", &rotate180_image);
+
+                if (ImGui::RadioButton("Rotate 0", rotate_image == 0))
+                    needs_to_update = 1, rotate_image = 0;
+                if (ImGui::RadioButton("Rotate 90", rotate_image == 90))
+                    needs_to_update = 1, rotate_image = 90;
+                if (ImGui::RadioButton("Rotate 180", rotate_image == 180))
+                    needs_to_update = 1, rotate_image = 180;
+                if (ImGui::RadioButton("Rotate 270", rotate_image == 270))
+                    needs_to_update = 1, rotate_image = 270;
+
                 if (image_proj_valid)
                     needs_to_update |= ImGui::Checkbox("Geo Correct", &geocorrect_image); // TODOREWORK Disable if it can't be?
                 needs_to_update |= ImGui::Checkbox("Equalize", &equalize_img);
@@ -227,7 +236,7 @@ namespace satdump
 
             if (image_proj_valid)
             {
-                if (rotate180_image) // Projs do not work with rotated imagery
+                if (rotate_image) // Projs do not work with rotated imagery
                     style::beginDisabled();
 
                 // Show a menu that allows putting this image on an existing or new projection
@@ -257,7 +266,7 @@ namespace satdump
                     ImGui::EndMenu();
                 }
 
-                if (rotate180_image)
+                if (rotate_image)
                     style::endDisabled();
             }
         }
@@ -288,6 +297,29 @@ namespace satdump
                         double val = image_calib.getVal(img.getf(0, xc, y));
                         ImGui::Text("Unit : %f %s", val, image_calib.unit.c_str());
                     }
+
+                    // Handle rotations
+                    if (rotate_image)
+                    {
+                        if (rotate_image == 180)
+                        {
+                            x = (img.width() - 1) - x;
+                            y = (img.height() - 1) - y;
+                        }
+                        else if (rotate_image == 90)
+                        {
+                            auto x1 = y;
+                            y = (img.width() - 1) - x;
+                            x = x1;
+                        }
+                        else if (rotate_image == 270)
+                        {
+                            auto x1 = (img.height() - 1) - y;
+                            y = x;
+                            x = x1;
+                        }
+                    }
+
                     if (image_proj_valid)
                     {
                         geodetic::geodetic_coords_t pos;
@@ -321,7 +353,7 @@ namespace satdump
             invert_img = getValueOrDefault(p["invert"], false);
             median_blur_img = getValueOrDefault(p["median_blur"], median_blur_img);
             despeckle_img = getValueOrDefault(p["despeckle"], despeckle_img);
-            rotate180_image = getValueOrDefault(p["rotate180"], rotate180_image);
+            rotate_image = getValueOrDefault(p["rotate180"], rotate_image);
             geocorrect_image = getValueOrDefault(p["geocorrect"], geocorrect_image);
             brightness_contrast_image = getValueOrDefault(p["brightness_contrast"], false);
             brightness_contrast_brightness_image = getValueOrDefault(p["brightness_contrast_brightness"], 0);
@@ -342,7 +374,7 @@ namespace satdump
             p["invert"] = invert_img;
             p["median_blur"] = median_blur_img;
             p["despeckle"] = despeckle_img;
-            p["rotate180"] = rotate180_image;
+            p["rotate"] = rotate_image;
             p["geocorrect"] = geocorrect_image;
             p["brightness_contrast"] = brightness_contrast_image;
             p["brightness_contrast_brightness"] = brightness_contrast_brightness_image;
@@ -378,7 +410,7 @@ namespace satdump
 
         void ImageHandler::do_process()
         {
-            bool image_needs_processing = huesaturation_img | equalize_img | equalize_perchannel_img | white_balance_img | normalize_img | invert_img | median_blur_img | rotate180_image |
+            bool image_needs_processing = huesaturation_img | equalize_img | equalize_perchannel_img | white_balance_img | normalize_img | invert_img | median_blur_img | rotate_image |
                                           geocorrect_image | despeckle_img | brightness_contrast_image | remove_background_img /*OVERLAY*/;
 
             correct_fwd_lut.clear();
@@ -410,8 +442,6 @@ namespace satdump
                         image::brightness_contrast(curr_image, brightness_contrast_brightness_image, brightness_contrast_contrast_image);
                     if (remove_background_img)
                         image::remove_background(curr_image, nullptr); // TODOREWORK progress?
-                    if (rotate180_image)
-                        curr_image.mirror(true, true);
 
                     if (geocorrect_image)
                     { // TODOREWORK handle disabling projs, etc
@@ -453,19 +483,13 @@ namespace satdump
                 *p = cfg;
                 p->init(1, 0);
 
-                double rotate180 = rotate180_image;
-                auto pfunc = [&p, rotate180](double lat, double lon, double h, double w) mutable -> std::pair<double, double>
+                auto pfunc = [&p](double lat, double lon, double h, double w) mutable -> std::pair<double, double>
                 {
                     double x, y;
                     if (p->forward(geodetic::geodetic_coords_t(lat, lon, 0, false), x, y) || x < 0 || x >= w || y < 0 || y >= h)
                         return {-1, -1};
                     else
-                    {
-                        if (rotate180)
-                            return {w - 1 - x, h - 1 - y};
-                        else
-                            return {x, y};
-                    }
+                        return {x, y};
                 };
 
                 for (int i = subhandlers.size() - 1; i >= 0; i--)
@@ -478,6 +502,17 @@ namespace satdump
                         sh_h->draw_to_image(curr_image, pfunc);
                     }
                 }
+            }
+
+            // Special case for rotations, post-overlays
+            try
+            {
+                if (rotate_image)
+                    image::rotate(curr_image, rotate_image);
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Error processing image! %s", e.what());
             }
 
             subhandlers_mtx.unlock();

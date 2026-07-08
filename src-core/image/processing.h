@@ -61,5 +61,12 @@ namespace satdump
          * considered bad
          */
         void simple_despeckle(Image &img, int thresold = 10);
+
+        /**
+         * @brief Rotate image by 0, 90, 180 or 270 degs
+         * @param img image to rotate
+         * @param angle angle to rotate the image by
+         */
+        void rotate(Image &img, int angle);
     } // namespace image
 } // namespace satdump
