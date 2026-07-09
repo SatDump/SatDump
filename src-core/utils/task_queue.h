@@ -5,6 +5,8 @@
  * @brief A simple single-thread thread pool.
  */
 
+#include <atomic>
+#include <condition_variable>
 #include <functional>
 #include <mutex>
 #include <queue>
@@ -25,9 +27,11 @@ namespace satdump
     private:
         std::thread task_thread;
         std::mutex queue_mtx;
+        std::condition_variable queue_cv;
         std::queue<std::function<void()>> task_queue;
 
-        bool thread_exited = true;
+        std::atomic<bool> thread_exited{true};
+        bool should_stop = false;
 
     private:
         void threadFunc();

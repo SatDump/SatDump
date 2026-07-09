@@ -181,7 +181,7 @@ namespace slog
 
     void Logger::log(LogLevel lvl, std::string v)
     {
-        sink_mtx.lock();
+        std::lock_guard<std::mutex> lock(sink_mtx);
         LogMsg m;
         m.str = v;
         m.lvl = lvl;
@@ -201,7 +201,6 @@ namespace slog
         if (m.lvl >= logger_lvl)
             for (auto &l : sinks)
                 l->receive(m);
-        sink_mtx.unlock();
     }
 
     void Logger::logf(LogLevel lvl, std::string fmt, va_list args)
@@ -258,21 +257,19 @@ namespace slog
 
     void Logger::add_sink(std::shared_ptr<LoggerSink> sink)
     {
-        sink_mtx.lock();
+        std::lock_guard<std::mutex> lock(sink_mtx);
         for (LogMsg &msg : init_log_buffer)
             sink->receive(msg);
         sinks.push_back(sink);
-        sink_mtx.unlock();
     }
 
     void Logger::del_sink(std::shared_ptr<LoggerSink> sink)
     {
-        sink_mtx.lock();
+        std::lock_guard<std::mutex> lock(sink_mtx);
         auto it = std::find_if(sinks.begin(), sinks.end(), [&sink](std::shared_ptr<LoggerSink> &c)
                                { return sink.get() == c.get(); });
         if (it != sinks.end())
             sinks.erase(it);
-        sink_mtx.unlock();
     }
 }
 
