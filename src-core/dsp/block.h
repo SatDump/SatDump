@@ -171,12 +171,12 @@ namespace satdump
             void link(Block *ptr, int output_index, int input_index, int nbuf) { set_input(ptr->get_output(output_index, nbuf), input_index); }
 
         private:
-            bool blk_should_run;
+            std::atomic<bool> blk_should_run{false}; // atomic: read from run() thread, written from start()/stop()
             std::mutex blk_th_mtx;
             std::thread blk_th;
             void run()
             {
-                while (blk_should_run)
+                while (blk_should_run.load())
                     if (work())
                         break;
             }
@@ -186,7 +186,7 @@ namespace satdump
              * @brief Used to signal to a block it should exit in order
              * to stop(). Usually only needed in sources.
              */
-            bool work_should_exit;
+            std::atomic<bool> work_should_exit{false}; // atomic: checked from work() thread, set from stop()
 
             /**
              * @brief The actual looping work function meant to handle
@@ -201,7 +201,7 @@ namespace satdump
              * @brief Check if the work function is running.
              * @return true if running
              */
-            bool is_work_running() { return blk_should_run; }
+            bool is_work_running() { return blk_should_run.load(); }
 
         public:
             /**
