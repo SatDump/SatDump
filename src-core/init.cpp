@@ -1,12 +1,13 @@
 #define SATDUMP_DLL_EXPORT 1
-#include "init.h"
+#include "db/kepler/kepler_handler.h"
 #include "core/config.h"
 #include "core/plugin.h"
 #include "core/resources.h"
-#include "db/kepler/kepler_handler.h"
+#include "init.h"
 #include "logger.h"
 #include "satdump_vars.h"
 #include <filesystem>
+#include <curl/curl.h>
 
 #include "db/db_handler.h"
 #include "db/iers/iers_handler.h"
@@ -46,42 +47,43 @@ namespace satdump
     {
         auto lvl = logger->get_level();
         logger->set_level(slog::LOG_INFO);
-        logger->info("   _____       _     _____                        ");
-        logger->info("  / ____|     | |   |  __ \\                       ");
-        logger->info(" | |  __  ___ | |__ | |  | |_   _ _ __ ___  _ __  ");
-        logger->info(" | | |_ |/ _ \\| '\\| '_ \\| |  | | | | | '_ ` _ \\| '_ \\ ");
-        logger->info(" | |__| | (_) | |_) | |__| | |_| | | | | | | |_) |");
-        logger->info("  \\_____|\\___/|_.__/|_____/ \\__,_|_| |_| |_| .__/ ");
-        logger->info("                                           | |    ");
-        logger->info("                                           |_|    ");
-        logger->info("");
+        logger->info("   _____       __  ____                      ");
+        logger->info("  / ___/____ _/ /_/ __ \\__  ______ ___  ____ ");
+        logger->info("  \\__ \\/ __ `/ __/ / / / / / / __ `__ \\/ __ \\");
+        logger->info(" ___/ / /_/ / /_/ /_/ / /_/ / / / / / / /_/ /");
+        logger->info("/____/\\__,_/\\__/_____/\\__,_/_/ /_/ /_/ .___/ ");
+        logger->info("                                    /_/      ");
         logger->info("Starting " + getSatDumpVersionName());
         logger->info("");
         logger->set_level(lvl);
 
 #ifdef _WIN32
-        if (std::filesystem::exists("gobdump_cfg.json"))
+        if (std::filesystem::exists("satdump_cfg.json"))
             user_path = "./config";
         else
-            user_path = std::string(getenv("APPDATA")) + "/gobdump";
+        {
+            const char* appdata = getenv("APPDATA");
+            user_path = (appdata ? std::string(appdata) : ".") + "/satdump";
+        }
 #elif __ANDROID__
         user_path = ".";
 #else
-        user_path = std::string(getenv("HOME")) + "/.config/gobdump";
+        const char* home = getenv("HOME");
+        user_path = (home ? std::string(home) : ".") + "/.config/satdump";
 #endif
 
         try
         {
-            if (std::filesystem::exists("gobdump_cfg.json"))
-                satdump_cfg.load("gobdump_cfg.json", user_path);
+            if (std::filesystem::exists("satdump_cfg.json"))
+                satdump_cfg.load("satdump_cfg.json", user_path);
             else
-                satdump_cfg.load(satdump::RESPATH + "gobdump_cfg.json", user_path);
+                satdump_cfg.load(satdump::RESPATH + "satdump_cfg.json", user_path);
 
             db = std::make_shared<DBHandler>(user_path + "/main.db");
         }
         catch (std::exception &e)
         {
-            logger->critical("Error loading GobDump config! GobDump will now exit. Error:\n%s", e.what());
+            logger->critical("Error loading SatDump config! SatDump will now exit. Error:\n%s", e.what());
             // if (is_gui)
             //    pfd::message("SatDump", "Error loading SatDump config! SatDump will now exit. Error:\n\n" + std::string(e.what()), pfd::choice::ok, pfd::icon::error); TODOREWORK bring this back
             exit(1);
@@ -181,11 +183,15 @@ namespace satdump
 
         // Start task scheduler
         taskScheduler->start_thread();
+
+        // Initialize libcurl globally
+        curl_global_init(CURL_GLOBAL_ALL);
     }
 
     void exitSatDump()
     {
-        logger->info("Exiting GobDump! Bye!");
+        logger->info("Exiting SatDump! Bye!");
         taskScheduler.reset();
+        curl_global_cleanup();
     }
 } // namespace satdump
