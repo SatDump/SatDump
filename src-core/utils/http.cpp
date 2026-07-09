@@ -39,8 +39,6 @@ namespace satdump
         bool ret = 1;
         char error_buffer[CURL_ERROR_SIZE] = {0};
 
-        curl_global_init(CURL_GLOBAL_ALL);
-
         curl = curl_easy_init();
         if (curl)
         {
@@ -88,7 +86,6 @@ namespace satdump
             if (chunk != NULL)
                 curl_slist_free_all(chunk);
         }
-        curl_global_cleanup();
         return ret;
     }
 
@@ -98,8 +95,6 @@ namespace satdump
         CURLcode res;
         bool ret = 1;
         char error_buffer[CURL_ERROR_SIZE] = {0};
-
-        curl_global_init(CURL_GLOBAL_ALL);
 
         curl = curl_easy_init();
         if (curl)
@@ -141,7 +136,6 @@ namespace satdump
             if (chunk != NULL)
                 curl_slist_free_all(chunk);
         }
-        curl_global_cleanup();
         return ret;
     }
 } // namespace satdump
