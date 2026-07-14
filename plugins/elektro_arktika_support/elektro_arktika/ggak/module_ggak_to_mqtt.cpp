@@ -29,14 +29,14 @@ namespace elektro_arktika
             while (should_run())
             {
                 // Read buffer
-                read_data((uint8_t *)frame_buffer + 4, BUFFER_SIZE);
+                read_data((uint8_t *)frame_buffer + 8, BUFFER_SIZE - 8);
 
                 *((double *)frame_buffer) = time(0);
 
                 mqtt->publish("ggak/l2/all", frame_buffer, BUFFER_SIZE, MQTT_PUBLISH_QOS_1);
 
                 // Write it out
-                write_data((uint8_t *)frame_buffer, BUFFER_SIZE);
+                write_data((uint8_t *)frame_buffer + 8, BUFFER_SIZE - 8);
             }
 
             cleanup();
