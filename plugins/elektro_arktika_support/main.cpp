@@ -1,4 +1,5 @@
 #include "core/plugin.h"
+#include "elektro_arktika/ggak/module_ggak_to_mqtt.h"
 #include "logger.h"
 
 #include "elektro_arktika/instruments/msugs/module_msugs.h"
@@ -15,6 +16,7 @@ public:
     {
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, elektro_arktika::msugs::MSUGSDecoderModule);
         REGISTER_MODULE_EXTERNAL(evt.modules_registry, elektro::lrit::ELEKTROLRITDataDecoderModule);
+        REGISTER_MODULE_EXTERNAL(evt.modules_registry, elektro_arktika::ggak::GGAKToMQTTModule);
     }
 };
 
