@@ -33,7 +33,7 @@ namespace elektro_arktika
 
                 *((double *)frame_buffer) = time(0);
 
-                mqtt->publish("ggak/l2", frame_buffer, BUFFER_SIZE, MQTT_PUBLISH_QOS_1);
+                mqtt->publish("ggak/l2/all", frame_buffer, BUFFER_SIZE, MQTT_PUBLISH_QOS_1);
 
                 // Write it out
                 write_data((uint8_t *)frame_buffer, BUFFER_SIZE);
