@@ -2,6 +2,7 @@
 #include "imgui/imgui.h"
 #include "libs/mqttc/mqtt.h"
 #include "utils/mqtt_client.h"
+#include "utils/time.h"
 #include <cstdint>
 #include <ctime>
 #include <memory>
@@ -31,7 +32,7 @@ namespace elektro_arktika
                 // Read buffer
                 read_data((uint8_t *)frame_buffer + 8, BUFFER_SIZE - 8);
 
-                *((double *)frame_buffer) = time(0);
+                *((double *)frame_buffer) = satdump::getTime();
 
                 mqtt->publish("ggak/l2/all", frame_buffer, BUFFER_SIZE, MQTT_PUBLISH_QOS_1);
 
