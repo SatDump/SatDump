@@ -35,6 +35,7 @@ file(GLOB_RECURSE SatDump_core_CPPS *.cpp
     libs/supernovas/*.c
     libs/calceph/*.c
     libs/bpe/*.c
+    libs/mqttc/*.c
 )
 
 ################################################################
