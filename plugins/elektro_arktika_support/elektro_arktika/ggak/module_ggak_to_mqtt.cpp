@@ -7,7 +7,7 @@
 #include <ctime>
 #include <memory>
 
-#define BUFFER_SIZE (8 + 1792)
+#define BUFFER_SIZE (8 + 224)
 
 namespace elektro_arktika
 {
