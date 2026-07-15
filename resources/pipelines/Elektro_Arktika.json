@@ -260,6 +260,49 @@
             }
         }
     },
+    "elektro_ggak_mqtt": {
+        "name": "ELEKTRO-L GGAK MQTT Test",
+        "live": [
+            1,
+            2,
+            3
+        ],
+        "frequencies": [
+            [
+                "SEM TLM",
+                1693.0e6
+            ]
+        ],
+        "samplerate": 3e6,
+        "work": {
+            "baseband": {},
+            "soft": {
+                "module": "pm_demod",
+                "parameters": {
+                    "symbolrate": 5e3,
+                    "pll_bw": 0.01,
+                    "rrc_alpha": 0.5
+                }
+            },
+            "cadu": {
+                "module": "ccsds_simple_psk_decoder",
+                "parameters": {
+                    "constellation": "bpsk",
+                    "cadu_size": 1792,
+                    "derandomize": false,
+                    "nrzm": false,
+                    "rs_i": 0
+                }
+            },
+            "mqtt": {
+                "module": "ggak_to_mqtt",
+                "parameters": {
+                    "address": "192.168.0.100",
+                    "port": "1883"
+                }
+            }
+        }
+    },
     "arktika_m1_ggak": {
         "name": "ARKTIKA-M N°1 GGAK",
         "live": [
