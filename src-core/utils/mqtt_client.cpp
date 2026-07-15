@@ -1,5 +1,6 @@
 #include "mqtt_client.h"
 #include "core/exception.h"
+#include "libs/mqttc/mqtt.h"
 #include "libs/mqttc/posix_sockets.h"
 #include <chrono>
 #include <thread>
@@ -49,9 +50,12 @@ namespace satdump
 
     MQTTClient::~MQTTClient()
     {
+        mqtt_disconnect(&client);
+
         run_refresh = false;
         if (run_refresh_th.joinable())
             run_refresh_th.join();
+
         free(sendbuf);
         free(recvbuf);
     }
