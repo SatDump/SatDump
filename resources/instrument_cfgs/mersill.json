@@ -83,7 +83,7 @@
             "name": "7.35 µm Uncalibrated Water Vapor",
             "expression": "cch12=(6, equalized, 0, 0);lut=lut(lut/cal/purpleorange.png);lut(cch12, 0, 0), lut(cch12,0,1), lut(cch12,0,2)",
             "image": {
-                "equalize": true,
+                "equalize": false,
                 "geo_correct": true
             }
         }
