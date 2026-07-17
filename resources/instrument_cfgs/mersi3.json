@@ -115,6 +115,14 @@
             "image": {
                 "geo_correct": true
             }
+        },
+        {
+            "name": "NO enhancement (Uncalibrated)",
+            "expression": "lut=lut(lut/WXtoImg-NO_mod_meteor.png);lut(ch5, ch6, 0), lut(ch5, ch6, 1), lut(ch5, ch6, 2)",
+            "image": {
+                "individual_equalize": true,
+                "geo_correct": true
+            }
         }
     ]
 }
