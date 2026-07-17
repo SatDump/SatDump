@@ -110,7 +110,7 @@
             "name": "NO enhancement (Uncalibrated)",
             "expression": "lut=lut(lut/WXtoImg-NO_mod_meteor.png);lut(ch5, ch6, 0), lut(ch5, ch6, 1), lut(ch5, ch6, 2)",
             "image": {
-                "individual_equalize": true,
+                "individual_equalize": false,
                 "geo_correct": true
             }
         }
