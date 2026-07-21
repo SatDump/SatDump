@@ -83,10 +83,9 @@ namespace satdump
 
                     if (ui)
                     {
-                        uiCallListMutex->lock();
+                        std::lock_guard<std::mutex> lock(*uiCallListMutex);
                         uiCallList->push_back(m1);
                         uiCallList->push_back(m2);
-                        uiCallListMutex->unlock();
                     }
 
                     std::thread module1_thread([&m1]() { m1->process(); });
@@ -105,9 +104,8 @@ namespace satdump
 
                     if (ui)
                     {
-                        uiCallListMutex->lock();
+                        std::lock_guard<std::mutex> lock(*uiCallListMutex);
                         uiCallList->clear();
-                        uiCallListMutex->unlock();
                     }
 
                     lastFile = m2->getOutput();
@@ -149,18 +147,16 @@ namespace satdump
 
                     if (ui)
                     {
-                        uiCallListMutex->lock();
+                        std::lock_guard<std::mutex> lock(*uiCallListMutex);
                         uiCallList->push_back(module);
-                        uiCallListMutex->unlock();
                     }
 
                     module->process();
 
                     if (ui)
                     {
-                        uiCallListMutex->lock();
+                        std::lock_guard<std::mutex> lock(*uiCallListMutex);
                         uiCallList->clear();
-                        uiCallListMutex->unlock();
                     }
 
                     lastFile = module->getOutput();
@@ -189,18 +185,16 @@ namespace satdump
 
                 if (ui)
                 {
-                    uiCallListMutex->lock();
+                    std::lock_guard<std::mutex> lock(*uiCallListMutex);
                     uiCallList->push_back(module);
-                    uiCallListMutex->unlock();
                 }
 
                 module->process();
 
                 if (ui)
                 {
-                    uiCallListMutex->lock();
+                    std::lock_guard<std::mutex> lock(*uiCallListMutex);
                     uiCallList->clear();
-                    uiCallListMutex->unlock();
                 }
 
                 module.reset();

@@ -26,30 +26,43 @@ namespace satdump
             {
                 if (iblk.terminatorShouldPropagate())
                 {
-                    vfos_mtx.lock();
-                    for (auto &o : outputs)
+                    // Snapshot outputs under lock to avoid deadlock:
+                    // wait_enqueue() can block if FIFO is full, and del_output()
+                    // also tries to acquire vfos_mtx → would deadlock.
+                    std::vector<BlockIO> outputs_snapshot;
+                    {
+                        std::lock_guard<std::mutex> lock(vfos_mtx);
+                        outputs_snapshot = outputs;
+                    }
+                    // Enqueue terminators WITHOUT holding vfos_mtx
+                    for (auto &o : outputs_snapshot)
                     {
                         IOInfo *i = ((IOInfo *)o.blkdata.get());
                         if (i->forward_terminator)
                             o.fifo->wait_enqueue(o.fifo->newBufferTerminator());
                     }
-                    vfos_mtx.unlock();
                 }
                 inputs[0].fifo->free(iblk);
                 return true;
             }
 
-            vfos_mtx.lock();
-            for (auto &o : outputs)
+            // Snapshot outputs under lock, then release before blocking enqueue.
+            // This prevents deadlock when del_output()/add_output() is called
+            // while a FIFO output is full and wait_enqueue() would block.
+            std::vector<BlockIO> outputs_snapshot;
             {
-                IOInfo *i = ((IOInfo *)o.blkdata.get());
+                std::lock_guard<std::mutex> lock(vfos_mtx);
+                outputs_snapshot = outputs;
+            }
 
+            // Enqueue data WITHOUT holding vfos_mtx
+            for (auto &o : outputs_snapshot)
+            {
                 DSPBuffer oblk = o.fifo->newBufferSamples(iblk.max_size, sizeof(T));
                 memcpy(oblk.getSamples<T>(), iblk.getSamples<T>(), iblk.size * sizeof(T));
                 oblk.size = iblk.size;
                 o.fifo->wait_enqueue(oblk);
             }
-            vfos_mtx.unlock();
 
             inputs[0].fifo->free(iblk);
 
