@@ -43,6 +43,7 @@
 #include "dsp/filter/decimating_fir.h"
 #include "dsp/filter/fft.h"
 #include "dsp/filter/fir.h"
+#include "dsp/filter/gaussian.h"
 #include "dsp/filter/lpf.h"
 #include "dsp/filter/rrc.h"
 #include "dsp/flowgraph/flowgraph.h"
@@ -318,6 +319,9 @@ namespace satdump
 
                 registerNodeSimple<ndsp::LPF_Block<FIRBlock<complex_t>>>(flowgraph, "Filter/LPF FIR CC");
                 registerNodeSimple<ndsp::LPF_Block<FIRBlock<float>>>(flowgraph, "Filter/LPF FIR FF");
+
+                registerNodeSimple<ndsp::Gaussian_Block<FIRBlock<complex_t>>>(flowgraph, "Filter/Gaussian FIR CC");
+                registerNodeSimple<ndsp::Gaussian_Block<FIRBlock<float>>>(flowgraph, "Filter/Gaussian FIR FF");
 
                 registerNodeSimple<ndsp::CyclostationaryAnalysis>(flowgraph, "Utils/Cyclostationary Analysis");
 
