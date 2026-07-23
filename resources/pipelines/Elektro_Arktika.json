@@ -229,7 +229,8 @@
         "name": "ELEKTRO-L GGAK",
         "live": [
             1,
-            2
+            2,
+            3
         ],
         "frequencies": [
             [
@@ -244,6 +245,9 @@
                 "module": "pm_demod",
                 "parameters": {
                     "symbolrate": 5e3,
+                    // PLL bandwidth trade-off: lower = less noise (fewer lost frames)
+                    // but slower tracking.  GEO has minimal Doppler so 0.01-0.02 is safe.
+                    // Try 0.01 if counter gaps are high; revert if lock is unstable.
                     "pll_bw": 0.02,
                     "rrc_alpha": 0.5
                 }
@@ -257,6 +261,12 @@
                     "nrzm": false,
                     "rs_i": 0
                 }
+            },
+            "products": {
+                "module": "elektro_arktika_ggak",
+                "parameters": {
+                    "interpolate_mag_gaps": false
+                }
             }
         }
     },
@@ -264,7 +274,8 @@
         "name": "ARKTIKA-M N°1 GGAK",
         "live": [
             1,
-            2
+            2,
+            3
         ],
         "frequencies": [
             [
@@ -295,6 +306,12 @@
                     "nrzm": false,
                     "rs_i": 0
                 }
+            },
+            "products": {
+                "module": "elektro_arktika_ggak",
+                "parameters": {
+                    "interpolate_mag_gaps": false
+                }
             }
         }
     },
@@ -302,7 +319,8 @@
         "name": "ARKTIKA-M N°2 GGAK",
         "live": [
             1,
-            2
+            2,
+            3
         ],
         "frequencies": [
             [
@@ -332,6 +350,12 @@
                     "derandomize": false,
                     "nrzm": false,
                     "rs_i": 0
+                }
+            },
+            "products": {
+                "module": "elektro_arktika_ggak",
+                "parameters": {
+                    "interpolate_mag_gaps": false
                 }
             }
         }
