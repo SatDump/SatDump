@@ -19,6 +19,14 @@
             }
         },
         {
+            "name": "True Color + Hotspot Detection",
+            "expression": " ref_channel = 1; ch11 > 0.9 ? 1 : ch3, ch2, ch1",
+            "image": {
+                "geo_correct": true,
+                "equalize": true
+            }
+        },
+        {
             "name": "MERSI False Color",
             "expression": "ch3, (ch2 * 0.43 + ch4 * 0.57), ch1",
             "image": {
