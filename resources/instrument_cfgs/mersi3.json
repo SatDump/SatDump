@@ -126,6 +126,14 @@
             }
         },
         {
+            "name": "True Color + Hotspot Detection",
+            "expression": " ref_channel = 1; ch11 > 0.9 ? 1 : ch3, ch2, ch1",
+            "image": {
+                "geo_correct": true,
+                "equalize": true
+            }
+        },
+        {
             "name": "NO enhancement (Uncalibrated)",
             "expression": "lut=lut(lut/WXtoImg-NO_mod_meteor.png);lut(ch5, ch6, 0), lut(ch5, ch6, 1), lut(ch5, ch6, 2)",
             "image": {
