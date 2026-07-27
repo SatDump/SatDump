@@ -342,9 +342,9 @@
     // Kepler (used to be TLE) settings
     "kepler_settings": {
         "urls_to_fetch": [
-            "https://ergolth.a-centauri.com/omm/active.omm" // Most sats
+            "http://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=omm" // Most sats
         ],
-        "url_template": "https://ergolth.a-centauri.com/omm/%NORAD%.omm",
+        "url_template": "http://celestrak.org/NORAD/elements/gp.php?CATNR=%NORAD%&FORMAT=omm",
         "norads_to_fetch": [
             63251, // UVSQSat-NG
             6235, // NOAA-2
