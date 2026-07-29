@@ -49,7 +49,7 @@
         },
         {
             "name": "Night Microphysics",
-            "expression": "chi5-chi4,chi4-chi3),chi4",
+            "expression": "chi5-chi4,chi4-chi3,chi4",
             "image": {
                 "individual_equalize": true,
                 "white_balance": true
@@ -164,7 +164,7 @@
         },
         {
             "name": "DNB Night Arctic FC",
-            "expression": "lut=lut(lut/generic/arctic.png);dnb =chdnb * 46 - 0.5;lut(dnb, 0, 0),lut(dnb, 0, 1),lut(dnb, 0, 2)",
+            "expression": "lut=lut(lut/generic/arctic.png);dnb = chdnb * 46 - 0.5;lut(dnb, 0, 0),lut(dnb, 0, 1),lut(dnb, 0, 2)",
             "description": "descriptions/VIIRSDNB_ArcticFC.md"
         }
     ]
