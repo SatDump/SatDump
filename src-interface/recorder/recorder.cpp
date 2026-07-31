@@ -735,6 +735,10 @@ namespace satdump
         {
             ImGui::BeginChild("RecorderFFT", {right_width, wf_size}, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
             {
+                // Fix for "could not allocate waterfall memory"
+                if (waterfall_ratio > 0.9)
+                    waterfall_ratio = 0.9;
+
                 float fft_height = wf_size * (show_waterfall ? waterfall_ratio : 1.0);
                 float wf_height = wf_size * (1 - waterfall_ratio) + 15 * ui_scale;
                 float wfft_widht = right_width - 9 * ui_scale;
