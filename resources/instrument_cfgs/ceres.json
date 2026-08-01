@@ -6,7 +6,7 @@
             "expression": "chl",
             "image" : {
                 "individual_equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             }
         },
         {
@@ -14,7 +14,7 @@
             "expression": "chs",
             "image" : {
                 "individual_equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             }
         },
         {
@@ -22,7 +22,7 @@
             "expression": "cht",
             "image" : {
                 "individual_equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             }
         }
     ]

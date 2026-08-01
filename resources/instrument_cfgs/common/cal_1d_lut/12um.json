@@ -4,7 +4,7 @@
             "name": "Color convection longwave IR",
             "expression": "cch5=({12um}, brightness_temperature, 180, 320);lut=lut(lut/cal/ConvectionLWIR.png);lut(cch5, 0, 0), lut(cch5, 0, 1), lut(cch5, 0, 2)",
             "image": {
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/ConvectionLWIR.md"
         }
