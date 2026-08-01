@@ -52,7 +52,10 @@ namespace satdump
 
                 for (auto &c : cats.sub)
                 {
-                    if (ImGui::TreeNodeEx(c.first.c_str(), ImGuiTreeNodeFlags_Leaf))
+                    auto split = splitString(c.second.menuname, '/');
+                    std::string name = split.size() ? split[split.size() - 1] : c.second.menuname;
+
+                    if (ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_Leaf))
                         ImGui::TreePop();
                     if (ImGui::IsItemClicked())
                         addNode(c.first, c.second.func(this));
@@ -64,14 +67,14 @@ namespace satdump
                 std::lock_guard<std::mutex> lg(flow_mtx);
 
                 // Extract categories
-                std::vector<NodeInternalReg> regs;
+                std::vector<std::pair<std::string, NodeInternalReg>> regs;
                 std::vector<std::vector<std::string>> categs;
                 for (auto &opt : node_internal_registry)
                 {
                     if (search.size() && !isStringPresent(opt.second.menuname, search))
                         continue;
 
-                    regs.push_back(opt.second);
+                    regs.push_back({opt.first, opt.second});
                     categs.push_back(splitString(opt.second.menuname, '/'));
                 }
 
@@ -87,7 +90,7 @@ namespace satdump
 
                         if (c == categs[i].size() - 1)
                         {
-                            cCats->sub.emplace(cat, regs[i]);
+                            cCats->sub.emplace(regs[i].first, regs[i].second);
                         }
                         else
                         {

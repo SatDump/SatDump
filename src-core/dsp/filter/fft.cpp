@@ -41,7 +41,7 @@ namespace satdump
             d_fftsize = (int)(2 * pow(2.0, ceil(log(double(d_ntaps)) / log(2.0)))) * 100;
             d_nsamples = d_fftsize - d_ntaps + 1;
 
-            //  printf("TAPS %d FFT %d SAMP %d\n", d_ntaps, d_fftsize, d_nsamples);
+            printf("TAPS %d FFT %d SAMP %d\n", d_ntaps, d_fftsize, d_nsamples);
 
             if (fft_fwd_in != nullptr)
                 fftwf_free(fft_fwd_in);

@@ -18,6 +18,16 @@ namespace satdump
         int fd;
         char unique_id[16] = {0};
 
+    public:
+        struct HighlightDef
+        {
+            size_t ptr;
+            size_t size;
+            uint8_t r, g, b;
+        };
+
+        std::vector<HighlightDef> highlights;
+
     private:
         struct PartImage
         {
@@ -30,6 +40,8 @@ namespace satdump
             bool visible = false;
 
             bool need_update = true;
+
+            std::vector<HighlightDef> highlights;
         };
 
         size_t img_parts_y = 0;
@@ -51,16 +63,6 @@ namespace satdump
 
         bool d_frame_mode = false;
         std::vector<FrameDef> frames;
-
-    public:
-        struct HighlightDef
-        {
-            size_t ptr;
-            size_t size;
-            uint8_t r, g, b;
-        };
-
-        std::vector<HighlightDef> highlights;
 
     public:
         int d_display_mode = 0;

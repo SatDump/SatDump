@@ -118,6 +118,44 @@ namespace satdump
 
         printf("%d %d\n", int(img_parts_x * d_chunk_size), int(img_parts_y * d_chunk_size));
 
+        // Take care of highlights
+        {
+            size_t offset = 0;
+
+            for (size_t ii = 0; ii < img_parts_y; ii++)
+            {
+                for (size_t iii = 0; iii < img_parts_x; iii++)
+                {
+                    auto &part = image_parts[ii * img_parts_x + iii];
+                    size_t xoffset = iii * d_chunk_size;
+
+                    part.highlights.clear();
+
+                    for (auto &h : highlights)
+                    {
+                        for (size_t line = 0; (size_t)line < d_chunk_size; line++)
+                        {
+                            size_t bitstream_pos = offset + line * d_bitperiod + xoffset;
+                            size_t bitstream_pos_end = bitstream_pos + d_chunk_size;
+
+                            if (h.ptr + h.size < bitstream_pos)
+                                continue;
+                            if (h.ptr >= bitstream_pos_end)
+                                continue;
+
+                            part.highlights.push_back(h);
+                            break;
+                        }
+                    }
+
+                    if (part.highlights.size())
+                        logger->critical("%d %d %d", ii, iii, part.highlights.size());
+                }
+
+                offset += d_bitperiod * d_chunk_size;
+            }
+        }
+
         // Ensure we force update
         for (auto &p : image_parts)
             p.need_update = true;
