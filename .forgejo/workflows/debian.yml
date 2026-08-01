@@ -54,7 +54,7 @@ jobs:
         run: make package
 
       - name: Upload ZIP
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: SatDump-Ubuntu-24.04
           path: ${{runner.workspace}}/build/*.deb
