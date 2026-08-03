@@ -5,7 +5,7 @@
             "name": "AVHRR 221 False Color",
             "expression": "ch2, ch2, ch1",
             "image": {
-                "geo_correct": true,
+                "geocorrect": true,
                 "white_balance": true
             },
             "description": "descriptions/221.md",
@@ -15,7 +15,7 @@
             "name": "AVHRR 3a21 False Color",
             "expression": "cch3a=(3a,sun_angle_compensated_reflective_radiance, 0,  4.3332); cch2=(2, sun_angle_compensated_reflective_radiance, 0, 77.64); cch1=(1, sun_angle_compensated_reflective_radiance, 0, 36.9624); lut=lut(lut/1d/stretchcon_avhrr.png);lut(cch3a, 0, 0), lut(cch2, 0, 1),lut(cch1, 0, 2)",
             "image": {
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/321.md"
         },
@@ -23,7 +23,7 @@
             "name": "AVHRR 3a21 False Color (uncompensated, NOAA-15)",
             "expression": "cch3a=(3a, reflective_radiance, 0,  2.5); cch2=(2, reflective_radiance, 0, 50); cch1=(1, reflective_radiance, 0, 23); lut=lut(lut/1d/stretchcon_avhrr.png);lut(cch3a, 0, 0), lut(cch2, 0, 1),lut(cch1, 0, 2)",
             "image": {
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/321.md"
         },
@@ -31,7 +31,7 @@
             "name": "4/221 Merge",
             "expression": "ch1 < 0.065 ? (ch4 - 0.7) * 2.66 : ch2 * 2.2 - 0.15, ch1 < 0.065 ? (ch4 - 0.7) * 2.66 : ch2 * 2.2 - 0.15, ch1 < 0.065 ? (ch4 - 0.7) * 2.66 : ch1 * 2.2 - 0.15",
             "image": {
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/4221merge.md"
         },
@@ -41,7 +41,7 @@
             "expression": "cch2=(2, sun_angle_compensated_reflective_radiance, 0, 97.0507); cch1=(1, sun_angle_compensated_reflective_radiance, 0, 46.203); cch2 * 0.6 + min(cch1, cch2) * 0.4, cch2, cch1",
             "image": {
                 "individual_equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/NOAANatColor.md"
         },
@@ -49,7 +49,7 @@
             "name": "Natural Color",
             "expression": "cch3a=(3a, sun_angle_compensated_reflective_radiance, 0, 5.41665); cch2=(2, sun_angle_compensated_reflective_radiance, 0, 97.0507); cch1=(1, sun_angle_compensated_reflective_radiance, 0, 46.203); ((0.5*max(cch3a,min(cch2,cch1)) + 0.5*cch2) / 0.85)^0.65, (cch2/0.85)^0.65, (cch1/0.85)^0.65",
             "image": {
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/NatColor.md"
         },
@@ -58,7 +58,7 @@
             "expression": "ch5, ch4, ch3b",
             "image": {
                 "individual_equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/543b.md",
             "autogen": true
@@ -68,7 +68,7 @@
             "expression": "ch3b, ch4, ch5",
             "image": {
                 "individual_equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/3b45.md"
         },
@@ -76,7 +76,7 @@
             "name": "AVHRR 124 False Color (Cloud RGB)",
             "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0, 33.3);cch2=(2, sun_angle_compensated_reflective_radiance, 0, 67.84);cch4=(4, brightness_temperature, 203, 323); cch1, cch2, 1-cch4",
             "image": {
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/124.md"
         },
@@ -84,7 +84,7 @@
             "name": "Day Microphysics (Metop)",
             "expression": "cch4=(4, brightness_temperature, 203.000000, 323.000000);cch3a=(3a, sun_angle_compensated_reflective_radiance, 0.000000, 3.791655);cch2=(2, sun_angle_compensated_reflective_radiance, 0.000000, 97.050700);cch2,cch3a,cch4",
             "image": {
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/DayMicro.md"
         },
@@ -97,7 +97,7 @@
             "name": "Snow enhancement",
             "expression": "cch4=(4, brightness_temperature, 304.912379, 232.242185);cch3a=(3a, sun_angle_compensated_reflective_radiance, 0.000000, 5.416650);cch2=(2, sun_angle_compensated_reflective_radiance, 0.000000, 97.050700);cch1=(1, sun_angle_compensated_reflective_radiance, 0.000000, 46.203000);((3*cch1 - cch4) / 2),((3*cch1 + cch4) / 4),(cch1 - cch3a)",
             "image": {
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/Snow.md"
         },
@@ -106,7 +106,7 @@
             "description": "descriptions/NightFire.md",
             "expression": "cch4=(4, brightness_temperature, 0.000000, 1000.000000);cch3b=(3b, brightness_temperature, 0.000000, 1000.000000);cch3b > 0.305 ? cch4 > 0.280 ? (cch3b-cch4) > 0.01 ? 1 : 0 : 0 : 0,0,0,cch3b > 0.305 ? cch4 > 0.280 ? (cch3b-cch4) > 0.01 ? 1 : 0 : 0 : 0",
             "image": {
-                "geo_correct": true
+                "geocorrect": true
             }
         },
                         {
