@@ -26,6 +26,8 @@ namespace cpu_features
             f.CPU_X86_AVX = f.CPU_X86_SSE42 = f.CPU_X86_SSE41 = f.CPU_X86_SSE4A = f.CPU_X86_SSE3 = f.CPU_X86_SSE2 = true;
         if (machine_string.find("avx2") != std::string::npos)
             f.CPU_X86_AVX2 = f.CPU_X86_AVX = f.CPU_X86_SSE42 = f.CPU_X86_SSE41 = f.CPU_X86_SSE4A = f.CPU_X86_SSE3 = f.CPU_X86_SSE2 = true;
+        if (machine_string.find("avx512") != std::string::npos)
+            f.CPU_X86_AVX512 = f.CPU_X86_AVX2 = f.CPU_X86_AVX = f.CPU_X86_SSE42 = f.CPU_X86_SSE41 = f.CPU_X86_SSE4A = f.CPU_X86_SSE3 = f.CPU_X86_SSE2 = true;
 
         // ARM NEON
         if (machine_string.find("neon") != std::string::npos)
@@ -57,6 +59,8 @@ namespace cpu_features
             printf("- AVX\n");
         if (f.CPU_X86_AVX2)
             printf("- AVX2\n");
+        if (f.CPU_X86_AVX512)
+            printf("- AVX512\n");
 
         if (f.CPU_ARM_NEON)
             printf("- NEON\n");
