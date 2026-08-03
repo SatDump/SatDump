@@ -82,27 +82,11 @@ namespace satdump
             return;
         }
 
-        std::vector<HighlightDef> actual_highlights;
-
-        for (auto &h : highlights)
-        {
-            int line = 0, i = 0;
-            size_t bitstream_pos = offset + line * d_bitperiod + xoffset + i;
-            size_t bitstream_pos_end = bitstream_pos + d_chunk_size * d_bitperiod;
-
-            if (h.ptr + h.size < bitstream_pos)
-                continue;
-            if (h.ptr > bitstream_pos_end)
-                continue;
-
-            actual_highlights.push_back(h);
-        }
-
         int &bits = d_display_bits;
 
         if (bits == 1)
         {
-            for (int64_t line = 0; (size_t)line < d_chunk_size; line++)
+            for (size_t line = 0; (size_t)line < d_chunk_size; line++)
             {
                 for (size_t i = 0; i < d_chunk_size; i++)
                 {
@@ -135,12 +119,17 @@ namespace satdump
                             wip_texture_buffer[raster_pos] = 255 << 24 | v << 16 | v << 8 | v;
 
 #if 1
-                            for (auto &h : actual_highlights)
+                            size_t hs = part.highlights.size();
+                            if (hs)
                             {
-                                if (h.ptr <= bitstream_pos && bitstream_pos < (h.ptr + h.size))
+                                for (size_t ss = 0; ss < hs; ss++)
                                 {
-                                    wip_texture_buffer[raster_pos] = 255 << 24 | uint8_t(v * 0.75 + h.b * 0.25) << 16 | uint8_t(v * 0.75 + h.g * 0.25) << 8 | uint8_t(v * 0.75 + h.r * 0.25);
-                                    break;
+                                    auto &h = part.highlights[ss];
+                                    if (h.ptr <= bitstream_pos && bitstream_pos < (h.ptr + h.size))
+                                    {
+                                        wip_texture_buffer[raster_pos] = 255 << 24 | uint8_t(v * 0.75 + h.b * 0.25) << 16 | uint8_t(v * 0.75 + h.g * 0.25) << 8 | uint8_t(v * 0.75 + h.r * 0.25);
+                                        break;
+                                    }
                                 }
                             }
 #endif
@@ -161,7 +150,7 @@ namespace satdump
         }
         else
         {
-            for (int64_t line = 0; (size_t)line < d_chunk_size; line++)
+            for (size_t line = 0; (size_t)line < d_chunk_size; line++)
             {
                 for (size_t i = 0; i < d_chunk_size / bits; i++)
                 {

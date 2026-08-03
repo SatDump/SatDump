@@ -18,6 +18,7 @@
 #include "tools/deframer/deframer.h"
 #include "tools/deinterleave/deinterleave.h"
 #include "tools/diff_decode/diff_decode.h"
+#include "tools/reverse_bits/reverse_bits.h"
 #include "tools/soft2hard/soft2hard.h"
 #include "tools/take_skip/take_skip.h"
 
@@ -33,6 +34,7 @@ namespace satdump
         all_tools.push_back(std::make_shared<DifferentialTool>());
         all_tools.push_back(std::make_shared<Soft2HardTool>());
         all_tools.push_back(std::make_shared<DeinterleaveTool>());
+        all_tools.push_back(std::make_shared<ReverseBitsTool>());
         all_tools.push_back(std::make_shared<CCSDSVcidSplitterTool>());
         all_tools.push_back(std::make_shared<CCSDSAPIDDemuxTool>());
 
@@ -209,6 +211,7 @@ namespace satdump
         if (ImGui::Button("Clear Sync"))
         {
             bc->highlights.clear();
+            bc->init_display();
         }
     }
 
