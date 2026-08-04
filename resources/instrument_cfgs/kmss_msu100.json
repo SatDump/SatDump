@@ -44,7 +44,7 @@
             "expression": "ch3, ch2, ch1",
             "image": {
                 "individual_equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/CIR.md"
         },
@@ -53,27 +53,27 @@
             "expression": "(ch3-ch2)/(ch3+ch2)",
             "image": {
                 "equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             },
-            "geo_correct": true
+            "geocorrect": true
         },
         {
             "name": "OSAVI (Uncalibrated)",
             "expression": "(ch3-ch2)/(ch3+ch2+0.16)",
             "image": {
                 "equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             },
-            "geo_correct": true
+            "geocorrect": true
         },
         {
             "name": "Vegetation classification",
             "expression": "ch2/ch1",
             "image": {
                 "equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             },
-            "geo_correct": true
+            "geocorrect": true
         }
     ]
 }
