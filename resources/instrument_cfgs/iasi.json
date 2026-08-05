@@ -22,7 +22,7 @@
                 "individual_equalize": true,
                 "white_balance": true
             }
-        }
+        },
         {
             "name": "Low Level Water Vapor",
             "expression": "1-(ch1535+ch1536+ch1537+ch1538+ch1539+ch1540+ch1545+ch1542+ch1543+ch1544+ch1545)/10",
