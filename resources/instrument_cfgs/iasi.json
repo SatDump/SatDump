@@ -2,6 +2,28 @@
     "name": "IASI",
     "presets": [
         {
+            "name": "6.2µm Water Vapor RGB",
+            "expression": "ch3800, ch3790, ch3780",
+            "image": { 
+                "individual_equalize": true
+            }
+        },
+        {
+            "name": "7.35 µm Water Vapor RGB",
+            "expression": "ch2855, ch2865, ch2875",
+            "image": { 
+                "individual_equalize": true
+            }
+        },
+        {
+            "name": "WIP Airmass",
+            "expression": "(ch3871-ch2904), (ch1546-ch1259), ch3871",
+            "image": {
+                "individual_equalize": true,
+                "white_balance": true
+            }
+        }
+        {
             "name": "Low Level Water Vapor",
             "expression": "1-(ch1535+ch1536+ch1537+ch1538+ch1539+ch1540+ch1545+ch1542+ch1543+ch1544+ch1545)/10",
             "image": { 
