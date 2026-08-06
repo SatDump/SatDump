@@ -6,6 +6,7 @@
  */
 
 #include <functional>
+#include <shared_mutex>
 #include <string>
 #include <typeinfo>
 #include <vector>
@@ -23,11 +24,16 @@ namespace satdump
      * (typeinfo does NOT allow casting between
      * several interpretations of the exact same
      * struct)
+     *
+     * Thread-safety: register_handler() uses exclusive write lock,
+     * fire_event() uses shared read lock — multiple concurrent
+     * fire_event() calls are allowed, register_handler() is exclusive.
      */
     class EventBus
     {
     private:
         std::vector<std::pair<std::string, std::function<void(void *)>>> all_handlers;
+        mutable std::shared_mutex handlers_mtx; // read/write lock for thread safety
 
     public:
         /**
@@ -39,6 +45,7 @@ namespace satdump
         template <typename T>
         void register_handler(std::function<void(T)> handler_fun)
         {
+            std::unique_lock<std::shared_mutex> lock(handlers_mtx); // exclusive write lock
             all_handlers.push_back({std::string(typeid(T).name()), [handler_fun](void *raw)
                                     {
                                         T evt = *((T *)raw); // Cast struct to original type
@@ -55,9 +62,10 @@ namespace satdump
         template <typename T>
         void fire_event(T evt)
         {
+            std::shared_lock<std::shared_mutex> lock(handlers_mtx); // shared read lock
             for (std::pair<std::string, std::function<void(void *)>> h : all_handlers) // Iterate through all registered functions
                 if (std::string(typeid(T).name()) == h.first)                          // Check struct type is the same
-                    h.second((void *)&evt);                                            // Fire handler up
+                    h.second((void *)&evt);                                             // Fire handler up
         }
 
         /**
@@ -70,6 +78,7 @@ namespace satdump
          */
         void fire_event(void *evt, std::string evt_name)
         {
+            std::shared_lock<std::shared_mutex> lock(handlers_mtx); // shared read lock
             for (std::pair<std::string, std::function<void(void *)>> h : all_handlers) // Iterate through all registered functions
                 if (evt_name == h.first)                                               // Check struct type is the same
                     h.second(evt);                                                     // Fire handler up

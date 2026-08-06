@@ -21,12 +21,22 @@ namespace satdump
 
             float *samples = iblk.getSamples<float>();
 
-            for (int i = 0; i < iblk.size; i++)
+            if (iblk.size > 0)
             {
-                time_history_mtx.lock();
-                time_history.erase(time_history.begin(), time_history.begin() + 1);
-                time_history.push_back(samples[i]);
-                time_history_mtx.unlock();
+                std::lock_guard<std::mutex> lock(time_history_mtx);
+                int history_size = time_history.size();
+                if (history_size > 0)
+                {
+                    if (iblk.size >= history_size)
+                    {
+                        std::copy(samples + iblk.size - history_size, samples + iblk.size, time_history.begin());
+                    }
+                    else
+                    {
+                        std::copy(time_history.begin() + iblk.size, time_history.end(), time_history.begin());
+                        std::copy(samples, samples + iblk.size, time_history.end() - iblk.size);
+                    }
+                }
             }
 
             inputs[0].fifo->free(iblk);
@@ -35,13 +45,12 @@ namespace satdump
 
         void TimeDisplayBlock::draw(ImVec2 size)
         {
-            time_history_mtx.lock();
+            std::lock_guard<std::mutex> lock(time_history_mtx);
             if (ImPlot::BeginPlot("TimeSeries", size))
             {
                 ImPlot::PlotScatter("Real", time_history.data(), time_history.size());
                 ImPlot::EndPlot();
             }
-            time_history_mtx.unlock();
         }
     } // namespace ndsp
 } // namespace satdump

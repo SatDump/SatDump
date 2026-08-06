@@ -1,5 +1,5 @@
-#include "db/kepler/kepler_handler.h"
 #define SATDUMP_DLL_EXPORT 1
+#include "db/kepler/kepler_handler.h"
 #include "core/config.h"
 #include "core/plugin.h"
 #include "core/resources.h"
@@ -7,6 +7,7 @@
 #include "logger.h"
 #include "satdump_vars.h"
 #include <filesystem>
+#include <curl/curl.h>
 
 #include "db/db_handler.h"
 #include "db/iers/iers_handler.h"
@@ -60,11 +61,15 @@ namespace satdump
         if (std::filesystem::exists("satdump_cfg.json"))
             user_path = "./config";
         else
-            user_path = std::string(getenv("APPDATA")) + "/satdump";
+        {
+            const char* appdata = getenv("APPDATA");
+            user_path = (appdata ? std::string(appdata) : ".") + "/satdump";
+        }
 #elif __ANDROID__
         user_path = ".";
 #else
-        user_path = std::string(getenv("HOME")) + "/.config/satdump";
+        const char* home = getenv("HOME");
+        user_path = (home ? std::string(home) : ".") + "/.config/satdump";
 #endif
 
         try
@@ -178,11 +183,15 @@ namespace satdump
 
         // Start task scheduler
         taskScheduler->start_thread();
+
+        // Initialize libcurl globally
+        curl_global_init(CURL_GLOBAL_ALL);
     }
 
     void exitSatDump()
     {
         logger->info("Exiting SatDump! Bye!");
         taskScheduler.reset();
+        curl_global_cleanup();
     }
 } // namespace satdump
