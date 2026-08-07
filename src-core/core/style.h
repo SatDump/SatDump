@@ -46,5 +46,6 @@ namespace style
     void endDisabled();
     void setFonts(float dpi_scaling);
 
+    void set_macos_framebuffer_scale(float scale);
     float macos_framebuffer_scale();
 }

@@ -3,9 +3,12 @@
 #include <ctime>
 #include <vector>
 
-#define c1 1.1910427e-05
-#define c2 1.4387752
-#define e_num 2.7182818
+namespace
+{
+    constexpr double planck_c1 = 1.1910427e-05;
+    constexpr double planck_c2 = 1.4387752;
+    constexpr double e_num = 2.7182818;
+}
 
 double spectral_radiance_to_radiance(double L, double wavenumber)
 {
@@ -16,9 +19,9 @@ double spectral_radiance_to_radiance(double L, double wavenumber)
     return temperature_to_radiance(temp, wavenumber);
 }
 
-double temperature_to_radiance(double t, double v) { return (c1 * v * v * v) / (pow(e_num, c2 * v / t) - 1); }
+double temperature_to_radiance(double t, double v) { return (planck_c1 * v * v * v) / (pow(e_num, planck_c2 * v / t) - 1); }
 
-double radiance_to_temperature(double L, double v) { return (c2 * v) / (log(c1 * v * v * v / L + 1)); }
+double radiance_to_temperature(double L, double v) { return (planck_c2 * v) / (log(planck_c1 * v * v * v / L + 1)); }
 
 double freq_to_wavenumber(double freq) { return 1e7 / ((299792458.0 / freq) / 10e-10); }
 

@@ -60,10 +60,15 @@ endif()
 if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
-    # Jemalloc
-    find_package(Jemalloc REQUIRED)
-    include_directories(${JEMALLOC_INCLUDE_DIR})
-    link_libraries(${JEMALLOC_LIBRARY})
+    # Homebrew jemalloc crashes while scanning SatDump plug-ins on Apple Silicon.
+    # Keep jemalloc for Intel Macs, but use the system allocator on ARM64.
+    if(NOT CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm64|arm64e|aarch64)$")
+        find_package(Jemalloc REQUIRED)
+        include_directories(${JEMALLOC_INCLUDE_DIR})
+        link_libraries(${JEMALLOC_LIBRARY})
+    else()
+        message(STATUS "Apple Silicon detected: using the macOS system allocator")
+    endif()
 
     # Manually built dependencies
     link_directories(${CMAKE_SOURCE_DIR}/deps/lib)

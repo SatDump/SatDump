@@ -41,6 +41,9 @@ static void glfw_error_callback(int error, const char *description) { logger->er
 
 void window_content_scale_callback(GLFWwindow *, float xscale, float)
 {
+#ifdef __APPLE__
+    style::set_macos_framebuffer_scale(xscale);
+#endif
     backend::device_scale = xscale / style::macos_framebuffer_scale();
     satdump::update_ui = true;
 }

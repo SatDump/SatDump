@@ -10,10 +10,6 @@
 #include "nlohmann/json_utils.h"
 #include <filesystem>
 
-#ifdef __APPLE__
-#include <CoreGraphics/CGDirectDisplay.h>
-#endif
-
 SATDUMP_DLL float ui_scale = 1;                 // UI Scaling factor, set to 1 (no scaling) by default
 SATDUMP_DLL int demod_constellation_size = 200; // Demodulator constellation size
 
@@ -23,6 +19,10 @@ namespace style
     SATDUMP_DLL ImFont *baseFont;
     SATDUMP_DLL ImFont *bigFont;
     // SATDUMP_DLL ImFont *hugeFont;
+
+#ifdef __APPLE__
+    static float macos_display_scale = 1.0f;
+#endif
 
     void hexToImVec4(std::string color_hex, ImVec4 *this_color)
     {
@@ -308,14 +308,20 @@ namespace style
         backend::rebuildFonts();
     }
 
+    void set_macos_framebuffer_scale(float scale)
+    {
+#ifdef __APPLE__
+        if (scale > 0.0f)
+            macos_display_scale = scale;
+#else
+        (void)scale;
+#endif
+    }
+
     float macos_framebuffer_scale()
     {
 #ifdef __APPLE__
-        CGDirectDisplayID display_id = CGMainDisplayID();
-        CGDisplayModeRef display_mode = CGDisplayCopyDisplayMode(display_id);
-        float return_value = (float)CGDisplayModeGetPixelWidth(display_mode) / (float)CGDisplayPixelsWide(display_id);
-        CGDisplayModeRelease(display_mode);
-        return return_value;
+        return macos_display_scale;
 #else
         return 1.0f;
 #endif

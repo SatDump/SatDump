@@ -15,6 +15,9 @@ float funcDeviceScale()
     float display_scale;
 #if GLFW_VERSION_MAJOR > 3 || (GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 3)
     glfwGetWindowContentScale(window, &display_scale, nullptr);
+#ifdef __APPLE__
+    style::set_macos_framebuffer_scale(display_scale);
+#endif
     display_scale /= style::macos_framebuffer_scale();
 #else
     display_scale = 1.0f;
