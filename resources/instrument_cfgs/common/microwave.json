@@ -6,8 +6,7 @@
             "image": {
                 "geocorrect": true,
                  "individual_equalize": true
-            },
-            "description": "descriptions/NDVI.md"
+            }
         },
         {
             "name": "Auto Rainfall",
