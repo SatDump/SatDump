@@ -20,6 +20,8 @@ namespace satdump
             std::thread modThread;
             bool work2shouldrun;
             std::thread work2Thread;
+            std::mutex stop_mtx;
+            bool stopped = false;
 
             int output_read_size = 1024;
 

@@ -18,6 +18,7 @@ namespace satdump
 
         void ModuleWrapperBlock::start()
         {
+            stopped = false;
             mod = pipeline::getModuleInstance(module_id, "", "/tmp/modulewrapper", mod_cfg);
             mod->input_fifo = std::make_shared<dsp::RingBuffer<uint8_t>>(1000000);
             mod->output_fifo = std::make_shared<dsp::RingBuffer<uint8_t>>(1000000);
@@ -38,6 +39,11 @@ namespace satdump
         {
             Block::stop(stop_now, force);
 
+            std::lock_guard<std::mutex> lock(stop_mtx);
+            if (stopped)
+                return;
+            stopped = true;
+
             mod->input_active = false;
             mod->stop();
             work2shouldrun = false;
@@ -57,17 +63,24 @@ namespace satdump
 
             if (iblk.isTerminator())
             {
-                mod->input_active = false;
-                mod->stop();
-                work2shouldrun = false;
-                mod->output_fifo->stopReader();
-                mod->output_fifo->stopWriter();
-                mod->input_fifo->stopReader();
-                mod->input_fifo->stopWriter();
-                if (work2Thread.joinable())
-                    work2Thread.join();
-                if (modThread.joinable())
-                    modThread.join();
+                {
+                    std::lock_guard<std::mutex> lock(stop_mtx);
+                    if (!stopped)
+                    {
+                        stopped = true;
+                        mod->input_active = false;
+                        mod->stop();
+                        work2shouldrun = false;
+                        mod->output_fifo->stopReader();
+                        mod->output_fifo->stopWriter();
+                        mod->input_fifo->stopReader();
+                        mod->input_fifo->stopWriter();
+                        if (work2Thread.joinable())
+                            work2Thread.join();
+                        if (modThread.joinable())
+                            modThread.join();
+                    }
+                }
 
                 if (iblk.terminatorShouldPropagate())
                     outputs[0].fifo->wait_enqueue(outputs[0].fifo->newBufferTerminator());
@@ -99,6 +112,7 @@ namespace satdump
                 else
                 {
                     outputs[0].fifo->free(oblk);
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 }
             }
         }
