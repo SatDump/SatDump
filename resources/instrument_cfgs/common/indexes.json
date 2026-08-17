@@ -2,7 +2,7 @@
     "presets": [
         {
             "name": "NDVI",
-            "expression": "cch1=({0.67um}, sun_angle_compensated_reflective_radiance, 0.000000, 46.203000);cch2=({0.86um}, sun_angle_compensated_reflective_radiance, 0.000000, 97.050700);lut=lut(lut/NDVI.png);lut(0, ((cch2-cch1)/((cch2+cch1) == 0 ? 0.000001 : (cch1+cch2))+1)/2, 0),lut(0, ((cch2-cch1)/((cch2+cch1) == 0 ? 0.000001 : (cch1+cch2))+1)/2, 1),lut(0, ((cch2-cch1)/((cch2+cch1) == 0 ? 0.000001 : (cch1+cch2))+1)/2, 2)",
+            "expression": "cch1=({0.67um, N, -1, 20}, sun_angle_compensated_reflective_radiance, 0.000000, 46.203000);cch2=({0.86um, N, -1, 20}, sun_angle_compensated_reflective_radiance, 0.000000, 97.050700);lut=lut(lut/NDVI.png);lut(0, ((cch2-cch1)/((cch2+cch1) == 0 ? 0.000001 : (cch1+cch2))+1)/2, 0),lut(0, ((cch2-cch1)/((cch2+cch1) == 0 ? 0.000001 : (cch1+cch2))+1)/2, 1),lut(0, ((cch2-cch1)/((cch2+cch1) == 0 ? 0.000001 : (cch1+cch2))+1)/2, 2)",
             "image": {
                 "geocorrect": true
             },
@@ -19,7 +19,6 @@
     ],
     "instruments": [
         "avhrr_3",
-        "msu_mr",
         "fci",
         "modis",
         "seviri",

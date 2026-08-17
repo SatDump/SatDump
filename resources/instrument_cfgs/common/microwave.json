@@ -6,11 +6,10 @@
             "image": {
                 "geocorrect": true,
                  "individual_equalize": true
-            },
-            "description": "descriptions/NDVI.md"
+            }
         },
         {
-            "name": "Auto Rainfall",
+            "name": "Universal Rainfall",
             "expression": "cch5=({190GHz,V,2GHz,1GHz,0}, emissive_radiance, 0.06, 0.096); cch4=({183.31GHz,H,2GHz,1GHz,0}, emissive_radiance, 0.059, 0.09); lut=lut(lut/generic/roygbiv.png); lut((((cch5-cch4))-0.95)^0.25, 0, 0), lut((((1-(cch5-cch4))-0.95)^0.25), 0, 1), lut((((cch5-cch4))-0.95)^0.25, 0, 2)",
             "description": "descriptions/sounders/Rainfall.md"
         },
