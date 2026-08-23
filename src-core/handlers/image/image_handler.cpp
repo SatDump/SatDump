@@ -70,8 +70,19 @@ namespace satdump
 
                 auto sh = std::make_shared<ImageHandler>(img);
                 sh->image_name = image_name + " Crop";
-                addSubHandler(sh);
-                eventBus->fire_event<explorer::ExplorerSelectHandlerEvent>({sh});
+
+                if (removeProjectionInfoFromCrop)
+                    image::set_metadata_proj_cfg(img, {});
+
+                if (sendCropToRoot)
+                {
+                    eventBus->fire_event<explorer::ExplorerAddHandlerEvent>({sh, true});
+                }
+                else
+                {
+                    addSubHandler(sh);
+                    eventBus->fire_event<explorer::ExplorerSelectHandlerEvent>({sh});
+                }
             };
         }
 

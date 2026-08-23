@@ -31,6 +31,8 @@ namespace satdump
             setCanSubBeReorgTo(true);
 
             img_handler.enableOverlayMenu = false;
+            img_handler.sendCropToRoot = true;
+            img_handler.removeProjectionInfoFromCrop = true;
 
             setConfig(satdump::db->get_user_json("projection_defaults"));
         }
@@ -452,6 +454,7 @@ namespace satdump
                 }
 
                 img_handler.setImage(img);
+                img_handler.setName(proj_name + " Image");
             }
             catch (std::exception &e)
             {
