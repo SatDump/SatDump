@@ -212,6 +212,7 @@ namespace satdump
     {
         bool ret = false;
 
+        // If no time is specified we assume current
         if (time == -1)
             time = getTime();
 
@@ -220,7 +221,7 @@ namespace satdump
         if (sqlite3_prepare_v2(h->db,
                                ("select satellite_number, element_number, name, designator, epoch, inclination, right_ascension, eccentricity, argument_of_perigee, mean_anomaly, mean_motion, "
                                 "derivative_mean_motion, second_derivative_mean_motion, bstar_drag_term, revolutions_at_epoch from kepler where satellite_number=" +
-                                std::to_string(norad) + " order by abs(epoch - " + std::to_string(time) + ") desc limit 1")
+                                std::to_string(norad) + " order by abs(epoch - " + std::to_string(time) + ") asc limit 1")
                                    .c_str(),
                                -1, &res, 0))
             logger->error("Couldn't fetch Kepler data from DB! " + std::string(sqlite3_errmsg(h->db)));
