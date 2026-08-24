@@ -58,7 +58,7 @@ namespace satdump
         }
 
         {
-            for (size_t i = 0, ii = 0; i < size * 8; i++)
+            for (size_t i = 0, ii = 0, iii = 0; i < size * 8; i++)
             {
                 auto &c = chs_outs[ii];
 
@@ -72,9 +72,14 @@ namespace satdump
 
                 process_progress = (float)i / float(size * 8);
 
-                ii++;
-                if (ii >= idepth)
-                    ii = 0;
+                iii++; // Count ctr
+                if (iii >= icnt)
+                {
+                    ii++; // Depth (channel) ctr
+                    if (ii >= idepth)
+                        ii = 0;
+                    iii = 0;
+                }
             }
 
             for (int i = 0; i < idepth; i++)

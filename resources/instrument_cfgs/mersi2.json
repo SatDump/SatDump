@@ -6,7 +6,7 @@
             "expression": "ch3, ch2, ch1",
             "image": {
                 "equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/TrueColor.md",
             "autogen": true
@@ -15,14 +15,14 @@
             "name": "Day Land Cloud-Fire RGB",
             "expression": "ch9,ch4,ch3",
             "image": {
-                "geo_correct": true
+                "geocorrect": true
             }
         },
         {
             "name": "True Color + Hotspot Detection",
             "expression": " ref_channel = 1; ch10 > 0.9 ? 1 : ch3, ch2, ch1",
             "image": {
-                "geo_correct": true,
+                "geocorrect": true,
                 "equalize": true
             }
         },
@@ -31,7 +31,7 @@
             "expression": "ch3, (ch2 * 0.43 + ch4 * 0.57), ch1",
             "image": {
                 "individual_equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             }
         },
         {
@@ -39,7 +39,7 @@
             "expression": "ch9, ch8, ch3",
             "image": {
                 "equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/ShortwaveIRFC.md"
         },
@@ -48,7 +48,7 @@
             "expression": "ch4, ch3, ch2",
             "image": {
                 "individual_equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/CIR.md"
         },
@@ -57,7 +57,7 @@
             "expression": "ch8,ch4,ch1",
             "image": {
                 "individual_equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/Agriculture.md"
         },
@@ -66,7 +66,7 @@
             "expression": "ch9,ch8,ch1",
             "image": {
                 "individual_equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/Geology.md"
         },
@@ -75,7 +75,7 @@
             "expression": "ch9, ch12, ch11",
             "image": {
                 "individual_equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/MERSIAirmass.md"
         },
@@ -83,7 +83,7 @@
             "name": "AVHRR 221 False Color",
             "expression": "ch4, ch4, ch1",
             "image": {
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/221.md"
         },
@@ -92,7 +92,7 @@
             "expression": "ch3, ch8^2.5, ch5",
             "image": {
                 "individual_equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/DayMicro.md"
         },
@@ -101,7 +101,7 @@
             "expression": "ch8, ch4, ch3",
             "image": {
                 "equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/321.md"
         },
@@ -110,7 +110,7 @@
             "expression": "1.0 - ch5",
             "image": {
                 "individual_equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/ThermalUncal.md"
         },
@@ -119,7 +119,7 @@
             "expression": "lut=lut(lut/WXtoImg-NO_mod_meteor.png);lut(ch5, ch6, 0), lut(ch5, ch6, 1), lut(ch5, ch6, 2)",
             "image": {
                 "individual_equalize": false,
-                "geo_correct": true
+                "geocorrect": true
             }
         },
         {
@@ -127,7 +127,7 @@
             "expression": "cch12=(12, equalized, 0, 0);lut=lut(lut/cal/purpleorange.png);lut(cch12, 0, 0), lut(cch12,0,1), lut(cch12,0,2)",
             "image": {
                 "equalize": false,
-                "geo_correct": true
+                "geocorrect": true
             }
         }
     ]

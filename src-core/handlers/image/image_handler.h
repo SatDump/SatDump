@@ -131,6 +131,12 @@ namespace satdump
             // Allow disabling overlay menu, eg, for projections where they are separate
             bool enableOverlayMenu = true;
 
+            // If the image subhandlers are not exposed, we need to send the crops somewhere else
+            bool sendCropToRoot = false;
+
+            // For projections
+            bool removeProjectionInfoFromCrop = false;
+
         public:
             /**
              * @brief Return a sane image name for saving

@@ -6,7 +6,7 @@
             "expression": "ch6, ch5, ch2",
             "image": {
                 "individual_equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/TrueColor.md",
             "autogen": true
@@ -16,7 +16,7 @@
             "expression": "ch8, ch8, ch5",
             "image": {
                 "individual_equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             },
             "description": "descriptions/221.md",
             "autogen": true
@@ -26,7 +26,7 @@
             "expression": "ch6,ch4,ch2",
             "image": {
                 "individual_equalize": true,
-                "geo_correct": true
+                "geocorrect": true
             }
         }
     ]

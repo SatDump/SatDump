@@ -1,4 +1,5 @@
 #include "simple_gardner_recovery.h"
+#include "common/dsp/block.h"
 
 namespace satdump
 {
@@ -37,6 +38,9 @@ namespace satdump
 
                     complex_t diff = curr - prev_sym;
                     float err = diff.real * mid.real + diff.imag * mid.imag;
+
+                    // Avoid error going wayyyy out of bounds
+                    err = dsp::branched_clip(err, 1);
 
                     // Advance to next midpoint with error
                     phase += period / 2.0f - alpha * err;
