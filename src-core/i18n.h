@@ -1,7 +1,7 @@
 #pragma once
 
 #if ENABLE_I18N
-#include <libintl.h>
+#include "i18n/libintl.h"
 #endif
 
 #if ENABLE_I18N
