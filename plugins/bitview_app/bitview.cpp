@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <memory>
 #include <string>
+#include "i18n.h"
 
 #include "libs/muparser/muParser.h"
 #include "libs/muparser/muParserError.h"
@@ -48,12 +49,12 @@ namespace satdump
         if (is_busy)
             style::beginDisabled();
 
-        if (ImGui::CollapsingHeader("Display", ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::CollapsingHeader(_("Display"), ImGuiTreeNodeFlags_DefaultOpen))
         {
             if (!bc->d_frame_mode)
             {
 
-                if (ImGui::InputText("Period (Bits)", &frame_width_exp))
+                if (ImGui::InputText(_("Period (Bits)"), &frame_width_exp))
                 {
                     try
                     {
@@ -78,7 +79,7 @@ namespace satdump
                 }
             }
 
-            if (ImGui::RadioButton("Bits", bc->d_display_mode == 0 && !custom_bit_depth && bc->d_display_bits == 1))
+            if (ImGui::RadioButton(_("Bits"), bc->d_display_mode == 0 && !custom_bit_depth && bc->d_display_bits == 1))
             {
                 bc->d_display_mode = 0;
                 custom_bit_depth = false;
@@ -88,7 +89,7 @@ namespace satdump
 
             ImGui::SameLine();
 
-            if (ImGui::RadioButton("Bytes", bc->d_display_mode == 0 && !custom_bit_depth && bc->d_display_bits == 8))
+            if (ImGui::RadioButton(_("Bytes"), bc->d_display_mode == 0 && !custom_bit_depth && bc->d_display_bits == 8))
             {
                 bc->d_display_mode = 0;
                 custom_bit_depth = false;
@@ -98,7 +99,7 @@ namespace satdump
 
             ImGui::SameLine();
 
-            if (ImGui::RadioButton("Custom", bc->d_display_mode == 0 && custom_bit_depth))
+            if (ImGui::RadioButton(_("Custom"), bc->d_display_mode == 0 && custom_bit_depth))
             {
                 bc->d_display_mode = 0;
                 custom_bit_depth = true;
@@ -106,7 +107,7 @@ namespace satdump
                 bc->init_display();
             }
 
-            if (ImGui::RadioButton("ASCII", bc->d_display_mode == 1))
+            if (ImGui::RadioButton(_("ASCII"), bc->d_display_mode == 1))
             {
                 custom_bit_depth = false;
                 bc->d_display_mode = 1;
@@ -115,7 +116,7 @@ namespace satdump
 
             if (custom_bit_depth)
             {
-                if (ImGui::InputInt("Bit Depth", &bc->d_display_bits))
+                if (ImGui::InputInt(_("Bit Depth"), &bc->d_display_bits))
                 {
                     if (bc->d_display_bits > 32)
                         bc->d_display_bits = 32;
@@ -127,7 +128,7 @@ namespace satdump
 
             if (!bc->d_is_temporary)
             {
-                if (ImGui::Button("Reload"))
+                if (ImGui::Button(_("Reload")))
                 {
                     try
                     {

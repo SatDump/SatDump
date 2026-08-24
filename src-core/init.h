@@ -16,6 +16,11 @@ namespace satdump
     void initSatDump(bool is_gui = false);
     void exitSatDump();
 
+#if ENABLE_I18N
+    void initLanguage(std::string lang = "");
+    SATDUMP_DLL extern std::string current_language;
+#endif
+
     SATDUMP_DLL extern std::shared_ptr<DBHandler> db;
     SATDUMP_DLL extern std::shared_ptr<KeplerDBHandler> db_keplers;
     SATDUMP_DLL extern std::shared_ptr<IersDBHandler> db_iers;

@@ -1,4 +1,5 @@
 #include "core/plugin.h"
+#include "i18n.h"
 #include "init.h"
 #include "logger.h"
 
@@ -31,7 +32,7 @@ public:
 
     static void registerConfigHandler(const satdump::config::RegisterPluginConfigHandlersEvent &evt)
     {
-        evt.plugin_config_handlers.push_back({"First-Party Support", FirstPartyLoaderSupport::renderConfig, FirstPartyLoaderSupport::saveConfig});
+        evt.plugin_config_handlers.push_back({_("First-Party Support"), FirstPartyLoaderSupport::renderConfig, FirstPartyLoaderSupport::saveConfig});
     }
 
 public:
@@ -55,11 +56,11 @@ public:
     {
         initLoader();
 
-        ImGui::Text("EUMETSAT User «Consumer Key»");
+        ImGui::Text(_("EUMETSAT User «Consumer Key»"));
         ImGui::SameLine();
         ImGui::InputText("##eumetsattokenloader_key", &_loader->eumetsat_user_consumer_credential);
 
-        ImGui::Text("EUMETSAT User «Consumer Secret»");
+        ImGui::Text(_("EUMETSAT User «Consumer Secret»"));
         ImGui::SameLine();
         ImGui::InputText("##eumetsattokenloader_secret", &_loader->eumetsat_user_consumer_secret);
     }
@@ -75,9 +76,9 @@ public:
 
     static void renderExplorerLoaderButton(const satdump::explorer::RenderLoadMenuElementsEvent &evt)
     {
-        if (ImGui::BeginMenu("File"))
+        if (ImGui::BeginMenu(_("File")))
         {
-            if (ImGui::MenuItem("Load First-Party"))
+            if (ImGui::MenuItem(_("Load First-Party")))
                 _loader_open = true;
             ImGui::EndMenu();
         }

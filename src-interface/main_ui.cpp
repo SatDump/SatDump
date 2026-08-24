@@ -1,3 +1,4 @@
+#include "i18n.h"
 #include "libs/base64/base64.h"
 #include "utils/time.h"
 #include <string>
@@ -162,20 +163,20 @@ namespace satdump
                 if (ImGui::MenuItem(u8"\uf85b", NULL, explorer_app->show_panel))
                     explorer_app->show_panel = !explorer_app->show_panel;
 
-                if (ImGui::BeginMenu("File"))
+                if (ImGui::BeginMenu(_("File")))
                 {
-                    if (ImGui::MenuItem("Processing"))
+                    if (ImGui::MenuItem(_("Processing")))
                         offline_en = true;
 
-                    if (ImGui::MenuItem("Settings"))
+                    if (ImGui::MenuItem(_("Settings")))
                         settings_en = true;
 
                     ImGui::EndMenu();
                 }
 
-                if (ImGui::BeginMenu("Add"))
+                if (ImGui::BeginMenu(_("Add")))
                 {
-                    if (ImGui::MenuItem("Recorder"))
+                    if (ImGui::MenuItem(_("Recorder")))
                         explorer_app->tryOpenSomethingInExplorer(
                             [](explorer::ExplorerApplication *)
                             {
@@ -214,7 +215,7 @@ namespace satdump
                 // ImGui::SetNextWindowSize({600 * ui_scale, 0});
                 ImGui::SetNextWindowPos({0, 0});
                 ImGui::SetNextWindowSize({(float)dims.first, (float)dims.second});
-                if (ImGui::Begin("Start Processing", &offline_en, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse))
+                if (ImGui::Begin(_("Start Processing"), &offline_en, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse))
                 {
                     offline::render();
                     ImGui::End();
@@ -223,13 +224,13 @@ namespace satdump
 
             if (settings_en)
             {
-                ImGui::OpenPopup("Settings");
+                ImGui::OpenPopup(_("Settings"));
                 ImVec2 center = ImGui::GetIO().DisplaySize * 0.5f;
                 ImGui::SetNextWindowPos({center.x, 50 * ui_scale}, ImGuiCond_Appearing, ImVec2(0.5f, 0.0f));
                 ImGui::SetNextWindowSize({750 * ui_scale, 0});
             }
 
-            if (ImGui::BeginPopupModal("Settings", &settings_en, ImGuiWindowFlags_AlwaysVerticalScrollbar))
+            if (ImGui::BeginPopupModal(_("Settings"), &settings_en, ImGuiWindowFlags_AlwaysVerticalScrollbar))
             {
                 settings::render();
                 ImGui::EndPopup();
@@ -237,13 +238,13 @@ namespace satdump
 
             if (about_en)
             {
-                ImGui::OpenPopup("About");
+                ImGui::OpenPopup(_("About"));
                 ImVec2 center = ImGui::GetIO().DisplaySize * 0.5f;
                 ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
                 ImGui::SetNextWindowSize({750 * ui_scale, 0});
             }
 
-            if (ImGui::BeginPopupModal("About", &about_en, ImGuiWindowFlags_AlwaysVerticalScrollbar))
+            if (ImGui::BeginPopupModal(_("About"), &about_en, ImGuiWindowFlags_AlwaysVerticalScrollbar))
             {
                 credits_md.render();
                 ImGui::Dummy({400 * ui_scale, 0});
@@ -252,11 +253,11 @@ namespace satdump
 
             if (ImGui::BeginMenuBar())
             {
-                if (widgets::BeginMenuTooltip("?", "Help"))
+                if (widgets::BeginMenuTooltip("?", _("Help")))
                 {
-                    if (ImGui::MenuItem("Documentation"))
+                    if (ImGui::MenuItem(_("Documentation")))
                         ;
-                    if (ImGui::MenuItem("About"))
+                    if (ImGui::MenuItem(_("About")))
                         about_en = true;
                     ImGui::EndMenu();
                 }

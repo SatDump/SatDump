@@ -251,7 +251,7 @@ namespace satdump
     void RecorderApplication::drawMenu()
     {
         bool assume_started = is_started;
-        if (ImGui::CollapsingHeader("Source", tracking_started_cli ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::CollapsingHeader(_("Source"), tracking_started_cli ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_DefaultOpen))
         {
             ImGui::Spacing();
             if (assume_started)
@@ -320,7 +320,7 @@ namespace satdump
                 }
             */
 
-            ImGui::InputInt("Decimation##recorderdecimation", &current_decimation);
+            ImGui::InputInt(_("Decimation##recorderdecimation"), &current_decimation);
             if (current_decimation < 1)
                 current_decimation = 1;
 
@@ -332,7 +332,7 @@ namespace satdump
             if (pushed_color_xconv)
                 ImGui::PushStyleColor(ImGuiCol_Text, style::theme.green.Value);
 
-            if (ImGui::InputDouble("MHz (LO offset)##downupconverter", &xconverter_frequency))
+            if (ImGui::InputDouble(_("MHz (LO offset)##downupconverter"), &xconverter_frequency))
                 set_frequency(frequency_hz);
 
             if (pushed_color_xconv)
@@ -353,21 +353,21 @@ namespace satdump
 
             if (!assume_started)
             {
-                if (ImGui::Button("Start"))
+                if (ImGui::Button(_("Start")))
                     start();
             }
             else
             {
-                if (ImGui::Button("Stop"))
+                if (ImGui::Button(_("Stop")))
                     stop();
             }
 
             sdr_error.draw();
         }
 
-        if (ImGui::CollapsingHeader("FFT", tracking_started_cli ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::CollapsingHeader(_("FFT"), tracking_started_cli ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_DefaultOpen))
         {
-            if (ImGui::Combo("FFT Size", &selected_fft_size,
+            if (ImGui::Combo(_("FFT Size"), &selected_fft_size,
                              "131072\0"
                              "65536\0"
                              "32768\0"
@@ -386,7 +386,7 @@ namespace satdump
                 logger->info("Set FFT size to %d", fft_size);
             }
             int old_rate = fft_rate;
-            if (ImGui::InputInt("FFT Rate", &fft_rate))
+            if (ImGui::InputInt(_("FFT Rate"), &fft_rate))
             {
                 if (fft_rate <= 0)
                     fft_rate = old_rate;
@@ -405,7 +405,7 @@ namespace satdump
                 logger->info("Set Waterfall rate to %d", waterfall_rate);
             }
             old_rate = waterfall_rate;
-            if (ImGui::InputInt("Waterfall Rate", &waterfall_rate))
+            if (ImGui::InputInt(_("Waterfall Rate"), &waterfall_rate))
             {
                 if (waterfall_rate <= 0)
                     waterfall_rate = old_rate;
@@ -422,13 +422,13 @@ namespace satdump
                 waterfall_plot->set_rate(fft_rate, waterfall_rate);
                 logger->info("Set FFT rate to %d", fft_rate);
             }
-            widgets::SteppedSliderFloat("FFT Max", &fft_plot->scale_max, -160, 150);
-            widgets::SteppedSliderFloat("FFT Min", &fft_plot->scale_min, -160, 150);
-            widgets::SteppedSliderFloat("Avg Num", &fft->avg_num, 1, 500, 1);
-            if (ImGui::Combo("Palette", &selected_waterfall_palette, waterfall_palettes_str.c_str()))
+            widgets::SteppedSliderFloat(_("FFT Max"), &fft_plot->scale_max, -160, 150);
+            widgets::SteppedSliderFloat(_("FFT Min"), &fft_plot->scale_min, -160, 150);
+            widgets::SteppedSliderFloat(_("Avg Num"), &fft->avg_num, 1, 500, 1);
+            if (ImGui::Combo(_("Palette"), &selected_waterfall_palette, waterfall_palettes_str.c_str()))
                 waterfall_plot->set_palette(waterfall_palettes[selected_waterfall_palette]);
-            ImGui::Checkbox("Show Waterfall", &show_waterfall);
-            ImGui::Checkbox("Frequency Scale", &fft_plot->enable_freq_scale);
+            ImGui::Checkbox(_("Show Waterfall"), &show_waterfall);
+            ImGui::Checkbox(_("Frequency Scale"), &fft_plot->enable_freq_scale);
         }
 
         if (fft_plot->scale_max < fft_plot->scale_min)
@@ -447,7 +447,7 @@ namespace satdump
             waterfall_plot->scale_max = fft_plot->scale_max;
         }
 
-        if (ImGui::CollapsingHeader("Processing"))
+        if (ImGui::CollapsingHeader(_("Processing")))
         {
             // Settings & Selection menu
             bool assume_processing = is_processing;
@@ -463,9 +463,9 @@ namespace satdump
             // Preset Menu
             if (pipeline_selector.selected_pipeline.preset.frequencies.size() > 0)
             {
-                if (ImGui::BeginCombo("Freq###presetscombo", pipeline_selector.selected_pipeline.preset.frequencies[pipeline_preset_id].second == frequency_hz
-                                                                 ? pipeline_selector.selected_pipeline.preset.frequencies[pipeline_preset_id].first.c_str()
-                                                                 : ""))
+                if (ImGui::BeginCombo(_("Freq###presetscombo"), pipeline_selector.selected_pipeline.preset.frequencies[pipeline_preset_id].second == frequency_hz
+                                                                    ? pipeline_selector.selected_pipeline.preset.frequencies[pipeline_preset_id].first.c_str()
+                                                                    : ""))
                 {
                     for (int n = 0; n < (int)pipeline_selector.selected_pipeline.preset.frequencies.size(); n++)
                     {
@@ -494,18 +494,18 @@ namespace satdump
             bool assume_stopping_processing = is_stopping_processing;
             if (!assume_processing)
             {
-                if (ImGui::Button("Start###startprocessing"))
+                if (ImGui::Button(_("Start###startprocessing")))
                     start_processing();
             }
             else if (assume_stopping_processing)
             {
                 style::beginDisabled();
-                ImGui::Button("Stopping...##stoppingprocessing");
+                ImGui::Button(_("Stopping...##stoppingprocessing"));
                 style::endDisabled();
             }
             else
             {
-                if (ImGui::Button("Stop##stopprocessing"))
+                if (ImGui::Button(_("Stop##stopprocessing")))
                     ui_thread_pool.push([=](int) { stop_processing(); });
             }
 
@@ -515,13 +515,13 @@ namespace satdump
                 style::endDisabled();
         }
 
-        if (ImGui::CollapsingHeader("Recording"))
+        if (ImGui::CollapsingHeader(_("Recording")))
         {
             bool assume_recording = is_recording;
             if (assume_recording)
                 style::beginDisabled();
 
-            if (baseband_format.draw_record_combo("Format##basebandrecordformat"))
+            if (baseband_format.draw_record_combo(_("Format##basebandrecordformat")))
                 file_sink->set_output_sample_type(baseband_format);
 
             if (assume_recording)
@@ -533,11 +533,11 @@ namespace satdump
                 estimated_available = disk_available - file_written;
 
             if (file_written < 1e9)
-                ImGui::Text("Size : %.2f MB", file_written / 1e6);
+                ImGui::Text(_("Size : %.2f MB"), file_written / 1e6);
             else
-                ImGui::Text("Size : %.2f GB", file_written / 1e9);
+                ImGui::Text(_("Size : %.2f GB"), file_written / 1e9);
 
-            ImGui::Text("Free Space: %.2f GB", estimated_available / pow(1024, 3));
+            ImGui::Text(_("Free Space: %.2f GB"), estimated_available / pow(1024, 3));
 
             int timeleft;
             switch (baseband_format)
@@ -569,7 +569,7 @@ namespace satdump
                 {
                     if (is_recording && remaining_disk_space_time > timeleft && !been_warned)
                     {
-                        logger->warn("!!!!WARNING - LOW AMOUNT OF FREE DISK SPACE!!!!");
+                        logger->warn(_("!!!!WARNING - LOW AMOUNT OF FREE DISK SPACE!!!!"));
                         been_warned = true;
                     }
 
@@ -583,7 +583,7 @@ namespace satdump
 
                     timeleft %= 60;
                     int seconds = timeleft;
-                    ImGui::Text("Time left: %02d:%02d:%02d:%02d", day, hour, minutes, seconds);
+                    ImGui::Text(_("Time left: %02d:%02d:%02d:%02d"), day, hour, minutes, seconds);
                 }
             }
 
@@ -591,49 +591,49 @@ namespace satdump
             if (baseband_format == dsp::ZIQ)
             {
                 if (file_sink->get_written_raw() < 1e9)
-                    ImGui::Text("Size (raw) : %.2f MB", file_sink->get_written_raw() / 1e6);
+                    ImGui::Text(_("Size (raw) : %.2f MB"), file_sink->get_written_raw() / 1e6);
                 else
-                    ImGui::Text("Size (raw) : %.2f GB", file_sink->get_written_raw() / 1e9);
+                    ImGui::Text(_("Size (raw) : %.2f GB"), file_sink->get_written_raw() / 1e9);
             }
 #endif
 
-            ImGui::Text("File : %s", recorder_filename.c_str());
+            ImGui::Text(_("File : %s"), recorder_filename.c_str());
 
             ImGui::Spacing();
 
             if (!assume_recording)
-                ImGui::TextColored(style::theme.red, "IDLE");
+                ImGui::TextColored(style::theme.red, _("IDLE"));
             else
-                ImGui::TextColored(style::theme.green, "RECORDING");
+                ImGui::TextColored(style::theme.green, _("RECORDING"));
 
             ImGui::Spacing();
 
             if (!assume_recording)
             {
-                if (ImGui::Button("Start###startrecording"))
+                if (ImGui::Button(_("Start###startrecording")))
                     start_recording();
             }
             else
             {
-                if (ImGui::Button("Stop##stoprecording"))
+                if (ImGui::Button(_("Stop##stoprecording")))
                     stop_recording();
             }
         }
 
-        show_tracking = ImGui::CollapsingHeader("Tracking", tracking_started_cli ? ImGuiTreeNodeFlags_DefaultOpen : ImGuiTreeNodeFlags_None);
+        show_tracking = ImGui::CollapsingHeader(_("Tracking"), tracking_started_cli ? ImGuiTreeNodeFlags_DefaultOpen : ImGuiTreeNodeFlags_None);
         if (show_tracking)
         {
             try_init_tracking_widget();
             tracking_widget->render();
         }
 
-        if (ImGui::CollapsingHeader("VFOs"))
+        if (ImGui::CollapsingHeader(_("VFOs")))
         {
             vfos_mtx.lock();
             std::string to_delete = "";
             if (vfo_list.size() == 0)
             {
-                const char *no_vfo_text = "No Active VFOs";
+                const char *no_vfo_text = _("No Active VFOs");
                 ImGui::SetCursorPosX(ImGui::GetContentRegionAvail().x / 2 - ImGui::CalcTextSize(no_vfo_text).x / 2);
                 ImGui::TextDisabled("%s", no_vfo_text);
             }
@@ -644,21 +644,21 @@ namespace satdump
                     ImGui::PushStyleColor(ImGuiCol_Text, style::theme.green.Value);
                     ImGui::SeparatorText(vfo.name.c_str());
                     ImGui::PopStyleColor();
-                    ImGui::BulletText("Frequency: %s", format_notated(vfo.freq, "Hz").c_str());
+                    ImGui::BulletText(_("Frequency: %s"), format_notated(vfo.freq, "Hz").c_str());
                     if (vfo.selected_pipeline.id != "")
                     {
-                        ImGui::BulletText("Pipeline: %s", vfo.selected_pipeline.id.c_str());
-                        ImGui::BulletText("Directory: %s", vfo.output_dir.c_str());
+                        ImGui::BulletText(_("Pipeline: %s"), vfo.selected_pipeline.id.c_str());
+                        ImGui::BulletText(_("Directory: %s"), vfo.output_dir.c_str());
                     }
                     else if (vfo.file_sink)
                     {
                         if (vfo.file_sink->get_written() < 1e9)
-                            ImGui::BulletText("IQ Size: %.2f MB", vfo.file_sink->get_written() / 1e6);
+                            ImGui::BulletText(_("IQ Size: %.2f MB"), vfo.file_sink->get_written() / 1e6);
                         else
-                            ImGui::BulletText("IQ Size: %.2f GB", vfo.file_sink->get_written() / 1e9);
+                            ImGui::BulletText(_("IQ Size: %.2f GB"), vfo.file_sink->get_written() / 1e9);
                     }
                     ImGui::Spacing();
-                    if (ImGui::Button(std::string("Stop##" + vfo.id).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0)))
+                    if (ImGui::Button(std::string(_("Stop##") + vfo.id).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0)))
                         to_delete = vfo.id;
                 }
             }
@@ -685,7 +685,7 @@ namespace satdump
 #endif
         }
 
-        if (ImGui::CollapsingHeader("Debug"))
+        if (ImGui::CollapsingHeader(_("Debug")))
         {
             if (constellation_debug == nullptr)
                 constellation_debug = new widgets::ConstellationViewer();
@@ -785,7 +785,7 @@ namespace satdump
             {
                 if (is_processing)
                 {
-                    if (ImGui::BeginTabItem("Live Processing"))
+                    if (ImGui::BeginTabItem(_("Live Processing")))
                     {
                         float y_pos = ImGui::GetCursorPosY(); //+ 35 * ui_scale;
                         float live_width = recorder_size_x + 16 * ui_scale;

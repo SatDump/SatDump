@@ -2,6 +2,7 @@
 #include "explorer/explorer.h"
 
 #include "explorer/explorer.h"
+#include "i18n.h"
 #include "satdump_downconverter/satdump_downconverter_handler.h"
 
 class ExperimentalDevicesSupportPlugin : public satdump::Plugin
@@ -17,11 +18,11 @@ public:
 
     static void renderExplorerLoaderButton(const satdump::explorer::RenderLoadMenuElementsEvent &evt)
     {
-        if (ImGui::BeginMenu("Add"))
+        if (ImGui::BeginMenu(_("Add")))
         {
-            if (ImGui::BeginMenu("Experimental"))
+            if (ImGui::BeginMenu(_("Experimental")))
             {
-                if (ImGui::MenuItem("SatDump Downconverter UI"))
+                if (ImGui::MenuItem(_("SatDump Downconverter UI")))
                     evt.master_handler->addSubHandler(std::make_shared<satdump::exp_devs::SatDumpDownconverHandler>());
                 ImGui::EndMenu();
             }

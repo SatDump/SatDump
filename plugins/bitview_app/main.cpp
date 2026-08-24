@@ -4,6 +4,7 @@
 #include "core/cli/cli.h"
 #include "core/plugin.h"
 #include "explorer/explorer.h"
+#include "i18n.h"
 #include "logger.h"
 
 #include "bitview.h"
@@ -34,11 +35,11 @@ public:
 
     static void renderExplorerLoaderButton(const satdump::explorer::RenderLoadMenuElementsEvent &evt)
     {
-        if (ImGui::BeginMenu("Add"))
+        if (ImGui::BeginMenu(_("Add")))
         {
-            if (ImGui::BeginMenu("Tools"))
+            if (ImGui::BeginMenu(_("Tools")))
             {
-                fopen_menu.render("BitView", "Open binary file", "", {{"All Files", "*"}});
+                fopen_menu.render(_("BitView"), _("Open binary file"), "", {{"All Files", "*"}});
                 ImGui::EndMenu();
             }
 

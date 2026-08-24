@@ -112,7 +112,7 @@ namespace satdump
             last_size = display_size;
 
             ImGui::SetNextWindowBgAlpha(1.0);
-            ImGui::Begin("SatDump Log", &show_log, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse);
+            ImGui::Begin(_("SatDump Log"), &show_log, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse);
             widgets::LoggerSinkWidget::draw();
 
             ImGui::End();

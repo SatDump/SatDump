@@ -10,12 +10,12 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
 # Build in release mod so it isn't unusably slow
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3")
-set(CMAKE_CXX_FLAGS_DEBUG "-O3")
-set(CMAKE_C_FLAGS_RELEASE "-O3")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O3")
-set(CMAKE_C_FLAGS_DEBUG "-O3")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wno-format-security")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -Wno-format-security")
+set(CMAKE_CXX_FLAGS_DEBUG "-O3 -Wno-format-security")
+set(CMAKE_C_FLAGS_RELEASE "-O3 -Wno-format-security")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O3 -Wno-format-security")
+set(CMAKE_C_FLAGS_DEBUG "-O3 -Wno-format-security")
 
 # ##########################################################################################################################################
 include_directories(deps/output/${ANDROID_ABI}/include)

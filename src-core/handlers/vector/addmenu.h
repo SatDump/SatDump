@@ -7,6 +7,7 @@
 #include "handlers/handler.h"
 #include "handlers/vector/shapefile_handler.h"
 #include "logger.h"
+#include "i18n.h"
 
 namespace satdump
 {
@@ -18,30 +19,30 @@ namespace satdump
             bool added = false;
 
             // TODOREWORK move out?!
-            if (widgets::BeginMenuTooltip(u8"\uf53E", "Add Overlay"))
+            if (widgets::BeginMenuTooltip(u8"\uf53E", _("Add Overlay")))
             {
-                if (ImGui::MenuItem("Shores"))
+                if (ImGui::MenuItem(_("Shores")))
                 {
                     h->addSubHandler(std::make_shared<handlers::ShapefileHandler>(resources::getResourcePath("maps/ne_10m_coastline.shp")), true);
                     added = true;
                 }
 
-                if (ImGui::MenuItem("Borders"))
+                if (ImGui::MenuItem(_("Borders")))
                 {
                     h->addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_admin_0_countries.shp")), true);
                     added = true;
                 }
 
-                if (ImGui::MenuItem("Cities"))
+                if (ImGui::MenuItem(_("Cities")))
                 {
                     h->addSubHandler(std::make_shared<ShapefileHandler>(resources::getResourcePath("maps/ne_10m_populated_places_simple.shp")), true);
                     added = true;
                 }
 
-                if (ImGui::MenuItem("Lat/Lon Grid"))
+                if (ImGui::MenuItem(_("Lat/Lon Grid")))
                 {
                     auto h2 = std::make_shared<ShapefileHandler>();
-                    h2->shapefile_name = "Lat/Lon Grid";
+                    h2->shapefile_name = _("Lat/Lon Grid");
 
                     shapefile::PolyLineRecord r;
 
@@ -70,10 +71,10 @@ namespace satdump
                     added = true;
                 }
 
-                if (ImGui::MenuItem("QTH"))
+                if (ImGui::MenuItem(_("QTH")))
                 {
                     auto h2 = std::make_shared<ShapefileHandler>();
-                    h2->shapefile_name = "QTH";
+                    h2->shapefile_name = _("QTH");
 
                     shapefile::PointRecord r;
                     r.record_number = 1;
@@ -82,7 +83,7 @@ namespace satdump
 
                     h2->file = std::make_unique<shapefile::Shapefile>();
                     h2->file->point_records.push_back(r);
-                    h2->dbf_file[0]["name"] = "QTH";
+                    h2->dbf_file[0]["name"] = _("QTH");
                     h2->has_dbf = true;
 
                     h->addSubHandler(h2, true);

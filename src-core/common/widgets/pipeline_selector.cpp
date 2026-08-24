@@ -3,6 +3,7 @@
 #include "common/detect_header.h"
 #include "common/widgets/json_editor.h"
 #include "core/config.h"
+#include "i18n.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
 #include "logger.h"
@@ -118,7 +119,7 @@ namespace satdump
         pipeline_mtx.lock();
         if (width != -1)
             ImGui::SetNextItemWidth(width);
-        ImGui::InputTextWithHint("##pipelinesearchbox", u8"\uf422   Search pipelines", &pipeline_search_in);
+        ImGui::InputTextWithHint("##pipelinesearchbox", _(u8"\uf422   Search pipelines"), &pipeline_search_in);
         if (width != -1)
             ImGui::SetNextItemWidth(width);
 
@@ -156,7 +157,7 @@ namespace satdump
 
             if (!favourite.empty() && show)
             {
-                if (ImGui::CollapsingHeader("Favourites", ImGuiTreeNodeFlags_DefaultOpen))
+                if (ImGui::CollapsingHeader(_("Favourites"), ImGuiTreeNodeFlags_DefaultOpen))
                 {
                     ImGui::Spacing();
                     for (int k = 0; k < (int)favourite.size(); k++)
@@ -284,20 +285,20 @@ namespace satdump
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::Text("Input File");
+            ImGui::Text(_("Input File"));
             ImGui::TableSetColumnIndex(1);
             if (inputfileselect.draw())
                 getParamsFromInput();
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::Text("Output Directory");
+            ImGui::Text(_("Output Directory"));
             ImGui::TableSetColumnIndex(1);
             outputdirselect.draw();
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::Text("Input Level");
+            ImGui::Text(_("Input Level"));
             ImGui::TableSetColumnIndex(1);
             ImGui::Combo("##pipelinelevel", &pipelines_levels_select_id, pipeline_levels_str.c_str());
             ImGui::EndTable();
@@ -308,7 +309,7 @@ namespace satdump
 
     void PipelineUISelector::drawMainparamsLive()
     {
-        ImGui::Text("Output Directory :");
+        ImGui::Text(_("Output Directory :"));
         outputdirselect.draw();
         ImGui::Spacing();
     }
@@ -318,7 +319,7 @@ namespace satdump
         if (ImGui::BeginTable("##pipelineoptions", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
         {
             // TODOREWORKUI?
-            int label_width = ImGui::CalcTextSize("Output Directory").x;
+            int label_width = ImGui::CalcTextSize(_("Output Directory")).x;
             ImGui::TableSetupColumn("##pipelinesmaincolumn1", ImGuiTableColumnFlags_WidthStretch, label_width);
             ImGui::TableSetupColumn("##pipelinesmaincolumn2", ImGuiTableColumnFlags_WidthStretch, label_width);
 
@@ -332,7 +333,7 @@ namespace satdump
         if (*advanced_mode)
         {
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5 * ui_scale);
-            ImGui::SeparatorText("Advanced Parameters");
+            ImGui::SeparatorText(_("Advanced Parameters"));
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 5 * ui_scale);
             pipeline_mtx.lock();
             for (auto &step : selected_pipeline.steps)

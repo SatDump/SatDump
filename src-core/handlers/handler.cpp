@@ -1,6 +1,7 @@
 #include "handler.h"
 
 #include "core/style.h"
+#include "i18n.h"
 #include "imgui/imgui.h"
 #include "logger.h"
 #include <utility>
@@ -56,7 +57,7 @@ namespace satdump
                 if (handler->handler_can_be_dragged && ImGui::BeginPopupContextItem())
                 {
                     handler->drawContextMenu();
-                    if (ImGui::MenuItem("Delete"))
+                    if (ImGui::MenuItem(_("Delete")))
                         subhandlers_marked_for_del.push_back(handler);
                     ImGui::EndPopup();
                 }
@@ -95,7 +96,7 @@ namespace satdump
                             }
                             else
                             {
-                                logger->error("Can't drag parent onto child handler!");
+                                logger->error(_("Can't drag parent onto child handler!"));
                             }
                         }
                         ImGui::EndDragDropTarget();

@@ -1,5 +1,6 @@
 #include "lut_generator.h"
 #include "core/resources.h"
+#include "i18n.h"
 #include "image/io.h"
 #include "imgui/dialogs/pfd_utils.h"
 #include "imgui/implot/implot.h"
@@ -30,7 +31,7 @@ namespace satdump
 
         void LutGeneratorHandler::drawMenu()
         {
-            if (ImGui::CollapsingHeader("LUT", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::CollapsingHeader(_("LUT"), ImGuiTreeNodeFlags_DefaultOpen))
             {
                 if (ImGui::Button("--"))
                     for (int i = 0; i < 10; i++)
@@ -42,7 +43,7 @@ namespace satdump
                         lut.erase(lut.end() - 1);
 
                 ImGui::SameLine();
-                ImGui::Text("Size : %d\n", lut.size());
+                ImGui::Text(_("Size : %d\n"), lut.size());
                 ImGui::SameLine();
 
                 if (ImGui::Button("+"))
@@ -52,16 +53,16 @@ namespace satdump
                     for (int i = 0; i < 10; i++)
                         lut.push_back(current_col);
 
-                ImGui::Text("Mode:");
+                ImGui::Text(_("Mode:"));
                 ImGui::SameLine();
-                if (ImGui::RadioButton("Fill", mouse_mode == 0))
+                if (ImGui::RadioButton(_("Fill"), mouse_mode == 0))
                     mouse_mode = 0;
                 ImGui::SameLine();
-                if (ImGui::RadioButton("Interpolate", mouse_mode == 1))
+                if (ImGui::RadioButton(_("Interpolate"), mouse_mode == 1))
                     mouse_mode = 1;
 
                 float colors[4] = {current_col.r / 255.0f, current_col.g / 255.0f, current_col.b / 255.0f, current_col.a / 255.0f};
-                ImGui::ColorEdit4("Color", colors, ImGuiColorEditFlags_NoInputs);
+                ImGui::ColorEdit4(_("Color"), colors, ImGuiColorEditFlags_NoInputs);
                 current_col.r = colors[0] * 255.0f;
                 current_col.g = colors[1] * 255.0f;
                 current_col.b = colors[2] * 255.0f;
@@ -69,33 +70,33 @@ namespace satdump
 
                 ImGui::SameLine();
 
-                if (ImGui::Button("Pick"))
+                if (ImGui::Button(_("Pick")))
                     current_col = getColorFromScreen();
 
                 bool has_hist = history_vector.size();
                 if (!has_hist)
                     style::beginDisabled();
-                if (ImGui::Button("Undo"))
+                if (ImGui::Button(_("Undo")))
                     restoreHistory();
                 if (!has_hist)
                     style::endDisabled();
                 ImGui::SameLine();
-                if (ImGui::Button("Invert"))
+                if (ImGui::Button(_("Invert")))
                     std::reverse(lut.begin(), lut.end());
 
                 if (!use_range)
                     style::beginDisabled();
-                ImGui::InputDouble("Range Min", &range_min);
-                ImGui::InputDouble("Range Max", &range_max);
+                ImGui::InputDouble(_("Range Min"), &range_min);
+                ImGui::InputDouble(_("Range Max"), &range_max);
                 if (range_max - range_min <= 0)
                     range_max = range_min + 1;
                 if (!use_range)
                     style::endDisabled();
-                ImGui::Checkbox("Use Range", &use_range);
+                ImGui::Checkbox(_("Use Range"), &use_range);
 
                 ImGui::InputInt("##replicate", &replicate_times);
                 ImGui::SameLine();
-                if (ImGui::Button("Replicate"))
+                if (ImGui::Button(_("Replicate")))
                 {
                     if (replicate_times >= 2)
                     {
@@ -108,7 +109,7 @@ namespace satdump
 
                 ImGui::InputInt("##interpolate", &interpolate_size);
                 ImGui::SameLine();
-                if (ImGui::Button("Interpolate##interpolatebutton"))
+                if (ImGui::Button(_("Interpolate##interpolatebutton")))
                 {
                     auto img = generateLutImage();
                     img.resize_bilinear(interpolate_size, 1);
@@ -117,18 +118,18 @@ namespace satdump
                         lut.push_back({(uint8_t)img.get(0, i, 0), (uint8_t)img.get(1, i, 0), (uint8_t)img.get(2, i, 0), (uint8_t)img.get(3, i, 0)});
                 }
             }
-            if (ImGui::CollapsingHeader("Preview Image", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::CollapsingHeader(_("Preview Image"), ImGuiTreeNodeFlags_DefaultOpen))
             {
                 image_select.draw();
-                if (ImGui::Button("Refresh Preview"))
+                if (ImGui::Button(_("Refresh Preview")))
                     should_regen_image = true;
             }
         }
 
         void LutGeneratorHandler::drawMenuBar()
         {
-            file_open_menu.render(u8"\uea7f", "Select Image", resources::getResourcePath("lut"), {{"All Files", "*"}});
-            file_save_menu.render(u8"\ueb4b", "lut", ".", "Save Image", true);
+            file_open_menu.render(u8"\uea7f", _("Select Image"), resources::getResourcePath("lut"), {{"All Files", "*"}});
+            file_save_menu.render(u8"\ueb4b", "lut", ".", _("Save Image"), true);
         }
 
         void LutGeneratorHandler::drawContents(ImVec2 win_size)
@@ -206,7 +207,7 @@ namespace satdump
 
                 ImPlot::EndPlot();
             }
-            ImGui::Text("Preview Image");
+            ImGui::Text(_("Preview Image"));
             if (lutaction_started && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
                 should_regen_image = true;
             if (ImGui::IsKeyDown(ImGuiKey_ReservedForModCtrl) && ImGui::IsKeyPressed(ImGuiKey_Z))
@@ -239,7 +240,7 @@ namespace satdump
                 image::load_img(l, file_open_menu.getPath());
                 if (l.size() == 0)
                 {
-                    logger->error("Invalid image for a LUT!");
+                    logger->error(_("Invalid image for a LUT!"));
                 }
                 else
                 {
@@ -280,7 +281,7 @@ namespace satdump
 
             if (!grabcFile)
             {
-                logger->critical("Please use Linux and install grabc! \ue712 (or remind us maybe we should support Windows too?)");
+                logger->critical(_("Please use Linux and install grabc! \ue712 (or remind us maybe we should support Windows too?)"));
                 return {0, 0, 0, 0};
             }
 
@@ -289,7 +290,7 @@ namespace satdump
 
             if (line_p == nullptr)
             {
-                logger->critical("Please use Linux and install grabc! \ue712 (or remind us maybe we should support Windows too?)");
+                logger->critical(_("Please use Linux and install grabc! \ue712 (or remind us maybe we should support Windows too?)"));
                 return {0, 0, 0, 0};
             }
 

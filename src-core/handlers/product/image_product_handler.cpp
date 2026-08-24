@@ -1,6 +1,7 @@
 #include "image_product_handler.h"
 #include "common/widgets/menuitem_tooltip.h"
 #include "image/spectral_align.h"
+#include "i18n.h"
 #include "imgui/imgui.h"
 #include "nlohmann/json_utils.h"
 
@@ -31,7 +32,7 @@ namespace satdump
 
             product = (products::ImageProduct *)ProductHandler::product.get();
             for (auto &img : product->images)
-                channel_selection_box_str += "Channel " + img.channel_name + '\0';
+                channel_selection_box_str += _("Channel ") + img.channel_name + '\0';
 
             // Try to init calibration
             img_calibrator = products::get_calibrator_from_product(product);
@@ -47,10 +48,10 @@ namespace satdump
                 if (is_processing)
                     return;
 
-                ImGui::SeparatorText("Product Data");
+                ImGui::SeparatorText(_("Product Data"));
 
                 if (channel_selection_curr_id != -1)
-                    ImGui::Text("Count : %d", product->get_raw_channel_val(channel_selection_curr_id, x, y));
+                    ImGui::Text(_("Count : %d"), product->get_raw_channel_val(channel_selection_curr_id, x, y));
 
                 // Show all possible units, if the image is raw
                 if (img_calibrator && channel_selection_curr_id != -1)
@@ -60,7 +61,7 @@ namespace satdump
                     {
                         double vval = u.second->convert(x, y, val);
                         if (vval == CALIBRATION_INVALID_VALUE)
-                            ImGui::Text("%s : Invalid Value", u.first.name.c_str());
+                            ImGui::Text(_("%s : Invalid Value"), u.first.name.c_str());
                         else
                             ImGui::Text("%s : %f %s", u.first.name.c_str(), vval, u.first.unit.c_str());
                     }
@@ -96,7 +97,7 @@ namespace satdump
         {
             bool needs_to_be_disabled = is_processing || img_handler->get_is_processing();
 
-            if (ImGui::CollapsingHeader("Channels", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::CollapsingHeader(_("Channels"), ImGuiTreeNodeFlags_DefaultOpen))
             {
                 if (needs_to_be_disabled)
                     style::beginDisabled();
@@ -138,19 +139,19 @@ namespace satdump
                     {
                         auto pol = product->get_channel_polarization(ch.abs_index);
                         if (pol == products::ImageProduct::POL_HORIZONTAL)
-                            ImGui::Text("Pol : H");
+                            ImGui::Text(_("Pol : H"));
                         else if (pol == products::ImageProduct::POL_VERTICAL)
-                            ImGui::Text("Pol : V");
+                            ImGui::Text(_("Pol : V"));
                         else if (pol == products::ImageProduct::POL_RHCP)
-                            ImGui::Text("Pol : R");
+                            ImGui::Text(_("Pol : R"));
                         else if (pol == products::ImageProduct::POL_LHCP)
-                            ImGui::Text("Pol : L");
+                            ImGui::Text(_("Pol : L"));
                     }
 
                     if (ch.bandwidth != -1)
                     {
                         auto bw = product->get_channel_bandwidth(ch.abs_index);
-                        ImGui::Text("Bandwidth : %s / %s", format_notated(bw, "Hz", 2).c_str(), format_notated(SPEED_OF_LIGHT_M_S / bw, "m", 2).c_str());
+                        ImGui::Text(_("Bandwidth : %s / %s"), format_notated(bw, "Hz", 2).c_str(), format_notated(SPEED_OF_LIGHT_M_S / bw, "m", 2).c_str());
                     }
                 }
 
@@ -162,7 +163,7 @@ namespace satdump
                     {
                         auto &u = channels_calibrated_ranges[channel_selection_curr_id][curr_unit];
 
-                        needs_to_update |= ImGui::Checkbox("Calibrate", &channel_calibrated);
+                        needs_to_update |= ImGui::Checkbox(_("Calibrate"), &channel_calibrated);
                         ImGui::SetNextItemWidth(150 * ui_scale);
                         ImGui::InputDouble("##rangemin", &u.min);
                         ImGui::SameLine();
@@ -170,7 +171,7 @@ namespace satdump
                         ImGui::InputDouble("##rangemax", &u.max);
 
                         // List of all units
-                        if (ImGui::BeginCombo("Unit##calibunit", channels_calibrated_ranges[channel_selection_curr_id][curr_unit].info.getNiceUnits().c_str()))
+                        if (ImGui::BeginCombo(_("Unit##calibunit"), channels_calibrated_ranges[channel_selection_curr_id][curr_unit].info.getNiceUnits().c_str()))
                         {
                             for (auto &lu : channels_calibrated_ranges[channel_selection_curr_id])
                             {
@@ -183,15 +184,15 @@ namespace satdump
                             ImGui::EndCombo();
                         }
 
-                        needs_to_update |= ImGui::Button("Update###updatecalib");
+                        needs_to_update |= ImGui::Button(_("Update###updatecalib"));
                         ImGui::SameLine();
-                        if (ImGui::Button("Add To Equ###calibaddtoexpression"))
+                        if (ImGui::Button(_("Add To Equ###calibaddtoexpression")))
                             expression = "cch" + product->images[channel_selection_curr_id].channel_name + "=(" + product->images[channel_selection_curr_id].channel_name + ", " + curr_unit + ", " +
                                          std::to_string(u.min) + ", " + std::to_string(u.max) + ");\n" + expression;
                     }
                     else
                     {
-                        ImGui::Text("Calibration Error. Please Report!");
+                        ImGui::Text(_("Calibration Error. Please Report!"));
                     }
                 }
 
@@ -202,7 +203,7 @@ namespace satdump
             bool presetSet = false;
             needs_to_update |= presetSet = renderPresetMenu();
 
-            if (ImGui::CollapsingHeader("Expression", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::CollapsingHeader(_("Expression"), ImGuiTreeNodeFlags_DefaultOpen))
             {
                 if (needs_to_be_disabled)
                     style::beginDisabled();
@@ -210,7 +211,7 @@ namespace satdump
                 // Expression entry
                 ImGui::SetNextItemWidth(ImGui::GetWindowSize().x - 10 * ui_scale);
                 ImGui::InputTextMultiline("##expression", &expression, {0, 0}, ImGuiInputTextFlags_WordWrap);
-                if (ImGui::Button("Apply"))
+                if (ImGui::Button(_("Apply")))
                 {
                     channel_selection_curr_id = -1;
                     needs_to_update = true;
@@ -244,7 +245,7 @@ namespace satdump
             // Advanced controls
             if (enabled_advanced_menus)
             {
-                if (ImGui::CollapsingHeader("Advanced"))
+                if (ImGui::CollapsingHeader(_("Advanced")))
                 {
                     if (ImGui::BeginTabBar("###imageproducttuning", ImGuiTabBarFlags_FittingPolicyScroll))
                     {
@@ -465,7 +466,7 @@ namespace satdump
             }
             catch (std::exception &e)
             {
-                logger->error("Could not process image! %s", e.what());
+                logger->error(_("Could not process image! %s"), e.what());
             }
         }
 
@@ -475,7 +476,7 @@ namespace satdump
         {
             img_handler->drawMenuBar();
 
-            if (widgets::MenuItemTooltip(u8"\uF706", "Image To Handler"))
+            if (widgets::MenuItemTooltip(u8"\uF706", _("Image To Handler")))
             {
                 std::shared_ptr<ImageHandler> a = std::make_shared<ImageHandler>();
                 a->setConfig(img_handler->getConfig());
@@ -484,9 +485,9 @@ namespace satdump
                 addSubHandler(a);
             }
 
-            if (ImGui::BeginMenu("Handler"))
+            if (ImGui::BeginMenu(_("Handler")))
             {
-                if (ImGui::MenuItem("Advanced Mode", NULL, enabled_advanced_menus))
+                if (ImGui::MenuItem(_("Advanced Mode"), NULL, enabled_advanced_menus))
                     enabled_advanced_menus = !enabled_advanced_menus;
                 ImGui::EndMenu();
             }

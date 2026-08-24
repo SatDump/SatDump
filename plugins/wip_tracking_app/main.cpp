@@ -1,4 +1,5 @@
 #include "core/plugin.h"
+#include "i18n.h"
 #include "logger.h"
 
 #include "explorer/explorer.h"
@@ -17,11 +18,11 @@ public:
 
     static void renderExplorerLoaderButton(const satdump::explorer::RenderLoadMenuElementsEvent &evt)
     {
-        if (ImGui::BeginMenu("Add"))
+        if (ImGui::BeginMenu(_("Add")))
         {
-            if (ImGui::BeginMenu("Tools"))
+            if (ImGui::BeginMenu(_("Tools")))
             {
-                if (ImGui::MenuItem("WIP Tracking"))
+                if (ImGui::MenuItem(_("WIP Tracking")))
                     evt.master_handler->addSubHandler(std::make_shared<satdump::WipTrackingHandler>());
                 ImGui::EndMenu();
             }

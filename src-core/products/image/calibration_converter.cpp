@@ -1,5 +1,6 @@
 #include "calibration_converter.h"
 #include "core/plugin.h"
+#include "i18n.h"
 #include "logger.h"
 #include "products/image/calibration_units.h"
 #include "products/image/converters/kelvin_celcius.h"
@@ -41,7 +42,7 @@ namespace satdump
             }
             else
             {
-                logger->error("No valid converter for : " + itype + " => " + otype);
+                logger->error(_("No valid converter for : ") + itype + " => " + otype);
             }
         }
 

@@ -198,10 +198,10 @@ namespace satdump
             ImGui::EndCombo();
         }
         ImGui::SameLine();
-        if (ImGui::Button("Refresh##archiveloader_refresh"))
+        if (ImGui::Button(_("Refresh##archiveloader_refresh")))
             updateEUMETSAT();
 
-        ImGui::TextUnformatted("Date: ");
+        ImGui::TextUnformatted(_("Date: "));
         ImGui::SameLine();
         request_time.draw();
         ImGui::SameLine();
@@ -222,7 +222,7 @@ namespace satdump
                 ImGui::Text("%s", str.timestamp.c_str());
 
                 ImGui::TableNextColumn();
-                if (ImGui::Button(std::string("Load##archiveloadertablebutton_" + str.timestamp).c_str()))
+                if (ImGui::Button(std::string(_("Load##archiveloadertablebutton_") + str.timestamp).c_str()))
                 {
                     std::string resp;
                     if (satdump::perform_http_request(str.href, resp, "") != 1)
