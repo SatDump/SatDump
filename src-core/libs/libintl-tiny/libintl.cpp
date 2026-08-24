@@ -1,3 +1,4 @@
+#if defined(__APPLE__) || defined(_WIN32) || defined(__ANDROID__)
 /*
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -294,3 +295,4 @@ const char* dngettext(const char* domain, const char* origStr, const char* origS
 		return dgettext(domain, origStrPlural);
 	}
 }
+#endif
