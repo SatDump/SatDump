@@ -99,7 +99,7 @@ namespace satdump
             bool invert_img = false;
             bool median_blur_img = false;
             bool despeckle_img = false;
-            bool rotate180_image = false;
+            int rotate_image = 0;
             bool geocorrect_image = false;
             bool brightness_contrast_image = false;
             float brightness_contrast_brightness_image = 0.0;
@@ -130,6 +130,12 @@ namespace satdump
         public:
             // Allow disabling overlay menu, eg, for projections where they are separate
             bool enableOverlayMenu = true;
+
+            // If the image subhandlers are not exposed, we need to send the crops somewhere else
+            bool sendCropToRoot = false;
+
+            // For projections
+            bool removeProjectionInfoFromCrop = false;
 
         public:
             /**
@@ -165,7 +171,7 @@ namespace satdump
                 invert_img = false;
                 median_blur_img = false;
                 despeckle_img = false;
-                rotate180_image = false;
+                rotate_image = 0;
                 geocorrect_image = false;
                 brightness_contrast_image = false;
                 brightness_contrast_brightness_image = 0.0;

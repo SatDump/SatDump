@@ -19,6 +19,7 @@
 #include "tools/deframer/deframer.h"
 #include "tools/deinterleave/deinterleave.h"
 #include "tools/diff_decode/diff_decode.h"
+#include "tools/reverse_bits/reverse_bits.h"
 #include "tools/soft2hard/soft2hard.h"
 #include "tools/take_skip/take_skip.h"
 
@@ -34,6 +35,7 @@ namespace satdump
         all_tools.push_back(std::make_shared<DifferentialTool>());
         all_tools.push_back(std::make_shared<Soft2HardTool>());
         all_tools.push_back(std::make_shared<DeinterleaveTool>());
+        all_tools.push_back(std::make_shared<ReverseBitsTool>());
         all_tools.push_back(std::make_shared<CCSDSVcidSplitterTool>());
         all_tools.push_back(std::make_shared<CCSDSAPIDDemuxTool>());
 
@@ -196,13 +198,21 @@ namespace satdump
                 for (int i = 0; i < (sz / 8) - 4; i++)
                 {
                     if (ptr[i + 0] == 0x1a && ptr[i + 1] == 0xcf && ptr[i + 2] == 0xfc && ptr[i + 3] == 0x1d)
-                        bc->highlights.push_back({(size_t)i * 8, 64, 0, 0, 255});
+                        bc->highlights.push_back({(size_t)i * 8, 32, 255, 0, 255});
                 }
+
+                bc->init_display();
 
                 is_busy = false;
             };
             is_busy = true;
             process_task.push(func);
+        }
+
+        if (ImGui::Button("Clear Sync"))
+        {
+            bc->highlights.clear();
+            bc->init_display();
         }
     }
 

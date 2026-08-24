@@ -104,13 +104,13 @@ namespace satdump
 
         void Image::draw_line(int x0, int y0, int x1, int y1, std::vector<double> color)
         {
-            if (x0 < 0 || x0 >= (int)d_width)
+            if (x0 < 0 || x0 > (int)d_width)
                 return;
-            if (x1 < 0 || x1 >= (int)d_width)
+            if (x1 < 0 || x1 > (int)d_width)
                 return;
-            if (y0 < 0 || y0 >= (int)d_height)
+            if (y0 < 0 || y0 > (int)d_height)
                 return;
-            if (y1 < 0 || y1 >= (int)d_height)
+            if (y1 < 0 || y1 > (int)d_height)
                 return;
 
             int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;

@@ -5,6 +5,7 @@
 #include "nlohmann/json_utils.h"
 #include "utils/format.h"
 #include "utils/string.h"
+#include "utils/time.h"
 #include <string>
 
 namespace satdump
@@ -36,6 +37,8 @@ namespace satdump
 
         // Start auto-update (or update now?)
         autoUpdateKeplers();
+
+        all_ = get_all_tles();
     }
 
     void KeplerDBHandler::autoUpdateKeplers()
@@ -140,7 +143,7 @@ namespace satdump
         // Update last update timestamp & other stuff
         h->set_meta("kepler_last_updated", std::to_string(time(0)));
         logger->info("%d Keplers in database!", h->get_table_size("kepler"));
-        all_.clear();
+        all_ = get_all_tles();
         eventBus->fire_event<TLEsUpdatedEvent>(TLEsUpdatedEvent());
     }
 
@@ -209,74 +212,41 @@ namespace satdump
     {
         bool ret = false;
 
+        // If no time is specified we assume current
         if (time == -1)
+            time = getTime();
+
+        sqlite3_stmt *res;
+
+        if (sqlite3_prepare_v2(h->db,
+                               ("select satellite_number, element_number, name, designator, epoch, inclination, right_ascension, eccentricity, argument_of_perigee, mean_anomaly, mean_motion, "
+                                "derivative_mean_motion, second_derivative_mean_motion, bstar_drag_term, revolutions_at_epoch from kepler where satellite_number=" +
+                                std::to_string(norad) + " order by abs(epoch - " + std::to_string(time) + ") asc limit 1")
+                                   .c_str(),
+                               -1, &res, 0))
+            logger->error("Couldn't fetch Kepler data from DB! " + std::string(sqlite3_errmsg(h->db)));
+        else if (sqlite3_step(res) == SQLITE_ROW)
         {
-            sqlite3_stmt *res;
+            kep.satellite_number = sqlite3_column_int(res, 0);
+            kep.element_number = sqlite3_column_int(res, 1);
+            kep.name = (char *)sqlite3_column_text(res, 2);
+            kep.designator = (char *)sqlite3_column_text(res, 3);
+            kep.epoch = sqlite3_column_double(res, 4);
+            kep.inclination = sqlite3_column_double(res, 5);
+            kep.right_ascension = sqlite3_column_double(res, 6);
+            kep.eccentricity = sqlite3_column_double(res, 7);
+            kep.argument_of_perigee = sqlite3_column_double(res, 8);
+            kep.mean_anomaly = sqlite3_column_double(res, 9);
+            kep.mean_motion = sqlite3_column_double(res, 10);
+            kep.derivative_mean_motion = sqlite3_column_double(res, 11);
+            kep.second_derivative_mean_motion = sqlite3_column_double(res, 12);
+            kep.bstar_drag_term = sqlite3_column_double(res, 13);
+            kep.revolutions_at_epoch = sqlite3_column_int(res, 14);
 
-            if (sqlite3_prepare_v2(h->db,
-                                   ("select satellite_number, element_number, name, designator, epoch, inclination, right_ascension, eccentricity, argument_of_perigee, mean_anomaly, mean_motion, "
-                                    "derivative_mean_motion, second_derivative_mean_motion, bstar_drag_term, revolutions_at_epoch from kepler where satellite_number=" +
-                                    std::to_string(norad) + " order by epoch asc limit 1")
-                                       .c_str(),
-                                   -1, &res, 0))
-                logger->error("Couldn't fetch Kepler data from DB! " + std::string(sqlite3_errmsg(h->db)));
-            else if (sqlite3_step(res) == SQLITE_ROW)
-            {
-                kep.satellite_number = sqlite3_column_int(res, 0);
-                kep.element_number = sqlite3_column_int(res, 1);
-                kep.name = (char *)sqlite3_column_text(res, 2);
-                kep.designator = (char *)sqlite3_column_text(res, 3);
-                kep.epoch = sqlite3_column_double(res, 4);
-                kep.inclination = sqlite3_column_double(res, 5);
-                kep.right_ascension = sqlite3_column_double(res, 6);
-                kep.eccentricity = sqlite3_column_double(res, 7);
-                kep.argument_of_perigee = sqlite3_column_double(res, 8);
-                kep.mean_anomaly = sqlite3_column_double(res, 9);
-                kep.mean_motion = sqlite3_column_double(res, 10);
-                kep.derivative_mean_motion = sqlite3_column_double(res, 11);
-                kep.second_derivative_mean_motion = sqlite3_column_double(res, 12);
-                kep.bstar_drag_term = sqlite3_column_double(res, 13);
-                kep.revolutions_at_epoch = sqlite3_column_int(res, 14);
-
-                ret = true;
-            }
-
-            sqlite3_finalize(res);
+            ret = true;
         }
-        else
-        {
-            sqlite3_stmt *res;
 
-            if (sqlite3_prepare_v2(h->db,
-                                   ("select satellite_number, element_number, name, designator, epoch, inclination, right_ascension, eccentricity, argument_of_perigee, mean_anomaly, mean_motion, "
-                                    "derivative_mean_motion, second_derivative_mean_motion, bstar_drag_term, revolutions_at_epoch from kepler where satellite_number=" +
-                                    std::to_string(norad) + " order by abs(epoch - " + std::to_string(time) + ") desc limit 1")
-                                       .c_str(),
-                                   -1, &res, 0))
-                logger->error("Couldn't fetch Kepler data from DB! " + std::string(sqlite3_errmsg(h->db)));
-            else if (sqlite3_step(res) == SQLITE_ROW)
-            {
-                kep.satellite_number = sqlite3_column_int(res, 0);
-                kep.element_number = sqlite3_column_int(res, 1);
-                kep.name = (char *)sqlite3_column_text(res, 2);
-                kep.designator = (char *)sqlite3_column_text(res, 3);
-                kep.epoch = sqlite3_column_double(res, 4);
-                kep.inclination = sqlite3_column_double(res, 5);
-                kep.right_ascension = sqlite3_column_double(res, 6);
-                kep.eccentricity = sqlite3_column_double(res, 7);
-                kep.argument_of_perigee = sqlite3_column_double(res, 8);
-                kep.mean_anomaly = sqlite3_column_double(res, 9);
-                kep.mean_motion = sqlite3_column_double(res, 10);
-                kep.derivative_mean_motion = sqlite3_column_double(res, 11);
-                kep.second_derivative_mean_motion = sqlite3_column_double(res, 12);
-                kep.bstar_drag_term = sqlite3_column_double(res, 13);
-                kep.revolutions_at_epoch = sqlite3_column_int(res, 14);
-
-                ret = true;
-            }
-
-            sqlite3_finalize(res);
-        }
+        sqlite3_finalize(res);
 
         return ret;
     }

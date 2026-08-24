@@ -290,6 +290,12 @@ if(PLUGIN_KANOPUS OR PLUGINS_ALL)
   add_subdirectory(kanopus_support)
 endif()
 
+option(PLUGIN_INSAT "Enable the Insat support plugin" OFF)
+
+if(PLUGIN_INSAT OR PLUGINS_ALL)
+  add_subdirectory(insat_support)
+endif()
+
 option(PLUGIN_RADIOSONDE "Enable the Radiosonde (Heavily inspired by SondeDump by dbdexter) support plugin" OFF)
 
 if(PLUGIN_RADIOSONDE OR PLUGINS_ALL)

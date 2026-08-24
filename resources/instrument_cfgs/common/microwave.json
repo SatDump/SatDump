@@ -4,13 +4,12 @@
             "name": "ATMS-like False Color",
             "expression": "cch4=({183GHz,H}, emissive_radiance, 0.059, 0.09); cch2=({157GHz,*}, emissive_radiance, 0.039, 0.068); cch1=({89GHz,*}, emissive_radiance, 0.013, 0.022); cch1, cch2, cch4",
             "image": {
-                "geo_correct": true,
+                "geocorrect": true,
                  "individual_equalize": true
-            },
-            "description": "descriptions/NDVI.md"
+            }
         },
         {
-            "name": "Auto Rainfall",
+            "name": "Universal Rainfall",
             "expression": "cch5=({190GHz,V,2GHz,1GHz,0}, emissive_radiance, 0.06, 0.096); cch4=({183.31GHz,H,2GHz,1GHz,0}, emissive_radiance, 0.059, 0.09); lut=lut(lut/generic/roygbiv.png); lut((((cch5-cch4))-0.95)^0.25, 0, 0), lut((((1-(cch5-cch4))-0.95)^0.25), 0, 1), lut((((cch5-cch4))-0.95)^0.25, 0, 2)",
             "description": "descriptions/sounders/Rainfall.md"
         },
@@ -21,7 +20,7 @@
         },
         {
             "name": "Microwave Airmass",
-            "expression": "cch5=({190GHz,V,2GHz,1GHz,0}, emissive_radiance, 0.06, 0.096); cch4=({183.31GHz,H,2GHz,1GHz,0}, emissive_radiance, 0.059, 0.09); cch3=({183GHz,V,1GHz,1GHz,0}, emissive_radiance, 0.0713, 0.0868); cch5, cch4, cch3",
+            "expression": "cch5=({190GHz,V,2GHz,1GHz,0}, emissive_radiance, 0.06, 0.096); cch4=({183.31GHz,H,2GHz,1GHz,0}, emissive_radiance, 0.059, 0.09); cch3=({183GHz,H,1GHz,1GHz,0}, emissive_radiance, 0.0713, 0.0868); cch5, cch4, cch3",
             "image": {
                 "individual_equalize": true
             },

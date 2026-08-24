@@ -7,6 +7,8 @@ This enhancement uses a land mask to remove ground, two long wave infrared chann
 Colder temperatures appear violet while warmer temperatures appear orange or red.
 Invalid areas (e.g. due to cloud cover or dust) are marked as white.
 
+![SST LUT](descriptions/img/sst_lut.png)
+
 ### Intended usage
 
 Sea surface temperature measurements, sea water currents analysis

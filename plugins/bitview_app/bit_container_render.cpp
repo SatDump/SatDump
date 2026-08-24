@@ -86,7 +86,7 @@ namespace satdump
 
         if (bits == 1)
         {
-            for (int64_t line = 0; (size_t)line < d_chunk_size; line++)
+            for (size_t line = 0; (size_t)line < d_chunk_size; line++)
             {
                 for (size_t i = 0; i < d_chunk_size; i++)
                 {
@@ -118,15 +118,20 @@ namespace satdump
 
                             wip_texture_buffer[raster_pos] = 255 << 24 | v << 16 | v << 8 | v;
 
-#if 0
-                        for (auto &h : highlights)
-                        {
-                            if (h.ptr <= bitstream_pos && bitstream_pos < (h.ptr + h.size))
+#if 1
+                            size_t hs = part.highlights.size();
+                            if (hs)
                             {
-                                wip_texture_buffer[raster_pos] = 255 << 24 | uint8_t(v * 0.75 + h.b * 0.25) << 16 | uint8_t(v * 0.75 + h.g * 0.25) << 8 | uint8_t(v * 0.75 + h.r * 0.25);
-                                break;
+                                for (size_t ss = 0; ss < hs; ss++)
+                                {
+                                    auto &h = part.highlights[ss];
+                                    if (h.ptr <= bitstream_pos && bitstream_pos < (h.ptr + h.size))
+                                    {
+                                        wip_texture_buffer[raster_pos] = 255 << 24 | uint8_t(v * 0.75 + h.b * 0.25) << 16 | uint8_t(v * 0.75 + h.g * 0.25) << 8 | uint8_t(v * 0.75 + h.r * 0.25);
+                                        break;
+                                    }
+                                }
                             }
-                        }
 #endif
                         }
                         else
@@ -145,7 +150,7 @@ namespace satdump
         }
         else
         {
-            for (int64_t line = 0; (size_t)line < d_chunk_size; line++)
+            for (size_t line = 0; (size_t)line < d_chunk_size; line++)
             {
                 for (size_t i = 0; i < d_chunk_size / bits; i++)
                 {

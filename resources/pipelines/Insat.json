@@ -2,7 +2,8 @@
     "insat_3d_imager": {
         "name": "Insat-3D Imager",
         "live": [
-            1
+            1,
+            2
         ],
         "parameters": {
             "samplerate": {
@@ -20,7 +21,9 @@
                     "pll_bw": 0.01
                 }
             },
-            "frames": {},
+            "frames": {
+                "module": "insat_imager_decoder"
+            },
             "products": {}
         }
     }

@@ -55,6 +55,11 @@ namespace fengyun_svissr
             // deleteImageTexture(textureID);
         }
 
+        if (images_queue_thread.joinable())
+        {
+            images_queue_thread.join();
+        }
+
         subcommunication_frames.clear();
         current_subcom_frame.clear();
         group_retransmissions.clear();

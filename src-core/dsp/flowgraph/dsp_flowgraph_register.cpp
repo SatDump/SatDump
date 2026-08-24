@@ -9,11 +9,13 @@
 #include "dsp/agc/agc.h"
 #include "dsp/agc/agc_bias.h"
 #include "dsp/agc/agc_fast.h"
+#include "dsp/clock_recovery/clock_recovery_gardner.h"
 #include "dsp/clock_recovery/clock_recovery_mm.h"
 #include "dsp/clock_recovery/clock_recovery_mm_fast.h"
 #include "dsp/clock_recovery/simple_gardner_recovery.h"
 #include "dsp/clock_recovery/simple_zc_recovery.h"
 #include "dsp/conv/char_to_float.h"
+#include "dsp/conv/complex_conjugate.h"
 #include "dsp/conv/complex_to_float.h"
 #include "dsp/conv/complex_to_ifloat.h"
 #include "dsp/conv/complex_to_imag.h"
@@ -42,7 +44,10 @@
 #include "dsp/filter/decimating_fir.h"
 #include "dsp/filter/fft.h"
 #include "dsp/filter/fir.h"
+#include "dsp/filter/gaussian.h"
+#include "dsp/filter/hpf.h"
 #include "dsp/filter/lpf.h"
+#include "dsp/filter/notch_bank.h"
 #include "dsp/filter/rrc.h"
 #include "dsp/flowgraph/flowgraph.h"
 #include "dsp/flowgraph/node_int.h"
@@ -54,6 +59,7 @@
 #include "dsp/io/iq_sink.h"
 #include "dsp/io/iq_source.h"
 #include "dsp/io/nng_sink.h"
+#include "dsp/io/nng_source.h"
 #include "dsp/io/udp_source.h"
 #include "dsp/io/waveform.h"
 #include "dsp/path/selector.h"
@@ -294,6 +300,9 @@ namespace satdump
                 registerNodeSimple<ndsp::MMClockRecoveryBlock<complex_t>>(flowgraph, "Timing/Clock Recovery MM CC");
                 registerNodeSimple<ndsp::MMClockRecoveryBlock<float>>(flowgraph, "Timing/Clock Recovery MM FF");
 
+                registerNodeSimple<ndsp::GardnerClockRecoveryBlock<complex_t>>(flowgraph, "Timing/Clock Recovery Gardner CC");
+                registerNodeSimple<ndsp::GardnerClockRecoveryBlock<float>>(flowgraph, "Timing/Clock Recovery Gardner FF");
+
                 registerNodeSimple<ndsp::MMClockRecoveryFastBlock<complex_t>>(flowgraph, "Timing/Clock Recovery Fast MM CC");
                 registerNodeSimple<ndsp::MMClockRecoveryFastBlock<float>>(flowgraph, "Timing/Clock Recovery Fast MM FF");
 
@@ -317,6 +326,15 @@ namespace satdump
 
                 registerNodeSimple<ndsp::LPF_Block<FIRBlock<complex_t>>>(flowgraph, "Filter/LPF FIR CC");
                 registerNodeSimple<ndsp::LPF_Block<FIRBlock<float>>>(flowgraph, "Filter/LPF FIR FF");
+
+                registerNodeSimple<ndsp::Gaussian_Block<FIRBlock<complex_t>>>(flowgraph, "Filter/Gaussian FIR CC");
+                registerNodeSimple<ndsp::Gaussian_Block<FIRBlock<float>>>(flowgraph, "Filter/Gaussian FIR FF");
+                registerNodeSimple<ndsp::HPF_Block<FIRBlock<complex_t>>>(flowgraph, "Filter/HPF FIR CC");
+                registerNodeSimple<ndsp::HPF_Block<FIRBlock<float>>>(flowgraph, "Filter/HPF FIR FF");
+
+                registerNodeSimple<ndsp::HPF_Block<FFTFilterBlock<complex_t>>>(flowgraph, "Filter/HPF FFT CC");
+
+                registerNodeSimple<ndsp::NotchBankBlock>(flowgraph, "Filter/Notch Bank");
 
                 registerNodeSimple<ndsp::CyclostationaryAnalysis>(flowgraph, "Utils/Cyclostationary Analysis");
 
@@ -350,6 +368,7 @@ namespace satdump
                 registerNodeSimple<ndsp::ExponentiateBlock>(flowgraph, "Utils/Exponentiate CC");
 
                 registerNodeSimple<ndsp::NNGSinkBlock<complex_t>>(flowgraph, "IO/NNG Sink C");
+                registerNodeSimple<ndsp::NNGSourceBlock<complex_t>>(flowgraph, "IO/NNG Source C");
 
                 registerNodeSimple<ndsp::WaveformBlock<float>>(flowgraph, "IO/Waveform F");
                 registerNodeSimple<ndsp::WaveformBlock<complex_t>>(flowgraph, "IO/Waveform C");
@@ -377,6 +396,7 @@ namespace satdump
 
                 registerNodeSimple<ndsp::RealToComplexBlock>(flowgraph, "Conv/Real To Complex");
 
+                registerNodeSimple<ndsp::ComplexConjugateBlock>(flowgraph, "Conv/Complex Conjugate");
                 registerNodeSimple<ndsp::ComplexToFloatBlock>(flowgraph, "Conv/Complex To Float");
                 registerNodeSimple<ndsp::FloatToComplexBlock>(flowgraph, "Conv/Float To Complex");
                 registerNodeSimple<ndsp::ComplexToImagBlock>(flowgraph, "Conv/Complex To Imag");

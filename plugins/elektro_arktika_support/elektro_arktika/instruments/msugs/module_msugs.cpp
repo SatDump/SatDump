@@ -203,7 +203,6 @@ namespace elektro_arktika
                     }
                 }
 
-                image::save_png(img_m, "/home/alan/Downloads/msugs_l3_test_3.png");
             }
 
             // MSUVIS1 TODOREWORK
