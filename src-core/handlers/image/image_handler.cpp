@@ -146,34 +146,66 @@ namespace satdump
 
             if (ImGui::CollapsingHeader(_("Filters")))
             {
-                if (ImGui::BeginListBox("##filterscombo"))
+                if (ImGui::BeginListBox("##filterscombo", {ImGui::GetContentRegionAvail().x, 0}))
                 {
+                    bool quit = false;
+
                     for (int i = 0; i < active_filters.size(); i++)
                     {
+                        if (quit)
+                            break;
+
                         auto &f = active_filters[i];
 
-                        std::string name = image_filters[f.first].name + "##" + std::to_string(i);
+                        std::string name = image_filters[f.first].name;
 
-                        if (ImGui::Selectable(name.c_str(), selected_filter == i))
-                            selected_filter = i;
+                        ImGui::PushID(i);
+                        ImGui::BeginGroup();
+
+                        // Settings
+                        if (ImGui::Button("S"))
+                            ;
 
                         if (f.second.size() && ImGui::IsItemHovered())
                             ImGui::SetTooltip("%s", f.second.dump(4).c_str());
+
+                        ImGui::SameLine();
+
+                        // Delete
+                        if (ImGui::Button("R") && i < active_filters.size())
+                        {
+                            active_filters.erase(active_filters.begin() + selected_filter);
+                            quit = true;
+                            asyncProcess();
+                        }
+
+                        ImGui::SameLine();
+
+                        // Up
+                        if (ImGui::Button("U") && i > 0)
+                        {
+                            std::swap(active_filters[i], active_filters[i - 1]);
+                            asyncProcess();
+                        }
+
+                        ImGui::SameLine();
+
+                        // Down
+                        if (ImGui::Button("D") && i + 1 < active_filters.size())
+                        {
+                            std::swap(active_filters[i], active_filters[i + 1]);
+                            asyncProcess();
+                        }
+
+                        ImGui::SameLine();
+
+                        ImGui::Text("%s", name.c_str());
+
+                        ImGui::EndGroup();
+                        ImGui::PopID();
+                        ImGui::Separator();
                     }
                     ImGui::EndListBox();
-
-                    if (ImGui::Button("Delete") && selected_filter < active_filters.size())
-                        active_filters.erase(active_filters.begin() + selected_filter);
-                    if (ImGui::Button("Move Down") && selected_filter + 1 < active_filters.size())
-                    {
-                        std::swap(active_filters[selected_filter], active_filters[selected_filter + 1]);
-                        selected_filter = selected_filter + 1;
-                    }
-                    if (ImGui::Button("Move Up") && selected_filter > 0)
-                    {
-                        std::swap(active_filters[selected_filter], active_filters[selected_filter - 1]);
-                        selected_filter = selected_filter - 1;
-                    }
                 }
             }
         }
@@ -288,7 +320,10 @@ namespace satdump
                             image_filter_configurator = menu;
                         }
                         else
+                        {
                             active_filters.push_back({filter.first, {}});
+                            asyncProcess();
+                        }
                     }
                 }
 
@@ -381,6 +416,7 @@ namespace satdump
                     {
                         active_filters.push_back({image_filter_configurator->type, image_filter_configurator->get()});
                         image_filter_configurator.reset();
+                        asyncProcess();
                     }
                     ImGui::SameLine();
                     if (ImGui::Button(_("Cancel")))
