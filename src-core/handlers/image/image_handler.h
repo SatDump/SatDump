@@ -92,21 +92,8 @@ namespace satdump
 
         private:
             // All params
-            bool huesaturation_img = false;
-            image::HueSaturation huesaturation_cfg_img;
-            bool equalize_img = false;
-            bool equalize_perchannel_img = false;
-            bool white_balance_img = false;
-            bool normalize_img = false;
-            bool invert_img = false;
-            bool median_blur_img = false;
-            bool despeckle_img = false;
             int rotate_image = 0;
             bool geocorrect_image = false;
-            bool brightness_contrast_image = false;
-            float brightness_contrast_brightness_image = 0.0;
-            float brightness_contrast_contrast_image = 0.0;
-            bool remove_background_img = false;
 
             // Experimental
             std::map<std::string, ImageFilter> image_filters;
@@ -171,23 +158,12 @@ namespace satdump
             // TODOREWORK DOCUMENT (must be copy-pasted from "All Params")
             void resetConfig()
             {
-                huesaturation_img = false;
-                equalize_img = false;
-                equalize_perchannel_img = false;
-                white_balance_img = false;
-                normalize_img = false;
-                invert_img = false;
-                median_blur_img = false;
-                despeckle_img = false;
                 rotate_image = 0;
                 geocorrect_image = false;
-                brightness_contrast_image = false;
-                brightness_contrast_brightness_image = 0.0;
-                brightness_contrast_contrast_image = 0.0;
-                remove_background_img = false;
 
                 image.clear();
                 curr_image.clear();
+                active_filters.clear();
             }
 
             std::string getName() { return image_name; }

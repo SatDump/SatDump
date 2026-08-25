@@ -112,9 +112,6 @@ namespace satdump
                 if (needs_to_be_disabled)
                     style::beginDisabled();
 
-                needs_to_update |= ImGui::Checkbox(_("Median Blur"), &median_blur_img);
-                needs_to_update |= ImGui::Checkbox(_("Despeckle"), &despeckle_img);
-
                 if (ImGui::RadioButton(_("Rotate 0"), rotate_image == 0))
                     needs_to_update = 1, rotate_image = 0;
                 if (ImGui::RadioButton(_("Rotate 90"), rotate_image == 90))
@@ -126,49 +123,6 @@ namespace satdump
 
                 if (image_proj_valid)
                     needs_to_update |= ImGui::Checkbox(_("Geo Correct"), &geocorrect_image); // TODOREWORK Disable if it can't be?
-                needs_to_update |= ImGui::Checkbox(_("Equalize"), &equalize_img);
-                needs_to_update |= ImGui::Checkbox(_("Individual Equalize"), &equalize_perchannel_img);
-                needs_to_update |= ImGui::Checkbox(_("White Balance"), &white_balance_img);
-                needs_to_update |= ImGui::Checkbox(_("Normalize"), &normalize_img);
-                needs_to_update |= ImGui::Checkbox(_("Invert"), &invert_img);
-
-                needs_to_update |= ImGui::Checkbox(_("Brightness/contrast"), &brightness_contrast_image);
-                if (brightness_contrast_image)
-                {
-                    ImGui::SliderFloat(_("Brightness"), &brightness_contrast_brightness_image, -2, 2);
-                    needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
-                    ImGui::SliderFloat(_("Contrast"), &brightness_contrast_contrast_image, -2, 2);
-                    needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
-                }
-
-                if (image_proj_valid)
-                    needs_to_update |= ImGui::Checkbox(_("Remove Background"), &remove_background_img);
-
-                needs_to_update |= ImGui::Checkbox(_("Hue/Saturation"), &huesaturation_img);
-                if (huesaturation_img)
-                {
-                    for (int i = 0; i < 7; i++)
-                    {
-                        std::string cname[] = {_("All"), _("Red"), _("Yellow"), _("Green"), _("Cyan"), _("Blue"), _("Magenta")};
-                        float hue = huesaturation_cfg_img.hue[i] * 180.0;
-                        float saturation = huesaturation_cfg_img.saturation[i] * 100.0;
-                        float lightness = huesaturation_cfg_img.lightness[i] * 100.0;
-                        ImGui::SliderFloat(std::string(cname[i] + _(" Hue")).c_str(), &hue, -180, 180);
-                        needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
-                        ImGui::SliderFloat(std::string(cname[i] + _(" Saturation")).c_str(), &saturation, -100, 100);
-                        needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
-                        ImGui::SliderFloat(std::string(cname[i] + _(" Lightness")).c_str(), &lightness, -100, 100);
-                        needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
-                        huesaturation_cfg_img.hue[i] = hue / 180.0;
-                        huesaturation_cfg_img.saturation[i] = saturation / 100.0;
-                        huesaturation_cfg_img.lightness[i] = lightness / 100.0;
-                    }
-
-                    float overlap = huesaturation_cfg_img.overlap;
-                    ImGui::SliderFloat(_("Overlap"), &overlap, -100.0, 100.0);
-                    needs_to_update |= ImGui::IsItemDeactivatedAfterEdit();
-                    huesaturation_cfg_img.overlap = overlap;
-                }
 
                 if (needs_to_be_disabled)
                     style::endDisabled();
@@ -439,42 +393,15 @@ namespace satdump
 
         void ImageHandler::setConfig(nlohmann::json p)
         {
-            equalize_img = getValueOrDefault(p["equalize"], false);
-            equalize_perchannel_img = getValueOrDefault(p["individual_equalize"], false);
-            white_balance_img = getValueOrDefault(p["white_balance"], false);
-            normalize_img = getValueOrDefault(p["normalize"], false);
-            invert_img = getValueOrDefault(p["invert"], false);
-            median_blur_img = getValueOrDefault(p["median_blur"], median_blur_img);
-            despeckle_img = getValueOrDefault(p["despeckle"], despeckle_img);
             rotate_image = getValueOrDefault(p["rotate180"], rotate_image);
             geocorrect_image = getValueOrDefault(p["geocorrect"], geocorrect_image);
-            brightness_contrast_image = getValueOrDefault(p["brightness_contrast"], false);
-            brightness_contrast_brightness_image = getValueOrDefault(p["brightness_contrast_brightness"], 0);
-            brightness_contrast_contrast_image = getValueOrDefault(p["brightness_contrast_contrast"], 0);
-            huesaturation_img = getValueOrDefault(p["hue_saturation"], false);
-            if (p.contains("hue_saturation_cfg"))
-                huesaturation_cfg_img = p["hue_saturation_cfg"];
-            remove_background_img = getValueOrDefault(p["remove_background"], false);
         }
 
         nlohmann::json ImageHandler::getConfig()
         {
             nlohmann::json p;
-            p["equalize"] = equalize_img;
-            p["individual_equalize"] = equalize_perchannel_img;
-            p["white_balance"] = white_balance_img;
-            p["normalize"] = normalize_img;
-            p["invert"] = invert_img;
-            p["median_blur"] = median_blur_img;
-            p["despeckle"] = despeckle_img;
             p["rotate"] = rotate_image;
             p["geocorrect"] = geocorrect_image;
-            p["brightness_contrast"] = brightness_contrast_image;
-            p["brightness_contrast_brightness"] = brightness_contrast_brightness_image;
-            p["brightness_contrast_contrast"] = brightness_contrast_contrast_image;
-            p["hue_saturation"] = huesaturation_img;
-            p["hue_saturation_cfg"] = huesaturation_cfg_img;
-            p["remove_background"] = remove_background_img;
             return p;
         }
 
@@ -503,9 +430,7 @@ namespace satdump
 
         void ImageHandler::do_process()
         {
-            bool image_needs_processing = huesaturation_img | equalize_img | equalize_perchannel_img | white_balance_img | normalize_img | invert_img | median_blur_img | rotate_image |
-                                          geocorrect_image | despeckle_img | brightness_contrast_image | remove_background_img /*OVERLAY*/ //
-                                          | active_filters.size();
+            bool image_needs_processing = rotate_image | geocorrect_image | active_filters.size();
 
             correct_fwd_lut.clear();
             correct_rev_lut.clear();
@@ -516,27 +441,6 @@ namespace satdump
 
                 try
                 {
-                    if (huesaturation_img)
-                        image::hue_saturation(curr_image, huesaturation_cfg_img);
-                    if (equalize_img)
-                        image::equalize(curr_image, false);
-                    if (equalize_perchannel_img)
-                        image::equalize(curr_image, true);
-                    if (white_balance_img)
-                        image::white_balance(curr_image);
-                    if (normalize_img)
-                        image::normalize(curr_image);
-                    if (invert_img)
-                        image::linear_invert(curr_image);
-                    if (median_blur_img)
-                        image::median_blur(curr_image);
-                    if (despeckle_img)
-                        image::kuwahara_filter(curr_image);
-                    if (brightness_contrast_image)
-                        image::brightness_contrast(curr_image, brightness_contrast_brightness_image, brightness_contrast_contrast_image);
-                    if (remove_background_img)
-                        image::remove_background(curr_image, nullptr); // TODOREWORK progress?
-
                     for (auto &f : active_filters)
                     {
                         logger->info(f.first);
