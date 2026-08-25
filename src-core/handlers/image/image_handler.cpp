@@ -442,7 +442,7 @@ namespace satdump
         {
             rotate_image = getValueOrDefault(p["rotate180"], rotate_image);
             geocorrect_image = getValueOrDefault(p["geocorrect"], geocorrect_image);
-            active_filters = p["filters"];
+            active_filters = getValueOrDefault(p["filters"], active_filters);
         }
 
         nlohmann::json ImageHandler::getConfig()
