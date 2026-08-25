@@ -322,7 +322,7 @@ namespace satdump
             }
 
             // Render filters menu
-            if (widgets::BeginMenuTooltip(_(u8"\uF0C3"), "Filters"))
+            if (widgets::BeginMenuTooltip(_(u8"\uF0C3"), _("Filters")))
             {
                 for (auto &filter : image_filters)
                 {
