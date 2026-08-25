@@ -163,23 +163,23 @@ namespace satdump
                         ImGui::BeginGroup();
 
                         // Settings
-                        if (ImGui::Button("\uF085"))
+                        if (ImGui::Button(u8"\uF085"))
                         {
                             image_filter_configurator = image_filters[f.first].configMenuGetter();
                             if (image_filter_configurator)
                             {
-                                image_filter_configurator->set(f.second);
+                                image_filter_configurator->set(f.second.second);
                                 image_filter_configurator_set_in = i;
                             }
                         }
 
-                        if (f.second.size() && ImGui::IsItemHovered())
-                            ImGui::SetTooltip("%s", f.second.dump(4).c_str());
+                        if (f.second.second.size() && ImGui::IsItemHovered())
+                            ImGui::SetTooltip("%s", f.second.second.dump(4).c_str());
 
                         ImGui::SameLine();
 
                         // Delete
-                        if (ImGui::Button("\uF1F8") && i < active_filters.size())
+                        if (ImGui::Button(u8"\uF1F8") && i < active_filters.size())
                         {
                             active_filters.erase(active_filters.begin() + selected_filter);
                             quit = true;
@@ -189,7 +189,7 @@ namespace satdump
                         ImGui::SameLine();
 
                         // Up
-                        if (ImGui::Button("\uF062") && i > 0)
+                        if (ImGui::Button(u8"\uF062") && i > 0)
                         {
                             std::swap(active_filters[i], active_filters[i - 1]);
                             asyncProcess();
@@ -198,9 +198,18 @@ namespace satdump
                         ImGui::SameLine();
 
                         // Down
-                        if (ImGui::Button("\uF063") && i + 1 < active_filters.size())
+                        if (ImGui::Button(u8"\uF063") && i + 1 < active_filters.size())
                         {
                             std::swap(active_filters[i], active_filters[i + 1]);
+                            asyncProcess();
+                        }
+
+                        ImGui::SameLine();
+
+                        // Disable/Enable
+                        if (ImGui::Button(active_filters[i].second.first ? u8"\uF06E" : u8"\uF070"))
+                        {
+                            active_filters[i].second.first = !active_filters[i].second.first;
                             asyncProcess();
                         }
 
@@ -313,7 +322,7 @@ namespace satdump
             }
 
             // Render filters menu
-            if (ImGui::BeginMenu(_("\uF0C3")))
+            if (widgets::BeginMenuTooltip(_(u8"\uF0C3"), "Filters"))
             {
                 for (auto &filter : image_filters)
                 {
@@ -329,7 +338,7 @@ namespace satdump
                         }
                         else
                         {
-                            active_filters.push_back({filter.first, {}});
+                            active_filters.push_back({filter.first, {true, {}}});
                             asyncProcess();
                         }
                     }
@@ -423,9 +432,9 @@ namespace satdump
                     if (ImGui::Button(_("Apply")))
                     {
                         if (image_filter_configurator_set_in == -1)
-                            active_filters.push_back({image_filter_configurator->type, image_filter_configurator->get()});
+                            active_filters.push_back({image_filter_configurator->type, {true, image_filter_configurator->get()}});
                         else if (image_filter_configurator_set_in < active_filters.size())
-                            active_filters[image_filter_configurator_set_in].second = image_filter_configurator->get();
+                            active_filters[image_filter_configurator_set_in].second.second = image_filter_configurator->get();
                         image_filter_configurator.reset();
                         asyncProcess();
                     }
@@ -492,8 +501,11 @@ namespace satdump
                 {
                     for (auto &f : active_filters)
                     {
-                        logger->info("Applying filter : " + f.first);
-                        image_filters[f.first].perform(curr_image, f.second);
+                        if (f.second.first)
+                        {
+                            logger->info("Applying filter : " + f.first);
+                            image_filters[f.first].perform(curr_image, f.second.second);
+                        }
                     }
 
                     if (geocorrect_image)
