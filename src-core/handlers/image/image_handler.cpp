@@ -5,6 +5,7 @@
 #include "core/plugin.h"
 #include "core/style.h"
 #include "explorer/explorer.h"
+#include "handlers/image/image_filter.h"
 #include "handlers/projection/projection_handler.h"
 #include "handlers/vector/addmenu.h"
 #include "handlers/vector/shapefile_handler.h"
@@ -85,6 +86,9 @@ namespace satdump
                     eventBus->fire_event<explorer::ExplorerSelectHandlerEvent>({sh});
                 }
             };
+
+            // Load image filters
+            image_filters = getImageFilters();
         }
 
         ImageHandler::ImageHandler(image::Image img) : ImageHandler::ImageHandler() { setImage(img); }
@@ -185,6 +189,39 @@ namespace satdump
                 }
                 wasMenuTriggered = needs_to_update;
             }
+
+            if (ImGui::CollapsingHeader(_("Filters")))
+            {
+                if (ImGui::BeginListBox("##filterscombo"))
+                {
+                    for (int i = 0; i < active_filters.size(); i++)
+                    {
+                        auto &f = active_filters[i];
+
+                        std::string name = image_filters[f.first].name + "##" + std::to_string(i);
+
+                        if (ImGui::Selectable(name.c_str(), selected_filter == i))
+                            selected_filter = i;
+
+                        if (f.second.size() && ImGui::IsItemHovered())
+                            ImGui::SetTooltip("%s", f.second.dump(4).c_str());
+                    }
+                    ImGui::EndListBox();
+
+                    if (ImGui::Button("Delete") && selected_filter < active_filters.size())
+                        active_filters.erase(active_filters.begin() + selected_filter);
+                    if (ImGui::Button("Move Down") && selected_filter + 1 < active_filters.size())
+                    {
+                        std::swap(active_filters[selected_filter], active_filters[selected_filter + 1]);
+                        selected_filter = selected_filter + 1;
+                    }
+                    if (ImGui::Button("Move Up") && selected_filter > 0)
+                    {
+                        std::swap(active_filters[selected_filter], active_filters[selected_filter - 1]);
+                        selected_filter = selected_filter - 1;
+                    }
+                }
+            }
         }
 
         void ImageHandler::drawSaveMenu()
@@ -281,79 +318,123 @@ namespace satdump
                 if (rotate_image)
                     style::endDisabled();
             }
+
+            // Render filters menu
+            if (ImGui::BeginMenu(_("Filters")))
+            {
+                for (auto &filter : image_filters)
+                {
+                    if (ImGui::MenuItem(filter.second.name.c_str()))
+                    {
+                        auto menu = filter.second.configMenuGetter();
+
+                        if (menu)
+                        {
+                            menu->type = filter.first;
+                            image_filter_configurator = menu;
+                        }
+                        else
+                            active_filters.push_back({filter.first, {}});
+                    }
+                }
+
+                ImGui::EndMenu();
+            }
         }
 
         void ImageHandler::drawContents(ImVec2 win_size)
         {
-            ImGui::BeginChild("ContentChild", win_size, false, ImGuiWindowFlags_NoScrollbar);
-
-            if (imgview_needs_update)
+            if (ImGui::BeginChild("ContentChild", win_size, false, ImGuiWindowFlags_NoScrollbar))
             {
-                image_view.update(getImage());
-                imgview_needs_update = false;
-
-                image_view.mouseCallback = [this](float x, float y)
+                if (imgview_needs_update)
                 {
-                    auto &img = getImage();
-                    ImGui::BeginTooltip();
+                    image_view.update(getImage());
+                    imgview_needs_update = false;
 
-                    for (int i = 0; i < img.channels(); i++)
-                        ImGui::Text(_("Raw %d : %d F %f"), i + 1, img.get(0, x, y), img.getf(0, x, y));
-
-                    if (image_calib_valid && image.channels() == 1)
+                    image_view.mouseCallback = [this](float x, float y)
                     {
-                        int xc = x; // Correction only needs to be undone for calib
-                        if (correct_fwd_lut.size() > 0 && x > 0 && x < correct_fwd_lut.size())
-                            xc = correct_fwd_lut[x];
+                        auto &img = getImage();
+                        ImGui::BeginTooltip();
 
-                        double val = image_calib.getVal(img.getf(0, xc, y));
-                        ImGui::Text(_("Unit : %f %s"), val, image_calib.unit.c_str());
-                    }
+                        for (int i = 0; i < img.channels(); i++)
+                            ImGui::Text(_("Raw %d : %d F %f"), i + 1, img.get(0, x, y), img.getf(0, x, y));
 
-                    // Handle rotations
-                    if (rotate_image)
-                    {
-                        if (rotate_image == 180)
+                        if (image_calib_valid && image.channels() == 1)
                         {
-                            x = (img.width() - 1) - x;
-                            y = (img.height() - 1) - y;
-                        }
-                        else if (rotate_image == 90)
-                        {
-                            auto x1 = y;
-                            y = (img.width() - 1) - x;
-                            x = x1;
-                        }
-                        else if (rotate_image == 270)
-                        {
-                            auto x1 = (img.height() - 1) - y;
-                            y = x;
-                            x = x1;
-                        }
-                    }
+                            int xc = x; // Correction only needs to be undone for calib
+                            if (correct_fwd_lut.size() > 0 && x > 0 && x < correct_fwd_lut.size())
+                                xc = correct_fwd_lut[x];
 
-                    if (image_proj_valid)
-                    {
-                        geodetic::geodetic_coords_t pos;
-                        if (image_proj.inverse(x, y, pos))
-                        {
-                            ImGui::Text(_("Lat : Invalid!"));
-                            ImGui::Text(_("Lon : Invalid!"));
+                            double val = image_calib.getVal(img.getf(0, xc, y));
+                            ImGui::Text(_("Unit : %f %s"), val, image_calib.unit.c_str());
                         }
-                        else
+
+                        // Handle rotations
+                        if (rotate_image)
                         {
-                            ImGui::Text(_("Lat : %f"), pos.lat);
-                            ImGui::Text(_("Lon : %f"), pos.lon);
+                            if (rotate_image == 180)
+                            {
+                                x = (img.width() - 1) - x;
+                                y = (img.height() - 1) - y;
+                            }
+                            else if (rotate_image == 90)
+                            {
+                                auto x1 = y;
+                                y = (img.width() - 1) - x;
+                                x = x1;
+                            }
+                            else if (rotate_image == 270)
+                            {
+                                auto x1 = (img.height() - 1) - y;
+                                y = x;
+                                x = x1;
+                            }
                         }
-                    }
-                    additionalMouseCallback(x, y);
-                    ImGui::EndTooltip();
-                };
+
+                        if (image_proj_valid)
+                        {
+                            geodetic::geodetic_coords_t pos;
+                            if (image_proj.inverse(x, y, pos))
+                            {
+                                ImGui::Text(_("Lat : Invalid!"));
+                                ImGui::Text(_("Lon : Invalid!"));
+                            }
+                            else
+                            {
+                                ImGui::Text(_("Lat : %f"), pos.lat);
+                                ImGui::Text(_("Lon : %f"), pos.lon);
+                            }
+                        }
+                        additionalMouseCallback(x, y);
+                        ImGui::EndTooltip();
+                    };
+                }
+
+                image_view.draw({ImGui::GetWindowSize().x, ImGui::GetWindowSize().y + 14 * ui_scale});
+
+                ImGui::EndChild();
             }
 
-            image_view.draw({ImGui::GetWindowSize().x, ImGui::GetWindowSize().y + 14 * ui_scale});
+            // Render image filter config
+            if (image_filter_configurator)
+            {
+                ImGui::OpenPopup(_("Filter Config"));
+                if (ImGui::BeginPopupModal(_("Filter Config")))
+                {
+                    image_filter_configurator->draw();
 
-            ImGui::EndChild();
+                    if (ImGui::Button(_("Apply")))
+                    {
+                        active_filters.push_back({image_filter_configurator->type, image_filter_configurator->get()});
+                        image_filter_configurator.reset();
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button(_("Cancel")))
+                        image_filter_configurator.reset();
+
+                    ImGui::EndPopup();
+                }
+            }
         }
 
         void ImageHandler::setConfig(nlohmann::json p)
@@ -423,7 +504,8 @@ namespace satdump
         void ImageHandler::do_process()
         {
             bool image_needs_processing = huesaturation_img | equalize_img | equalize_perchannel_img | white_balance_img | normalize_img | invert_img | median_blur_img | rotate_image |
-                                          geocorrect_image | despeckle_img | brightness_contrast_image | remove_background_img /*OVERLAY*/;
+                                          geocorrect_image | despeckle_img | brightness_contrast_image | remove_background_img /*OVERLAY*/ //
+                                          | active_filters.size();
 
             correct_fwd_lut.clear();
             correct_rev_lut.clear();
@@ -454,6 +536,12 @@ namespace satdump
                         image::brightness_contrast(curr_image, brightness_contrast_brightness_image, brightness_contrast_contrast_image);
                     if (remove_background_img)
                         image::remove_background(curr_image, nullptr); // TODOREWORK progress?
+
+                    for (auto &f : active_filters)
+                    {
+                        logger->info(f.first);
+                        image_filters[f.first].perform(curr_image, f.second);
+                    }
 
                     if (geocorrect_image)
                     { // TODOREWORK handle disabling projs, etc

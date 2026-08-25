@@ -8,11 +8,13 @@
 #include "../processing_handler.h"
 
 #include "common/widgets/image_view.h"
+#include "handlers/image/image_filter.h"
 #include "image/hue_saturation_json.h"
 #include "image/meta.h"
 
 #include "nlohmann/json.hpp"
 #include "projection/projection.h"
+#include <memory>
 
 namespace satdump
 {
@@ -105,6 +107,12 @@ namespace satdump
             float brightness_contrast_brightness_image = 0.0;
             float brightness_contrast_contrast_image = 0.0;
             bool remove_background_img = false;
+
+            // Experimental
+            std::map<std::string, ImageFilter> image_filters;
+            std::vector<std::pair<std::string, nlohmann::json>> active_filters;
+            std::shared_ptr<ImageFilterConfigurator> image_filter_configurator;
+            int selected_filter = 0;
 
             // Proj/Calib TODOREWORK
             bool image_calib_valid = false;
