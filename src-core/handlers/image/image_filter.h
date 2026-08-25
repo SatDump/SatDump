@@ -17,6 +17,7 @@ namespace satdump
             std::string type;
             virtual void draw() = 0;
             virtual nlohmann::json get() = 0;
+            virtual void set(nlohmann::json) = 0;
         };
 
         struct ImageFilter

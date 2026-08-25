@@ -27,6 +27,8 @@ namespace satdump
                 p["per_channel"] = per_channel;
                 return p;
             }
+
+            void set(nlohmann::json p) { per_channel = p["per_channel"]; }
         };
 
         class BrightnessContrastConfigurator : public ImageFilterConfigurator
@@ -48,6 +50,12 @@ namespace satdump
                 p["brightness"] = brightness;
                 p["contrast"] = contrast;
                 return p;
+            }
+
+            void set(nlohmann::json p)
+            {
+                brightness = p["brightness"];
+                contrast = p["contrast"];
             }
         };
 
@@ -82,6 +90,8 @@ namespace satdump
             }
 
             nlohmann::json get() { return cfg; }
+
+            void set(nlohmann::json p) { cfg = p; }
         };
 
         std::map<std::string, ImageFilter> getImageFilters()

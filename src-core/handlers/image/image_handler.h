@@ -99,6 +99,7 @@ namespace satdump
             std::map<std::string, ImageFilter> image_filters;
             std::vector<std::pair<std::string, nlohmann::json>> active_filters;
             std::shared_ptr<ImageFilterConfigurator> image_filter_configurator;
+            int image_filter_configurator_set_in = -1;
             int selected_filter = 0;
 
             // Proj/Calib TODOREWORK

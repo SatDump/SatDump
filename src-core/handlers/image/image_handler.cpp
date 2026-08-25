@@ -163,8 +163,15 @@ namespace satdump
                         ImGui::BeginGroup();
 
                         // Settings
-                        if (ImGui::Button("S"))
-                            ;
+                        if (ImGui::Button("\uF085"))
+                        {
+                            image_filter_configurator = image_filters[f.first].configMenuGetter();
+                            if (image_filter_configurator)
+                            {
+                                image_filter_configurator->set(f.second);
+                                image_filter_configurator_set_in = i;
+                            }
+                        }
 
                         if (f.second.size() && ImGui::IsItemHovered())
                             ImGui::SetTooltip("%s", f.second.dump(4).c_str());
@@ -172,7 +179,7 @@ namespace satdump
                         ImGui::SameLine();
 
                         // Delete
-                        if (ImGui::Button("R") && i < active_filters.size())
+                        if (ImGui::Button("\uF1F8") && i < active_filters.size())
                         {
                             active_filters.erase(active_filters.begin() + selected_filter);
                             quit = true;
@@ -182,7 +189,7 @@ namespace satdump
                         ImGui::SameLine();
 
                         // Up
-                        if (ImGui::Button("U") && i > 0)
+                        if (ImGui::Button("\uF062") && i > 0)
                         {
                             std::swap(active_filters[i], active_filters[i - 1]);
                             asyncProcess();
@@ -191,7 +198,7 @@ namespace satdump
                         ImGui::SameLine();
 
                         // Down
-                        if (ImGui::Button("D") && i + 1 < active_filters.size())
+                        if (ImGui::Button("\uF063") && i + 1 < active_filters.size())
                         {
                             std::swap(active_filters[i], active_filters[i + 1]);
                             asyncProcess();
@@ -306,7 +313,7 @@ namespace satdump
             }
 
             // Render filters menu
-            if (ImGui::BeginMenu(_("Filters")))
+            if (ImGui::BeginMenu(_("\uF0C3")))
             {
                 for (auto &filter : image_filters)
                 {
@@ -317,6 +324,7 @@ namespace satdump
                         if (menu)
                         {
                             menu->type = filter.first;
+                            image_filter_configurator_set_in = -1;
                             image_filter_configurator = menu;
                         }
                         else
@@ -414,7 +422,10 @@ namespace satdump
 
                     if (ImGui::Button(_("Apply")))
                     {
-                        active_filters.push_back({image_filter_configurator->type, image_filter_configurator->get()});
+                        if (image_filter_configurator_set_in == -1)
+                            active_filters.push_back({image_filter_configurator->type, image_filter_configurator->get()});
+                        else if (image_filter_configurator_set_in < active_filters.size())
+                            active_filters[image_filter_configurator_set_in].second = image_filter_configurator->get();
                         image_filter_configurator.reset();
                         asyncProcess();
                     }
@@ -431,6 +442,7 @@ namespace satdump
         {
             rotate_image = getValueOrDefault(p["rotate180"], rotate_image);
             geocorrect_image = getValueOrDefault(p["geocorrect"], geocorrect_image);
+            active_filters = p["filters"];
         }
 
         nlohmann::json ImageHandler::getConfig()
@@ -438,6 +450,7 @@ namespace satdump
             nlohmann::json p;
             p["rotate"] = rotate_image;
             p["geocorrect"] = geocorrect_image;
+            p["filters"] = active_filters;
             return p;
         }
 
@@ -479,7 +492,7 @@ namespace satdump
                 {
                     for (auto &f : active_filters)
                     {
-                        logger->info(f.first);
+                        logger->info("Applying filter : " + f.first);
                         image_filters[f.first].perform(curr_image, f.second);
                     }
 
