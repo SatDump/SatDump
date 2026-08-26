@@ -9,7 +9,6 @@
 
 #include "common/widgets/image_view.h"
 #include "handlers/image/image_filter.h"
-#include "image/hue_saturation_json.h"
 #include "image/meta.h"
 
 #include "nlohmann/json.hpp"
@@ -100,7 +99,6 @@ namespace satdump
             std::vector<std::pair<std::string, std::pair<bool, nlohmann::json>>> active_filters;
             std::shared_ptr<ImageFilterConfigurator> image_filter_configurator;
             int image_filter_configurator_set_in = -1;
-            int selected_filter = 0;
 
             // Proj/Calib TODOREWORK
             bool image_calib_valid = false;

@@ -10,10 +10,7 @@
 #include "handlers/vector/addmenu.h"
 #include "handlers/vector/shapefile_handler.h"
 #include "i18n.h"
-#include "image/brightness_contrast.h"
 #include "image/earth_curvature.h"
-#include "image/hue_saturation.h"
-#include "image/image_background.h"
 #include "image/io.h"
 #include "image/meta.h"
 #include "image/processing.h"
@@ -181,7 +178,7 @@ namespace satdump
                         // Delete
                         if (ImGui::Button(u8"\uF1F8") && i < active_filters.size())
                         {
-                            active_filters.erase(active_filters.begin() + selected_filter);
+                            active_filters.erase(active_filters.begin() + i);
                             quit = true;
                             asyncProcess();
                         }
