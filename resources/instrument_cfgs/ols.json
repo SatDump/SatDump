@@ -5,14 +5,34 @@
             "name": "VIS/IR Mix",
             "expression": "1-chir, chvis, chvis",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             }
         },
         {
             "name": "10.8µm Thermal IR (Uncalibrated)",
             "expression": "1-chir",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             }
         }
     ]

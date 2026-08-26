@@ -11,16 +11,18 @@
             "name": "Water Vapor Blend",
             "expression": "ch{8.7um} ==  0 ? 0 : 1-ch{8.7um}, ch{7.35um} ==  0 ? 0 : 1-ch{7.35um}, ch{6.25um} ==  0 ? 0 : 1-ch{6.25um}",
             "image": {
-                "individual_equalize": true,
                 "filters": [
                     [
-                        "white_balance",
+                        "equalize",
                         [
                             true,
-                            null
+                            {
+                                "per_channel": true
+                            }
                         ]
                     ]
                 ],
+
                 "remove_background": true
             }
         },

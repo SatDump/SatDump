@@ -5,7 +5,17 @@
             "name": "AMSU False Color",
             "expression": "ch5, ch4, ch3",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "autogen": true
         },

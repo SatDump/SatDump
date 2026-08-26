@@ -6,7 +6,17 @@
             "expression": "ch6,ch1,ch4",
             "image": {
                 "invert": true,
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "autogen": true
         },
@@ -15,7 +25,17 @@
             "expression": "ch4,ch3,ch2",
             "image": {
                 "invert": true,
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "autogen": true
         },
@@ -24,7 +44,17 @@
             "expression": "ch1,ch3,ch6",
             "image": {
                 "invert": true,
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "autogen": true
         },

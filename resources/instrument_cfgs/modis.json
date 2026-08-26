@@ -53,7 +53,17 @@
             "name": "Day Microphysics",
             "expression": "ch17, ch22^2.5, ch31",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "filters": [
                     [
                         "white_balance",
@@ -71,7 +81,17 @@
             "name": "CIR (Color Infrared)",
             "expression": "ch2, ch1, ch4",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/CIR.md"
@@ -80,7 +100,17 @@
             "name": "Geology",
             "expression": "ch7, ch6, ch3",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/Geology.md"
@@ -89,7 +119,17 @@
             "name": "Agriculture",
             "expression": "ch6, ch2, ch3",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/Agriculture.md"
@@ -98,7 +138,17 @@
             "name": "Bathymetric",
             "expression": "ch1, ch4, ch9",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/Bathymetric.md"
@@ -107,7 +157,17 @@
             "name": "AVHRR 543b IR False Color",
             "expression": "cch32=(32, reflective_radiance, , ); cch31=(31, reflective_radiance, , ); cch20=(20, reflective_radiance, , ); 1-cch32, 1-cch31, 1-cch20",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/543b.md"

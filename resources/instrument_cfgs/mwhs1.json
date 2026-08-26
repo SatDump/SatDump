@@ -5,14 +5,34 @@
             "name": "MWHS 421",
             "expression": "ch4, ch2, ch1",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             }
         },
         {
             "name": "MWHS 543",
             "expression": "ch5, ch4, ch3",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             }
         }
     ]

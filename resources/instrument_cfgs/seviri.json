@@ -38,13 +38,14 @@
             "name": "AVHRR 543b IR False Color",
             "expression": "ch10 == 0 ? 0 : 1-ch10, ch9 == 0 ? 0 : 1-ch9, ch4 == 0 ? 0 : 1-ch4",
             "image": {
-                "individual_equalize": true,
                 "filters": [
                     [
-                        "white_balance",
+                        "equalize",
                         [
                             true,
-                            null
+                            {
+                                "per_channel": true
+                            }
                         ]
                     ]
                 ],

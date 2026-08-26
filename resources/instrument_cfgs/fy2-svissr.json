@@ -34,7 +34,17 @@
             "expression": "1-ch5,1-ch4,1-ch3",
             "description": "descriptions/543b.md",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             }
         }
     ],

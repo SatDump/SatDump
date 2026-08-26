@@ -48,7 +48,17 @@
             "name": "NOAA Natural Color",
             "expression": "cch2=(2, sun_angle_compensated_reflective_radiance, 0, 97.0507); cch1=(1, sun_angle_compensated_reflective_radiance, 0, 46.203); cch2 * 0.6 + min(cch1, cch2) * 0.4, cch2, cch1",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/NOAANatColor.md"
@@ -65,7 +75,17 @@
             "name": "AVHRR 543b IR False Color",
             "expression": "ch5, ch4, ch3b",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/543b.md",
@@ -75,7 +95,17 @@
             "name": "AVHRR 3b45 IR False Color",
             "expression": "ch3b, ch4, ch5",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/3b45.md"

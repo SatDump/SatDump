@@ -5,14 +5,34 @@
             "name": "MWHS False Color",
             "expression": "1-ch8, ch12, ch8",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             }
         },
         {
             "name": "ATMS False Color",
             "expression": "ch1, ch10, ch13",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/sounders/ATMSFC.md"
         },
@@ -20,7 +40,17 @@
             "name": "MHS 421",
             "expression": "ch13, ch10, ch1",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/sounders/MHS421.md"
         },
@@ -28,7 +58,17 @@
             "name": "Microwave Airmass",
             "expression": "ch11,ch12,ch13",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/sounders/MicrowaveAirmass.md"
         }

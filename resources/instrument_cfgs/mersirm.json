@@ -4,13 +4,33 @@
         {
             "name": "MERSI-RM 321",
             "expression": "ch3, ch2, ch1",
-            "individual_equalize": true,
+            "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
             "geocorrect": true
         },
         {
             "name": "AVHRR 221 False Color",
             "expression": "ch2, ch2, ch1",
-            "individual_equalize": true,
+            "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
             "geocorrect": true,
             "description": "descriptions/221.md"
         },
@@ -24,7 +44,17 @@
         {
             "name": "Natural Color",
             "expression": "((0.5*max(ch5,min(ch2,ch1)) + 0.5*ch2) / 0.7)^0.75, (ch2/0.7)^0.75, (ch1/0.7)^0.75",
-            "individual_equalize": true,
+            "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
             "filters": [
                     [
                         "white_balance",
@@ -40,14 +70,34 @@
         {
             "name": "AVHRR 543b IR False Color",
             "expression": "1-ch8, 1-ch7, 1-ch6",
-            "individual_equalize": true,
+            "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
             "geocorrect": true,
             "description": "descriptions/543b.md"
         },
         {
             "name": "Day Microphysics",
             "expression": "ch1, ch5^2.5, ch7",
-            "individual_equalize": true,
+            "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
             "geocorrect": true,
             "description": "descriptions/DayMicro.md"
         }

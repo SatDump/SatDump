@@ -5,7 +5,17 @@
             "expression": "cch4=({183GHz,H}, emissive_radiance, 0.059, 0.09); cch2=({157GHz,*}, emissive_radiance, 0.039, 0.068); cch1=({89GHz,*}, emissive_radiance, 0.013, 0.022); cch1, cch2, cch4",
             "image": {
                 "geocorrect": true,
-                 "individual_equalize": true
+                 "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             }
         },
         {
@@ -22,7 +32,17 @@
             "name": "Microwave Airmass",
             "expression": "cch5=({190GHz,V,2GHz,1GHz,0}, emissive_radiance, 0.06, 0.096); cch4=({183.31GHz,H,2GHz,1GHz,0}, emissive_radiance, 0.059, 0.09); cch3=({183GHz,H,1GHz,1GHz,0}, emissive_radiance, 0.0713, 0.0868); cch5, cch4, cch3",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/sounders/MicrowaveAirmass.md"
         },

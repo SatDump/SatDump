@@ -23,7 +23,17 @@
             "expression": "chm16,chm15,chm12",
             "image": {
                 "invert": true,
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/543b.md"
         },
@@ -43,7 +53,17 @@
             "name": "Urban False Color",
             "expression": "chm11,chm10,chm5",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/ShortwaveIRFC.md"
         },
@@ -51,7 +71,17 @@
             "name": "Night Microphysics",
             "expression": "chi5-chi4,chi4-chi3,chi4",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "filters": [
                     [
                         "white_balance",
@@ -68,7 +98,17 @@
             "name": "Day Microphysics",
             "expression": "chi1, chi3^2.5,chi4",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/DayMicro.md"
         },
@@ -76,7 +116,17 @@
             "name": "10.8µm Thermal IR (Uncalibrated)",
             "expression": "1-chi4",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/ThermalUncal.md"
         },
@@ -84,7 +134,17 @@
             "name": "CIR (Color Infrared)",
             "expression": "chi3, chm5, chm4",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/CIR.md"
         },
@@ -109,7 +169,6 @@
             "name": "Geology",
             "expression": "chm11,chm10,chm3",
             "image": {
-                "individual_equalize": true,
                 "filters": [
                     [
                         "white_balance",
@@ -150,7 +209,17 @@
             "name": "Cloud Type RGB",
             "expression": "chm9^1.5, chm5^0.75, chm10",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/CloudType.md"
         },
@@ -158,7 +227,17 @@
             "name": "Cloud Phase RGB",
             "expression": "chm10, chm11, chm5",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/CloudPhase.md"
         },
@@ -166,7 +245,17 @@
             "name": "Dust-Ash RGB",
             "expression": "chm16-chm15, chm15-chm14, chm15",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/DustAshRGB.md"
         },

@@ -5,14 +5,34 @@
             "name": "True Color",
             "expression": "ch2406, ch2719, ch3367",
             "image" : {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             }
         },
         {
             "name": "AVHRR 221 False Color",
             "expression": "ch4096, ch4096, ch3263",
             "image" : {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             }
         }
     ]

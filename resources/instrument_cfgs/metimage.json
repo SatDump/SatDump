@@ -5,7 +5,17 @@
             "name": "True Color",
             "expression": "ch12, ch8, ch4",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/TrueColor.md",
@@ -15,7 +25,17 @@
             "name": "MERSI Airmass",
             "expression": "ch12,ch34,ch26",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/MERSIAirmass.md"
@@ -42,7 +62,17 @@
             "name": "AVHRR 543b IR False Color",
             "expression": "ch39, ch37, ch26",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/543b.md"
@@ -51,7 +81,17 @@
             "name": "AVHRR 3b45 IR False Color",
             "expression": "ch26, ch37, ch39",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/3b45.md"
@@ -60,7 +100,17 @@
             "name": "10.8µm Thermal IR (Uncalibrated)",
             "expression": "1.0 - ch37",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/ThermalUncal.md"
@@ -69,7 +119,17 @@
             "name": "CIR (Color Infrared)",
             "expression": "ch17,ch12,ch8",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/CIR.md"
@@ -78,7 +138,17 @@
             "name": "Agriculture",
             "expression": "ch24,ch17,ch4",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/Agriculture.md"
@@ -87,7 +157,17 @@
             "name": "Geology",
             "expression": "ch25,ch24,ch4",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/Geology.md"

@@ -5,7 +5,17 @@
             "name": "ATMS False Color",
             "expression": "ch16, ch17, ch18",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/sounders/ATMSFC.md",
             "autogen": true
@@ -14,7 +24,17 @@
             "name": "MHS 221",
             "expression": "ch18,ch18,ch17",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/sounders/MHS221.md"
         },
@@ -22,7 +42,17 @@
             "name": "MHS 421",
             "expression": "ch21,ch18,ch17",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/sounders/MHS221.md"
         },
@@ -30,7 +60,17 @@
             "name": "Microwave Airmass",
             "expression": "ch19,ch20,ch21",
             "image": {
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/sounders/MicrowaveAirmass.md"
         }

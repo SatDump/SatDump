@@ -5,7 +5,17 @@
             "name": "Longwave Radiation (Outgoing)",
             "expression": "chl",
             "image" : {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             }
         },
@@ -13,7 +23,17 @@
             "name": "Shortwave Radiation (Incoming)",
             "expression": "chs",
             "image" : {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             }
         },
@@ -21,7 +41,17 @@
             "name": "Total Radiation",
             "expression": "cht",
             "image" : {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             }
         }

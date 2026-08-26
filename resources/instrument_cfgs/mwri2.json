@@ -5,7 +5,17 @@
             "name": "MWRI-2 10.20.23 like MWRI 123",
             "expression": "ch10, ch20, ch23",
             "image": { 
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "autogen": true
         },

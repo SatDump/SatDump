@@ -5,7 +5,17 @@
             "name": "221",
             "expression": "ch2, ch2, ch1",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true,
                 "autogen": true
             }
@@ -14,7 +24,17 @@
             "name": "621",
             "expression": "ch6, ch2, ch1",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             }
         },
@@ -22,7 +42,17 @@
             "name": "197",
             "expression": "ch1, ch9, ch7",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             }
         },
@@ -30,7 +60,17 @@
             "name": "4/221 Merge",
             "expression": "ch1 < 0.015 ? (ch4 - 0.45) * 2.66 : ch2 * 7.2 - 0.07, ch1 < 0.015 ? (ch4 - 0.45) * 2.66 : ch2 * 7.2 - 0.07, ch1 < 0.015 ? (ch4 - 0.45) * 2.66 : ch1 * 7.2 - 0.07",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             }
         },
@@ -38,7 +78,17 @@
             "name": "10.8µm Thermal IR (Uncalibrated)",
             "expression": "ch4",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             }
         },
@@ -46,7 +96,17 @@
             "name": "543",
             "expression": "ch5, ch4, ch3",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             }
         },
@@ -54,7 +114,17 @@
             "name": "Night Microphysics",
             "expression": "(1-ch5)-(1-ch4), (1-ch4)-(1-ch3), (1-ch4)",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             }
         }

@@ -5,7 +5,17 @@
             "name": "True Color",
             "expression": "ch6, ch5, ch2",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/TrueColor.md",
@@ -15,7 +25,17 @@
             "name": "AVHRR 221 False Color",
             "expression": "ch8, ch8, ch5",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/221.md",
@@ -25,7 +45,17 @@
             "name": "Bathymetric",
             "expression": "ch6,ch4,ch2",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             }
         }

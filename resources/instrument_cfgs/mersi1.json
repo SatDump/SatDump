@@ -5,7 +5,17 @@
             "name": "MERSI-1 321",
             "expression": "ch3, ch2, ch1",
             "image": { 
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "autogen": true

@@ -20,7 +20,17 @@ later.
          "scalar_y": -0.016
       },
       "draw_map_overlay": true,
-      "individual_equalize": true,
+      "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
       "img_format": ".tif"
    }
 }

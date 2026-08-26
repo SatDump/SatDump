@@ -5,21 +5,51 @@
             "name": "6.2µm Water Vapor RGB",
             "expression": "ch3800, ch3790, ch3780",
             "image": { 
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             }
         },
         {
             "name": "7.35 µm Water Vapor RGB",
             "expression": "ch2855, ch2865, ch2875",
             "image": { 
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             }
         },
         {
             "name": "WIP Airmass",
             "expression": "(ch3871-ch2904), (ch1546-ch1259), ch3871",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "filters": [
                     [
                         "white_balance",
@@ -35,7 +65,17 @@
             "name": "Low Level Water Vapor",
             "expression": "1-(ch1535+ch1536+ch1537+ch1538+ch1539+ch1540+ch1545+ch1542+ch1543+ch1544+ch1545)/10",
             "image": { 
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/sounders/LLWV.md"
         },
@@ -43,7 +83,17 @@
             "name": "Mid Level Water Vapor",
             "expression": "1-((ch2870 + ch2871 + ch2872 + ch2873 + ch2874 + ch2875 + ch2876 + ch2877 + ch2878 + ch2879 + ch2880 + ch2881 + ch2882 + ch2883 + ch2884 + ch2885 + ch2886) / 16)",
             "image": { 
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/sounders/MLWV.md"
         },
@@ -51,7 +101,17 @@
             "name": "Mid Stratosphere CO2 Temperature",
             "expression": "(ch140+ch141+ch142)/3",
             "image": { 
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/sounders/MidStratoCO2T.md"
         },
@@ -59,7 +119,17 @@
             "name": "Low Stratosphere CO2 Temperature",
             "expression": "(ch180+ch181+ch182)/3",
             "image": { 
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/sounders/LowStratoCO2T.md"
         },
@@ -67,7 +137,17 @@
             "name": "Top Troposphere CO2 Temperature",
             "expression": "(ch230+ch231+ch232+ch233+ch234)/5",
             "image": { 
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/sounders/TopTropoCO2T.md"
         },
@@ -75,7 +155,17 @@
             "name": "High Troposphere CO2 Temperature",
             "expression": "(ch284+ch283+ch285+ch286+ch287)/5",
             "image": { 
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/sounders/HighTropoCO2T.md"
         },
@@ -83,7 +173,17 @@
             "name": "Mid Troposphere CO2/H2O Temperature",
             "expression": "(ch351+ch352+ch353+ch354+ch355)/5",
             "image": { 
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/sounders/MidTropoCO2H2OT.md"
         },
@@ -91,7 +191,17 @@
             "name": "Low Troposphere CO2/H2O Temperature",
             "expression": "(ch415+ch416+ch417+ch418+ch419)/5",
             "image": { 
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/sounders/LowTropoCO2H2OT.md"
         },
@@ -99,7 +209,17 @@
             "name": "Cloud Detection Channel",
             "expression": "(ch7096+ch7097+ch7098+ch7099+ch7100+ch7101+ch7102+ch7103+ch7104+ch7105+ch7106)/10",
             "image": { 
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/sounders/CloudDetection.md"
         },
@@ -107,7 +227,17 @@
             "name": "Clouds Only (N2O Sounding)",
             "expression": "1-((ch6259+ch6260+ch6261+ch6262)/4), 1-((ch6171+ch6172+ch6173+ch6174)/4), 1",
             "image": { 
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/sounders/CloudOnlyN2O.md"
         },
@@ -115,7 +245,17 @@
             "name": "HIRS False Color",
             "expression": "(ch284+ch283+ch285+ch286+ch287)/5, (ch230+ch231+ch232+ch233+ch234)/5, (ch180+ch181+ch182)/3",
             "image": { 
-                "individual_equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/sounders/HIRSFalseColor.md"
         }

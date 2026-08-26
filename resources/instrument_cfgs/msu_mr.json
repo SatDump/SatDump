@@ -103,7 +103,17 @@
             "name": "10.8µm Thermal IR (Uncalibrated)",
             "expression": "1 - ch5",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/ThermalUncal.md"
@@ -120,7 +130,17 @@
             "name": "AVHRR 543b IR False Color",
             "expression": "1 - ch6, 1 - ch5, 1 - ch4",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/543b.md"
@@ -129,7 +149,17 @@
             "name": "AVHRR 3b45 IR False Color",
             "expression": "1 - ch4, 1 - ch5, 1 - ch6",
             "image": {
-                "individual_equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/3b45.md"
