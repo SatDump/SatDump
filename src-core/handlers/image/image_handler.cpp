@@ -500,8 +500,15 @@ namespace satdump
                     {
                         if (f.second.first)
                         {
-                            logger->info("Applying filter : " + f.first);
-                            image_filters[f.first].perform(curr_image, f.second.second);
+                            if (image_filters.count(f.first))
+                            {
+                                logger->info("Applying filter : " + f.first);
+                                image_filters[f.first].perform(curr_image, f.second.second);
+                            }
+                            else
+                            {
+                                logger->error("Could not find image filter " + f.first + "!");
+                            }
                         }
                     }
 
