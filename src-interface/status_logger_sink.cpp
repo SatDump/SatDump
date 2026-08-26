@@ -37,6 +37,8 @@ namespace satdump
         {
             if (log.lvl == slog::LOG_INFO)
                 lvl = "Info";
+            else if (log.lvl == slog::LOG_NOTICE)
+                lvl = "Notice";
             else if (log.lvl == slog::LOG_WARN)
                 lvl = "Warning";
             else if (log.lvl == slog::LOG_ERROR)

@@ -36,6 +36,8 @@ namespace satdump
                     ImGui::TextColored(style::theme.cyan, "%s", text.c_str());
                 else if (ll.lvl == slog::LOG_INFO)
                     ImGui::TextColored(style::theme.green, "%s", text.c_str());
+                else if (ll.lvl == slog::LOG_NOTICE)
+                    ImGui::TextColored(style::theme.magenta, "%s", text.c_str());
                 else if (ll.lvl == slog::LOG_WARN)
                     ImGui::TextColored(style::theme.yellow, "%s", text.c_str());
                 else if (ll.lvl == slog::LOG_ERROR)
