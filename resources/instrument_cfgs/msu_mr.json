@@ -13,7 +13,15 @@
             "name": "AVHRR 221 False Color (uncalibrated)",
             "expression": "ch2, ch2, ch1",
             "image": {
-                "white_balance": true,
+                "filters": [
+                    [
+                        "white_balance",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/221.md"
@@ -38,7 +46,15 @@
             "name": "AVHRR 3a21 False Color (uncalibrated)",
             "expression": "ch3, ch2, ch1",
             "image": {
-                "white_balance": true,
+                "filters": [
+                    [
+                        "white_balance",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/321.md",

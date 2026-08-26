@@ -25,7 +25,15 @@
             "name": "Natural Color",
             "expression": "((0.5*max(ch5,min(ch2,ch1)) + 0.5*ch2) / 0.7)^0.75, (ch2/0.7)^0.75, (ch1/0.7)^0.75",
             "individual_equalize": true,
-            "white_balance": true,
+            "filters": [
+                    [
+                        "white_balance",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ],
             "geocorrect": true,
             "description": "descriptions/NatColor.md"
         },

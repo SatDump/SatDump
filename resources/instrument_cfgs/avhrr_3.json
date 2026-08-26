@@ -6,7 +6,15 @@
             "expression": "ch2, ch2, ch1",
             "image": {
                 "geocorrect": true,
-                "white_balance": true
+                "filters": [
+                    [
+                        "white_balance",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/221.md",
             "autogen": true

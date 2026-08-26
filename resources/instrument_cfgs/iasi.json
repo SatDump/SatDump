@@ -20,7 +20,15 @@
             "expression": "(ch3871-ch2904), (ch1546-ch1259), ch3871",
             "image": {
                 "individual_equalize": true,
-                "white_balance": true
+                "filters": [
+                    [
+                        "white_balance",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             }
         },
         {

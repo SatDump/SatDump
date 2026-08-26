@@ -39,7 +39,15 @@
             "expression": "ch10 == 0 ? 0 : 1-ch10, ch9 == 0 ? 0 : 1-ch9, ch4 == 0 ? 0 : 1-ch4",
             "image": {
                 "individual_equalize": true,
-                "white_balance": true,
+                "filters": [
+                    [
+                        "white_balance",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ],
                 "remove_background": true
             },
             "description": "descriptions/543b.md"

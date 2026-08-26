@@ -20,7 +20,15 @@
             "name": "True Color",
             "expression": "ch1, ch4, ch3",
             "image": {
-                "white_balance": true,
+                "filters": [
+                    [
+                        "white_balance",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/TrueColor.md"
@@ -29,7 +37,15 @@
             "name": "MODIS 221/143 Mix",
             "expression": "(ch2 + ch1) / 2, (ch2 + ch4) / 2, (ch1 + ch3) / 2",
             "image": {
-                "white_balance": true,
+                "filters": [
+                    [
+                        "white_balance",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             }
         },
@@ -38,7 +54,15 @@
             "expression": "ch17, ch22^2.5, ch31",
             "image": {
                 "individual_equalize": true,
-                "white_balance": true,
+                "filters": [
+                    [
+                        "white_balance",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/DayMicro.md"

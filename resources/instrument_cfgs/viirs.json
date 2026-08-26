@@ -52,7 +52,15 @@
             "expression": "chi5-chi4,chi4-chi3,chi4",
             "image": {
                 "individual_equalize": true,
-                "white_balance": true
+                "filters": [
+                    [
+                        "white_balance",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/NightMicro.md"
         },
@@ -85,7 +93,15 @@
             "expression": "chm10,chm7,chm3",
             "image": {
                 "equalize": true,
-                "white_balance": true
+                "filters": [
+                    [
+                        "white_balance",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/Agriculture.md"
         },
@@ -94,7 +110,15 @@
             "expression": "chm11,chm10,chm3",
             "image": {
                 "individual_equalize": true,
-                "white_balance": true
+                "filters": [
+                    [
+                        "white_balance",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/Geology.md"
         },
@@ -110,7 +134,15 @@
             "name": "Cirrus IR (ABI band 4 like)",
             "expression": "chm9",
             "image": {
-                "white_balance": true
+                "filters": [
+                    [
+                        "white_balance",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/Cirrus.md"
         },
@@ -142,7 +174,15 @@
             "name": "Fire Temperature RGB",
             "expression": "chm12, chm11, chm10",
             "image": {
-                "white_balance": true
+                "filters": [
+                    [
+                        "white_balance",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/FireTempRGB.md"
         },

@@ -27,7 +27,15 @@
             "expression": "ch5 == 0 ? 0 : 1-ch5, ch4 == 0 ? 0 : 1-ch4, ch2 == 0 ? 0 : 1-ch2",
             "image": {
                 "individual_equalize": true,
-                "white_balance": true
+                "filters": [
+                    [
+                        "white_balance",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/543b.md",
             "autogen": true
