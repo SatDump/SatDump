@@ -120,6 +120,7 @@
                 "trace",
                 "debug",
                 "info",
+                "notice",
                 "warn",
                 "error",
                 "critical"
