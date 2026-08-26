@@ -1,5 +1,7 @@
 #include "image_filter.h"
 #include "i18n.h"
+#include "image/adaptive_despeckle.h"
+#include "image/adaptive_despeckle_json.h"
 #include "image/brightness_contrast.h"
 #include "image/hue_saturation.h"
 #include "image/hue_saturation_json.h"
@@ -94,6 +96,32 @@ namespace satdump
             void set(nlohmann::json p) { cfg = p; }
         };
 
+        class AdaptiveDespeckleConfigurator : public ImageFilterConfigurator
+        {
+        private:
+            image::AdaptiveDespeckleConfig cfg;
+
+        public:
+            void draw()
+            {
+                if (ImGui::RadioButton(_("Adaptive"), cfg.filter_type == cfg.ADAPTIVE))
+                    cfg.filter_type = cfg.ADAPTIVE;
+                if (ImGui::RadioButton(_("Recursive"), cfg.filter_type == cfg.RECURSIVE))
+                    cfg.filter_type = cfg.RECURSIVE;
+
+                ImGui::InputInt(_("Radius"), &cfg.radius);
+                if (cfg.radius < 0)
+                    cfg.radius = 0;
+
+                ImGui::SliderInt(_("Black Level"), &cfg.black_level, 0, 255);
+                ImGui::SliderInt(_("White Level"), &cfg.white_level, 0, 255);
+            }
+
+            nlohmann::json get() { return cfg; }
+
+            void set(nlohmann::json p) { cfg = p; }
+        };
+
         std::map<std::string, ImageFilter> getImageFilters()
         {
             std::map<std::string, ImageFilter> filters;
@@ -132,6 +160,10 @@ namespace satdump
             filters.insert({"hue_saturation",
                             {_("Hue Saturation"), [](image::Image &img, nlohmann::json cfg) { image::hue_saturation(img, cfg); }, //
                              []() { return std::make_shared<HueSaturationConfigurator>(); }}});
+
+            filters.insert({"adaptive_despeckle",
+                            {_("Adaptive Despeckle"), [](image::Image &img, nlohmann::json cfg) { image::adaptive_despeckle(img, cfg); }, //
+                             []() { return std::make_shared<AdaptiveDespeckleConfigurator>(); }}});
 
             return filters;
         }
