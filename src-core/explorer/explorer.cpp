@@ -313,12 +313,12 @@ namespace satdump
                         if (ImGui::MenuItem(_("JSON To Clipboard")))
                         {
                             ImGui::SetClipboardText(curr_handler->getConfig().dump(4).c_str());
-                            logger->warn(_("Copied to clipboard!"));
+                            logger->notice(_("Copied to clipboard!"));
                         }
                         if (ImGui::MenuItem(_("JSON From Clipboard")))
                         {
                             curr_handler->setConfig(nlohmann::json::parse(ImGui::GetClipboardText()));
-                            logger->warn(_("Copied from clipboard!"));
+                            logger->notice(_("Copied from clipboard!"));
                         }
                         ImGui::EndMenu();
                     }
