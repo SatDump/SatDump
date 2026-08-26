@@ -34,10 +34,11 @@ bool init_buffer_active = true;
 
 namespace slog
 {
-    const std::string log_schar[] = {"T", "D", "I", "W", "E", "C"};
+    const std::string log_schar[] = {"T", "D", "I", "N", "W", "E", "C"};
     const std::string colors[] = {"\033[37m",
                                   "\033[36m",
                                   "\033[32m",
+                                  "\033[35m",
                                   "\033[33m\033[1m",
                                   "\033[31m\033[1m",
                                   "\033[1m\033[41m"};

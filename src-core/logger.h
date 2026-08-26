@@ -16,6 +16,7 @@ namespace slog
         LOG_TRACE,
         LOG_DEBUG,
         LOG_INFO,
+        LOG_NOTICE,
         LOG_WARN,
         LOG_ERROR,
         LOG_CRIT,
@@ -80,6 +81,13 @@ namespace slog
             logf(LOG_INFO, fmt, args);
             va_end(args);
         }
+        void notice(std::string fmt, ...)
+        {
+            va_list args;
+            va_start(args, fmt);
+            logf(LOG_NOTICE, fmt, args);
+            va_end(args);
+        }
         void warn(std::string fmt, ...)
         {
             va_list args;
@@ -106,6 +114,7 @@ namespace slog
         void trace(int v) { log(LOG_TRACE, v); }
         void debug(int v) { log(LOG_DEBUG, v); }
         void info(int v) { log(LOG_INFO, v); }
+        void notice(int v) { log(LOG_INFO, v); }
         void warn(int v) { log(LOG_WARN, v); }
         void error(int v) { log(LOG_ERROR, v); }
         void critical(int v) { log(LOG_CRIT, v); }
