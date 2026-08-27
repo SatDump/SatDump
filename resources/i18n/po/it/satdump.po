@@ -413,7 +413,7 @@ msgstr ""
 
 #: src-interface/notify_logger_sink.cpp:23
 msgid "Notice"
-msgstr ""
+msgstr "Nota"
 
 #: src-interface/notify_logger_sink.cpp:29
 msgid "Warning"
@@ -711,14 +711,12 @@ msgid "Advanced Parameters"
 msgstr "Impostazioni avanzate"
 
 #: src-core/common/widgets/pipeline_selector.h:23
-#, fuzzy
 msgid "Select Input File"
-msgstr "File di ingresso"
+msgstr "Seleziona file di ingresso"
 
 #: src-core/common/widgets/pipeline_selector.h:24
-#, fuzzy
 msgid "Select Output Directory"
-msgstr "Cartella di uscita"
+msgstr "Seleziona file di ingresso"
 
 #: src-core/common/widgets/image_view.cpp:322
 msgid "Crop must be bigger than 0!"
@@ -999,37 +997,36 @@ msgstr "Sovrapposizione"
 
 #: src-core/handlers/image/image_filter.cpp:108
 msgid "Adaptive"
-msgstr ""
+msgstr "Adattivo"
 
 #: src-core/handlers/image/image_filter.cpp:110
 msgid "Recursive"
-msgstr ""
+msgstr "Ricorsivo"
 
 #: src-core/handlers/image/image_filter.cpp:113
 #: src-core/handlers/image/image_filter.cpp:135
 msgid "Radius"
-msgstr ""
+msgstr "Raggio"
 
 #: src-core/handlers/image/image_filter.cpp:117
 msgid "Black Level"
-msgstr ""
+msgstr "Livello del nero"
 
 #: src-core/handlers/image/image_filter.cpp:118
-#, fuzzy
 msgid "White Level"
-msgstr "Livello ingresso"
+msgstr "Livello del bianco"
 
 #: src-core/handlers/image/image_filter.cpp:139
 msgid "Smooth"
-msgstr ""
+msgstr "Sfoca"
 
 #: src-core/handlers/image/image_filter.cpp:141
 msgid "Sharpen"
-msgstr ""
+msgstr "Aumenta nitidezza"
 
 #: src-core/handlers/image/image_filter.cpp:143
 msgid "Edge"
-msgstr ""
+msgstr "Rileva bordi"
 
 #: src-core/handlers/image/image_filter.cpp:167
 msgid "Equalize"
@@ -1060,18 +1057,16 @@ msgid "Remove Background"
 msgstr "Rimuovi lo sfondo"
 
 #: src-core/handlers/image/image_filter.cpp:198
-#, fuzzy
 msgid "Hue Saturation"
 msgstr "Tonalità e saturazione"
 
 #: src-core/handlers/image/image_filter.cpp:202
-#, fuzzy
 msgid "Adaptive Despeckle"
-msgstr "Smacchia"
+msgstr "Smacchiatura adattiva"
 
 #: src-core/handlers/image/image_filter.cpp:206
 msgid "Simple Mean Filter"
-msgstr ""
+msgstr "Filtro mediano semplificato"
 
 #: src-core/handlers/image/image_handler.cpp:42
 msgid "Cannot crop while processing!"
@@ -1086,23 +1081,20 @@ msgid "Image"
 msgstr "Immagine"
 
 #: src-core/handlers/image/image_handler.cpp:113
-#, fuzzy
 msgid "Rotate 0"
-msgstr "Ruota di 180°"
+msgstr "Ruota: 0°"
 
 #: src-core/handlers/image/image_handler.cpp:115
-#, fuzzy
 msgid "Rotate 90"
-msgstr "Ruota di 180°"
+msgstr "Ruota: 90°"
 
 #: src-core/handlers/image/image_handler.cpp:117
 msgid "Rotate 180"
-msgstr "Ruota di 180°"
+msgstr "Ruota: 180°"
 
 #: src-core/handlers/image/image_handler.cpp:119
-#, fuzzy
 msgid "Rotate 270"
-msgstr "Ruota di 180°"
+msgstr "Ruota: 270°"
 
 #: src-core/handlers/image/image_handler.cpp:123
 msgid "Geo Correct"
@@ -1130,7 +1122,7 @@ msgstr "Attendere la fine del salvataggio prima!"
 #: src-core/handlers/image/image_handler.cpp:145
 #: src-core/handlers/image/image_handler.cpp:335
 msgid "Filters"
-msgstr ""
+msgstr "Filtri"
 
 #: src-core/handlers/image/image_handler.cpp:258
 msgid "Save cancelled"
@@ -1182,12 +1174,12 @@ msgstr "Nuova proiezione"
 #. Render filters menu
 #: src-core/handlers/image/image_handler.cpp:335
 msgid ""
-msgstr ""
+msgstr ""
 
 #: src-core/handlers/image/image_handler.cpp:376
-#, fuzzy, c-format
+#, c-format
 msgid "Raw %d : %d F %f"
-msgstr "Grezzi: %d"
+msgstr "Grezzi: %d : %d F %f"
 
 #: src-core/handlers/image/image_handler.cpp:385
 #, c-format
@@ -1214,9 +1206,8 @@ msgstr "Lon: %f"
 
 #: src-core/handlers/image/image_handler.cpp:437
 #: src-core/handlers/image/image_handler.cpp:438
-#, fuzzy
 msgid "Filter Config"
-msgstr "Configurazione dell'antenna motorizzata"
+msgstr "Configurazione filtri"
 
 #: src-core/handlers/image/image_handler.cpp:442
 #: src-core/handlers/product/image_product_handler.cpp:214
@@ -1225,7 +1216,7 @@ msgstr "Applica"
 
 #: src-core/handlers/image/image_handler.cpp:452
 msgid "Cancel"
-msgstr ""
+msgstr "Annulla"
 
 #: src-core/handlers/image/image_handler.cpp:534
 msgid "Failed Geo-Correcting image!"
