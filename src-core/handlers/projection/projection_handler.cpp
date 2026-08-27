@@ -37,7 +37,11 @@ namespace satdump
             setConfig(satdump::db->get_user_json("projection_defaults"));
         }
 
-        ProjectionHandler::~ProjectionHandler() { satdump::db->set_user_json("projection_defaults", getConfig()); }
+        ProjectionHandler::~ProjectionHandler()
+        {
+            ProcessingHandler::~ProcessingHandler();
+            satdump::db->set_user_json("projection_defaults", getConfig());
+        }
 
         void ProjectionHandler::drawMenu()
         {

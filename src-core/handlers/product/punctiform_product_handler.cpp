@@ -5,9 +5,9 @@
 
 #include "imgui/implot/implot.h" // TODOREWORK
 
+#include "i18n.h"
 #include "image/io.h" // TODOREWORK
 #include "products/punctiform/product_dotmap.h"
-#include "i18n.h"
 
 namespace satdump
 {
@@ -24,7 +24,7 @@ namespace satdump
             tryApplyDefaultPreset();
         }
 
-        PunctiformProductHandler::~PunctiformProductHandler() {}
+        PunctiformProductHandler::~PunctiformProductHandler() { ProcessingHandler::~ProcessingHandler(); }
 
         void PunctiformProductHandler::drawMenu()
         {

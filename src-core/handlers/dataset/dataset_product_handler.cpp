@@ -2,8 +2,8 @@
 #include "logger.h"
 
 // TODOREWORK
-#include "nlohmann/json_utils.h"
 #include "core/resources.h"
+#include "nlohmann/json_utils.h"
 
 // TODOREWORK #include "lua_processor.h"
 #include "flowgraph_processor.h"
@@ -22,7 +22,7 @@ namespace satdump
             available_presets.push_back(loadJsonFile(resources::getResourcePath("pipeline_cfgs/AVHRR_MCIR_Sample.json")));
         }
 
-        DatasetProductHandler::~DatasetProductHandler() {}
+        DatasetProductHandler::~DatasetProductHandler() { ProcessingHandler::~ProcessingHandler(); }
 
         void DatasetProductHandler::drawMenu() {}
 

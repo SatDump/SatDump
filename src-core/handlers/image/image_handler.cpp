@@ -7,6 +7,7 @@
 #include "core/style.h"
 #include "explorer/explorer.h"
 #include "handlers/image/image_filter.h"
+#include "handlers/processing_handler.h"
 #include "handlers/projection/projection_handler.h"
 #include "handlers/vector/addmenu.h"
 #include "handlers/vector/shapefile_handler.h"
@@ -95,6 +96,7 @@ namespace satdump
 
         ImageHandler::~ImageHandler()
         {
+            ProcessingHandler::~ProcessingHandler();
             if (file_save_thread.joinable())
                 file_save_thread.join();
         }

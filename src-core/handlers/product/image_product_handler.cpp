@@ -1,7 +1,7 @@
 #include "image_product_handler.h"
 #include "common/widgets/menuitem_tooltip.h"
-#include "image/spectral_align.h"
 #include "i18n.h"
+#include "image/spectral_align.h"
 #include "imgui/imgui.h"
 #include "nlohmann/json_utils.h"
 
@@ -91,7 +91,7 @@ namespace satdump
             tryApplyDefaultPreset();
         }
 
-        ImageProductHandler::~ImageProductHandler() {}
+        ImageProductHandler::~ImageProductHandler() { ProcessingHandler::~ProcessingHandler(); }
 
         void ImageProductHandler::drawMenu()
         {
