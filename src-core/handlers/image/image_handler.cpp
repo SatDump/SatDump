@@ -144,6 +144,9 @@ namespace satdump
 
             if (ImGui::CollapsingHeader(_("Filters")))
             {
+                if (needs_to_be_disabled)
+                    style::beginDisabled();
+
                 if (ImGui::BeginListBox("##filterscombo", {ImGui::GetContentRegionAvail().x, 0}))
                 {
                     bool quit = false;
@@ -255,6 +258,9 @@ namespace satdump
                         ImGui::Separator();
                     }
                     ImGui::EndListBox();
+
+                    if (needs_to_be_disabled)
+                        style::endDisabled();
                 }
             }
         }
