@@ -2,6 +2,7 @@
 
 #include "common/widgets/menuitem_fileopen.h"
 #include "handlers/handler.h"
+#include "i18n.h"
 #include "utils/task_queue.h"
 
 #include <cstdint>
@@ -80,8 +81,8 @@ namespace satdump
 
             // Groups definitions. TODOREWORK don't hardcode
             std::map<std::string, std::vector<std::string>> group_definitions = {
-                {"Recorders", {"recorder", "newrec_test_handler"}},
-                {"Products", {"dataset_handler", "image_product_handler", "punctiform_product_handler"}},
+                {_("Recorders"), {"recorder", "newrec_test_handler"}},
+                {_("Products"), {"dataset_handler", "image_product_handler", "punctiform_product_handler"}},
             };
 
             // Explorer main handlers

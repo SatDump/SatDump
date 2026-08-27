@@ -1,6 +1,7 @@
 #include "common/geodetic/geodetic_coordinates.h"
 #include "common/tracking/tle.h"
 #include "core/style.h"
+#include "i18n.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
 #include "init.h"
@@ -278,13 +279,13 @@ namespace satdump
         {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::Text("Azimuth");
+            ImGui::Text(_("Azimuth"));
             ImGui::TableSetColumnIndex(1);
             ImGui::Text("%.3f", sat_current_pos.az);
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::Text("Elevation");
+            ImGui::Text(_("Elevation"));
             ImGui::TableSetColumnIndex(1);
             ImGui::Text("%.3f", sat_current_pos.el);
 
@@ -305,7 +306,7 @@ namespace satdump
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                ImGui::Text("Next Event");
+                ImGui::Text(_("Next Event"));
                 ImGui::TableSetColumnIndex(1);
                 ImGui::Text("%s", time_dis.c_str());
             }
@@ -314,19 +315,19 @@ namespace satdump
             {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                ImGui::Text("Azimuth Rate");
+                ImGui::Text(_("Azimuth Rate"));
                 ImGui::TableSetColumnIndex(1);
                 ImGui::Text("%.2f", satellite_observation_pos.azimuth_rate * RAD_TO_DEG);
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                ImGui::Text("Elevation Rate");
+                ImGui::Text(_("Elevation Rate"));
                 ImGui::TableSetColumnIndex(1);
                 ImGui::Text("%.2f", satellite_observation_pos.elevation_rate * RAD_TO_DEG);
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                ImGui::Text("Range (km)");
+                ImGui::Text(_("Range (km)"));
                 ImGui::TableSetColumnIndex(1);
                 ImGui::Text("%.2f", satellite_observation_pos.range);
             }

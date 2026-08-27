@@ -2,6 +2,7 @@
 #include "common/geodetic/geodetic_coordinates.h"
 #include "common/tracking/tle.h"
 #include "core/config.h"
+#include "i18n.h"
 #include "imgui/imgui.h"
 #include "init.h"
 
@@ -132,13 +133,13 @@ namespace satdump
         {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::Text("Satellite");
+            ImGui::Text(_("Satellite"));
             ImGui::TableSetColumnIndex(1);
-            ImGui::Text("Azimuth");
+            ImGui::Text(_("Azimuth"));
             ImGui::TableSetColumnIndex(2);
-            ImGui::Text("Elevation");
+            ImGui::Text(_("Elevation"));
             ImGui::TableSetColumnIndex(3);
-            ImGui::Text("Distance(km)");
+            ImGui::Text(_("Distance(km)"));
 
             for (auto &sat : sats_in_sight)
             {

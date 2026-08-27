@@ -249,14 +249,14 @@ namespace satdump
             ImGui::EndCombo();
         }
         ImGui::SameLine();
-        if (ImGui::Button("Refresh##archiveloader_refresh"))
+        if (ImGui::Button(_("Refresh##archiveloader_refresh")))
             (this->*(aws_options[aws_selected_dataset].updateFunc))();
 
         ImGui::TextUnformatted("Date: ");
         ImGui::SameLine();
         request_time.draw();
         ImGui::SameLine();
-        if (ImGui::Button("Current##archiveloader_setcurrenttime"))
+        if (ImGui::Button(_("Current##archiveloader_setcurrenttime")))
             request_time.set(time(0));
 
         float target_height = wsize.y - 260 * ui_scale;
@@ -274,7 +274,7 @@ namespace satdump
                 ImGui::Text("%s", str.first.c_str());
 
                 ImGui::TableNextColumn();
-                if (ImGui::Button(std::string("Load##archiveloadertablebutton_" + str.first).c_str()))
+                if (ImGui::Button(std::string(_("Load##archiveloadertablebutton_") + str.first).c_str()))
                 {
                     auto func = [this, str](int)
                     {
@@ -303,7 +303,7 @@ namespace satdump
                         }
                         catch (std::exception &e)
                         {
-                            logger->error("Failed downloading file from AWS! %s", e.what());
+                            logger->error(_("Failed downloading file from AWS! %s"), e.what());
                         }
                     };
 
