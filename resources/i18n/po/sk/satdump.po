@@ -1,0 +1,1417 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-23 18:50+0200\n"
+"PO-Revision-Date: 2026-08-27 08:14+0200\n"
+"Last-Translator: Meti\n"
+"Language-Team: \n"
+"Language: sk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.9\n"
+
+#: ../../src-core/init.cpp:79
+msgid "Starting "
+msgstr "Spúšťam "
+
+#: ../../src-core/init.cpp:105
+#, c-format
+msgid ""
+"Error loading SatDump config! SatDump will now exit. Error:\n"
+"%s"
+msgstr ""
+"Chyba pri načítaní SatDump nastavení! SatDump sa teraz zavrie. Chyba:\n"
+"%s"
+
+#. List them
+#: ../../src-core/init.cpp:155
+msgid "Registered pipelines :"
+msgstr "Registrované reťazce spracovania :"
+
+#: ../../src-core/init.cpp:180
+#, c-format
+msgid "DSP Buffer size was changed to %d"
+msgstr "Veľkosť vyrovnávacej pamäte DSP bola zmenená na %d"
+
+#: ../../src-core/init.cpp:189
+msgid "Could not open ephemeris data! NOVAS will not work!"
+msgstr "Nebolo možné otvoriť dáta efemeríd! NOVAS nebude funkčné!"
+
+#: ../../src-core/init.cpp:203
+msgid "SatDump has NOT been built in Release mode."
+msgstr "SatDump NEBOL kompilovaný v Release (výdajnom) režime."
+
+#: ../../src-core/init.cpp:204
+msgid "If you are not a developer but intending to use the software,"
+msgstr "Ak nie ste vývojár ale mienite tento softvér používať,"
+
+#: ../../src-core/init.cpp:205
+msgid "you probably do not want this. If so, make sure to"
+msgstr "toto je pravdepodobne nechcené. Ak je to tak, uistite sa, že"
+
+#: ../../src-core/init.cpp:206
+msgid "specify -DCMAKE_BUILD_TYPE=Release in CMake."
+msgstr "určíte -DCMAKE_BUILD_TYPE=Release v CMake."
+
+#: ../../src-core/init.cpp:215
+msgid "Exiting SatDump! Bye!"
+msgstr "Satdump sa zatvára. Dovidenia!"
+
+#: ../../src-core/imgui/dialogs/widget.cpp:22
+msgid "ﱮ Open##filepathselectionbutton"
+msgstr "ﱮ Otvoriť##filepathselectionbutton"
+
+#: ../../src-core/products/image/calibration_converter.cpp:45
+msgid "No valid converter for : "
+msgstr "Žiadny platný menič pre : "
+
+#: ../../src-core/products/image/calibration_units.cpp:14
+msgid "Sun Angle"
+msgstr "Uhol slnka"
+
+#: ../../src-core/products/image/calibration_units.cpp:15
+msgid "Albedo"
+msgstr "Odrazivosť"
+
+#: ../../src-core/products/image/calibration_units.cpp:16
+msgid "Sun Angle Compensated Albedo"
+msgstr "Odrazivosť kompenzovaná uhlom slnka"
+
+#: ../../src-core/products/image/calibration_units.cpp:17
+msgid "Emissive Radiance"
+msgstr "Emisná žiara"
+
+#: ../../src-core/products/image/calibration_units.cpp:18
+msgid "Reflective Radiance"
+msgstr "Reflexná žiara"
+
+#: ../../src-core/products/image/calibration_units.cpp:19
+msgid "Sun Angle Compensated Reflective Radiance"
+msgstr "Reflexná žiara kompenzovaná uhlom slnka"
+
+#: ../../src-core/products/image/calibration_units.cpp:20
+#: ../../src-core/products/image/calibration_units.cpp:21
+msgid "Brightness Temperature"
+msgstr "Jasová teplota"
+
+#: ../../src-core/products/image/calibration_units.cpp:22
+msgid "Backscatter"
+msgstr "Spätný rozptyl"
+
+#: ../../src-core/handlers/image/image_handler.cpp:43
+msgid "Cannot crop while processing!"
+msgstr "Nemožno orezať počas spracúvania!"
+
+#: ../../src-core/handlers/image/image_handler.cpp:73
+msgid " Crop"
+msgstr " Orezať"
+
+#: ../../src-core/handlers/image/image_handler.cpp:93
+msgid "Image"
+msgstr "Obraz"
+
+#: ../../src-core/handlers/image/image_handler.cpp:100
+msgid "Median Blur"
+msgstr "Mediánové rozostrenie"
+
+# This is apparently kept stock in software, since there is no real translation
+#: ../../src-core/handlers/image/image_handler.cpp:101
+msgid "Despeckle"
+msgstr "Despeckle"
+
+#: ../../src-core/handlers/image/image_handler.cpp:102
+msgid "Rotate 180"
+msgstr "Otočiť 180"
+
+#: ../../src-core/handlers/image/image_handler.cpp:104
+msgid "Geo Correct"
+msgstr "Geografická korekcia"
+
+# The term "Equalize" literally means "Vyrovnať", but in image editing (i.e. GIMP) they use the word "Equalize" as a foreign term, adjusted to Slovak it is "Ekvalizovať"
+#. TODOREWORK Disable if it can't be?
+#: ../../src-core/handlers/image/image_handler.cpp:105
+msgid "Equalize"
+msgstr "Ekvalizovať"
+
+#: ../../src-core/handlers/image/image_handler.cpp:106
+msgid "Individual Equalize"
+msgstr "Nezávisle ekvalizovať"
+
+#: ../../src-core/handlers/image/image_handler.cpp:107
+msgid "White Balance"
+msgstr "Vyváženie bielej"
+
+#: ../../src-core/handlers/image/image_handler.cpp:108
+msgid "Normalize"
+msgstr "Normalizovať"
+
+# Same as 'Equalize'. To 'Invert' means 'obrátiť' which means to flip, which is not what we want here.
+#: ../../src-core/handlers/image/image_handler.cpp:109
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:84
+msgid "Invert"
+msgstr "Invertovať"
+
+#: ../../src-core/handlers/image/image_handler.cpp:111
+msgid "Brightness/contrast"
+msgstr "Jas/Kontrast"
+
+#: ../../src-core/handlers/image/image_handler.cpp:114
+msgid "Brightness"
+msgstr "Jas"
+
+#: ../../src-core/handlers/image/image_handler.cpp:116
+msgid "Contrast"
+msgstr "Kontrast"
+
+#: ../../src-core/handlers/image/image_handler.cpp:121
+msgid "Remove Background"
+msgstr "Odstrániť pozadie"
+
+#: ../../src-core/handlers/image/image_handler.cpp:123
+msgid "Hue/Saturation"
+msgstr "Odtieň/Saturácia"
+
+#: ../../src-core/handlers/image/image_handler.cpp:128
+msgid "All"
+msgstr "Všetky"
+
+#: ../../src-core/handlers/image/image_handler.cpp:128
+msgid "Red"
+msgstr "Červená"
+
+#: ../../src-core/handlers/image/image_handler.cpp:128
+msgid "Yellow"
+msgstr "Žltá"
+
+#: ../../src-core/handlers/image/image_handler.cpp:128
+msgid "Green"
+msgstr "Zelená"
+
+#: ../../src-core/handlers/image/image_handler.cpp:128
+msgid "Cyan"
+msgstr "Tyrkysova"
+
+#: ../../src-core/handlers/image/image_handler.cpp:128
+msgid "Blue"
+msgstr "Modrá"
+
+#: ../../src-core/handlers/image/image_handler.cpp:128
+msgid "Magenta"
+msgstr "Purpurová"
+
+#: ../../src-core/handlers/image/image_handler.cpp:132
+msgid " Hue"
+msgstr " Odtieň"
+
+#: ../../src-core/handlers/image/image_handler.cpp:134
+msgid " Saturation"
+msgstr " Saturácia"
+
+#: ../../src-core/handlers/image/image_handler.cpp:136
+msgid " Lightness"
+msgstr " Jasnosť"
+
+#: ../../src-core/handlers/image/image_handler.cpp:144
+msgid "Overlap"
+msgstr "Prekrytie"
+
+#: ../../src-core/handlers/image/image_handler.cpp:154
+#, c-format
+msgid "Calibration Unit %s"
+msgstr "Kalibračná jednotka %s"
+
+#: ../../src-core/handlers/image/image_handler.cpp:155
+#, c-format
+msgid "Calibration Min %f"
+msgstr "Kalibračné minimum %f"
+
+#: ../../src-core/handlers/image/image_handler.cpp:156
+#, c-format
+msgid "Calibration Max %f"
+msgstr "Kalibračné maximum %f"
+
+#: ../../src-core/handlers/image/image_handler.cpp:162
+msgid "Please wait for saving to end first!"
+msgstr "Prosím počkajte na dokončenie ukladania!"
+
+#: ../../src-core/handlers/image/image_handler.cpp:177
+#: ../../src-core/handlers/image/image_handler.cpp:187
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:132
+msgid "Save Image"
+msgstr "Uložiť obrázok"
+
+#: ../../src-core/handlers/image/image_handler.cpp:189
+msgid "Save cancelled"
+msgstr "Uloženie zrušené"
+
+#: ../../src-core/handlers/image/image_handler.cpp:191
+#, c-format
+msgid "Saved current image at %s"
+msgstr "Tento obrázok bol uložený ako %s"
+
+#: ../../src-core/handlers/image/image_handler.cpp:199
+msgid "Please wait for processing to end first!"
+msgstr "Prosím počkajte na dokončenie spracovania!"
+
+#. ///////////
+#. Image Controls
+#. ///////////
+#. Refresh button
+#: ../../src-core/handlers/image/image_handler.cpp:220
+msgid "Refresh (Image Only)"
+msgstr "Obnoviť (Iba obraz)"
+
+#. Basic controls
+#: ../../src-core/handlers/image/image_handler.cpp:224
+msgid "Zoom In"
+msgstr "Priblížiť"
+
+#: ../../src-core/handlers/image/image_handler.cpp:225
+msgid "Zoom Out"
+msgstr "Oddialiť"
+
+#: ../../src-core/handlers/image/image_handler.cpp:226
+msgid "Fit"
+msgstr "Prispôsobiť veľkosti"
+
+#: ../../src-core/handlers/image/image_handler.cpp:227
+msgid "Crop"
+msgstr "Orezať"
+
+#. Show a menu that allows putting this image on an existing or new projection
+#: ../../src-core/handlers/image/image_handler.cpp:235
+msgid "Add to projection"
+msgstr "Pridať do premietnutia"
+
+#: ../../src-core/handlers/image/image_handler.cpp:251
+msgid "New Projection"
+msgstr "Nové premietnutie"
+
+#: ../../src-core/handlers/image/image_handler.cpp:279
+#, c-format
+msgid "Raw : %d"
+msgstr "Surové: %d"
+
+#: ../../src-core/handlers/image/image_handler.cpp:287
+#, c-format
+msgid "Unit : %f %s"
+msgstr "Jednotka: %f %s"
+
+#: ../../src-core/handlers/image/image_handler.cpp:294
+msgid "Lat : Invalid!"
+msgstr "Zemepisná dĺžka: Neplatná!"
+
+#: ../../src-core/handlers/image/image_handler.cpp:295
+msgid "Lon : Invalid!"
+msgstr "Zemepisná šírka: Neplatná!"
+
+#: ../../src-core/handlers/image/image_handler.cpp:299
+#, c-format
+msgid "Lat : %f"
+msgstr "Zemepisná dĺžka: %f"
+
+#: ../../src-core/handlers/image/image_handler.cpp:300
+#, c-format
+msgid "Lon : %f"
+msgstr "Zemepisná šírka: %f"
+
+#: ../../src-core/handlers/image/image_handler.cpp:420
+msgid "Failed Geo-Correcting image!"
+msgstr "Geografická korekcia obrázku zlyhala!"
+
+#: ../../src-core/handlers/image/image_handler.cpp:428
+#, c-format
+msgid "Error processing image! %s"
+msgstr "Chyba pri spracovaní obrazu! %s"
+
+#: ../../src-core/handlers/projection/proj_ui.h:124
+msgid "Output image : "
+msgstr "Výsledný ubrázok : "
+
+#: ../../src-core/handlers/projection/proj_ui.h:150
+msgid "Top Left Coordinates :"
+msgstr "Ľavé horné súradnice:"
+
+#: ../../src-core/handlers/projection/proj_ui.h:151
+msgid "Lat##tl"
+msgstr "Zemepisná dĺžka##tl"
+
+#: ../../src-core/handlers/projection/proj_ui.h:152
+msgid "Lon##tl"
+msgstr "Zemepisná šírka##tl"
+
+#: ../../src-core/handlers/projection/proj_ui.h:154
+msgid "Bottom Right Coordinates :"
+msgstr "Pravé dolné súradnice:"
+
+#: ../../src-core/handlers/projection/proj_ui.h:155
+msgid "Lat##br"
+msgstr "Zemepisná dĺžka##br"
+
+#: ../../src-core/handlers/projection/proj_ui.h:156
+msgid "Lon##br"
+msgstr "Zemepisná šírka##br"
+
+# UTM should be an international term
+#: ../../src-core/handlers/projection/proj_ui.h:161
+msgid "UTM Zone###projutmzone"
+msgstr "UTM zóna###projutmzone"
+
+#: ../../src-core/handlers/projection/proj_ui.h:166
+msgid "South###projutmsouth"
+msgstr "Jug##projutmsouth"
+
+# English is weird, equally as weird Slovak
+#: ../../src-core/handlers/projection/proj_ui.h:167
+msgid "Northing (m)##utm"
+msgstr "Severovanie (m)##utm"
+
+#: ../../src-core/handlers/projection/proj_ui.h:169
+msgid "Scale (m/px)##utm"
+msgstr "Mierka (m/px)##utm"
+
+#: ../../src-core/handlers/projection/proj_ui.h:173
+#: ../../src-core/handlers/projection/proj_ui.h:181
+msgid "Center Coordinates :"
+msgstr "Stredné súradnice:"
+
+#: ../../src-core/handlers/projection/proj_ui.h:174
+msgid "Lat##stereo"
+msgstr "Zemepisná dĺžka##stereo"
+
+#: ../../src-core/handlers/projection/proj_ui.h:175
+msgid "Lon##stereo"
+msgstr "Zemepisná šírka##stereo"
+
+#: ../../src-core/handlers/projection/proj_ui.h:177
+msgid "Scale (m/px)##stereo"
+msgstr "Mierka (m/px)##stereo"
+
+#: ../../src-core/handlers/projection/proj_ui.h:182
+msgid "Lat##tpers"
+msgstr "Zemepisná dĺžka##pers"
+
+#: ../../src-core/handlers/projection/proj_ui.h:183
+msgid "Lon##tpers"
+msgstr "Zemepisná šírka##pers"
+
+#: ../../src-core/handlers/projection/proj_ui.h:185
+msgid "Altitude (m)##tpers"
+msgstr "Výška (m)##tpers"
+
+#: ../../src-core/handlers/projection/proj_ui.h:186
+msgid "Angle##tpers"
+msgstr "Uhol##tpers"
+
+#: ../../src-core/handlers/projection/proj_ui.h:187
+msgid "Azimuth##tpers"
+msgstr "Azimut##tpers"
+
+#: ../../src-core/handlers/projection/proj_ui.h:189
+msgid "Scale##tpers"
+msgstr "Mierka##tpers"
+
+#: ../../src-core/handlers/projection/proj_ui.h:194
+msgid "Auto Mode###pojautomode"
+msgstr "Automatický režim##pojautomode"
+
+#: ../../src-core/handlers/projection/proj_ui.h:195
+msgid "Auto Scale Mode##projautoscalemode"
+msgstr "Režim automatickej mierky##projautoscalemode"
+
+#: ../../src-core/handlers/projection/proj_ui.h:198
+msgid "Scale X (m/px)##projscalexauto"
+msgstr "Mierka X (m/px)##projscalexauto"
+
+#: ../../src-core/handlers/projection/proj_ui.h:199
+msgid "Scale Y (m/px)##projscalexauto"
+msgstr "Mierka Y (m/px)##projscalexauto"
+
+#: ../../src-core/handlers/projection/projection_handler.cpp:44
+#: ../../src-core/explorer/explorer.cpp:281
+msgid "Projection"
+msgstr "Premietnutie"
+
+#. needs_to_update |= TODO; // TODOREWORK move in top drawMenu?
+#: ../../src-core/handlers/projection/projection_handler.cpp:52
+msgid "Project"
+msgstr "Premietnuť"
+
+#: ../../src-core/handlers/projection/projection_handler.cpp:468
+#: ../../src-core/handlers/product/image_product_handler.cpp:479
+msgid "Image To Handler"
+msgstr "Premeniť ovrázok na spravovač"
+
+#: ../../src-core/handlers/vector/shapefile_handler.cpp:43
+#: ../../src-interface/main_ui.cpp:171 ../../src-interface/main_ui.cpp:227
+#: ../../src-interface/main_ui.cpp:233
+msgid "Settings"
+msgstr "Nastavenia"
+
+#: ../../src-core/handlers/vector/shapefile_handler.cpp:45
+msgid "Draw Color##shapefilecolor"
+msgstr "Farba výkresu##shapefilecolor"
+
+#. | ImGuiColorEditFlags_NoLabel
+#: ../../src-core/handlers/vector/shapefile_handler.cpp:46
+msgid "Anti-Alias"
+msgstr "Vyhladzovanie hrán"
+
+#: ../../src-core/handlers/vector/shapefile_handler.cpp:47
+msgid "Font Size"
+msgstr "Veľkosť písma"
+
+#: ../../src-core/handlers/vector/shapefile_handler.cpp:49
+msgid "Scale Rank (Cities Only)"
+msgstr "Hodnosť veľkosti (Iba mestá)"
+
+#: ../../src-core/handlers/vector/shapefile_handler.cpp:70
+msgid "Polygon "
+msgstr "Polygón "
+
+#: ../../src-core/handlers/vector/shapefile_handler.cpp:85
+msgid "Point "
+msgstr "Bod "
+
+# "Vrstvu" means "layer" but there is no real good alternative I know of:
+# "Prekrytie" and "Pokrytie" would be "covering"
+#. TODOREWORK move out?!
+#: ../../src-core/handlers/vector/addmenu.h:22
+msgid "Add Overlay"
+msgstr "Pridať vrstvu"
+
+#: ../../src-core/handlers/vector/addmenu.h:24
+msgid "Shores"
+msgstr "Pobrežia"
+
+#: ../../src-core/handlers/vector/addmenu.h:30
+msgid "Borders"
+msgstr "Hranice"
+
+#: ../../src-core/handlers/vector/addmenu.h:36
+msgid "Cities"
+msgstr "Mestá"
+
+#: ../../src-core/handlers/vector/addmenu.h:42
+#: ../../src-core/handlers/vector/addmenu.h:45
+msgid "Lat/Lon Grid"
+msgstr "Mriežka zemepisnej dĺžky/šírky"
+
+# Q-code should be int'l
+#: ../../src-core/handlers/vector/addmenu.h:74
+#: ../../src-core/handlers/vector/addmenu.h:77
+#: ../../src-core/handlers/vector/addmenu.h:86
+msgid "QTH"
+msgstr "QTH"
+
+#: ../../src-core/handlers/handler.cpp:60
+msgid "Delete"
+msgstr "Vymazať"
+
+#: ../../src-core/handlers/handler.cpp:99
+msgid "Can't drag parent onto child handler!"
+msgstr "Nemožno presunúť rodiča na detského spravovača!"
+
+#: ../../src-core/handlers/product/punctiform_product_handler.cpp:34
+#: ../../src-core/handlers/product/image_product_handler.cpp:100
+msgid "Channels"
+msgstr "Kanály"
+
+#: ../../src-core/handlers/product/punctiform_product_handler.cpp:39
+msgid "Graph"
+msgstr "Graf"
+
+#: ../../src-core/handlers/product/punctiform_product_handler.cpp:45
+msgid "Dot Map"
+msgstr "Bodová mapa"
+
+#: ../../src-core/handlers/product/punctiform_product_handler.cpp:51
+msgid "Fill Map"
+msgstr "Vyplnená mapa"
+
+#: ../../src-core/handlers/product/punctiform_product_handler.cpp:57
+msgid "Channel##selectechannel"
+msgstr "Kanál##selectechannel"
+
+#: ../../src-core/handlers/product/punctiform_product_handler.cpp:72
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:89
+msgid "Range Min"
+msgstr "Minimum rozsahu"
+
+#: ../../src-core/handlers/product/punctiform_product_handler.cpp:73
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:90
+msgid "Range Max"
+msgstr "Maximum rozsahu"
+
+#: ../../src-core/handlers/product/punctiform_product_handler.cpp:76
+msgid "Update"
+msgstr "Aktualizovať"
+
+#: ../../src-core/handlers/product/punctiform_product_handler.cpp:186
+#: ../../src-core/handlers/product/image_product_handler.cpp:35
+msgid "Channel "
+msgstr "Kanál "
+
+#: ../../src-core/handlers/product/product_handler.cpp:113
+msgid "Presets"
+msgstr "Predvoľby"
+
+#: ../../src-core/handlers/product/product_handler.cpp:117
+msgid "Select Preset..."
+msgstr "Vybrať predvoľbu..."
+
+#: ../../src-core/handlers/product/product_handler.cpp:155
+msgid "Default"
+msgstr "Predvolené"
+
+#: ../../src-core/handlers/product/product_handler.cpp:174
+msgid "Preset Info"
+msgstr "Informácie o prednastaveniu"
+
+#: ../../src-core/handlers/product/image_product_handler.cpp:51
+msgid "Product Data"
+msgstr "Data produktu"
+
+#: ../../src-core/handlers/product/image_product_handler.cpp:54
+#, c-format
+msgid "Count : %d"
+msgstr "Počet : %d"
+
+#: ../../src-core/handlers/product/image_product_handler.cpp:64
+#, c-format
+msgid "%s : Invalid Value"
+msgstr "%s : Neplatná hodnota"
+
+#: ../../src-core/handlers/product/image_product_handler.cpp:142
+msgid "Pol : H"
+msgstr "Pol. : H"
+
+#: ../../src-core/handlers/product/image_product_handler.cpp:144
+msgid "Pol : V"
+msgstr "Pol. : V"
+
+#: ../../src-core/handlers/product/image_product_handler.cpp:146
+msgid "Pol : R"
+msgstr "Pol. : P"
+
+#: ../../src-core/handlers/product/image_product_handler.cpp:148
+msgid "Pol : L"
+msgstr "Pol. : Ľ"
+
+#: ../../src-core/handlers/product/image_product_handler.cpp:154
+#, c-format
+msgid "Bandwidth : %s / %s"
+msgstr "Šírka pásma: %s / %s"
+
+#: ../../src-core/handlers/product/image_product_handler.cpp:166
+msgid "Calibrate"
+msgstr "Kalibrovať"
+
+#. List of all units
+#: ../../src-core/handlers/product/image_product_handler.cpp:174
+msgid "Unit##calibunit"
+msgstr "Jednotka##calibunit"
+
+#: ../../src-core/handlers/product/image_product_handler.cpp:187
+msgid "Update###updatecalib"
+msgstr "Aktualizovať##updatecalib"
+
+#: ../../src-core/handlers/product/image_product_handler.cpp:189
+msgid "Add To Equ###calibaddtoexpression"
+msgstr "Pridať do výrazu##calibaddtoexpression"
+
+#: ../../src-core/handlers/product/image_product_handler.cpp:195
+msgid "Calibration Error. Please Report!"
+msgstr "Chyba kalibrácie. Prosím, nahláste to!"
+
+#: ../../src-core/handlers/product/image_product_handler.cpp:206
+msgid "Expression"
+msgstr "Výraz"
+
+# Not many good choices here sadly
+#: ../../src-core/handlers/product/image_product_handler.cpp:214
+msgid "Apply"
+msgstr "Použiť"
+
+#: ../../src-core/handlers/product/image_product_handler.cpp:248
+msgid "Advanced"
+msgstr "Pokročilé"
+
+#: ../../src-core/handlers/product/image_product_handler.cpp:469
+#, c-format
+msgid "Could not process image! %s"
+msgstr "Nebolo možné spracovať obrázok! %s"
+
+# better word for it maybe?
+#: ../../src-core/handlers/product/image_product_handler.cpp:488
+#: ../../src-core/explorer/explorer.cpp:309
+msgid "Handler"
+msgstr "Spravovač"
+
+#: ../../src-core/handlers/product/image_product_handler.cpp:490
+msgid "Advanced Mode"
+msgstr "Pokročilý režim"
+
+#: ../../src-core/explorer/explorer.cpp:165
+msgid "Root"
+msgstr "Koreň"
+
+#: ../../src-core/explorer/explorer.cpp:178 ../../src-interface/main_ui.cpp:168
+#: ../../src-interface/recorder/recorder.cpp:450
+msgid "Processing"
+msgstr "Spracovanie"
+
+#: ../../src-core/explorer/explorer.cpp:205
+msgid "Others"
+msgstr "Iné"
+
+#: ../../src-core/explorer/explorer.cpp:219
+msgid "Handlers will appear here..."
+msgstr "Spravovače sa objavia tu..."
+
+#: ../../src-core/explorer/explorer.cpp:243
+msgid "No file selected"
+msgstr "Není vybraný žiadny súbor"
+
+#. Main "Open" menu, for files, other handlers, etc
+#: ../../src-core/explorer/explorer.cpp:250
+#: ../../plugins/firstparty_support/main_loader.cpp:79
+#: ../../src-interface/main_ui.cpp:166
+msgid "File"
+msgstr "Súbor"
+
+#: ../../src-core/explorer/explorer.cpp:252
+msgid "Open File"
+msgstr "Otvoriť súbor"
+
+#: ../../src-core/explorer/explorer.cpp:254
+msgid "Quick Open"
+msgstr "Rýchle otvorenie"
+
+#: ../../src-core/explorer/explorer.cpp:259
+msgid "Go##loadfromhttpgo"
+msgstr "Ísť##loadfromhttpgo"
+
+#: ../../src-core/explorer/explorer.cpp:265
+msgid "Paste & Load"
+msgstr "Prilepiť a načítať"
+
+#: ../../src-core/explorer/explorer.cpp:279
+#: ../../plugins/experimental_devices_support/main.cpp:21
+#: ../../plugins/bitview_app/main.cpp:38
+#: ../../plugins/wip_settings_editor_app/main.cpp:17
+#: ../../plugins/tools_app/main.cpp:19
+#: ../../plugins/wip_tracking_app/main.cpp:21
+#: ../../src-interface/main_ui.cpp:177
+msgid "Add"
+msgstr "Pridať"
+
+#: ../../src-core/explorer/explorer.cpp:284
+#: ../../plugins/bitview_app/main.cpp:40
+#: ../../plugins/wip_settings_editor_app/main.cpp:19
+#: ../../plugins/tools_app/main.cpp:21
+#: ../../plugins/wip_tracking_app/main.cpp:23
+msgid "Tools"
+msgstr "Nástroje"
+
+#. TODOREWORK?
+#: ../../src-core/explorer/explorer.cpp:286
+msgid "DSP Flowgraph"
+msgstr "Prietokový diagram DSP"
+
+#: ../../src-core/explorer/explorer.cpp:291
+#: ../../plugins/experimental_devices_support/main.cpp:23
+msgid "Experimental"
+msgstr "Experimentálne"
+
+#: ../../src-core/explorer/explorer.cpp:313
+msgid "JSON To Clipboard"
+msgstr "JSON do schránky"
+
+#: ../../src-core/explorer/explorer.cpp:316
+msgid "Copied to clipboard!"
+msgstr "Skopírované do schránky!"
+
+#: ../../src-core/explorer/explorer.cpp:318
+msgid "JSON From Clipboard"
+msgstr "JSON zo schránky"
+
+#: ../../src-core/explorer/explorer.cpp:321
+msgid "Copied from clipboard!"
+msgstr "Skopírované zo schránky!"
+
+#.
+#.
+#: ../../src-core/explorer/explorer.cpp:362
+msgid "Welcome to SatDump!"
+msgstr "Vitajte v SatDump!"
+
+#: ../../src-core/explorer/explorer.cpp:412
+#: ../../src-core/explorer/explorer.cpp:414 ../../src-interface/main_ui.cpp:218
+msgid "Start Processing"
+msgstr "Začať spracovanie"
+
+#: ../../src-core/explorer/explorer.cpp:428
+#: ../../src-core/explorer/explorer.cpp:430
+msgid "Add Recorder"
+msgstr "Pridať nahrávač"
+
+#: ../../src-core/common/widgets/pipeline_selector.h:23
+#: ../../src-core/common/widgets/pipeline_selector.cpp:288
+msgid "Input File"
+msgstr "Vstupný súbor"
+
+#: ../../src-core/common/widgets/pipeline_selector.h:23
+msgid "Select Input File"
+msgstr "Vybrať vstupný súbor"
+
+# 'Výstupný" does not fit within bounds
+#. TODOREWORKUI?
+#: ../../src-core/common/widgets/pipeline_selector.h:24
+#: ../../src-core/common/widgets/pipeline_selector.cpp:295
+#: ../../src-core/common/widgets/pipeline_selector.cpp:322
+msgid "Output Directory"
+msgstr "Výst. adresár"
+
+#: ../../src-core/common/widgets/pipeline_selector.h:24
+msgid "Select Output Directory"
+msgstr "Vybrať výstupný adresár"
+
+#: ../../src-core/common/widgets/pipeline_selector.cpp:122
+msgid "   Search pipelines"
+msgstr "  Hľadať reťazec spracovania"
+
+#: ../../src-core/common/widgets/pipeline_selector.cpp:160
+msgid "Favourites"
+msgstr "Obľúbené"
+
+#: ../../src-core/common/widgets/pipeline_selector.cpp:301
+msgid "Input Level"
+msgstr "Vstupná úroveň"
+
+#: ../../src-core/common/widgets/pipeline_selector.cpp:312
+msgid "Output Directory :"
+msgstr "Výstupný adresár:"
+
+#: ../../src-core/common/widgets/pipeline_selector.cpp:336
+msgid "Advanced Parameters"
+msgstr "Pokročilé parametre"
+
+#: ../../src-core/common/widgets/image_view.cpp:322
+msgid "Crop must be bigger than 0!"
+msgstr "Rez musí byť väčší ako 0!"
+
+# experimental
+#: ../../plugins/experimental_devices_support/main.cpp:25
+msgid "SatDump Downconverter UI"
+msgstr "UI SatDump prevodníka"
+
+#: ../../plugins/bitview_app/main.cpp:42
+msgid "BitView"
+msgstr "BitView"
+
+#: ../../plugins/bitview_app/main.cpp:42
+msgid "Open binary file"
+msgstr "Otvoriť binárny súbor"
+
+#: ../../plugins/bitview_app/bitview.cpp:50
+msgid "Display"
+msgstr "Zobrazenie"
+
+#: ../../plugins/bitview_app/bitview.cpp:55
+msgid "Period (Bits)"
+msgstr "Perióda (Bity)"
+
+#: ../../plugins/bitview_app/bitview.cpp:80
+msgid "Bits"
+msgstr "Bity"
+
+#: ../../plugins/bitview_app/bitview.cpp:90
+msgid "Bytes"
+msgstr "Bajty"
+
+#: ../../plugins/bitview_app/bitview.cpp:100
+msgid "Custom"
+msgstr "Vlastné"
+
+#: ../../plugins/bitview_app/bitview.cpp:108
+msgid "ASCII"
+msgstr "ASCII"
+
+#: ../../plugins/bitview_app/bitview.cpp:117
+msgid "Bit Depth"
+msgstr "Bitová hĺbka"
+
+#: ../../plugins/bitview_app/bitview.cpp:129
+msgid "Reload"
+msgstr "Obnoviť"
+
+#: ../../plugins/wip_settings_editor_app/main.cpp:21
+msgid "Instrument Config Editor"
+msgstr "Upravovač prístrojovej konfigurácie"
+
+#: ../../plugins/tools_app/main.cpp:23
+msgid "LUT Generator"
+msgstr "Generátor vyhľadávacích tabuliek"
+
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:34
+msgid "LUT"
+msgstr "Vyhľadávacia tabuľka"
+
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:46
+#, c-format
+msgid "Size : %d\n"
+msgstr "Veľkosť: %d\n"
+
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:56
+msgid "Mode:"
+msgstr "Režim:"
+
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:58
+msgid "Fill"
+msgstr "Vyplniť"
+
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:61
+msgid "Interpolate"
+msgstr "Interpolovať"
+
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:65
+msgid "Color"
+msgstr "Farba"
+
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:73
+msgid "Pick"
+msgstr "Vybrať"
+
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:79
+msgid "Undo"
+msgstr "Vrátiť späť"
+
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:95
+msgid "Use Range"
+msgstr "Použiť rozsah"
+
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:99
+msgid "Replicate"
+msgstr "Replikovať"
+
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:112
+msgid "Interpolate##interpolatebutton"
+msgstr "Interpolovať##interpolatebutton"
+
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:121
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:210
+msgid "Preview Image"
+msgstr "Náhľad obrazu"
+
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:124
+msgid "Refresh Preview"
+msgstr "Obnoviť náhľad"
+
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:131
+msgid "Select Image"
+msgstr "Vybrať obraz"
+
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:243
+msgid "Invalid image for a LUT!"
+msgstr "Neplatný obraz pre vyhľadávaciu tabuľku!"
+
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:284
+#: ../../plugins/tools_app/lutgen/lut_generator.cpp:293
+msgid ""
+"Please use Linux and install grabc!  (or remind us maybe we should support "
+"Windows too?)"
+msgstr ""
+"Prosím použijte Linux a nainštalujte 'grabc'! (alebo nás pripomeňte podporiť "
+"Windows?)"
+
+# 'udajov' is data, meaning the source should be 'first party data', but it makes it much clearer what is meant - first party is not a common term in Slovak
+#: ../../plugins/firstparty_support/main_loader.cpp:35
+msgid "First-Party Support"
+msgstr "Podpora údajov prvej ruky"
+
+#: ../../plugins/firstparty_support/main_loader.cpp:59
+msgid "EUMETSAT User «Consumer Key»"
+msgstr "EUMETSAT Použivateľ (Kľúč spotrebiteľa)"
+
+#: ../../plugins/firstparty_support/main_loader.cpp:63
+msgid "EUMETSAT User «Consumer Secret»"
+msgstr "EUMETSAT použivateľ (Tajomstvo spotrebiteľa)"
+
+#: ../../plugins/firstparty_support/main_loader.cpp:81
+msgid "Load First-Party"
+msgstr "Načítať údaje prvej ruky"
+
+#: ../../plugins/firstparty_support/loader/eumetsat.cpp:201
+msgid "Refresh##archiveloader_refresh"
+msgstr "ObnoviŤ##archiveloader_refresh"
+
+#: ../../plugins/firstparty_support/loader/eumetsat.cpp:204
+msgid "Date: "
+msgstr "Dátum: "
+
+#: ../../plugins/firstparty_support/loader/eumetsat.cpp:225
+msgid "Load##archiveloadertablebutton_"
+msgstr "Načítať##archiveloadertablebutton_"
+
+#: ../../plugins/firstparty_support/loader/downloader.cpp:21
+#, c-format
+msgid "Downloading : %s"
+msgstr "Sťahuje sa : %s"
+
+#: ../../plugins/firstparty_support/loader/downloader.cpp:24
+#: ../../plugins/firstparty_support/loader/downloader.cpp:31
+msgid "Abort"
+msgstr "Zrušiť"
+
+#: ../../plugins/firstparty_support/loader/downloader.cpp:100
+#: ../../src-interface/recorder/recorder.cpp:605
+msgid "IDLE"
+msgstr "NEČINNÝ"
+
+#: ../../plugins/firstparty_support/loader/archive_loader.cpp:20
+msgid "Archive Loader"
+msgstr "Zavádzač archívov"
+
+#: ../../plugins/firstparty_support/loader/archive_loader.cpp:24
+msgid "NOAA AWS"
+msgstr "NOAA AWS"
+
+#: ../../plugins/firstparty_support/loader/archive_loader.cpp:29
+msgid "EUMETSAT"
+msgstr "EUMETSAT"
+
+#: ../../plugins/firstparty_support/loader/archive_loader.cpp:47
+msgid "Decode To:"
+msgstr "Dekódovať do:"
+
+#: ../../plugins/firstparty_support/loader/archive_loader.cpp:49
+msgid "Temporary"
+msgstr "Dočasné"
+
+#: ../../plugins/firstparty_support/loader/archive_loader.cpp:51
+msgid "Selected Folder:"
+msgstr "Vybratý adresár:"
+
+#: ../../plugins/wip_tracking_app/main.cpp:25
+msgid "WIP Tracking"
+msgstr "WIP Sledovanie"
+
+#: ../../src-interface/main_ui.cpp:179
+#: ../../src-interface/recorder/recorder.h:230
+msgid "Recorder"
+msgstr "Nahrávač"
+
+#: ../../src-interface/main_ui.cpp:241 ../../src-interface/main_ui.cpp:247
+#: ../../src-interface/main_ui.cpp:260
+msgid "About"
+msgstr "O programe"
+
+#: ../../src-interface/main_ui.cpp:256
+msgid "Help"
+msgstr "Pomoc"
+
+#: ../../src-interface/main_ui.cpp:258
+msgid "Documentation"
+msgstr "Dokumentácia"
+
+#: ../../src-interface/notify_logger_sink.cpp:17
+msgid "Critical"
+msgstr "Kritické"
+
+#: ../../src-interface/notify_logger_sink.cpp:17
+msgid "Warning"
+msgstr "Varovanie"
+
+#: ../../src-interface/notify_logger_sink.cpp:17
+msgid "Error"
+msgstr "Chyba"
+
+#: ../../src-interface/offline.cpp:44
+#: ../../src-interface/recorder/recorder.cpp:356
+msgid "Start"
+msgstr "Začať"
+
+#: ../../src-interface/offline.cpp:49
+msgid "Input file is invalid!"
+msgstr "Vstupný súbor je neplatný!"
+
+#: ../../src-interface/offline.cpp:51
+msgid "Output folder is invalid!"
+msgstr "Výstupný adresár je neplatný!"
+
+#: ../../src-interface/recorder/recorder.cpp:254
+msgid "Source"
+msgstr "Zdroj"
+
+#.
+#. if (ImGui::IsItemHovered())
+#. {
+#. ImGui::BeginTooltip();
+#. ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+#. ImGui::TextUnformatted("Refresh source list");
+#. ImGui::PopTextWrapPos();
+#. ImGui::EndTooltip();
+#. }
+#.
+#: ../../src-interface/recorder/recorder.cpp:323
+msgid "Decimation##recorderdecimation"
+msgstr "Zdecimácia##recorderdecimation"
+
+#: ../../src-interface/recorder/recorder.cpp:335
+msgid "MHz (LO offset)##downupconverter"
+msgstr "MHz (LO ofset)##downupconverter"
+
+#: ../../src-interface/recorder/recorder.cpp:361
+msgid "Stop"
+msgstr "Zastaviť"
+
+#: ../../src-interface/recorder/recorder.cpp:368
+msgid "FFT"
+msgstr "FFT"
+
+#: ../../src-interface/recorder/recorder.cpp:370
+msgid "FFT Size"
+msgstr "Veľkosť FFT"
+
+#: ../../src-interface/recorder/recorder.cpp:389
+msgid "FFT Rate"
+msgstr "Rýchlosť FFT"
+
+# Waterfall, translate literally???
+#: ../../src-interface/recorder/recorder.cpp:408
+msgid "Waterfall Rate"
+msgstr "Rýchlosť vodopádu"
+
+#: ../../src-interface/recorder/recorder.cpp:425
+msgid "FFT Max"
+msgstr "FFT Maximum"
+
+#: ../../src-interface/recorder/recorder.cpp:426
+msgid "FFT Min"
+msgstr "FFT Minimum"
+
+#: ../../src-interface/recorder/recorder.cpp:427
+msgid "Avg Num"
+msgstr "Spriemerovanie"
+
+#: ../../src-interface/recorder/recorder.cpp:428
+msgid "Palette"
+msgstr "Paleta"
+
+#: ../../src-interface/recorder/recorder.cpp:430
+msgid "Show Waterfall"
+msgstr "Ukázať vodopád"
+
+#: ../../src-interface/recorder/recorder.cpp:431
+msgid "Frequency Scale"
+msgstr "Mierka frekvencií"
+
+#: ../../src-interface/recorder/recorder.cpp:466
+msgid "Freq###presetscombo"
+msgstr "Frekvencia##presetcombo"
+
+#: ../../src-interface/recorder/recorder.cpp:497
+msgid "Start###startprocessing"
+msgstr "Začať"
+
+#: ../../src-interface/recorder/recorder.cpp:503
+msgid "Stopping...##stoppingprocessing"
+msgstr "Zastavujem...##stoppingprocessing"
+
+#: ../../src-interface/recorder/recorder.cpp:508
+msgid "Stop##stopprocessing"
+msgstr "Zastaviť##stopprocessing"
+
+#: ../../src-interface/recorder/recorder.cpp:518
+msgid "Recording"
+msgstr "Nahráva sa"
+
+#: ../../src-interface/recorder/recorder.cpp:524
+msgid "Format##basebandrecordformat"
+msgstr "Formát##basebandrecordformat"
+
+#: ../../src-interface/recorder/recorder.cpp:536
+#, c-format
+msgid "Size : %.2f MB"
+msgstr "Veľkosť : %.2f MB"
+
+#: ../../src-interface/recorder/recorder.cpp:538
+#, c-format
+msgid "Size : %.2f GB"
+msgstr "Veľkosť : %.2f GB"
+
+#: ../../src-interface/recorder/recorder.cpp:540
+#, c-format
+msgid "Free Space: %.2f GB"
+msgstr "Voľné miesto : %.2f GB"
+
+#: ../../src-interface/recorder/recorder.cpp:572
+msgid "!!!!WARNING - LOW AMOUNT OF FREE DISK SPACE!!!!"
+msgstr "!!!VAROVANIE - MÁLO DOSTUPNÉHO MIESTA NA DISKU!!!"
+
+#: ../../src-interface/recorder/recorder.cpp:586
+#, c-format
+msgid "Time left: %02d:%02d:%02d:%02d"
+msgstr "Zostávajúci čas: %02d:%02d:%02d:%02d"
+
+#: ../../src-interface/recorder/recorder.cpp:594
+#, c-format
+msgid "Size (raw) : %.2f MB"
+msgstr "Veľkosť (surová): %.2f MB"
+
+#: ../../src-interface/recorder/recorder.cpp:596
+#, c-format
+msgid "Size (raw) : %.2f GB"
+msgstr "Veľkosť (surová): %.2f GB"
+
+#: ../../src-interface/recorder/recorder.cpp:600
+#, c-format
+msgid "File : %s"
+msgstr "Súbor : %s"
+
+#: ../../src-interface/recorder/recorder.cpp:607
+msgid "RECORDING"
+msgstr "NAHRÁVA SA"
+
+#: ../../src-interface/recorder/recorder.cpp:613
+msgid "Start###startrecording"
+msgstr "Začať###startrecording"
+
+#: ../../src-interface/recorder/recorder.cpp:618
+msgid "Stop##stoprecording"
+msgstr "Zastaviť###stoprecording"
+
+#: ../../src-interface/recorder/recorder.cpp:623
+msgid "Tracking"
+msgstr "Sledovanie"
+
+#: ../../src-interface/recorder/recorder.cpp:630
+msgid "VFOs"
+msgstr "List VFO"
+
+#: ../../src-interface/recorder/recorder.cpp:636
+msgid "No Active VFOs"
+msgstr "Žiadne aktívne VFO"
+
+#: ../../src-interface/recorder/recorder.cpp:647
+#, c-format
+msgid "Frequency: %s"
+msgstr "Frekvencia: %s"
+
+#: ../../src-interface/recorder/recorder.cpp:650
+#, c-format
+msgid "Pipeline: %s"
+msgstr "Reťazec spracovania: %s"
+
+#: ../../src-interface/recorder/recorder.cpp:651
+#, c-format
+msgid "Directory: %s"
+msgstr "Adresár: %s"
+
+#: ../../src-interface/recorder/recorder.cpp:656
+#, c-format
+msgid "IQ Size: %.2f MB"
+msgstr "IQ veľkosť: %.2f MB"
+
+#: ../../src-interface/recorder/recorder.cpp:658
+#, c-format
+msgid "IQ Size: %.2f GB"
+msgstr "IQ veľkosť: %.2f GB"
+
+#: ../../src-interface/recorder/recorder.cpp:661
+msgid "Stop##"
+msgstr "Zastaviť##"
+
+# No word in Slovak existing for 'Debug' actually kinda surprised me. Unless I am missing something?
+#: ../../src-interface/recorder/recorder.cpp:688
+msgid "Debug"
+msgstr "Ladenie"
+
+#: ../../src-interface/recorder/recorder.cpp:784
+msgid "Live Processing"
+msgstr "Živé spracovanie"
+
+#: ../../src-interface/recorder/tracking/tracking_widget.cpp:100
+msgid "Object Information"
+msgstr "Informácie o objekte"
+
+#: ../../src-interface/recorder/tracking/tracking_widget.cpp:103
+msgid "Rotator Configuration"
+msgstr "Konfigurácia rotoru"
+
+#: ../../src-interface/recorder/tracking/tracking_widget.cpp:111
+msgid "Type##rotatortype"
+msgstr "Typ##rotatortype"
+
+#: ../../src-interface/recorder/tracking/tracking_widget.cpp:140
+msgid "Autotrack Engaged:"
+msgstr "Automatické sledovanie je aktívne:"
+
+#: ../../src-interface/recorder/tracking/tracking_widget.cpp:143
+msgid "Schedule and Config"
+msgstr "Rozpis a konfigurácia"
+
+#: ../../src-interface/recorder/tracking/tracking_widget.cpp:145
+#: ../../src-interface/recorder/tracking/tracking_widget.cpp:206
+msgid "Satellite finder"
+msgstr "Hľadač satelitov"
+
+#: ../../src-interface/recorder/tracking/tracking_widget.cpp:157
+msgid "Tracking Configuration"
+msgstr "Konfigurácia sledovania"
+
+#: ../../src-interface/recorder/tracking/tracking_widget.cpp:162
+msgid "Scheduling"
+msgstr "Plánovanie"
+
+#: ../../src-interface/recorder/tracking/tracking_widget.cpp:169
+msgid "Rotator Config"
+msgstr "Konfigurácia rotoru"
+
+#: ../../src-interface/recorder/tracking/tracking_widget.cpp:174
+msgid "Export/Import"
+msgstr "Exportovať/Importovať"
+
+#: ../../src-interface/status_logger_sink.cpp:115
+msgid "SatDump Log"
+msgstr "SatDump záznam"
+
+#: ../../src-interface/settings.cpp:115
+msgid "Core Settings"
+msgstr "Hlavné nastavenia"
+
+#: ../../src-interface/settings.cpp:116
+msgid "User Interface"
+msgstr "Používateľské rozhranie"
+
+#: ../../src-interface/settings.cpp:123
+msgid "Theme"
+msgstr "Motív"
+
+#: ../../src-interface/settings.cpp:125
+msgid "Set the style and color of SatDump"
+msgstr "Určiť štýl a farbu SatDump"
+
+#: ../../src-interface/settings.cpp:137
+msgid "General SatDump"
+msgstr "Všeobecný SatDump"
+
+#: ../../src-interface/settings.cpp:144
+msgid "Language"
+msgstr "Jazyk"
+
+#: ../../src-interface/settings.cpp:149 ../../src-interface/settings.cpp:152
+msgid "Auto"
+msgstr "Auto"
+
+#: ../../src-interface/settings.cpp:177
+msgid "OpenCL Device"
+msgstr "OpenCL Zariadenie"
+
+#: ../../src-interface/settings.cpp:179
+msgid ""
+"OpenCL Device SatDump will use for accelerated computing where it can help, "
+"eg, for some image processing tasks such as projections."
+msgstr ""
+"OpenCL Zariadanie, ktoré SatDump použije na zrýchlené výpočty tam, kde to "
+"pomôže. Napríklad pre niektoré spracovania obrazov ako premietanie."
+
+#: ../../src-interface/settings.cpp:190
+msgid "Update Keplers Now"
+msgstr "Aktualizovať Keplery teraz"
+
+#: ../../src-interface/settings.cpp:195
+msgid "Update###updateKeplers"
+msgstr "Aktualizovať##updateKeplers"
+
+#: ../../src-interface/settings.cpp:210 ../../src-interface/settings.cpp:243
+msgid "Never"
+msgstr "Nikdy"
+
+#: ../../src-interface/settings.cpp:218 ../../src-interface/settings.cpp:251
+#, c-format
+msgid "Last updated: %s"
+msgstr "Posledná aktualizácia: %s"
+
+#: ../../src-interface/settings.cpp:223
+msgid "Update IERS Bulletin Now"
+msgstr "Aktualizovať IERS bulletiny teraz"
+
+#: ../../src-interface/settings.cpp:228
+msgid "Update###updateIERS"
+msgstr "Aktualizovať##updateIERS"
+
+# Tile?
+#: ../../src-interface/settings.cpp:255
+msgid "Clear Tile Map (OSM) Cache"
+msgstr "Vymazať vyrovnávaciu pamäť mapy dlaždíc (OSM)"
+
+#: ../../src-interface/settings.cpp:257
+msgid "Delete all cached tiles (OSM, and other sources)."
+msgstr ""
+"Odstránenie všetkých dlaždíc vo vyrovnávacej pamäti (OSM a iné zdroje)."
+
+#: ../../src-interface/settings.cpp:259
+msgid "Clear Cache###deleteosmtiles"
+msgstr "Vymazať vyrovnávaciu pamäť##deleteosmtiles"
+
+#: ../../src-interface/settings.cpp:267
+msgid "File Input/Output"
+msgstr "Vstup/Výstup súborov"
+
+#: ../../src-interface/settings.cpp:280
+msgid "Plugin Settings"
+msgstr "Nastavenia doplnkov"
+
+#: ../../src-interface/settings.cpp:293 ../../src-interface/settings.cpp:300
+msgid "Advanced Settings"
+msgstr "Pokročilé nastavenia"
+
+#: ../../src-interface/settings.cpp:294
+msgid "TLE Settings"
+msgstr "Nastavenia TLE"
+
+#: ../../src-interface/settings.cpp:297
+msgid "Reset##tle_settings"
+msgstr "Resetovať##tle_settings"
+
+#: ../../src-interface/settings.cpp:304
+msgid "Reset##advanced_settings"
+msgstr "Resetovať##advanced_settings"
+
+#: ../../src-interface/settings.cpp:307
+msgid "Default Pipeline Configs"
+msgstr "Predvolené konfigurácie reťazcov spracovania"
+
+#: ../../src-interface/settings.cpp:311
+msgid "Reset##pipelines"
+msgstr "Resetovať##pipelines"
+
+#: ../../src-interface/settings.cpp:355
+msgid "Settings saved"
+msgstr "Nastavenia uložené"
+
+#: ../../src-interface/settings.cpp:360
+msgid ""
+"Note : Some settings will require SatDump to be restarted\n"
+"to take effect!"
+msgstr ""
+"Poznámka: Niektoré nastavenia vyžadujú reštartovanie SatDumpu aby sa "
+"prejavili!"
+
+#: ../../src-interface/loader/loader.cpp:29
+msgid "SatDump"
+msgstr "SatDump"
+
+#: ../../src-interface/loader/loader.cpp:30
+msgid "General Purpose Satellite Data Processor"
+msgstr "Univerzálny procesor satelitných údajov"
