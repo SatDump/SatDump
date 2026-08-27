@@ -9,12 +9,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ]
             },
@@ -28,12 +25,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ]
             }
@@ -45,12 +39,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ]
             }
@@ -62,12 +53,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ]
             }
@@ -79,12 +67,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ]
             }
@@ -96,12 +81,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ]
             }
@@ -113,12 +95,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ]
             }
@@ -130,12 +109,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ]
             },
@@ -148,12 +124,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ]
             }
@@ -165,12 +138,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ]
             }
@@ -182,12 +152,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ]
             }
@@ -199,12 +166,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ]
             },
@@ -217,12 +181,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ]
             },
@@ -235,12 +196,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ]
             },
@@ -253,12 +211,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ]
             },
@@ -271,12 +226,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ]
             },
@@ -289,12 +241,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ]
             },
@@ -307,12 +256,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ]
             },
@@ -325,12 +271,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ]
             },
@@ -343,12 +286,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ]
             },

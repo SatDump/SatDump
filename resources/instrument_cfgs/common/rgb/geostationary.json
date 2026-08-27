@@ -22,12 +22,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ],
                 "remove_background": true

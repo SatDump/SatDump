@@ -8,12 +8,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ],
                 "geocorrect": true
@@ -28,12 +25,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ],
                 "geocorrect": true
@@ -48,12 +42,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": true
-                            }
-                        ]
+                        {
+                            "per_channel": true
+                        }
                     ]
                 ],
                 "geocorrect": true

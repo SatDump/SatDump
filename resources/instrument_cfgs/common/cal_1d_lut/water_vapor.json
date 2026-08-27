@@ -67,12 +67,9 @@
                 "filters": [
                     [
                         "equalize",
-                        [
-                            true,
-                            {
-                                "per_channel": false
-                            }
-                        ]
+                        {
+                            "per_channel": false
+                        }
                     ]
                 ],
                 "geocorrect": true
