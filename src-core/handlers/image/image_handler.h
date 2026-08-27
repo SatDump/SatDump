@@ -19,6 +19,17 @@ namespace satdump
 {
     namespace handlers
     {
+        // TODOREWORK
+        struct ActiveFilter
+        {
+            nlohmann::json cfg;
+            bool enabled = true;
+            float progress = 0;
+        };
+
+        inline void to_json(nlohmann::json &j, const ActiveFilter &v) { j = v.cfg; }
+        inline void from_json(const nlohmann::json &j, ActiveFilter &v) { v.cfg = j; }
+
         /**
          * @brief The main standard ImageHandler.
          *
@@ -96,7 +107,7 @@ namespace satdump
 
             // Experimental
             std::map<std::string, ImageFilter> image_filters;
-            std::vector<std::pair<std::string, std::pair<bool, nlohmann::json>>> active_filters;
+            std::vector<std::pair<std::string, ActiveFilter>> active_filters;
             std::shared_ptr<ImageFilterConfigurator> image_filter_configurator;
             int image_filter_configurator_set_in = -1;
 

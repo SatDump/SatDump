@@ -8,6 +8,7 @@
 #include "image/image.h"
 #include "image/image_background.h"
 #include "image/processing.h"
+#include "image/simple_mean_filter.h"
 #include "imgui/imgui.h"
 #include "nlohmann/json.hpp"
 
@@ -122,48 +123,88 @@ namespace satdump
             void set(nlohmann::json p) { cfg = p; }
         };
 
+        class SimpleMeanFilterConfigurator : public ImageFilterConfigurator
+        {
+        private:
+            image::simple_mean_filter_mode_t mode = image::SHARPEN;
+            int radius = 3;
+
+        public:
+            void draw()
+            {
+                ImGui::InputInt(_("Radius"), &radius);
+                if (radius < 0)
+                    radius = 1;
+
+                if (ImGui::RadioButton(_("Smooth"), mode == image::SMOOTH))
+                    mode = image::SMOOTH;
+                if (ImGui::RadioButton(_("Sharpen"), mode == image::SHARPEN))
+                    mode = image::SHARPEN;
+                if (ImGui::RadioButton(_("Edge"), mode == image::EDGE))
+                    mode = image::EDGE;
+            }
+
+            nlohmann::json get()
+            {
+                nlohmann::json p;
+                p["mode"] = mode;
+                p["radius"] = radius;
+                return p;
+            }
+
+            void set(nlohmann::json p)
+            {
+                mode = p["mode"];
+                radius = p["radius"];
+            }
+        };
+
         std::map<std::string, ImageFilter> getImageFilters()
         {
             std::map<std::string, ImageFilter> filters;
 
             filters.insert({"equalize",
                             {_("Equalize"),
-                             [](image::Image &img, nlohmann::json cfg)
+                             [](image::Image &img, nlohmann::json cfg, float *)
                              {
                                  bool per_channel = cfg["per_channel"];
                                  image::equalize(img, per_channel);
                              }, //
-                             []() { return std::make_shared<EqualizeConfigurator>(); }}});
+                             []() { return std::make_shared<EqualizeConfigurator>(); }, true}});
 
-            filters.insert({"normalize", {_("Normalize"), [](image::Image &img, nlohmann::json) { image::normalize(img); }}});
+            filters.insert({"normalize", {_("Normalize"), [](image::Image &img, nlohmann::json, float *) { image::normalize(img); }}});
 
-            filters.insert({"white_balance", {_("White Balance"), [](image::Image &img, nlohmann::json) { image::white_balance(img); }}});
+            filters.insert({"white_balance", {_("White Balance"), [](image::Image &img, nlohmann::json, float *) { image::white_balance(img); }}});
 
-            filters.insert({"invert", {_("Invert"), [](image::Image &img, nlohmann::json) { image::linear_invert(img); }}});
+            filters.insert({"invert", {_("Invert"), [](image::Image &img, nlohmann::json, float *) { image::linear_invert(img); }}});
 
-            filters.insert({"median_blur", {_("Median Blur"), [](image::Image &img, nlohmann::json) { image::median_blur(img); }}});
+            filters.insert({"median_blur", {_("Median Blur"), [](image::Image &img, nlohmann::json, float *) { image::median_blur(img); }}});
 
-            filters.insert({"despeckle", {_("Despeckle"), [](image::Image &img, nlohmann::json) { image::kuwahara_filter(img); }}});
+            filters.insert({"despeckle", {_("Despeckle"), [](image::Image &img, nlohmann::json, float *) { image::kuwahara_filter(img); }}});
 
             filters.insert({"brightness_contrast",
                             {_("Brightness/contrast"),
-                             [](image::Image &img, nlohmann::json cfg)
+                             [](image::Image &img, nlohmann::json cfg, float *)
                              {
                                  float brightness = cfg["brightness"];
                                  float contrast = cfg["contrast"];
                                  image::brightness_contrast(img, brightness, contrast);
                              }, //
-                             []() { return std::make_shared<BrightnessContrastConfigurator>(); }}});
+                             []() { return std::make_shared<BrightnessContrastConfigurator>(); }, true}});
 
-            filters.insert({"remove_background", {_("Remove Background"), [](image::Image &img, nlohmann::json) { image::remove_background(img, nullptr); }}});
+            filters.insert({"remove_background", {_("Remove Background"), [](image::Image &img, nlohmann::json, float *) { image::remove_background(img, nullptr); }}});
 
             filters.insert({"hue_saturation",
-                            {_("Hue Saturation"), [](image::Image &img, nlohmann::json cfg) { image::hue_saturation(img, cfg); }, //
-                             []() { return std::make_shared<HueSaturationConfigurator>(); }}});
+                            {_("Hue/Saturation"), [](image::Image &img, nlohmann::json cfg, float *) { image::hue_saturation(img, cfg); }, //
+                             []() { return std::make_shared<HueSaturationConfigurator>(); }, true}});
 
             filters.insert({"adaptive_despeckle",
-                            {_("Adaptive Despeckle"), [](image::Image &img, nlohmann::json cfg) { image::adaptive_despeckle(img, cfg); }, //
-                             []() { return std::make_shared<AdaptiveDespeckleConfigurator>(); }}});
+                            {_("Adaptive Despeckle"), [](image::Image &img, nlohmann::json cfg, float *p) { image::adaptive_despeckle(img, cfg, p); }, //
+                             []() { return std::make_shared<AdaptiveDespeckleConfigurator>(); }, true}});
+
+            filters.insert({"simple_mean_filter",
+                            {_("Simple Mean Filter"), [](image::Image &img, nlohmann::json cfg, float *) { image::simple_mean_filter(img, cfg["radius"], cfg["mode"]); }, //
+                             []() { return std::make_shared<SimpleMeanFilterConfigurator>(); }, true}});
 
             return filters;
         }

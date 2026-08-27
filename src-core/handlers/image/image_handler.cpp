@@ -1,6 +1,7 @@
 #include "image_handler.h"
 #include "../vector/shapefile_handler.h"
 #include "common/widgets/menuitem_tooltip.h"
+#include "common/widgets/very_small_button.h"
 #include "core/config.h"
 #include "core/plugin.h"
 #include "core/style.h"
@@ -159,24 +160,45 @@ namespace satdump
                         ImGui::PushID(i);
                         ImGui::BeginGroup();
 
+                        if (f.second.progress > 0)
+                        {
+                            auto min = ImGui::GetCursorScreenPos();
+                            auto max = ImGui::GetCursorScreenPos() + ImVec2(ImGui::GetContentRegionAvail().x, ImGui::CalcTextSize(name.c_str()).y);
+                            max.x = min.x + (max.x - min.x) * f.second.progress;
+                            ImGui::GetWindowDrawList()->AddRectFilled(min, max, style::theme.yellow);
+                        }
+                        else if (f.second.progress == -1)
+                        {
+                            auto min = ImGui::GetCursorScreenPos();
+                            auto max = ImGui::GetCursorScreenPos() + ImVec2(ImGui::GetContentRegionAvail().x, ImGui::CalcTextSize(name.c_str()).y);
+                            float offset = fmod(ImGui::GetTime() * 100, (max.x - min.x));
+                            max.x = offset + min.x + (max.x - min.x) * 0.1;
+                            min.x = offset;
+                            ImGui::GetWindowDrawList()->AddRectFilled(min, max, style::theme.yellow);
+                        }
+
                         // Settings
-                        if (ImGui::Button(u8"\uF085"))
+                        if (image_filters[f.first].has_menu)
+                            style::beginDisabled();
+                        if (widgets::VerySmallButton(u8"\uF085"))
                         {
                             image_filter_configurator = image_filters[f.first].configMenuGetter();
                             if (image_filter_configurator)
                             {
-                                image_filter_configurator->set(f.second.second);
+                                image_filter_configurator->set(f.second.cfg);
                                 image_filter_configurator_set_in = i;
                             }
                         }
+                        if (image_filters[f.first].has_menu)
+                            style::endDisabled();
 
-                        if (f.second.second.size() && ImGui::IsItemHovered())
-                            ImGui::SetTooltip("%s", f.second.second.dump(4).c_str());
+                        if (f.second.cfg.size() && ImGui::IsItemHovered())
+                            ImGui::SetTooltip("%s", f.second.cfg.dump(4).c_str());
 
                         ImGui::SameLine();
 
                         // Delete
-                        if (ImGui::Button(u8"\uF1F8") && i < active_filters.size())
+                        if (widgets::VerySmallButton(u8"\uF1F8") && i < active_filters.size())
                         {
                             active_filters.erase(active_filters.begin() + i);
                             quit = true;
@@ -186,27 +208,35 @@ namespace satdump
                         ImGui::SameLine();
 
                         // Up
-                        if (ImGui::Button(u8"\uF062") && i > 0)
+                        if (i == 0)
+                            style::beginDisabled();
+                        if (widgets::VerySmallButton(u8"\uF062") && i > 0)
                         {
                             std::swap(active_filters[i], active_filters[i - 1]);
                             asyncProcess();
                         }
+                        if (i == 0)
+                            style::endDisabled();
 
                         ImGui::SameLine();
 
                         // Down
-                        if (ImGui::Button(u8"\uF063") && i + 1 < active_filters.size())
+                        if (i == active_filters.size() - 1)
+                            style::beginDisabled();
+                        if (widgets::VerySmallButton(u8"\uF063") && i + 1 < active_filters.size())
                         {
                             std::swap(active_filters[i], active_filters[i + 1]);
                             asyncProcess();
                         }
+                        if (i == active_filters.size() - 1)
+                            style::endDisabled();
 
                         ImGui::SameLine();
 
                         // Disable/Enable
-                        if (ImGui::Button(active_filters[i].second.first ? u8"\uF06E" : u8"\uF070"))
+                        if (widgets::VerySmallButton(active_filters[i].second.enabled ? u8"\uF06E" : u8"\uF070"))
                         {
-                            active_filters[i].second.first = !active_filters[i].second.first;
+                            active_filters[i].second.enabled = !active_filters[i].second.enabled;
                             asyncProcess();
                         }
 
@@ -319,7 +349,7 @@ namespace satdump
             }
 
             // Render filters menu
-            if (widgets::BeginMenuTooltip(_(u8"\uF0C3"), _("Filters")))
+            if (widgets::BeginMenuTooltip(_(u8"\uF0C3"), _("Filters"), !is_processing))
             {
                 for (auto &filter : image_filters)
                 {
@@ -422,16 +452,16 @@ namespace satdump
             if (image_filter_configurator)
             {
                 ImGui::OpenPopup(_("Filter Config"));
-                if (ImGui::BeginPopupModal(_("Filter Config")))
+                if (ImGui::BeginPopupModal(_("Filter Config"), NULL, ImGuiWindowFlags_AlwaysAutoResize))
                 {
                     image_filter_configurator->draw();
 
                     if (ImGui::Button(_("Apply")))
                     {
                         if (image_filter_configurator_set_in == -1)
-                            active_filters.push_back({image_filter_configurator->type, {true, image_filter_configurator->get()}});
+                            active_filters.push_back({image_filter_configurator->type, {image_filter_configurator->get()}});
                         else if (image_filter_configurator_set_in < active_filters.size())
-                            active_filters[image_filter_configurator_set_in].second.second = image_filter_configurator->get();
+                            active_filters[image_filter_configurator_set_in].second.cfg = image_filter_configurator->get();
                         image_filter_configurator.reset();
                         asyncProcess();
                     }
@@ -498,19 +528,26 @@ namespace satdump
                 {
                     for (auto &f : active_filters)
                     {
-                        if (f.second.first)
+                        if (f.second.enabled)
                         {
+                            f.second.progress = -1;
+
                             if (image_filters.count(f.first))
                             {
                                 logger->info("Applying filter : " + f.first);
-                                image_filters[f.first].perform(curr_image, f.second.second);
+                                image_filters[f.first].perform(curr_image, f.second.cfg, &f.second.progress);
                             }
                             else
                             {
                                 logger->error("Could not find image filter " + f.first + "!");
                             }
+
+                            f.second.progress = 1;
                         }
                     }
+
+                    for (auto &f : active_filters)
+                        f.second.progress = 0;
 
                     if (geocorrect_image)
                     { // TODOREWORK handle disabling projs, etc

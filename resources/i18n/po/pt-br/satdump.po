@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-23 18:50+0200\n"
+"POT-Creation-Date: 2026-08-27 16:28+0200\n"
 "PO-Revision-Date: 2026-08-26 02:33-0300\n"
 "Last-Translator: Júlia M. <julia@satdump.org>\n"
 "Language-Team: \n"
@@ -18,910 +18,242 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.9\n"
 
-#: ../../src-core/init.cpp:79
-msgid "Starting "
-msgstr "Iniciando "
-
-#: ../../src-core/init.cpp:105
-#, c-format
-msgid ""
-"Error loading SatDump config! SatDump will now exit. Error:\n"
-"%s"
-msgstr ""
-"Error ao carregar a configuração do SatDump! SatDump será encerrado agora. "
-"Erro:\n"
-"%s"
-
-#. List them
-#: ../../src-core/init.cpp:155
-msgid "Registered pipelines :"
-msgstr ""
-
-#: ../../src-core/init.cpp:180
-#, c-format
-msgid "DSP Buffer size was changed to %d"
-msgstr "O tamanho do Buffer de PDS foi alterado para %d"
-
-#: ../../src-core/init.cpp:189
-msgid "Could not open ephemeris data! NOVAS will not work!"
-msgstr ""
-"Não foi possível carregar os dados de efemérides! NOVAS não funcionará!"
-
-#: ../../src-core/init.cpp:203
-msgid "SatDump has NOT been built in Release mode."
-msgstr "SatDump NÃO foi compilado no modo de Lançamento."
-
-#: ../../src-core/init.cpp:204
-msgid "If you are not a developer but intending to use the software,"
-msgstr "Caso não seja um(a) desenvolvedor(a) e queira usar o programa,"
-
-#: ../../src-core/init.cpp:205
-msgid "you probably do not want this. If so, make sure to"
-msgstr "você provavelmente não deseja isso. Se for o caso, certifique-se de"
-
-#: ../../src-core/init.cpp:206
-msgid "specify -DCMAKE_BUILD_TYPE=Release in CMake."
-msgstr "especificar -DCMAKE_BUILD_TYPE=Release no CMake."
-
-#: ../../src-core/init.cpp:215
-msgid "Exiting SatDump! Bye!"
-msgstr "Encerrando o SatDump! Tchau!"
-
-#: ../../src-core/imgui/dialogs/widget.cpp:22
-msgid "ﱮ Open##filepathselectionbutton"
-msgstr "ﱮ Abrir##filepathselectionbutton"
-
-#: ../../src-core/products/image/calibration_converter.cpp:45
-msgid "No valid converter for : "
-msgstr "Nenhum conversor válido para : "
-
-#: ../../src-core/products/image/calibration_units.cpp:14
-msgid "Sun Angle"
-msgstr "Ângulo Solar"
-
-#: ../../src-core/products/image/calibration_units.cpp:15
-msgid "Albedo"
-msgstr "Albedo"
-
-#: ../../src-core/products/image/calibration_units.cpp:16
-#, fuzzy
-msgid "Sun Angle Compensated Albedo"
-msgstr "Albedo Compensado pelo Ângulo Solar"
-
-#: ../../src-core/products/image/calibration_units.cpp:17
-#, fuzzy
-msgid "Emissive Radiance"
-msgstr "Emitância"
-
-#: ../../src-core/products/image/calibration_units.cpp:18
-#, fuzzy
-msgid "Reflective Radiance"
-msgstr "Radiância"
-
-#: ../../src-core/products/image/calibration_units.cpp:19
-#, fuzzy
-msgid "Sun Angle Compensated Reflective Radiance"
-msgstr "Radiância Compensada pelo Ângulo Solar"
-
-#: ../../src-core/products/image/calibration_units.cpp:20
-#: ../../src-core/products/image/calibration_units.cpp:21
-msgid "Brightness Temperature"
-msgstr "Temperatura de Brilho"
-
-#: ../../src-core/products/image/calibration_units.cpp:22
-msgid "Backscatter"
-msgstr "Retroespelhamento"
-
-#: ../../src-core/handlers/image/image_handler.cpp:43
-msgid "Cannot crop while processing!"
-msgstr "Não é possível recortar durante processamento!"
-
-#: ../../src-core/handlers/image/image_handler.cpp:73
-msgid " Crop"
-msgstr " Recortar"
-
-#: ../../src-core/handlers/image/image_handler.cpp:93
-msgid "Image"
-msgstr "Imagem"
-
-#: ../../src-core/handlers/image/image_handler.cpp:100
-msgid "Median Blur"
-msgstr "Borrão Mediano"
-
-#: ../../src-core/handlers/image/image_handler.cpp:101
-msgid "Despeckle"
-msgstr "Remoção de Manchas"
-
-#: ../../src-core/handlers/image/image_handler.cpp:102
-msgid "Rotate 180"
-msgstr "Girar 180"
-
-#: ../../src-core/handlers/image/image_handler.cpp:104
-msgid "Geo Correct"
-msgstr "Georretificação"
-
-#. TODOREWORK Disable if it can't be?
-#: ../../src-core/handlers/image/image_handler.cpp:105
-msgid "Equalize"
-msgstr "Equalização"
-
-#: ../../src-core/handlers/image/image_handler.cpp:106
-msgid "Individual Equalize"
-msgstr "Equalização Individual"
-
-#: ../../src-core/handlers/image/image_handler.cpp:107
-msgid "White Balance"
-msgstr "Balanço de Branco"
-
-#: ../../src-core/handlers/image/image_handler.cpp:108
-msgid "Normalize"
-msgstr "Normalização"
-
-#: ../../src-core/handlers/image/image_handler.cpp:109
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:84
-msgid "Invert"
-msgstr "Inverção"
-
-#: ../../src-core/handlers/image/image_handler.cpp:111
-msgid "Brightness/contrast"
-msgstr "Brilho/Contraste"
-
-#: ../../src-core/handlers/image/image_handler.cpp:114
-msgid "Brightness"
-msgstr "Brilho"
-
-#: ../../src-core/handlers/image/image_handler.cpp:116
-msgid "Contrast"
-msgstr "Contraste"
-
-#: ../../src-core/handlers/image/image_handler.cpp:121
-msgid "Remove Background"
-msgstr "Remover Plano de Fundo"
-
-#: ../../src-core/handlers/image/image_handler.cpp:123
-msgid "Hue/Saturation"
-msgstr "Matiz/Saturação"
-
-#: ../../src-core/handlers/image/image_handler.cpp:128
-msgid "All"
-msgstr "Todos"
-
-#: ../../src-core/handlers/image/image_handler.cpp:128
-msgid "Red"
-msgstr "Vermelho"
-
-#: ../../src-core/handlers/image/image_handler.cpp:128
-msgid "Yellow"
-msgstr "Amarelo"
-
-#: ../../src-core/handlers/image/image_handler.cpp:128
-msgid "Green"
-msgstr "Verde"
-
-#: ../../src-core/handlers/image/image_handler.cpp:128
-msgid "Cyan"
-msgstr "Ciano"
-
-#: ../../src-core/handlers/image/image_handler.cpp:128
-msgid "Blue"
-msgstr "Azul"
-
-#: ../../src-core/handlers/image/image_handler.cpp:128
-msgid "Magenta"
-msgstr "Magenta"
-
-#: ../../src-core/handlers/image/image_handler.cpp:132
-msgid " Hue"
-msgstr " Matiz"
-
-#: ../../src-core/handlers/image/image_handler.cpp:134
-msgid " Saturation"
-msgstr " Saturação"
-
-#: ../../src-core/handlers/image/image_handler.cpp:136
-msgid " Lightness"
-msgstr " Luminosidade"
-
-#: ../../src-core/handlers/image/image_handler.cpp:144
-msgid "Overlap"
-msgstr "Sobreposição"
-
-#: ../../src-core/handlers/image/image_handler.cpp:154
-#, c-format
-msgid "Calibration Unit %s"
-msgstr "Unidade de Calibração %s"
-
-#: ../../src-core/handlers/image/image_handler.cpp:155
-#, c-format
-msgid "Calibration Min %f"
-msgstr "Valor Mínimo de Calibração %f"
-
-#: ../../src-core/handlers/image/image_handler.cpp:156
-#, c-format
-msgid "Calibration Max %f"
-msgstr "Valor Máximo de Calibração %f"
-
-#: ../../src-core/handlers/image/image_handler.cpp:162
-msgid "Please wait for saving to end first!"
-msgstr "Por favor, aguarde a conclusão do salvamento primeiro!"
-
-#: ../../src-core/handlers/image/image_handler.cpp:177
-#: ../../src-core/handlers/image/image_handler.cpp:187
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:132
-msgid "Save Image"
-msgstr "Salvar Imagem"
-
-#: ../../src-core/handlers/image/image_handler.cpp:189
-msgid "Save cancelled"
-msgstr "Salvamento cancelado"
-
-#: ../../src-core/handlers/image/image_handler.cpp:191
-#, c-format
-msgid "Saved current image at %s"
-msgstr "Salvar imagem atual em %s"
-
-#: ../../src-core/handlers/image/image_handler.cpp:199
-msgid "Please wait for processing to end first!"
-msgstr "Por favor, aguarde o processamento terminar primeiro!"
-
-#. ///////////
-#. Image Controls
-#. ///////////
-#. Refresh button
-#: ../../src-core/handlers/image/image_handler.cpp:220
-msgid "Refresh (Image Only)"
-msgstr "Atualizar (Apenas a Imagem)"
-
-#. Basic controls
-#: ../../src-core/handlers/image/image_handler.cpp:224
-msgid "Zoom In"
-msgstr "Aumentar Zoom"
-
-#: ../../src-core/handlers/image/image_handler.cpp:225
-msgid "Zoom Out"
-msgstr "Diminuir Zoom"
-
-#: ../../src-core/handlers/image/image_handler.cpp:226
-msgid "Fit"
-msgstr "Encaixar"
-
-#: ../../src-core/handlers/image/image_handler.cpp:227
-msgid "Crop"
-msgstr "Recortar"
-
-#. Show a menu that allows putting this image on an existing or new projection
-#: ../../src-core/handlers/image/image_handler.cpp:235
-msgid "Add to projection"
-msgstr "Adicionar à projeção"
-
-#: ../../src-core/handlers/image/image_handler.cpp:251
-msgid "New Projection"
-msgstr "Nova Projeção"
-
-#: ../../src-core/handlers/image/image_handler.cpp:279
-#, c-format
-msgid "Raw : %d"
-msgstr "Bruto : %d"
-
-#: ../../src-core/handlers/image/image_handler.cpp:287
-#, c-format
-msgid "Unit : %f %s"
-msgstr "Unidade : %f %s"
-
-#: ../../src-core/handlers/image/image_handler.cpp:294
-msgid "Lat : Invalid!"
-msgstr "Lat : Inválida!"
-
-#: ../../src-core/handlers/image/image_handler.cpp:295
-msgid "Lon : Invalid!"
-msgstr "Lon : Inválida!"
-
-#: ../../src-core/handlers/image/image_handler.cpp:299
-#, c-format
-msgid "Lat : %f"
-msgstr "Lat : %f"
-
-#: ../../src-core/handlers/image/image_handler.cpp:300
-#, c-format
-msgid "Lon : %f"
-msgstr "Lon : %f"
-
-#: ../../src-core/handlers/image/image_handler.cpp:420
-msgid "Failed Geo-Correcting image!"
-msgstr "Falha ao Georretificar imagem!"
-
-#: ../../src-core/handlers/image/image_handler.cpp:428
-#, c-format
-msgid "Error processing image! %s"
-msgstr "Erro processando imagem! %s"
-
-#: ../../src-core/handlers/projection/proj_ui.h:124
-msgid "Output image : "
-msgstr "Imagem de saída : "
-
-#: ../../src-core/handlers/projection/proj_ui.h:150
-msgid "Top Left Coordinates :"
-msgstr "Coordenadas do Canto Superior Esquerdo :"
-
-#: ../../src-core/handlers/projection/proj_ui.h:151
-msgid "Lat##tl"
-msgstr "Lat##tl"
-
-#: ../../src-core/handlers/projection/proj_ui.h:152
-msgid "Lon##tl"
-msgstr "Lon##tl"
-
-#: ../../src-core/handlers/projection/proj_ui.h:154
-msgid "Bottom Right Coordinates :"
-msgstr "Coordenadas do Canto Inferior Direito :"
-
-#: ../../src-core/handlers/projection/proj_ui.h:155
-msgid "Lat##br"
-msgstr "Lat##br"
-
-#: ../../src-core/handlers/projection/proj_ui.h:156
-msgid "Lon##br"
-msgstr "Lon##br"
-
-#: ../../src-core/handlers/projection/proj_ui.h:161
-msgid "UTM Zone###projutmzone"
-msgstr "Zona UTM###projutmzone"
-
-#: ../../src-core/handlers/projection/proj_ui.h:166
-msgid "South###projutmsouth"
-msgstr "Sul###projutmsouth"
-
-#: ../../src-core/handlers/projection/proj_ui.h:167
-msgid "Northing (m)##utm"
-msgstr "Deslocar para Norte (m)##utm"
-
-#: ../../src-core/handlers/projection/proj_ui.h:169
-msgid "Scale (m/px)##utm"
-msgstr "Escala (m/px)##utm"
-
-#: ../../src-core/handlers/projection/proj_ui.h:173
-#: ../../src-core/handlers/projection/proj_ui.h:181
-msgid "Center Coordinates :"
-msgstr "Coordenadas do Centro :"
-
-#: ../../src-core/handlers/projection/proj_ui.h:174
-msgid "Lat##stereo"
-msgstr "Lat##stereo"
-
-#: ../../src-core/handlers/projection/proj_ui.h:175
-msgid "Lon##stereo"
-msgstr "Lon##stereo"
-
-#: ../../src-core/handlers/projection/proj_ui.h:177
-msgid "Scale (m/px)##stereo"
-msgstr "Escala (m/px)##stereo"
-
-#: ../../src-core/handlers/projection/proj_ui.h:182
-msgid "Lat##tpers"
-msgstr "Lat##tpers"
-
-#: ../../src-core/handlers/projection/proj_ui.h:183
-msgid "Lon##tpers"
-msgstr "Lon##tpers"
-
-#: ../../src-core/handlers/projection/proj_ui.h:185
-msgid "Altitude (m)##tpers"
-msgstr "Altitude (m)##tpers"
-
-#: ../../src-core/handlers/projection/proj_ui.h:186
-msgid "Angle##tpers"
-msgstr "Ângulo##tpers"
-
-#: ../../src-core/handlers/projection/proj_ui.h:187
-msgid "Azimuth##tpers"
-msgstr "Azimute##tpers"
-
-#: ../../src-core/handlers/projection/proj_ui.h:189
-msgid "Scale##tpers"
-msgstr "Escala##tpers"
-
-#: ../../src-core/handlers/projection/proj_ui.h:194
-msgid "Auto Mode###pojautomode"
-msgstr "Modo Automático###pojautomode"
-
-#: ../../src-core/handlers/projection/proj_ui.h:195
-msgid "Auto Scale Mode##projautoscalemode"
-msgstr "Modo de Escala Automática##projautoscalemode"
-
-#: ../../src-core/handlers/projection/proj_ui.h:198
-msgid "Scale X (m/px)##projscalexauto"
-msgstr "Escala X (m/px)##projscalexauto"
-
-#: ../../src-core/handlers/projection/proj_ui.h:199
-msgid "Scale Y (m/px)##projscalexauto"
-msgstr "Escala Y (m/px)##projscalexauto"
-
-#: ../../src-core/handlers/projection/projection_handler.cpp:44
-#: ../../src-core/explorer/explorer.cpp:281
-msgid "Projection"
-msgstr "Projeção"
-
-#. needs_to_update |= TODO; // TODOREWORK move in top drawMenu?
-#: ../../src-core/handlers/projection/projection_handler.cpp:52
-msgid "Project"
-msgstr "Projetar"
-
-#: ../../src-core/handlers/projection/projection_handler.cpp:468
-#: ../../src-core/handlers/product/image_product_handler.cpp:479
-msgid "Image To Handler"
-msgstr "Imagem para Gerenciador"
-
-#: ../../src-core/handlers/vector/shapefile_handler.cpp:43
-#: ../../src-interface/main_ui.cpp:171 ../../src-interface/main_ui.cpp:227
-#: ../../src-interface/main_ui.cpp:233
-msgid "Settings"
-msgstr "Configurações"
-
-#: ../../src-core/handlers/vector/shapefile_handler.cpp:45
-msgid "Draw Color##shapefilecolor"
-msgstr "Desenhar Cor##shapefilecolor"
-
-#. | ImGuiColorEditFlags_NoLabel
-#: ../../src-core/handlers/vector/shapefile_handler.cpp:46
-msgid "Anti-Alias"
-msgstr "Antisserrilhamento"
-
-#: ../../src-core/handlers/vector/shapefile_handler.cpp:47
-msgid "Font Size"
-msgstr "Tamanho da Fonte"
-
-#: ../../src-core/handlers/vector/shapefile_handler.cpp:49
-msgid "Scale Rank (Cities Only)"
-msgstr "Escala (Apenas Cidades)"
-
-#: ../../src-core/handlers/vector/shapefile_handler.cpp:70
-msgid "Polygon "
-msgstr "Polígono "
-
-#: ../../src-core/handlers/vector/shapefile_handler.cpp:85
-msgid "Point "
-msgstr "Ponto "
-
-#. TODOREWORK move out?!
-#: ../../src-core/handlers/vector/addmenu.h:22
-msgid "Add Overlay"
-msgstr "Adicionar Sobreposição"
-
-#: ../../src-core/handlers/vector/addmenu.h:24
-msgid "Shores"
-msgstr "Litorais"
-
-#: ../../src-core/handlers/vector/addmenu.h:30
-msgid "Borders"
-msgstr "Fronteiras"
-
-#: ../../src-core/handlers/vector/addmenu.h:36
-msgid "Cities"
-msgstr "Cidades"
-
-#: ../../src-core/handlers/vector/addmenu.h:42
-#: ../../src-core/handlers/vector/addmenu.h:45
-msgid "Lat/Lon Grid"
-msgstr "Grade de Lat/Lon"
-
-#: ../../src-core/handlers/vector/addmenu.h:74
-#: ../../src-core/handlers/vector/addmenu.h:77
-#: ../../src-core/handlers/vector/addmenu.h:86
-msgid "QTH"
-msgstr "QTH"
-
-#: ../../src-core/handlers/handler.cpp:60
-msgid "Delete"
-msgstr "Deletar"
-
-#: ../../src-core/handlers/handler.cpp:99
-msgid "Can't drag parent onto child handler!"
-msgstr "Não é possível arrastar gerenciador base para seu derivado!"
-
-#: ../../src-core/handlers/product/punctiform_product_handler.cpp:34
-#: ../../src-core/handlers/product/image_product_handler.cpp:100
-msgid "Channels"
-msgstr "Canais"
-
-#: ../../src-core/handlers/product/punctiform_product_handler.cpp:39
-msgid "Graph"
-msgstr "Gráfico"
-
-#: ../../src-core/handlers/product/punctiform_product_handler.cpp:45
-msgid "Dot Map"
-msgstr "Mapa de Pontos"
-
-#: ../../src-core/handlers/product/punctiform_product_handler.cpp:51
-msgid "Fill Map"
-msgstr "Mapa Preenchido"
-
-#: ../../src-core/handlers/product/punctiform_product_handler.cpp:57
-msgid "Channel##selectechannel"
-msgstr "Canal##selectechannel"
-
-#: ../../src-core/handlers/product/punctiform_product_handler.cpp:72
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:89
-msgid "Range Min"
-msgstr "Intervalo Mínimo"
-
-#: ../../src-core/handlers/product/punctiform_product_handler.cpp:73
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:90
-msgid "Range Max"
-msgstr "Intervalo Máximo"
-
-#: ../../src-core/handlers/product/punctiform_product_handler.cpp:76
-msgid "Update"
-msgstr "Atualizar"
-
-#: ../../src-core/handlers/product/punctiform_product_handler.cpp:186
-#: ../../src-core/handlers/product/image_product_handler.cpp:35
-msgid "Channel "
-msgstr "Canal "
-
-#: ../../src-core/handlers/product/product_handler.cpp:113
-msgid "Presets"
-msgstr "Predefinições"
-
-#: ../../src-core/handlers/product/product_handler.cpp:117
-msgid "Select Preset..."
-msgstr "Selecionar Predefinição..."
-
-#: ../../src-core/handlers/product/product_handler.cpp:155
-msgid "Default"
-msgstr "Padrão"
-
-#: ../../src-core/handlers/product/product_handler.cpp:174
-msgid "Preset Info"
-msgstr "Informação Sobre Predefinição"
-
-#: ../../src-core/handlers/product/image_product_handler.cpp:51
-msgid "Product Data"
-msgstr "Dados do Produto"
-
-#: ../../src-core/handlers/product/image_product_handler.cpp:54
-#, c-format
-msgid "Count : %d"
-msgstr "Contagem : %d"
-
-#: ../../src-core/handlers/product/image_product_handler.cpp:64
-#, c-format
-msgid "%s : Invalid Value"
-msgstr "%s : Valor Inválido"
-
-#: ../../src-core/handlers/product/image_product_handler.cpp:142
-msgid "Pol : H"
-msgstr "Pol : H"
-
-#: ../../src-core/handlers/product/image_product_handler.cpp:144
-msgid "Pol : V"
-msgstr "Pol : V"
-
-#: ../../src-core/handlers/product/image_product_handler.cpp:146
-msgid "Pol : R"
-msgstr "Pol : D"
-
-#: ../../src-core/handlers/product/image_product_handler.cpp:148
-msgid "Pol : L"
-msgstr "Pol : E"
-
-#: ../../src-core/handlers/product/image_product_handler.cpp:154
-#, c-format
-msgid "Bandwidth : %s / %s"
-msgstr "Largura de Banda : %s / %s"
-
-#: ../../src-core/handlers/product/image_product_handler.cpp:166
-msgid "Calibrate"
-msgstr "Calibrar"
-
-#. List of all units
-#: ../../src-core/handlers/product/image_product_handler.cpp:174
-msgid "Unit##calibunit"
-msgstr "Unidade##calibunit"
-
-#: ../../src-core/handlers/product/image_product_handler.cpp:187
-msgid "Update###updatecalib"
-msgstr "Atualizar###updatecalib"
-
-#: ../../src-core/handlers/product/image_product_handler.cpp:189
-msgid "Add To Equ###calibaddtoexpression"
-msgstr "Adicionar à Equação###calibaddtoexpression"
-
-#: ../../src-core/handlers/product/image_product_handler.cpp:195
-msgid "Calibration Error. Please Report!"
-msgstr "Erro de Calibração. Por favor, Relatar Erro!"
-
-#: ../../src-core/handlers/product/image_product_handler.cpp:206
-msgid "Expression"
-msgstr "Expressão"
-
-#: ../../src-core/handlers/product/image_product_handler.cpp:214
-msgid "Apply"
-msgstr "Aplicar"
-
-#: ../../src-core/handlers/product/image_product_handler.cpp:248
-msgid "Advanced"
-msgstr "Avançado"
-
-#: ../../src-core/handlers/product/image_product_handler.cpp:469
-#, c-format
-msgid "Could not process image! %s"
-msgstr "Não foi possível processar imagem! %s"
-
-#: ../../src-core/handlers/product/image_product_handler.cpp:488
-#: ../../src-core/explorer/explorer.cpp:309
-msgid "Handler"
-msgstr "Gerenciador"
-
-#: ../../src-core/handlers/product/image_product_handler.cpp:490
-msgid "Advanced Mode"
-msgstr "Modo Avançado"
-
-#: ../../src-core/explorer/explorer.cpp:165
-msgid "Root"
-msgstr "Raiz"
-
-#: ../../src-core/explorer/explorer.cpp:178 ../../src-interface/main_ui.cpp:168
-#: ../../src-interface/recorder/recorder.cpp:450
-msgid "Processing"
-msgstr "Processando"
-
-#: ../../src-core/explorer/explorer.cpp:205
-msgid "Others"
-msgstr "Outros"
-
-#: ../../src-core/explorer/explorer.cpp:219
-msgid "Handlers will appear here..."
-msgstr "Gerenciadores aparecerão aqui..."
-
-#: ../../src-core/explorer/explorer.cpp:243
-msgid "No file selected"
-msgstr "Nenhum arquivo selecionado"
-
-#. Main "Open" menu, for files, other handlers, etc
-#: ../../src-core/explorer/explorer.cpp:250
-#: ../../plugins/firstparty_support/main_loader.cpp:79
-#: ../../src-interface/main_ui.cpp:166
-msgid "File"
-msgstr "Arquivo"
-
-#: ../../src-core/explorer/explorer.cpp:252
-msgid "Open File"
-msgstr "Abrir Arquivo"
-
-#: ../../src-core/explorer/explorer.cpp:254
-msgid "Quick Open"
-msgstr "Abertura Rápida"
-
-#: ../../src-core/explorer/explorer.cpp:259
-msgid "Go##loadfromhttpgo"
-msgstr "Carregar##loadfromhttpgo"
-
-#: ../../src-core/explorer/explorer.cpp:265
-msgid "Paste & Load"
-msgstr "Colar e Carregar"
-
-#: ../../src-core/explorer/explorer.cpp:279
-#: ../../plugins/experimental_devices_support/main.cpp:21
-#: ../../plugins/bitview_app/main.cpp:38
-#: ../../plugins/wip_settings_editor_app/main.cpp:17
-#: ../../plugins/tools_app/main.cpp:19
-#: ../../plugins/wip_tracking_app/main.cpp:21
-#: ../../src-interface/main_ui.cpp:177
+#: plugins/bitview_app/main.cpp:38 plugins/wip_tracking_app/main.cpp:21
+#: plugins/wip_settings_editor_app/main.cpp:17
+#: plugins/experimental_devices_support/main.cpp:21
+#: plugins/tools_app/main.cpp:24 src-interface/main_ui.cpp:177
+#: src-core/explorer/explorer.cpp:279
 msgid "Add"
 msgstr "Adicionar"
 
-#: ../../src-core/explorer/explorer.cpp:284
-#: ../../plugins/bitview_app/main.cpp:40
-#: ../../plugins/wip_settings_editor_app/main.cpp:19
-#: ../../plugins/tools_app/main.cpp:21
-#: ../../plugins/wip_tracking_app/main.cpp:23
+#: plugins/bitview_app/main.cpp:40 plugins/wip_tracking_app/main.cpp:23
+#: plugins/wip_settings_editor_app/main.cpp:19 plugins/tools_app/main.cpp:26
+#: src-core/explorer/explorer.cpp:284
 msgid "Tools"
 msgstr "Ferramentas"
 
-#. TODOREWORK?
-#: ../../src-core/explorer/explorer.cpp:286
-#, fuzzy
-msgid "DSP Flowgraph"
-msgstr "Fluxograma de PDS"
+#: plugins/bitview_app/main.cpp:42
+msgid "BitView"
+msgstr "Visualizador de Bits"
 
-#: ../../src-core/explorer/explorer.cpp:291
-#: ../../plugins/experimental_devices_support/main.cpp:23
+#: plugins/bitview_app/main.cpp:42
+msgid "Open binary file"
+msgstr "Abrir arquivo binário"
+
+#: plugins/bitview_app/bitview.cpp:52
+msgid "Display"
+msgstr "Exibição"
+
+#: plugins/bitview_app/bitview.cpp:57
+msgid "Period (Bits)"
+msgstr "Período (Bits)"
+
+#: plugins/bitview_app/bitview.cpp:82
+msgid "Bits"
+msgstr "Bits"
+
+#: plugins/bitview_app/bitview.cpp:92
+msgid "Bytes"
+msgstr "Bytes"
+
+#: plugins/bitview_app/bitview.cpp:102
+msgid "Custom"
+msgstr "Personalizado"
+
+#: plugins/bitview_app/bitview.cpp:110
+msgid "ASCII"
+msgstr "ASCII"
+
+#: plugins/bitview_app/bitview.cpp:119
+msgid "Bit Depth"
+msgstr "Profundidade de Bits"
+
+#: plugins/bitview_app/bitview.cpp:131
+msgid "Reload"
+msgstr "Recarregar"
+
+#: plugins/wip_tracking_app/main.cpp:25
+msgid "WIP Tracking"
+msgstr "Rastreamento WIP"
+
+#: plugins/wip_settings_editor_app/main.cpp:21
+msgid "Instrument Config Editor"
+msgstr "Editor de Configuração de Instrumentos"
+
+#: plugins/firstparty_support/main_loader.cpp:35
+msgid "First-Party Support"
+msgstr "Suporte de Dados Primários"
+
+#: plugins/firstparty_support/main_loader.cpp:59
+msgid "EUMETSAT User «Consumer Key»"
+msgstr ""
+
+#: plugins/firstparty_support/main_loader.cpp:63
+msgid "EUMETSAT User «Consumer Secret»"
+msgstr ""
+
+#. Main "Open" menu, for files, other handlers, etc
+#: plugins/firstparty_support/main_loader.cpp:79 src-interface/main_ui.cpp:166
+#: src-core/explorer/explorer.cpp:250
+msgid "File"
+msgstr "Arquivo"
+
+#: plugins/firstparty_support/main_loader.cpp:81
+msgid "Load First-Party"
+msgstr "Carregar Dados Primários"
+
+#: plugins/firstparty_support/loader/archive_loader.cpp:20
+msgid "Archive Loader"
+msgstr "Carregador de Arquivo"
+
+#: plugins/firstparty_support/loader/archive_loader.cpp:24
+#, fuzzy
+msgid "NOAA AWS"
+msgstr "NOAA AWS"
+
+#: plugins/firstparty_support/loader/archive_loader.cpp:29
+#, fuzzy
+msgid "EUMETSAT"
+msgstr "EUMETSAT"
+
+#: plugins/firstparty_support/loader/archive_loader.cpp:47
+msgid "Decode To:"
+msgstr "Decodificar Para:"
+
+#: plugins/firstparty_support/loader/archive_loader.cpp:49
+msgid "Temporary"
+msgstr "Temporário"
+
+#: plugins/firstparty_support/loader/archive_loader.cpp:51
+msgid "Selected Folder:"
+msgstr "Pasta Selecionada:"
+
+#: plugins/firstparty_support/loader/eumetsat.cpp:201
+msgid "Refresh##archiveloader_refresh"
+msgstr "Atualizar##archiveloader_refresh"
+
+#: plugins/firstparty_support/loader/eumetsat.cpp:204
+msgid "Date: "
+msgstr "Data: "
+
+#: plugins/firstparty_support/loader/eumetsat.cpp:225
+msgid "Load##archiveloadertablebutton_"
+msgstr "Carregar##archiveloadertablebutton_"
+
+#: plugins/firstparty_support/loader/downloader.cpp:21
+#, c-format
+msgid "Downloading : %s"
+msgstr "Baixando : %s"
+
+#: plugins/firstparty_support/loader/downloader.cpp:24
+#: plugins/firstparty_support/loader/downloader.cpp:31
+msgid "Abort"
+msgstr "Abortar"
+
+#: plugins/firstparty_support/loader/downloader.cpp:100
+#: src-interface/recorder/recorder.cpp:605
+msgid "IDLE"
+msgstr "OCIOSO"
+
+#: plugins/experimental_devices_support/main.cpp:23
+#: src-core/explorer/explorer.cpp:291
 msgid "Experimental"
 msgstr "Experimental"
 
-#: ../../src-core/explorer/explorer.cpp:313
-msgid "JSON To Clipboard"
-msgstr "JSON para Área de Trabalho"
-
-#: ../../src-core/explorer/explorer.cpp:316
-msgid "Copied to clipboard!"
-msgstr "Copiado para Área de Trabalho!"
-
-#: ../../src-core/explorer/explorer.cpp:318
-msgid "JSON From Clipboard"
-msgstr "JSON da Área de Trabalho"
-
-#: ../../src-core/explorer/explorer.cpp:321
-msgid "Copied from clipboard!"
-msgstr "Copiado da Área de Trabalho!"
-
-#.
-#.
-#: ../../src-core/explorer/explorer.cpp:362
-msgid "Welcome to SatDump!"
-msgstr "Bem-Vindo ao SatDump!"
-
-#: ../../src-core/explorer/explorer.cpp:412
-#: ../../src-core/explorer/explorer.cpp:414 ../../src-interface/main_ui.cpp:218
-msgid "Start Processing"
-msgstr "Iniciar Processamento"
-
-#: ../../src-core/explorer/explorer.cpp:428
-#: ../../src-core/explorer/explorer.cpp:430
-msgid "Add Recorder"
-msgstr "Adicionar Gravador"
-
-#: ../../src-core/common/widgets/pipeline_selector.h:23
-#: ../../src-core/common/widgets/pipeline_selector.cpp:288
-msgid "Input File"
-msgstr "Arquivo de Entrada"
-
-#: ../../src-core/common/widgets/pipeline_selector.h:23
-msgid "Select Input File"
-msgstr "Selecionar Arquivo de Entrada"
-
-#. TODOREWORKUI?
-#: ../../src-core/common/widgets/pipeline_selector.h:24
-#: ../../src-core/common/widgets/pipeline_selector.cpp:295
-#: ../../src-core/common/widgets/pipeline_selector.cpp:322
-msgid "Output Directory"
-msgstr "Pasta de Saída"
-
-#: ../../src-core/common/widgets/pipeline_selector.h:24
-msgid "Select Output Directory"
-msgstr "Selecionar Pasta de Saída"
-
-#: ../../src-core/common/widgets/pipeline_selector.cpp:122
-msgid "   Search pipelines"
-msgstr ""
-
-#: ../../src-core/common/widgets/pipeline_selector.cpp:160
-msgid "Favourites"
-msgstr "Favoritos"
-
-#: ../../src-core/common/widgets/pipeline_selector.cpp:301
-msgid "Input Level"
-msgstr "Nível do Arquivo de Entrada"
-
-#: ../../src-core/common/widgets/pipeline_selector.cpp:312
-msgid "Output Directory :"
-msgstr "Pasta de Saída :"
-
-#: ../../src-core/common/widgets/pipeline_selector.cpp:336
-msgid "Advanced Parameters"
-msgstr "Parâmetros Avançados"
-
-#: ../../src-core/common/widgets/image_view.cpp:322
-msgid "Crop must be bigger than 0!"
-msgstr "O recorte precisa ser maior que 0!"
-
-#: ../../plugins/experimental_devices_support/main.cpp:25
+#: plugins/experimental_devices_support/main.cpp:25
 #, fuzzy
 msgid "SatDump Downconverter UI"
 msgstr "UI do Downconverter SatDump"
 
-#: ../../plugins/bitview_app/main.cpp:42
-msgid "BitView"
-msgstr "Visualizador de Bits"
-
-#: ../../plugins/bitview_app/main.cpp:42
-msgid "Open binary file"
-msgstr "Abrir arquivo binário"
-
-#: ../../plugins/bitview_app/bitview.cpp:50
-msgid "Display"
-msgstr "Exibição"
-
-#: ../../plugins/bitview_app/bitview.cpp:55
-msgid "Period (Bits)"
-msgstr "Período (Bits)"
-
-#: ../../plugins/bitview_app/bitview.cpp:80
-msgid "Bits"
-msgstr "Bits"
-
-#: ../../plugins/bitview_app/bitview.cpp:90
-msgid "Bytes"
-msgstr "Bytes"
-
-#: ../../plugins/bitview_app/bitview.cpp:100
-msgid "Custom"
-msgstr "Personalizado"
-
-#: ../../plugins/bitview_app/bitview.cpp:108
-msgid "ASCII"
-msgstr "ASCII"
-
-#: ../../plugins/bitview_app/bitview.cpp:117
-msgid "Bit Depth"
-msgstr "Profundidade de Bits"
-
-#: ../../plugins/bitview_app/bitview.cpp:129
-msgid "Reload"
-msgstr "Recarregar"
-
-#: ../../plugins/wip_settings_editor_app/main.cpp:21
-msgid "Instrument Config Editor"
-msgstr "Editor de Configuração de Instrumentos"
-
-#: ../../plugins/tools_app/main.cpp:23
+#: plugins/tools_app/main.cpp:28
 msgid "LUT Generator"
 msgstr "Gerador de LUT"
 
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:34
+#: plugins/tools_app/lutgen/lut_generator.cpp:34
 msgid "LUT"
 msgstr "LUT"
 
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:46
+#: plugins/tools_app/lutgen/lut_generator.cpp:46
 #, c-format
 msgid "Size : %d\n"
 msgstr "Tamanho : %d\n"
 
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:56
+#: plugins/tools_app/lutgen/lut_generator.cpp:56
 msgid "Mode:"
 msgstr "Modo:"
 
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:58
+#: plugins/tools_app/lutgen/lut_generator.cpp:58
 msgid "Fill"
 msgstr "Preencher"
 
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:61
+#: plugins/tools_app/lutgen/lut_generator.cpp:61
 msgid "Interpolate"
 msgstr "Interpolar"
 
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:65
+#: plugins/tools_app/lutgen/lut_generator.cpp:65
 msgid "Color"
 msgstr "Cor"
 
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:73
+#: plugins/tools_app/lutgen/lut_generator.cpp:73
 msgid "Pick"
 msgstr "Pegar"
 
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:79
+#: plugins/tools_app/lutgen/lut_generator.cpp:79
 msgid "Undo"
 msgstr "Desfazer"
 
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:95
+#: plugins/tools_app/lutgen/lut_generator.cpp:84
+#: src-core/handlers/image/image_filter.cpp:179
+msgid "Invert"
+msgstr "Inverção"
+
+#: plugins/tools_app/lutgen/lut_generator.cpp:89
+#: src-core/handlers/product/punctiform_product_handler.cpp:72
+msgid "Range Min"
+msgstr "Intervalo Mínimo"
+
+#: plugins/tools_app/lutgen/lut_generator.cpp:90
+#: src-core/handlers/product/punctiform_product_handler.cpp:73
+msgid "Range Max"
+msgstr "Intervalo Máximo"
+
+#: plugins/tools_app/lutgen/lut_generator.cpp:95
 msgid "Use Range"
 msgstr "Usar Intervalo"
 
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:99
+#: plugins/tools_app/lutgen/lut_generator.cpp:99
 msgid "Replicate"
 msgstr "Replicar"
 
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:112
+#: plugins/tools_app/lutgen/lut_generator.cpp:112
 msgid "Interpolate##interpolatebutton"
 msgstr "Interpolar##interpolatebutton"
 
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:121
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:210
+#: plugins/tools_app/lutgen/lut_generator.cpp:121
+#: plugins/tools_app/lutgen/lut_generator.cpp:210
 msgid "Preview Image"
 msgstr "Previsualizar"
 
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:124
+#: plugins/tools_app/lutgen/lut_generator.cpp:124
 msgid "Refresh Preview"
 msgstr "Atualizar Pré-visualização"
 
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:131
+#: plugins/tools_app/lutgen/lut_generator.cpp:131
 msgid "Select Image"
 msgstr "Selecionar Imagem"
 
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:243
+#: plugins/tools_app/lutgen/lut_generator.cpp:132
+#: src-core/handlers/image/image_handler.cpp:246
+#: src-core/handlers/image/image_handler.cpp:256
+msgid "Save Image"
+msgstr "Salvar Imagem"
+
+#: plugins/tools_app/lutgen/lut_generator.cpp:243
 msgid "Invalid image for a LUT!"
 msgstr "Imagem inválida para um LUT!"
 
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:284
-#: ../../plugins/tools_app/lutgen/lut_generator.cpp:293
+#: plugins/tools_app/lutgen/lut_generator.cpp:284
+#: plugins/tools_app/lutgen/lut_generator.cpp:293
 msgid ""
 "Please use Linux and install grabc!  (or remind us maybe we should support "
 "Windows too?)"
@@ -929,123 +261,240 @@ msgstr ""
 "Por favor, usar Linux e instalar grabc!  (ou lembre os desenvolvedores à "
 "adicionar suporte para Windows)"
 
-#: ../../plugins/firstparty_support/main_loader.cpp:35
-msgid "First-Party Support"
-msgstr "Suporte de Dados Primários"
+#: src-interface/main_ui.cpp:168 src-interface/recorder/recorder.cpp:450
+#: src-core/explorer/explorer.cpp:178
+msgid "Processing"
+msgstr "Processando"
 
-#: ../../plugins/firstparty_support/main_loader.cpp:59
-msgid "EUMETSAT User «Consumer Key»"
-msgstr ""
+#: src-interface/main_ui.cpp:171 src-interface/main_ui.cpp:227
+#: src-interface/main_ui.cpp:233
+#: src-core/handlers/vector/shapefile_handler.cpp:43
+msgid "Settings"
+msgstr "Configurações"
 
-#: ../../plugins/firstparty_support/main_loader.cpp:63
-msgid "EUMETSAT User «Consumer Secret»"
-msgstr ""
-
-#: ../../plugins/firstparty_support/main_loader.cpp:81
-msgid "Load First-Party"
-msgstr "Carregar Dados Primários"
-
-#: ../../plugins/firstparty_support/loader/eumetsat.cpp:201
-msgid "Refresh##archiveloader_refresh"
-msgstr "Atualizar##archiveloader_refresh"
-
-#: ../../plugins/firstparty_support/loader/eumetsat.cpp:204
-msgid "Date: "
-msgstr "Data: "
-
-#: ../../plugins/firstparty_support/loader/eumetsat.cpp:225
-msgid "Load##archiveloadertablebutton_"
-msgstr "Carregar##archiveloadertablebutton_"
-
-#: ../../plugins/firstparty_support/loader/downloader.cpp:21
-#, c-format
-msgid "Downloading : %s"
-msgstr "Baixando : %s"
-
-#: ../../plugins/firstparty_support/loader/downloader.cpp:24
-#: ../../plugins/firstparty_support/loader/downloader.cpp:31
-msgid "Abort"
-msgstr "Abortar"
-
-#: ../../plugins/firstparty_support/loader/downloader.cpp:100
-#: ../../src-interface/recorder/recorder.cpp:605
-msgid "IDLE"
-msgstr "OCIOSO"
-
-#: ../../plugins/firstparty_support/loader/archive_loader.cpp:20
-msgid "Archive Loader"
-msgstr "Carregador de Arquivo"
-
-#: ../../plugins/firstparty_support/loader/archive_loader.cpp:24
-#, fuzzy
-msgid "NOAA AWS"
-msgstr "NOAA AWS"
-
-#: ../../plugins/firstparty_support/loader/archive_loader.cpp:29
-#, fuzzy
-msgid "EUMETSAT"
-msgstr "EUMETSAT"
-
-#: ../../plugins/firstparty_support/loader/archive_loader.cpp:47
-msgid "Decode To:"
-msgstr "Decodificar Para:"
-
-#: ../../plugins/firstparty_support/loader/archive_loader.cpp:49
-msgid "Temporary"
-msgstr "Temporário"
-
-#: ../../plugins/firstparty_support/loader/archive_loader.cpp:51
-msgid "Selected Folder:"
-msgstr "Pasta Selecionada:"
-
-#: ../../plugins/wip_tracking_app/main.cpp:25
-msgid "WIP Tracking"
-msgstr "Rastreamento WIP"
-
-#: ../../src-interface/main_ui.cpp:179
-#: ../../src-interface/recorder/recorder.h:230
+#: src-interface/main_ui.cpp:179 src-interface/recorder/recorder.h:230
 msgid "Recorder"
 msgstr "Gravador"
 
-#: ../../src-interface/main_ui.cpp:241 ../../src-interface/main_ui.cpp:247
-#: ../../src-interface/main_ui.cpp:260
+#: src-interface/main_ui.cpp:218 src-core/explorer/explorer.cpp:412
+#: src-core/explorer/explorer.cpp:414
+msgid "Start Processing"
+msgstr "Iniciar Processamento"
+
+#: src-interface/main_ui.cpp:241 src-interface/main_ui.cpp:247
+#: src-interface/main_ui.cpp:260
 msgid "About"
 msgstr "Sobre"
 
-#: ../../src-interface/main_ui.cpp:256
+#: src-interface/main_ui.cpp:256
 msgid "Help"
 msgstr "Ajuda"
 
-#: ../../src-interface/main_ui.cpp:258
+#: src-interface/main_ui.cpp:258
 msgid "Documentation"
 msgstr "Documentação"
 
-#: ../../src-interface/notify_logger_sink.cpp:17
-msgid "Critical"
-msgstr "Crítico"
+#: src-interface/status_logger_sink.cpp:117
+msgid "SatDump Log"
+msgstr "Registro do SatDump"
 
-#: ../../src-interface/notify_logger_sink.cpp:17
+#: src-interface/settings.cpp:115
+msgid "Core Settings"
+msgstr "Configurações Principais"
+
+#: src-interface/settings.cpp:116
+msgid "User Interface"
+msgstr "Interface de Usuário"
+
+#: src-interface/settings.cpp:123
+msgid "Theme"
+msgstr "Tema"
+
+#: src-interface/settings.cpp:125
+msgid "Set the style and color of SatDump"
+msgstr "Definir o estilo e cor do SatDump"
+
+#: src-interface/settings.cpp:137
+msgid "General SatDump"
+msgstr "Configurações Gerais do SatDump"
+
+#: src-interface/settings.cpp:144
+msgid "Language"
+msgstr "Linguagem"
+
+#: src-interface/settings.cpp:149 src-interface/settings.cpp:152
+msgid "Auto"
+msgstr "Auto"
+
+#: src-interface/settings.cpp:177
+msgid "OpenCL Device"
+msgstr "Dispositivo OpenCL"
+
+#: src-interface/settings.cpp:179
+msgid ""
+"OpenCL Device SatDump will use for accelerated computing where it can help, "
+"eg, for some image processing tasks such as projections."
+msgstr ""
+"Dispositivo OpenCL que o SatDump utilizará para computação acelerada onde "
+"necessário, por exemplo, para projeção de imagens."
+
+#: src-interface/settings.cpp:190
+msgid "Update Keplers Now"
+msgstr "Atualizar Keplers Agora"
+
+#: src-interface/settings.cpp:195
+msgid "Update###updateKeplers"
+msgstr "Atualizar###updateKeplers"
+
+#: src-interface/settings.cpp:210 src-interface/settings.cpp:243
+msgid "Never"
+msgstr "Nunca"
+
+#: src-interface/settings.cpp:218 src-interface/settings.cpp:251
+#, c-format
+msgid "Last updated: %s"
+msgstr "Última atualização: %s"
+
+#: src-interface/settings.cpp:223
+msgid "Update IERS Bulletin Now"
+msgstr "Atualizar boletins IERS Agora"
+
+#: src-interface/settings.cpp:228
+msgid "Update###updateIERS"
+msgstr "Atualizar###updateIERS"
+
+#: src-interface/settings.cpp:255
+msgid "Clear Tile Map (OSM) Cache"
+msgstr "Limpar Cache de Mapas de Blocos (OSM)"
+
+#: src-interface/settings.cpp:257
+msgid "Delete all cached tiles (OSM, and other sources)."
+msgstr "Deletar todos os blocos do cache (OSM, e de outras origens)."
+
+#: src-interface/settings.cpp:259
+msgid "Clear Cache###deleteosmtiles"
+msgstr "Limpar Cache###deleteosmtiles"
+
+#: src-interface/settings.cpp:267
+msgid "File Input/Output"
+msgstr "Arquivo de Entrada/Saída"
+
+#: src-interface/settings.cpp:280
+msgid "Plugin Settings"
+msgstr "Configurações de Plugins"
+
+#: src-interface/settings.cpp:293 src-interface/settings.cpp:300
+msgid "Advanced Settings"
+msgstr "Configurações Avançadas"
+
+#: src-interface/settings.cpp:294
+#, fuzzy
+msgid "TLE Settings"
+msgstr "Configurações de TLE"
+
+#: src-interface/settings.cpp:297
+#, fuzzy
+msgid "Reset##tle_settings"
+msgstr "Redefinir##tle_settings"
+
+#: src-interface/settings.cpp:304
+msgid "Reset##advanced_settings"
+msgstr "Redefinir##advanced_settings"
+
+#: src-interface/settings.cpp:307
+msgid "Default Pipeline Configs"
+msgstr ""
+
+#: src-interface/settings.cpp:311
+msgid "Reset##pipelines"
+msgstr ""
+
+#: src-interface/settings.cpp:355
+msgid "Settings saved"
+msgstr "Configurações salvas"
+
+#: src-interface/settings.cpp:360
+msgid ""
+"Note : Some settings will require SatDump to be restarted\n"
+"to take effect!"
+msgstr ""
+"Observação: Algumas configurações necessitam que o SatDump\n"
+"seja reiniciado para serem carregas!"
+
+#: src-interface/notify_logger_sink.cpp:23
+msgid "Notice"
+msgstr ""
+
+#: src-interface/notify_logger_sink.cpp:29
 msgid "Warning"
 msgstr "Aviso"
 
-#: ../../src-interface/notify_logger_sink.cpp:17
+#: src-interface/notify_logger_sink.cpp:35
 msgid "Error"
 msgstr "Erro"
 
-#: ../../src-interface/offline.cpp:44
-#: ../../src-interface/recorder/recorder.cpp:356
+#: src-interface/loader/loader.cpp:29
+msgid "SatDump"
+msgstr "SatDump"
+
+#: src-interface/loader/loader.cpp:30
+msgid "General Purpose Satellite Data Processor"
+msgstr "Processador de Dados de Satélite de Uso Geral"
+
+#: src-interface/offline.cpp:44 src-interface/recorder/recorder.cpp:356
 msgid "Start"
 msgstr "Iniciar"
 
-#: ../../src-interface/offline.cpp:49
+#: src-interface/offline.cpp:49
 msgid "Input file is invalid!"
 msgstr "Arquivo de entrada é inválido!"
 
-#: ../../src-interface/offline.cpp:51
+#: src-interface/offline.cpp:51
 msgid "Output folder is invalid!"
 msgstr "Pasta de sapuda é inválida!"
 
-#: ../../src-interface/recorder/recorder.cpp:254
+#: src-interface/recorder/tracking/tracking_widget.cpp:100
+msgid "Object Information"
+msgstr "Informação do Objeto"
+
+#: src-interface/recorder/tracking/tracking_widget.cpp:103
+msgid "Rotator Configuration"
+msgstr "Configuração do Rotador"
+
+#: src-interface/recorder/tracking/tracking_widget.cpp:111
+msgid "Type##rotatortype"
+msgstr "Tipo##rotatortype"
+
+#: src-interface/recorder/tracking/tracking_widget.cpp:140
+msgid "Autotrack Engaged:"
+msgstr "Autorastreio Engatado:"
+
+#: src-interface/recorder/tracking/tracking_widget.cpp:143
+msgid "Schedule and Config"
+msgstr "Agenda e Configuração"
+
+#: src-interface/recorder/tracking/tracking_widget.cpp:145
+#: src-interface/recorder/tracking/tracking_widget.cpp:206
+msgid "Satellite finder"
+msgstr "Localizador de satélite"
+
+#: src-interface/recorder/tracking/tracking_widget.cpp:157
+msgid "Tracking Configuration"
+msgstr "Configuração de Rastreio"
+
+#: src-interface/recorder/tracking/tracking_widget.cpp:162
+msgid "Scheduling"
+msgstr "Agendamento"
+
+#: src-interface/recorder/tracking/tracking_widget.cpp:169
+msgid "Rotator Config"
+msgstr "Configuração de Rotador"
+
+#: src-interface/recorder/tracking/tracking_widget.cpp:174
+msgid "Export/Import"
+msgstr "Exportar/Importar"
+
+#: src-interface/recorder/recorder.cpp:254
 msgid "Source"
 msgstr "Fonte"
 
@@ -1059,354 +508,976 @@ msgstr "Fonte"
 #. ImGui::EndTooltip();
 #. }
 #.
-#: ../../src-interface/recorder/recorder.cpp:323
+#: src-interface/recorder/recorder.cpp:323
 msgid "Decimation##recorderdecimation"
 msgstr "Dizimação##recorderdecimation"
 
-#: ../../src-interface/recorder/recorder.cpp:335
+#: src-interface/recorder/recorder.cpp:335
 msgid "MHz (LO offset)##downupconverter"
 msgstr "MHz (Desvio do LO)##downupconverter"
 
-#: ../../src-interface/recorder/recorder.cpp:361
+#: src-interface/recorder/recorder.cpp:361
 msgid "Stop"
 msgstr "Parar"
 
-#: ../../src-interface/recorder/recorder.cpp:368
+#: src-interface/recorder/recorder.cpp:368
 msgid "FFT"
 msgstr "FFT"
 
-#: ../../src-interface/recorder/recorder.cpp:370
+#: src-interface/recorder/recorder.cpp:370
 msgid "FFT Size"
 msgstr "Tamanho de FFT"
 
-#: ../../src-interface/recorder/recorder.cpp:389
+#: src-interface/recorder/recorder.cpp:389
 msgid "FFT Rate"
 msgstr "Taxa de FFT"
 
-#: ../../src-interface/recorder/recorder.cpp:408
+#: src-interface/recorder/recorder.cpp:408
 msgid "Waterfall Rate"
 msgstr "Taxa de Cachoeira"
 
-#: ../../src-interface/recorder/recorder.cpp:425
+#: src-interface/recorder/recorder.cpp:425
 msgid "FFT Max"
 msgstr "FFT Máx"
 
-#: ../../src-interface/recorder/recorder.cpp:426
+#: src-interface/recorder/recorder.cpp:426
 msgid "FFT Min"
 msgstr "FFT Mín"
 
-#: ../../src-interface/recorder/recorder.cpp:427
+#: src-interface/recorder/recorder.cpp:427
 msgid "Avg Num"
 msgstr "Núm de Méd"
 
-#: ../../src-interface/recorder/recorder.cpp:428
+#: src-interface/recorder/recorder.cpp:428
 msgid "Palette"
 msgstr "Paleta"
 
-#: ../../src-interface/recorder/recorder.cpp:430
+#: src-interface/recorder/recorder.cpp:430
 msgid "Show Waterfall"
 msgstr "Mostrar Cachoiera"
 
-#: ../../src-interface/recorder/recorder.cpp:431
+#: src-interface/recorder/recorder.cpp:431
 msgid "Frequency Scale"
 msgstr "Escala de Frequência"
 
-#: ../../src-interface/recorder/recorder.cpp:466
+#: src-interface/recorder/recorder.cpp:466
 msgid "Freq###presetscombo"
 msgstr "Freq###presetscombo"
 
-#: ../../src-interface/recorder/recorder.cpp:497
+#: src-interface/recorder/recorder.cpp:497
 msgid "Start###startprocessing"
 msgstr "Iniciar###startprocessing"
 
-#: ../../src-interface/recorder/recorder.cpp:503
+#: src-interface/recorder/recorder.cpp:503
 msgid "Stopping...##stoppingprocessing"
 msgstr "Parando...##stoppingprocessing"
 
-#: ../../src-interface/recorder/recorder.cpp:508
+#: src-interface/recorder/recorder.cpp:508
 msgid "Stop##stopprocessing"
 msgstr "Parar##stopprocessing"
 
-#: ../../src-interface/recorder/recorder.cpp:518
+#: src-interface/recorder/recorder.cpp:518
 msgid "Recording"
 msgstr "Gravando"
 
-#: ../../src-interface/recorder/recorder.cpp:524
+#: src-interface/recorder/recorder.cpp:524
 msgid "Format##basebandrecordformat"
 msgstr "Formato##basebandrecordformat"
 
-#: ../../src-interface/recorder/recorder.cpp:536
+#: src-interface/recorder/recorder.cpp:536
 #, c-format
 msgid "Size : %.2f MB"
 msgstr "Tamanho : %.2f MB"
 
-#: ../../src-interface/recorder/recorder.cpp:538
+#: src-interface/recorder/recorder.cpp:538
 #, c-format
 msgid "Size : %.2f GB"
 msgstr "Tamanho : %.2f GB"
 
-#: ../../src-interface/recorder/recorder.cpp:540
+#: src-interface/recorder/recorder.cpp:540
 #, c-format
 msgid "Free Space: %.2f GB"
 msgstr "Espaço Livre : %.2f GB"
 
-#: ../../src-interface/recorder/recorder.cpp:572
+#: src-interface/recorder/recorder.cpp:572
 msgid "!!!!WARNING - LOW AMOUNT OF FREE DISK SPACE!!!!"
 msgstr "!!!!AVISO - POUCO ESPAÇO DE ARMAZENAMENTO!!!!"
 
-#: ../../src-interface/recorder/recorder.cpp:586
+#: src-interface/recorder/recorder.cpp:586
 #, c-format
 msgid "Time left: %02d:%02d:%02d:%02d"
 msgstr "Tempo restante: %02d:%02d:%02d:%02d"
 
-#: ../../src-interface/recorder/recorder.cpp:594
+#: src-interface/recorder/recorder.cpp:594
 #, c-format
 msgid "Size (raw) : %.2f MB"
 msgstr "Tamanho (bruto) : %.2f MB"
 
-#: ../../src-interface/recorder/recorder.cpp:596
+#: src-interface/recorder/recorder.cpp:596
 #, c-format
 msgid "Size (raw) : %.2f GB"
 msgstr "Tamanho (bruto) : %.2f GB"
 
-#: ../../src-interface/recorder/recorder.cpp:600
+#: src-interface/recorder/recorder.cpp:600
 #, c-format
 msgid "File : %s"
 msgstr "Arquivo : %s"
 
-#: ../../src-interface/recorder/recorder.cpp:607
+#: src-interface/recorder/recorder.cpp:607
 msgid "RECORDING"
 msgstr "GRAVANDO"
 
-#: ../../src-interface/recorder/recorder.cpp:613
+#: src-interface/recorder/recorder.cpp:613
 msgid "Start###startrecording"
 msgstr "Iniciar###startrecording"
 
-#: ../../src-interface/recorder/recorder.cpp:618
+#: src-interface/recorder/recorder.cpp:618
 msgid "Stop##stoprecording"
 msgstr "Parar##stoprecording"
 
-#: ../../src-interface/recorder/recorder.cpp:623
+#: src-interface/recorder/recorder.cpp:623
 msgid "Tracking"
 msgstr "Rastreamento"
 
-#: ../../src-interface/recorder/recorder.cpp:630
+#: src-interface/recorder/recorder.cpp:630
 msgid "VFOs"
 msgstr "VFOs"
 
-#: ../../src-interface/recorder/recorder.cpp:636
+#: src-interface/recorder/recorder.cpp:636
 msgid "No Active VFOs"
 msgstr "Sem VFOs Ativos"
 
-#: ../../src-interface/recorder/recorder.cpp:647
+#: src-interface/recorder/recorder.cpp:647
 #, c-format
 msgid "Frequency: %s"
 msgstr "Frequência: %s"
 
-#: ../../src-interface/recorder/recorder.cpp:650
+#: src-interface/recorder/recorder.cpp:650
 #, c-format
 msgid "Pipeline: %s"
 msgstr ""
 
-#: ../../src-interface/recorder/recorder.cpp:651
+#: src-interface/recorder/recorder.cpp:651
 #, c-format
 msgid "Directory: %s"
 msgstr "Pasta: %s"
 
-#: ../../src-interface/recorder/recorder.cpp:656
+#: src-interface/recorder/recorder.cpp:656
 #, fuzzy, c-format
 msgid "IQ Size: %.2f MB"
 msgstr "Tamanho do IQ: %.2f MB"
 
-#: ../../src-interface/recorder/recorder.cpp:658
+#: src-interface/recorder/recorder.cpp:658
 #, fuzzy, c-format
 msgid "IQ Size: %.2f GB"
 msgstr "Tamanho do IQ: %.2f GB"
 
-#: ../../src-interface/recorder/recorder.cpp:661
+#: src-interface/recorder/recorder.cpp:661
 msgid "Stop##"
 msgstr "Parar##"
 
-#: ../../src-interface/recorder/recorder.cpp:688
+#: src-interface/recorder/recorder.cpp:688
 msgid "Debug"
 msgstr "Depurar"
 
-#: ../../src-interface/recorder/recorder.cpp:784
+#: src-interface/recorder/recorder.cpp:788
 msgid "Live Processing"
 msgstr "Processamento em Tempo Real"
 
-#: ../../src-interface/recorder/tracking/tracking_widget.cpp:100
-msgid "Object Information"
-msgstr "Informação do Objeto"
+#: src-core/imgui/dialogs/widget.cpp:22
+msgid "ﱮ Open##filepathselectionbutton"
+msgstr "ﱮ Abrir##filepathselectionbutton"
 
-#: ../../src-interface/recorder/tracking/tracking_widget.cpp:103
-msgid "Rotator Configuration"
-msgstr "Configuração do Rotador"
+#: src-core/common/widgets/pipeline_selector.cpp:122
+msgid "   Search pipelines"
+msgstr ""
 
-#: ../../src-interface/recorder/tracking/tracking_widget.cpp:111
-msgid "Type##rotatortype"
-msgstr "Tipo##rotatortype"
+#: src-core/common/widgets/pipeline_selector.cpp:160
+msgid "Favourites"
+msgstr "Favoritos"
 
-#: ../../src-interface/recorder/tracking/tracking_widget.cpp:140
-msgid "Autotrack Engaged:"
-msgstr "Autorastreio Engatado:"
+#: src-core/common/widgets/pipeline_selector.cpp:288
+#: src-core/common/widgets/pipeline_selector.h:23
+msgid "Input File"
+msgstr "Arquivo de Entrada"
 
-#: ../../src-interface/recorder/tracking/tracking_widget.cpp:143
-msgid "Schedule and Config"
-msgstr "Agenda e Configuração"
+#. TODOREWORKUI?
+#: src-core/common/widgets/pipeline_selector.cpp:295
+#: src-core/common/widgets/pipeline_selector.cpp:322
+#: src-core/common/widgets/pipeline_selector.h:24
+msgid "Output Directory"
+msgstr "Pasta de Saída"
 
-#: ../../src-interface/recorder/tracking/tracking_widget.cpp:145
-#: ../../src-interface/recorder/tracking/tracking_widget.cpp:206
-msgid "Satellite finder"
-msgstr "Localizador de satélite"
+#: src-core/common/widgets/pipeline_selector.cpp:301
+msgid "Input Level"
+msgstr "Nível do Arquivo de Entrada"
 
-#: ../../src-interface/recorder/tracking/tracking_widget.cpp:157
-msgid "Tracking Configuration"
-msgstr "Configuração de Rastreio"
+#: src-core/common/widgets/pipeline_selector.cpp:312
+msgid "Output Directory :"
+msgstr "Pasta de Saída :"
 
-#: ../../src-interface/recorder/tracking/tracking_widget.cpp:162
-msgid "Scheduling"
-msgstr "Agendamento"
+#: src-core/common/widgets/pipeline_selector.cpp:336
+msgid "Advanced Parameters"
+msgstr "Parâmetros Avançados"
 
-#: ../../src-interface/recorder/tracking/tracking_widget.cpp:169
-msgid "Rotator Config"
+#: src-core/common/widgets/pipeline_selector.h:23
+msgid "Select Input File"
+msgstr "Selecionar Arquivo de Entrada"
+
+#: src-core/common/widgets/pipeline_selector.h:24
+msgid "Select Output Directory"
+msgstr "Selecionar Pasta de Saída"
+
+#: src-core/common/widgets/image_view.cpp:322
+msgid "Crop must be bigger than 0!"
+msgstr "O recorte precisa ser maior que 0!"
+
+#: src-core/products/image/calibration_units.cpp:14
+msgid "Sun Angle"
+msgstr "Ângulo Solar"
+
+#: src-core/products/image/calibration_units.cpp:15
+msgid "Albedo"
+msgstr "Albedo"
+
+#: src-core/products/image/calibration_units.cpp:16
+#, fuzzy
+msgid "Sun Angle Compensated Albedo"
+msgstr "Albedo Compensado pelo Ângulo Solar"
+
+#: src-core/products/image/calibration_units.cpp:17
+#, fuzzy
+msgid "Emissive Radiance"
+msgstr "Emitância"
+
+#: src-core/products/image/calibration_units.cpp:18
+#, fuzzy
+msgid "Reflective Radiance"
+msgstr "Radiância"
+
+#: src-core/products/image/calibration_units.cpp:19
+#, fuzzy
+msgid "Sun Angle Compensated Reflective Radiance"
+msgstr "Radiância Compensada pelo Ângulo Solar"
+
+#: src-core/products/image/calibration_units.cpp:20
+#: src-core/products/image/calibration_units.cpp:21
+msgid "Brightness Temperature"
+msgstr "Temperatura de Brilho"
+
+#: src-core/products/image/calibration_units.cpp:22
+msgid "Backscatter"
+msgstr "Retroespelhamento"
+
+#: src-core/products/image/calibration_converter.cpp:45
+msgid "No valid converter for : "
+msgstr "Nenhum conversor válido para : "
+
+#: src-core/explorer/explorer.cpp:165
+msgid "Root"
+msgstr "Raiz"
+
+#: src-core/explorer/explorer.cpp:205
+msgid "Others"
+msgstr "Outros"
+
+#: src-core/explorer/explorer.cpp:219
+msgid "Handlers will appear here..."
+msgstr "Gerenciadores aparecerão aqui..."
+
+#: src-core/explorer/explorer.cpp:243
+msgid "No file selected"
+msgstr "Nenhum arquivo selecionado"
+
+#: src-core/explorer/explorer.cpp:252
+msgid "Open File"
+msgstr "Abrir Arquivo"
+
+#: src-core/explorer/explorer.cpp:254
+msgid "Quick Open"
+msgstr "Abertura Rápida"
+
+#: src-core/explorer/explorer.cpp:259
+msgid "Go##loadfromhttpgo"
+msgstr "Carregar##loadfromhttpgo"
+
+#: src-core/explorer/explorer.cpp:265
+msgid "Paste & Load"
+msgstr "Colar e Carregar"
+
+#: src-core/explorer/explorer.cpp:281
+#: src-core/handlers/projection/projection_handler.cpp:46
+msgid "Projection"
+msgstr "Projeção"
+
+#. TODOREWORK?
+#: src-core/explorer/explorer.cpp:286
+#, fuzzy
+msgid "DSP Flowgraph"
+msgstr "Fluxograma de PDS"
+
+#: src-core/explorer/explorer.cpp:309
+#: src-core/handlers/product/image_product_handler.cpp:488
+msgid "Handler"
+msgstr "Gerenciador"
+
+#: src-core/explorer/explorer.cpp:313
+msgid "JSON To Clipboard"
+msgstr "JSON para Área de Trabalho"
+
+#: src-core/explorer/explorer.cpp:316
+msgid "Copied to clipboard!"
+msgstr "Copiado para Área de Trabalho!"
+
+#: src-core/explorer/explorer.cpp:318
+msgid "JSON From Clipboard"
+msgstr "JSON da Área de Trabalho"
+
+#: src-core/explorer/explorer.cpp:321
+msgid "Copied from clipboard!"
+msgstr "Copiado da Área de Trabalho!"
+
+#.
+#.
+#: src-core/explorer/explorer.cpp:362
+msgid "Welcome to SatDump!"
+msgstr "Bem-Vindo ao SatDump!"
+
+#: src-core/explorer/explorer.cpp:428 src-core/explorer/explorer.cpp:430
+msgid "Add Recorder"
+msgstr "Adicionar Gravador"
+
+#. needs_to_update |= TODO; // TODOREWORK move in top drawMenu?
+#: src-core/handlers/projection/projection_handler.cpp:54
+msgid "Project"
+msgstr "Projetar"
+
+#: src-core/handlers/projection/projection_handler.cpp:471
+#: src-core/handlers/product/image_product_handler.cpp:479
+msgid "Image To Handler"
+msgstr "Imagem para Gerenciador"
+
+#: src-core/handlers/projection/proj_ui.h:124
+msgid "Output image : "
+msgstr "Imagem de saída : "
+
+#: src-core/handlers/projection/proj_ui.h:150
+msgid "Top Left Coordinates :"
+msgstr "Coordenadas do Canto Superior Esquerdo :"
+
+#: src-core/handlers/projection/proj_ui.h:151
+msgid "Lat##tl"
+msgstr "Lat##tl"
+
+#: src-core/handlers/projection/proj_ui.h:152
+msgid "Lon##tl"
+msgstr "Lon##tl"
+
+#: src-core/handlers/projection/proj_ui.h:154
+msgid "Bottom Right Coordinates :"
+msgstr "Coordenadas do Canto Inferior Direito :"
+
+#: src-core/handlers/projection/proj_ui.h:155
+msgid "Lat##br"
+msgstr "Lat##br"
+
+#: src-core/handlers/projection/proj_ui.h:156
+msgid "Lon##br"
+msgstr "Lon##br"
+
+#: src-core/handlers/projection/proj_ui.h:161
+msgid "UTM Zone###projutmzone"
+msgstr "Zona UTM###projutmzone"
+
+#: src-core/handlers/projection/proj_ui.h:166
+msgid "South###projutmsouth"
+msgstr "Sul###projutmsouth"
+
+#: src-core/handlers/projection/proj_ui.h:167
+msgid "Northing (m)##utm"
+msgstr "Deslocar para Norte (m)##utm"
+
+#: src-core/handlers/projection/proj_ui.h:169
+msgid "Scale (m/px)##utm"
+msgstr "Escala (m/px)##utm"
+
+#: src-core/handlers/projection/proj_ui.h:173
+#: src-core/handlers/projection/proj_ui.h:181
+msgid "Center Coordinates :"
+msgstr "Coordenadas do Centro :"
+
+#: src-core/handlers/projection/proj_ui.h:174
+msgid "Lat##stereo"
+msgstr "Lat##stereo"
+
+#: src-core/handlers/projection/proj_ui.h:175
+msgid "Lon##stereo"
+msgstr "Lon##stereo"
+
+#: src-core/handlers/projection/proj_ui.h:177
+msgid "Scale (m/px)##stereo"
+msgstr "Escala (m/px)##stereo"
+
+#: src-core/handlers/projection/proj_ui.h:182
+msgid "Lat##tpers"
+msgstr "Lat##tpers"
+
+#: src-core/handlers/projection/proj_ui.h:183
+msgid "Lon##tpers"
+msgstr "Lon##tpers"
+
+#: src-core/handlers/projection/proj_ui.h:185
+msgid "Altitude (m)##tpers"
+msgstr "Altitude (m)##tpers"
+
+#: src-core/handlers/projection/proj_ui.h:186
+msgid "Angle##tpers"
+msgstr "Ângulo##tpers"
+
+#: src-core/handlers/projection/proj_ui.h:187
+msgid "Azimuth##tpers"
+msgstr "Azimute##tpers"
+
+#: src-core/handlers/projection/proj_ui.h:189
+msgid "Scale##tpers"
+msgstr "Escala##tpers"
+
+#: src-core/handlers/projection/proj_ui.h:194
+msgid "Auto Mode###pojautomode"
+msgstr "Modo Automático###pojautomode"
+
+#: src-core/handlers/projection/proj_ui.h:195
+msgid "Auto Scale Mode##projautoscalemode"
+msgstr "Modo de Escala Automática##projautoscalemode"
+
+#: src-core/handlers/projection/proj_ui.h:198
+msgid "Scale X (m/px)##projscalexauto"
+msgstr "Escala X (m/px)##projscalexauto"
+
+#: src-core/handlers/projection/proj_ui.h:199
+msgid "Scale Y (m/px)##projscalexauto"
+msgstr "Escala Y (m/px)##projscalexauto"
+
+#: src-core/handlers/image/image_filter.cpp:46
+msgid "Brightness"
+msgstr "Brilho"
+
+#: src-core/handlers/image/image_filter.cpp:47
+msgid "Contrast"
+msgstr "Contraste"
+
+#: src-core/handlers/image/image_filter.cpp:75
+msgid "All"
+msgstr "Todos"
+
+#: src-core/handlers/image/image_filter.cpp:75
+msgid "Red"
+msgstr "Vermelho"
+
+#: src-core/handlers/image/image_filter.cpp:75
+msgid "Yellow"
+msgstr "Amarelo"
+
+#: src-core/handlers/image/image_filter.cpp:75
+msgid "Green"
+msgstr "Verde"
+
+#: src-core/handlers/image/image_filter.cpp:75
+msgid "Cyan"
+msgstr "Ciano"
+
+#: src-core/handlers/image/image_filter.cpp:75
+msgid "Blue"
+msgstr "Azul"
+
+#: src-core/handlers/image/image_filter.cpp:75
+msgid "Magenta"
+msgstr "Magenta"
+
+#: src-core/handlers/image/image_filter.cpp:79
+msgid " Hue"
+msgstr " Matiz"
+
+#: src-core/handlers/image/image_filter.cpp:81
+msgid " Saturation"
+msgstr " Saturação"
+
+#: src-core/handlers/image/image_filter.cpp:83
+msgid " Lightness"
+msgstr " Luminosidade"
+
+#: src-core/handlers/image/image_filter.cpp:91
+msgid "Overlap"
+msgstr "Sobreposição"
+
+#: src-core/handlers/image/image_filter.cpp:108
+msgid "Adaptive"
+msgstr ""
+
+#: src-core/handlers/image/image_filter.cpp:110
+msgid "Recursive"
+msgstr ""
+
+#: src-core/handlers/image/image_filter.cpp:113
+#: src-core/handlers/image/image_filter.cpp:135
+msgid "Radius"
+msgstr ""
+
+#: src-core/handlers/image/image_filter.cpp:117
+msgid "Black Level"
+msgstr ""
+
+#: src-core/handlers/image/image_filter.cpp:118
+#, fuzzy
+msgid "White Level"
+msgstr "Nível do Arquivo de Entrada"
+
+#: src-core/handlers/image/image_filter.cpp:139
+msgid "Smooth"
+msgstr ""
+
+#: src-core/handlers/image/image_filter.cpp:141
+msgid "Sharpen"
+msgstr ""
+
+#: src-core/handlers/image/image_filter.cpp:143
+msgid "Edge"
+msgstr ""
+
+#: src-core/handlers/image/image_filter.cpp:167
+msgid "Equalize"
+msgstr "Equalização"
+
+#: src-core/handlers/image/image_filter.cpp:175
+msgid "Normalize"
+msgstr "Normalização"
+
+#: src-core/handlers/image/image_filter.cpp:177
+msgid "White Balance"
+msgstr "Balanço de Branco"
+
+#: src-core/handlers/image/image_filter.cpp:181
+msgid "Median Blur"
+msgstr "Borrão Mediano"
+
+#: src-core/handlers/image/image_filter.cpp:183
+msgid "Despeckle"
+msgstr "Remoção de Manchas"
+
+#: src-core/handlers/image/image_filter.cpp:186
+msgid "Brightness/contrast"
+msgstr "Brilho/Contraste"
+
+#: src-core/handlers/image/image_filter.cpp:195
+msgid "Remove Background"
+msgstr "Remover Plano de Fundo"
+
+#: src-core/handlers/image/image_filter.cpp:198
+#, fuzzy
+msgid "Hue Saturation"
+msgstr "Matiz/Saturação"
+
+#: src-core/handlers/image/image_filter.cpp:202
+#, fuzzy
+msgid "Adaptive Despeckle"
+msgstr "Remoção de Manchas"
+
+#: src-core/handlers/image/image_filter.cpp:206
+msgid "Simple Mean Filter"
+msgstr ""
+
+#: src-core/handlers/image/image_handler.cpp:42
+msgid "Cannot crop while processing!"
+msgstr "Não é possível recortar durante processamento!"
+
+#: src-core/handlers/image/image_handler.cpp:72
+msgid " Crop"
+msgstr " Recortar"
+
+#: src-core/handlers/image/image_handler.cpp:106
+msgid "Image"
+msgstr "Imagem"
+
+#: src-core/handlers/image/image_handler.cpp:113
+#, fuzzy
+msgid "Rotate 0"
+msgstr "Girar 180"
+
+#: src-core/handlers/image/image_handler.cpp:115
+#, fuzzy
+msgid "Rotate 90"
+msgstr "Girar 180"
+
+#: src-core/handlers/image/image_handler.cpp:117
+msgid "Rotate 180"
+msgstr "Girar 180"
+
+#: src-core/handlers/image/image_handler.cpp:119
+#, fuzzy
+msgid "Rotate 270"
+msgstr "Girar 180"
+
+#: src-core/handlers/image/image_handler.cpp:123
+msgid "Geo Correct"
+msgstr "Georretificação"
+
+#: src-core/handlers/image/image_handler.cpp:130
+#, c-format
+msgid "Calibration Unit %s"
+msgstr "Unidade de Calibração %s"
+
+#: src-core/handlers/image/image_handler.cpp:131
+#, c-format
+msgid "Calibration Min %f"
+msgstr "Valor Mínimo de Calibração %f"
+
+#: src-core/handlers/image/image_handler.cpp:132
+#, c-format
+msgid "Calibration Max %f"
+msgstr "Valor Máximo de Calibração %f"
+
+#: src-core/handlers/image/image_handler.cpp:138
+msgid "Please wait for saving to end first!"
+msgstr "Por favor, aguarde a conclusão do salvamento primeiro!"
+
+#: src-core/handlers/image/image_handler.cpp:145
+#: src-core/handlers/image/image_handler.cpp:335
+msgid "Filters"
+msgstr ""
+
+#: src-core/handlers/image/image_handler.cpp:258
+msgid "Save cancelled"
+msgstr "Salvamento cancelado"
+
+#: src-core/handlers/image/image_handler.cpp:260
+#, c-format
+msgid "Saved current image at %s"
+msgstr "Salvar imagem atual em %s"
+
+#: src-core/handlers/image/image_handler.cpp:268
+msgid "Please wait for processing to end first!"
+msgstr "Por favor, aguarde o processamento terminar primeiro!"
+
+#. ///////////
+#. Image Controls
+#. ///////////
+#. Refresh button
+#: src-core/handlers/image/image_handler.cpp:289
+msgid "Refresh (Image Only)"
+msgstr "Atualizar (Apenas a Imagem)"
+
+#. Basic controls
+#: src-core/handlers/image/image_handler.cpp:293
+msgid "Zoom In"
+msgstr "Aumentar Zoom"
+
+#: src-core/handlers/image/image_handler.cpp:294
+msgid "Zoom Out"
+msgstr "Diminuir Zoom"
+
+#: src-core/handlers/image/image_handler.cpp:295
+msgid "Fit"
+msgstr "Encaixar"
+
+#: src-core/handlers/image/image_handler.cpp:296
+msgid "Crop"
+msgstr "Recortar"
+
+#. Show a menu that allows putting this image on an existing or new projection
+#: src-core/handlers/image/image_handler.cpp:304
+msgid "Add to projection"
+msgstr "Adicionar à projeção"
+
+#: src-core/handlers/image/image_handler.cpp:320
+msgid "New Projection"
+msgstr "Nova Projeção"
+
+#. Render filters menu
+#: src-core/handlers/image/image_handler.cpp:335
+msgid ""
+msgstr ""
+
+#: src-core/handlers/image/image_handler.cpp:376
+#, fuzzy, c-format
+msgid "Raw %d : %d F %f"
+msgstr "Bruto : %d"
+
+#: src-core/handlers/image/image_handler.cpp:385
+#, c-format
+msgid "Unit : %f %s"
+msgstr "Unidade : %f %s"
+
+#: src-core/handlers/image/image_handler.cpp:415
+msgid "Lat : Invalid!"
+msgstr "Lat : Inválida!"
+
+#: src-core/handlers/image/image_handler.cpp:416
+msgid "Lon : Invalid!"
+msgstr "Lon : Inválida!"
+
+#: src-core/handlers/image/image_handler.cpp:420
+#, c-format
+msgid "Lat : %f"
+msgstr "Lat : %f"
+
+#: src-core/handlers/image/image_handler.cpp:421
+#, c-format
+msgid "Lon : %f"
+msgstr "Lon : %f"
+
+#: src-core/handlers/image/image_handler.cpp:437
+#: src-core/handlers/image/image_handler.cpp:438
+#, fuzzy
+msgid "Filter Config"
 msgstr "Configuração de Rotador"
 
-#: ../../src-interface/recorder/tracking/tracking_widget.cpp:174
-msgid "Export/Import"
-msgstr "Exportar/Importar"
+#: src-core/handlers/image/image_handler.cpp:442
+#: src-core/handlers/product/image_product_handler.cpp:214
+msgid "Apply"
+msgstr "Aplicar"
 
-#: ../../src-interface/status_logger_sink.cpp:115
-msgid "SatDump Log"
-msgstr "Registro do SatDump"
-
-#: ../../src-interface/settings.cpp:115
-msgid "Core Settings"
-msgstr "Configurações Principais"
-
-#: ../../src-interface/settings.cpp:116
-msgid "User Interface"
-msgstr "Interface de Usuário"
-
-#: ../../src-interface/settings.cpp:123
-msgid "Theme"
-msgstr "Tema"
-
-#: ../../src-interface/settings.cpp:125
-msgid "Set the style and color of SatDump"
-msgstr "Definir o estilo e cor do SatDump"
-
-#: ../../src-interface/settings.cpp:137
-msgid "General SatDump"
-msgstr "Configurações Gerais do SatDump"
-
-#: ../../src-interface/settings.cpp:144
-msgid "Language"
-msgstr "Linguagem"
-
-#: ../../src-interface/settings.cpp:149 ../../src-interface/settings.cpp:152
-msgid "Auto"
-msgstr "Auto"
-
-#: ../../src-interface/settings.cpp:177
-msgid "OpenCL Device"
-msgstr "Dispositivo OpenCL"
-
-#: ../../src-interface/settings.cpp:179
-msgid ""
-"OpenCL Device SatDump will use for accelerated computing where it can help, "
-"eg, for some image processing tasks such as projections."
+#: src-core/handlers/image/image_handler.cpp:452
+msgid "Cancel"
 msgstr ""
-"Dispositivo OpenCL que o SatDump utilizará para computação acelerada onde "
-"necessário, por exemplo, para projeção de imagens."
 
-#: ../../src-interface/settings.cpp:190
-msgid "Update Keplers Now"
-msgstr "Atualizar Keplers Agora"
+#: src-core/handlers/image/image_handler.cpp:534
+msgid "Failed Geo-Correcting image!"
+msgstr "Falha ao Georretificar imagem!"
 
-#: ../../src-interface/settings.cpp:195
-msgid "Update###updateKeplers"
-msgstr "Atualizar###updateKeplers"
-
-#: ../../src-interface/settings.cpp:210 ../../src-interface/settings.cpp:243
-msgid "Never"
-msgstr "Nunca"
-
-#: ../../src-interface/settings.cpp:218 ../../src-interface/settings.cpp:251
+#: src-core/handlers/image/image_handler.cpp:542
 #, c-format
-msgid "Last updated: %s"
-msgstr "Última atualização: %s"
+msgid "Error processing image! %s"
+msgstr "Erro processando imagem! %s"
 
-#: ../../src-interface/settings.cpp:223
-msgid "Update IERS Bulletin Now"
-msgstr "Atualizar boletins IERS Agora"
+#. TODOREWORK move out?!
+#: src-core/handlers/vector/addmenu.h:22
+msgid "Add Overlay"
+msgstr "Adicionar Sobreposição"
 
-#: ../../src-interface/settings.cpp:228
-msgid "Update###updateIERS"
-msgstr "Atualizar###updateIERS"
+#: src-core/handlers/vector/addmenu.h:24
+msgid "Shores"
+msgstr "Litorais"
 
-#: ../../src-interface/settings.cpp:255
-msgid "Clear Tile Map (OSM) Cache"
-msgstr "Limpar Cache de Mapas de Blocos (OSM)"
+#: src-core/handlers/vector/addmenu.h:30
+msgid "Borders"
+msgstr "Fronteiras"
 
-#: ../../src-interface/settings.cpp:257
-msgid "Delete all cached tiles (OSM, and other sources)."
-msgstr "Deletar todos os blocos do cache (OSM, e de outras origens)."
+#: src-core/handlers/vector/addmenu.h:36
+msgid "Cities"
+msgstr "Cidades"
 
-#: ../../src-interface/settings.cpp:259
-msgid "Clear Cache###deleteosmtiles"
-msgstr "Limpar Cache###deleteosmtiles"
+#: src-core/handlers/vector/addmenu.h:42 src-core/handlers/vector/addmenu.h:45
+msgid "Lat/Lon Grid"
+msgstr "Grade de Lat/Lon"
 
-#: ../../src-interface/settings.cpp:267
-msgid "File Input/Output"
-msgstr "Arquivo de Entrada/Saída"
+#: src-core/handlers/vector/addmenu.h:74 src-core/handlers/vector/addmenu.h:77
+#: src-core/handlers/vector/addmenu.h:86
+msgid "QTH"
+msgstr "QTH"
 
-#: ../../src-interface/settings.cpp:280
-msgid "Plugin Settings"
-msgstr "Configurações de Plugins"
+#: src-core/handlers/vector/shapefile_handler.cpp:45
+msgid "Draw Color##shapefilecolor"
+msgstr "Desenhar Cor##shapefilecolor"
 
-#: ../../src-interface/settings.cpp:293 ../../src-interface/settings.cpp:300
-msgid "Advanced Settings"
-msgstr "Configurações Avançadas"
+#. | ImGuiColorEditFlags_NoLabel
+#: src-core/handlers/vector/shapefile_handler.cpp:46
+msgid "Anti-Alias"
+msgstr "Antisserrilhamento"
 
-#: ../../src-interface/settings.cpp:294
-#, fuzzy
-msgid "TLE Settings"
-msgstr "Configurações de TLE"
+#: src-core/handlers/vector/shapefile_handler.cpp:47
+msgid "Font Size"
+msgstr "Tamanho da Fonte"
 
-#: ../../src-interface/settings.cpp:297
-#, fuzzy
-msgid "Reset##tle_settings"
-msgstr "Redefinir##tle_settings"
+#: src-core/handlers/vector/shapefile_handler.cpp:49
+msgid "Scale Rank (Cities Only)"
+msgstr "Escala (Apenas Cidades)"
 
-#: ../../src-interface/settings.cpp:304
-msgid "Reset##advanced_settings"
-msgstr "Redefinir##advanced_settings"
+#: src-core/handlers/vector/shapefile_handler.cpp:70
+msgid "Polygon "
+msgstr "Polígono "
 
-#: ../../src-interface/settings.cpp:307
-msgid "Default Pipeline Configs"
-msgstr ""
+#: src-core/handlers/vector/shapefile_handler.cpp:85
+msgid "Point "
+msgstr "Ponto "
 
-#: ../../src-interface/settings.cpp:311
-msgid "Reset##pipelines"
-msgstr ""
+#: src-core/handlers/product/image_product_handler.cpp:35
+#: src-core/handlers/product/punctiform_product_handler.cpp:186
+msgid "Channel "
+msgstr "Canal "
 
-#: ../../src-interface/settings.cpp:355
-msgid "Settings saved"
-msgstr "Configurações salvas"
+#: src-core/handlers/product/image_product_handler.cpp:51
+msgid "Product Data"
+msgstr "Dados do Produto"
 
-#: ../../src-interface/settings.cpp:360
+#: src-core/handlers/product/image_product_handler.cpp:54
+#, c-format
+msgid "Count : %d"
+msgstr "Contagem : %d"
+
+#: src-core/handlers/product/image_product_handler.cpp:64
+#, c-format
+msgid "%s : Invalid Value"
+msgstr "%s : Valor Inválido"
+
+#: src-core/handlers/product/image_product_handler.cpp:100
+#: src-core/handlers/product/punctiform_product_handler.cpp:34
+msgid "Channels"
+msgstr "Canais"
+
+#: src-core/handlers/product/image_product_handler.cpp:142
+msgid "Pol : H"
+msgstr "Pol : H"
+
+#: src-core/handlers/product/image_product_handler.cpp:144
+msgid "Pol : V"
+msgstr "Pol : V"
+
+#: src-core/handlers/product/image_product_handler.cpp:146
+msgid "Pol : R"
+msgstr "Pol : D"
+
+#: src-core/handlers/product/image_product_handler.cpp:148
+msgid "Pol : L"
+msgstr "Pol : E"
+
+#: src-core/handlers/product/image_product_handler.cpp:154
+#, c-format
+msgid "Bandwidth : %s / %s"
+msgstr "Largura de Banda : %s / %s"
+
+#: src-core/handlers/product/image_product_handler.cpp:166
+msgid "Calibrate"
+msgstr "Calibrar"
+
+#. List of all units
+#: src-core/handlers/product/image_product_handler.cpp:174
+msgid "Unit##calibunit"
+msgstr "Unidade##calibunit"
+
+#: src-core/handlers/product/image_product_handler.cpp:187
+msgid "Update###updatecalib"
+msgstr "Atualizar###updatecalib"
+
+#: src-core/handlers/product/image_product_handler.cpp:189
+msgid "Add To Equ###calibaddtoexpression"
+msgstr "Adicionar à Equação###calibaddtoexpression"
+
+#: src-core/handlers/product/image_product_handler.cpp:195
+msgid "Calibration Error. Please Report!"
+msgstr "Erro de Calibração. Por favor, Relatar Erro!"
+
+#: src-core/handlers/product/image_product_handler.cpp:206
+msgid "Expression"
+msgstr "Expressão"
+
+#: src-core/handlers/product/image_product_handler.cpp:248
+msgid "Advanced"
+msgstr "Avançado"
+
+#: src-core/handlers/product/image_product_handler.cpp:469
+#, c-format
+msgid "Could not process image! %s"
+msgstr "Não foi possível processar imagem! %s"
+
+#: src-core/handlers/product/image_product_handler.cpp:490
+msgid "Advanced Mode"
+msgstr "Modo Avançado"
+
+#: src-core/handlers/product/punctiform_product_handler.cpp:39
+msgid "Graph"
+msgstr "Gráfico"
+
+#: src-core/handlers/product/punctiform_product_handler.cpp:45
+msgid "Dot Map"
+msgstr "Mapa de Pontos"
+
+#: src-core/handlers/product/punctiform_product_handler.cpp:51
+msgid "Fill Map"
+msgstr "Mapa Preenchido"
+
+#: src-core/handlers/product/punctiform_product_handler.cpp:57
+msgid "Channel##selectechannel"
+msgstr "Canal##selectechannel"
+
+#: src-core/handlers/product/punctiform_product_handler.cpp:76
+msgid "Update"
+msgstr "Atualizar"
+
+#: src-core/handlers/product/product_handler.cpp:113
+msgid "Presets"
+msgstr "Predefinições"
+
+#: src-core/handlers/product/product_handler.cpp:117
+msgid "Select Preset..."
+msgstr "Selecionar Predefinição..."
+
+#: src-core/handlers/product/product_handler.cpp:155
+msgid "Default"
+msgstr "Padrão"
+
+#: src-core/handlers/product/product_handler.cpp:174
+msgid "Preset Info"
+msgstr "Informação Sobre Predefinição"
+
+#: src-core/handlers/handler.cpp:60
+msgid "Delete"
+msgstr "Deletar"
+
+#: src-core/handlers/handler.cpp:99
+msgid "Can't drag parent onto child handler!"
+msgstr "Não é possível arrastar gerenciador base para seu derivado!"
+
+#: src-core/init.cpp:79
+msgid "Starting "
+msgstr "Iniciando "
+
+#: src-core/init.cpp:105
+#, c-format
 msgid ""
-"Note : Some settings will require SatDump to be restarted\n"
-"to take effect!"
+"Error loading SatDump config! SatDump will now exit. Error:\n"
+"%s"
 msgstr ""
-"Observação: Algumas configurações necessitam que o SatDump\n"
-"seja reiniciado para serem carregas!"
+"Error ao carregar a configuração do SatDump! SatDump será encerrado agora. "
+"Erro:\n"
+"%s"
 
-#: ../../src-interface/loader/loader.cpp:29
-msgid "SatDump"
-msgstr "SatDump"
+#. List them
+#: src-core/init.cpp:155
+msgid "Registered pipelines :"
+msgstr ""
 
-#: ../../src-interface/loader/loader.cpp:30
-msgid "General Purpose Satellite Data Processor"
-msgstr "Processador de Dados de Satélite de Uso Geral"
+#: src-core/init.cpp:180
+#, c-format
+msgid "DSP Buffer size was changed to %d"
+msgstr "O tamanho do Buffer de PDS foi alterado para %d"
+
+#: src-core/init.cpp:189
+msgid "Could not open ephemeris data! NOVAS will not work!"
+msgstr ""
+"Não foi possível carregar os dados de efemérides! NOVAS não funcionará!"
+
+#: src-core/init.cpp:203
+msgid "SatDump has NOT been built in Release mode."
+msgstr "SatDump NÃO foi compilado no modo de Lançamento."
+
+#: src-core/init.cpp:204
+msgid "If you are not a developer but intending to use the software,"
+msgstr "Caso não seja um(a) desenvolvedor(a) e queira usar o programa,"
+
+#: src-core/init.cpp:205
+msgid "you probably do not want this. If so, make sure to"
+msgstr "você provavelmente não deseja isso. Se for o caso, certifique-se de"
+
+#: src-core/init.cpp:206
+msgid "specify -DCMAKE_BUILD_TYPE=Release in CMake."
+msgstr "especificar -DCMAKE_BUILD_TYPE=Release no CMake."
+
+#: src-core/init.cpp:215
+msgid "Exiting SatDump! Bye!"
+msgstr "Encerrando o SatDump! Tchau!"
+
+#~ msgid "Individual Equalize"
+#~ msgstr "Equalização Individual"
+
+#~ msgid "Critical"
+#~ msgstr "Crítico"

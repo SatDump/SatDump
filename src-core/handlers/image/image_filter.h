@@ -23,8 +23,9 @@ namespace satdump
         struct ImageFilter
         {
             std::string name;
-            std::function<void(image::Image &, nlohmann::json)> perform;
+            std::function<void(image::Image &, nlohmann::json, float *)> perform;
             std::function<std::shared_ptr<ImageFilterConfigurator>()> configMenuGetter = []() { return nullptr; };
+            bool has_menu = false;
         };
 
         std::map<std::string, ImageFilter> getImageFilters();
