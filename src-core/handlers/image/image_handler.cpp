@@ -166,6 +166,8 @@ namespace satdump
                             auto max = ImGui::GetCursorScreenPos() + ImVec2(ImGui::GetContentRegionAvail().x, ImGui::CalcTextSize(name.c_str()).y);
                             max.x = min.x + (max.x - min.x) * f.second.progress;
                             min.y += ImGui::CalcTextSize(name.c_str()).y * 0.9;
+                            min.y += 5 * ui_scale;
+                            max.y += 5 * ui_scale;
                             ImGui::GetWindowDrawList()->AddRectFilled(min, max, style::theme.yellow);
                         }
                         else if (f.second.progress == -1)
@@ -176,6 +178,8 @@ namespace satdump
                             max.x = offset + min.x + (max.x - min.x) * 0.1;
                             min.x = offset;
                             min.y += ImGui::CalcTextSize(name.c_str()).y * 0.9;
+                            min.y += 5 * ui_scale;
+                            max.y += 5 * ui_scale;
                             ImGui::GetWindowDrawList()->AddRectFilled(min, max, style::theme.yellow);
                         }
 
