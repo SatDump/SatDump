@@ -178,7 +178,7 @@ namespace satdump
                         }
 
                         // Settings
-                        if (image_filters[f.first].has_menu)
+                        if (!image_filters[f.first].has_menu)
                             style::beginDisabled();
                         if (widgets::VerySmallButton(u8"\uF085"))
                         {
@@ -189,7 +189,7 @@ namespace satdump
                                 image_filter_configurator_set_in = i;
                             }
                         }
-                        if (image_filters[f.first].has_menu)
+                        if (!image_filters[f.first].has_menu)
                             style::endDisabled();
 
                         if (f.second.cfg.size() && ImGui::IsItemHovered())
