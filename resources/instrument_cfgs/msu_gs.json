@@ -16,44 +16,59 @@
             "description": "descriptions/NatColor.md",
             "expression": "ch3,ch2,ch1",
             "image": {
-                "hue_saturation": true,
-                "hue_saturation_cfg": {
-                    "hue": [
-                        0.0,
-                        0.3333333333333333,
-                        -0.04,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ],
-                    "lightness": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ],
-                    "overlap": 40,
-                    "saturation": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
+                "filters": [
+                    [
+                        "hue_saturation",
+                        [
+                            true,
+                            {
+                                "hue": [
+                                    0.0,
+                                    0.3333333333333333,
+                                    -0.04,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ],
+                                "lightness": [
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ],
+                                "overlap": 40,
+                                "saturation": [
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            }
+                        ]
                     ]
-                }
+                ]
             }
         },
         {
             "name": "MCIR",
             "expression": "bm=equp(maps/nasa_hd.jpg);ch=((1-ch9) - 0.4) * 1.5;ch * (ch) + (1-ch) * bm(0),ch * (ch) + (1-ch) * bm(1),ch * (ch) + (1-ch) * bm(2)",
             "image": {
-                "remove_background": true
+                "filters": [
+                    [
+                        "remove_background",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             }
         },
         // Could use calibrated visible channels if needed
@@ -61,21 +76,45 @@
             "name": "False Color + IR Merge",
             "expression": "cch9=({10.4um}, emissive_radiance, 5, 130);ch2^cch9,ch3^cch9,ch1^cch9",
             "image": {
-                "remove_background": true
+                "filters": [
+                    [
+                        "remove_background",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             }
         },
         {
             "name": "False Color + IR Underlay",
             "expression": "bm=equp(maps/nasa_night.jpg);s=(1, sun_angle, 0.000000, 8.000000);ci=((1-ch9) - 0.4) * 1.5;s * ch3 + (1-s) * (ci * (ci) + (1-ci) * bm(0)),s * ch2 + (1-s) * (ci * (ci) + (1-ci) * bm(1)),s * ch1 + (1-s) * (ci * (ci) + (1-ci) * bm(2))",
             "image": {
-                "remove_background": true
+                "filters": [
+                    [
+                        "remove_background",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             }
         },
         {
             "name": "10.8µm Thermal IR (Uncalibrated)",
             "expression": "1-ch9",
             "image": {
-                "remove_background": true
+                "filters": [
+                    [
+                        "remove_background",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             }
         }
     ]

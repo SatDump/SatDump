@@ -5,7 +5,17 @@
             "name": "True Color",
             "expression": "ch3, ch2, ch1",
             "image": {
-                "equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": false
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/TrueColor.md",
@@ -48,7 +58,17 @@
             "name": "Urban False Color",
             "expression": "ch9, ch8, ch3",
             "image": {
-                "equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": false
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/ShortwaveIRFC.md"
@@ -160,7 +180,17 @@
             "name": "AVHRR 3a21 False Color",
             "expression": "ch8, ch4, ch3",
             "image": {
-                "equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": false
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/321.md"
@@ -188,7 +218,17 @@
             "name": "NO enhancement (Uncalibrated)",
             "expression": "lut=lut(lut/WXtoImg-NO_mod_meteor.png);lut(ch5, ch6, 0), lut(ch5, ch6, 1), lut(ch5, ch6, 2)",
             "image": {
-                "individual_equalize": false,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            false,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             }
         },
@@ -196,7 +236,17 @@
             "name": "7.35 µm Uncalibrated Water Vapor",
             "expression": "cch12=(12, equalized, 0, 0);lut=lut(lut/cal/purpleorange.png);lut(cch12, 0, 0), lut(cch12,0,1), lut(cch12,0,2)",
             "image": {
-                "equalize": false,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            false,
+                            {
+                                "per_channel": true
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             }
         }

@@ -11,7 +11,15 @@
             "name": "False Color + IR Merge",
             "expression": "cch4=(4, emissive_radiance, 5, 110); s=(4, sun_angle, 0.000000, 32.000000);lut=lut(lut/goes/gvar/fc_lut.png);lut(ch1, ch4, 0)*s+(1-s)*(1-cch4),lut(ch1, ch4, 1)*s+(1-s)*(1-cch4),lut(ch1, ch4, 2)*s+(1-s)*(1-cch4)",
             "image": {
-                "remove_background": true
+                "filters": [
+                    [
+                        "remove_background",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             }
         },
         {
@@ -35,9 +43,7 @@
                                 "per_channel": true
                             }
                         ]
-                    ]
-                ],
-                "filters": [
+                    ],
                     [
                         "white_balance",
                         [

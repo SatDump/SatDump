@@ -5,7 +5,17 @@
             "name": "AVHRR 221 False Color",
             "expression": "chi2, chi2, chi1",
             "image": {
-                "equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": false
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/221.md"
         },
@@ -13,7 +23,17 @@
             "name": "AVHRR 3a21 False Color",
             "expression": "chi3, chi2, chi1",
             "image": {
-                "equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": false
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/321.md",
             "autogen": true
@@ -45,7 +65,17 @@
             "name": "True Color",
             "expression": "chm5, chm4, chm3",
             "image": {
-                "equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": false
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/TrueColor.md"
         },
@@ -80,9 +110,7 @@
                                 "per_channel": true
                             }
                         ]
-                    ]
-                ],
-                "filters": [
+                    ],
                     [
                         "white_balance",
                         [
@@ -152,8 +180,16 @@
             "name": "Agriculture",
             "expression": "chm10,chm7,chm3",
             "image": {
-                "equalize": true,
                 "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": false
+                            }
+                        ]
+                    ],
                     [
                         "white_balance",
                         [
@@ -185,7 +221,17 @@
             "name": "Bathymetric",
             "expression": "chm5, chm4, chm1",
             "image": {
-                "equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": false
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/Bathymetric.md"
         },
@@ -283,7 +329,17 @@
             "name": "Panchromatic",
             "expression": "chdnb",
             "image": {
-                "equalize": true
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": false
+                            }
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/Panchromatic.md"
         },

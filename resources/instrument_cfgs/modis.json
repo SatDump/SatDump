@@ -62,9 +62,7 @@
                                 "per_channel": true
                             }
                         ]
-                    ]
-                ],
-                "filters": [
+                    ],
                     [
                         "white_balance",
                         [
@@ -199,19 +197,35 @@
         {
             "name": "Differential Water Vapor RGB",
             "expression": "cch28=(28, brightness_temperature, 180, 400); cch27=(27, brightness_temperature, 180, 400); ((cch28-cch27+0.01363636363)/0.15)^3.86548125242,((cch28-0.15068181818)/0.29545454545)^2.5,((cch27-0.12954545454)/0.1609090909)^2.5"
-        },/*
+        }, /*
         {
             "name": "MeCIDA T6a Cirrus Detection (full)",
             "expression": "cch3=(3, reflective_radiance, 0.000000, 16.850000);cch2=(2, reflective_radiance, 0.000000, 20.240000);cch1=(1, reflective_radiance, 0.000000, 17.760000);cch11=(11, brightness_temperature, 000.000000, 1000.000000);cch8=(8, brightness_temperature, 000.000000, 1000.000000);(cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 0 : cch3  : cch3,(cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : cch2  : cch2,(cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : cch1  : cch1",
-            "image": {
-                "remove_background": true
-            }
+"image": {
+        "filters": [
+            [
+                "remove_background",
+                [
+                    true,
+                    null
+                ]
+            ]
+        ]
+    }
         },*/
         {
             "name": "MeCIDA T6a Cirrus Detection (transparent)",
             "expression": "cch11=(33, brightness_temperature, 000.000000, 1000.000000);cch8=(30, brightness_temperature, 000.000000, 1000.000000);0, (cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : 0 : 0, (cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : 0 : 0,(cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : 0 : 0",
             "image": {
-                "remove_background": true
+                "filters": [
+                    [
+                        "remove_background",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             }
         }
     ],

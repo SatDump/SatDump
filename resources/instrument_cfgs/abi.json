@@ -223,11 +223,13 @@
                         ]
                     ],
                     [
-                        "normalize" //FIXLEGO
-                        
+                        "normalize",
+                        [
+                            true,
+                            null
+                        ]
                     ]
-                ],
-                "normalize": true
+                ]
             },
             "autogen": true
         },
@@ -244,9 +246,15 @@
                                 "per_channel": true
                             }
                         ]
+                    ],
+                    [
+                        "normalize",
+                        [
+                            true,
+                            null
+                        ]
                     ]
-                ],
-                "normalize": true
+                ]
             },
             "autogen": true
         },

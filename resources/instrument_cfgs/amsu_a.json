@@ -23,28 +23,68 @@
             "name": "550hPa Temperature (~5 km)",
             "expression": "cch5=(5, brightness_temperature, 220.000000, 280.000000);lut=lut(lut/generic/roygbiv.png);lut(cch5, 0, 0), lut(cch5, 0, 1), lut(cch5, 0, 2)",
             "image": {
-                "individual_equalize": false
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            false,
+                            {
+                                "per_channel": false
+                            }
+                        ]
+                    ]
+                ]
             }
         },
         {
             "name": "350hPa Temperature (~10 km)",
             "expression": "cch6=(6, brightness_temperature, 210.000000, 260.000000);lut=lut(lut/generic/roygbiv.png);lut(cch6, 0, 0), lut(cch6, 0, 1), lut(cch6, 0, 2)",
             "image": {
-                "individual_equalize": false
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            false,
+                            {
+                                "per_channel": false
+                            }
+                        ]
+                    ]
+                ]
             }
         },
         {
             "name": "200hPa Temperature (~12 km)",
             "expression": "cch7=(7, brightness_temperature, 210.000000, 240.000000);lut=lut(lut/generic/roygbiv.png);lut(cch7, 0, 0), lut(cch7, 0, 1), lut(cch7, 0, 2)",
             "image": {
-                "individual_equalize": false
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            false,
+                            {
+                                "per_channel": false
+                            }
+                        ]
+                    ]
+                ]
             }
         },
         {
             "name": "100hPa Temperature (~15 km)",
             "expression": "cch8=(8, brightness_temperature, 200.000000, 250.000000);lut=lut(lut/generic/roygbiv.png);lut(cch8, 0, 0), lut(cch8, 0, 1), lut(cch8, 0, 2)",
             "image": {
-                "individual_equalize": false
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            false,
+                            {
+                                "per_channel": false
+                            }
+                        ]
+                    ]
+                ]
             }
         }
     ],

@@ -48,9 +48,7 @@
                                 "per_channel": true
                             }
                         ]
-                    ]
-                ],
-                "filters": [
+                    ],
                     [
                         "white_balance",
                         [

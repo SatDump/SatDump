@@ -4,7 +4,19 @@
         {
             "name": "AIRS-HD 321",
             "expression": "ch3,ch2,ch1",
-            "equalize": true,
+            "image": {
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": false
+                            }
+                        ]
+                    ]
+                ]
+            },
             "autogen": true
         }
     ]

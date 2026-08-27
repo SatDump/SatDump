@@ -44,7 +44,17 @@
             "name": "AVHRR 221 False Color",
             "expression": "ch17,ch17,ch12",
             "image": {
-                "equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": false
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/221.md"
@@ -53,7 +63,17 @@
             "name": "AVHRR 3a21 False Color",
             "expression": "ch24, ch17, ch12",
             "image": {
-                "equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": false
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "description": "descriptions/321.md"

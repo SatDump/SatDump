@@ -5,7 +5,15 @@
             "name": "AVHRR 221 False Color",
             "expression": "cch1=(1, reflective_radiance, 0.000000, 20.760000);cch2=(2, reflective_radiance, 0.000000, 23.240000);ch2,ch2,ch1",
             "image": {
-                "remove_background": true
+                "filters": [
+                    [
+                        "remove_background",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/221.md"
         },
@@ -13,7 +21,15 @@
             "name": "AVHRR 3a21 False Color",
             "expression": "cch1=(1, reflective_radiance, 0.000000, 20.760000);cch2=(2, reflective_radiance, 0.000000, 23.240000);cch3=(3, reflective_radiance, 0.000000, 19.850000);ch3,ch2,ch1",
             "image": {
-                "remove_background": true
+                "filters": [
+                    [
+                        "remove_background",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/321.md",
             "autogen": true
@@ -22,7 +38,15 @@
             "name": "Natural Color",
             "expression": "cch1=(1, reflective_radiance, 0.000000, 17.760000);cch2=(2, reflective_radiance, 0.000000, 23.240000);cch3=(3, reflective_radiance, 0.000000, 22.850000);max(cch3,min(cch2,cch1)) + cch2^2.5,cch2,cch1",
             "image": {
-                "remove_background": true
+                "filters": [
+                    [
+                        "remove_background",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/NatColor.md"
         },
@@ -30,7 +54,15 @@
             "name": "AVHRR 124 False Color (Cloud RGB)",
             "expression": "cch1=(1, sun_angle_compensated_reflective_radiance, 0,  17.108);cch2=(2, sun_angle_compensated_reflective_radiance, 0, 27.55577);cch4=(9, brightness_temperature, 203, 323);cch1, cch2, 1-cch4",
             "image": {
-                "remove_background": true
+                "filters": [
+                    [
+                        "remove_background",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/124.md"
         },
@@ -57,7 +89,7 @@
             "name": "Day Microphysics (Metop)",
             "expression": "cch9=(9, brightness_temperature, 203.000000, 323.000000);cch3=(3, reflective_radiance, 0.000000, 15.880000);cch2=(2, reflective_radiance, 0.000000, 18.5840000);cch2,cch3,cch9",
             "image": {
-                    "remove_background": true
+                "remove_background": true
             },
             "description": "descriptions/DayMicro.md"
         },
@@ -65,7 +97,15 @@
             "name": "SEVIRI Snow enhancement",
             "expression": "cch4=(4, emissive_radiance, 0.010000, 0.690000);cch3=(3, reflective_radiance, 0.000000, 13.8950000);cch2=(2, reflective_radiance, 0.000000, 23.240000);cch2^(1/1.9),cch3^(1/1.9),cch4^(1/1.9)",
             "image": {
-                "remove_background": true
+                "filters": [
+                    [
+                        "remove_background",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             },
             "description": "descriptions/SEVIRISnow.md"
         },
@@ -73,28 +113,60 @@
             "name": "MeCIDA T6a Cirrus Detection (full)",
             "expression": "cch3=(3, reflective_radiance, 0.000000, 16.850000);cch2=(2, reflective_radiance, 0.000000, 20.240000);cch1=(1, reflective_radiance, 0.000000, 17.760000);cch11=(11, brightness_temperature, 000.000000, 1000.000000);cch8=(8, brightness_temperature, 000.000000, 1000.000000);(cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 0 : cch3  : cch3,(cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : cch2  : cch2,(cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : cch1  : cch1",
             "image": {
-                "remove_background": true
+                "filters": [
+                    [
+                        "remove_background",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             }
         },
         {
             "name": "MeCIDA T6a Cirrus Detection (transparent)",
             "expression": "cch11=(11, brightness_temperature, 000.000000, 1000.000000);cch8=(8, brightness_temperature, 000.000000, 1000.000000);0, (cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : 0 : 0, (cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : 0 : 0,(cch8-cch11) > -0.0007 ? cch8 < 0.258 ? 1 : 0 : 0",
             "image": {
-                "remove_background": true
+                "filters": [
+                    [
+                        "remove_background",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             }
         },
         {
             "name": "HRV Fog RGB",
             "expression": "cch12=(12, reflective_radiance, 0.000000, 13.5462);cch3=(3, reflective_radiance, 0.000000, 13.91);ref_channel=12;cch3,cch12,cch12",
             "image": {
-                "remove_background": true
+                "filters": [
+                    [
+                        "remove_background",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             }
         },
         {
             "name": "HRV Clouds RGB",
             "expression": "cch9=(9, brightness_temperature, 323.000000, 203.000000);cch12=(12, reflective_radiance, 0.000000, 14.5462);ref_channel=12;cch12,cch12,cch9",
             "image": {
-                "remove_background": true
+                "filters": [
+                    [
+                        "remove_background",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             }
         }
     ],

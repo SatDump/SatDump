@@ -4,7 +4,7 @@
         {
             "name": "MERSI-1 321",
             "expression": "ch3, ch2, ch1",
-            "image": { 
+            "image": {
                 "filters": [
                     [
                         "equalize",
@@ -23,8 +23,18 @@
         {
             "name": "MERSI-1 441",
             "expression": "ch4, ch4, ch1",
-            "image": { 
-                "equalize": true,
+            "image": {
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": false
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             }
         }

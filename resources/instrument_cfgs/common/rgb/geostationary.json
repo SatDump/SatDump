@@ -4,7 +4,15 @@
             "name": "Differential Water Vapor RGB",
             "expression": "cch6=({7.35um}, brightness_temperature, 180, 400); cch5=({6.25um}, brightness_temperature, 180, 400); 1-(((cch6-cch5+0.01363636363)/0.15)^3.86548125242),1-(((cch6-0.15068181818)/0.29545454545)^2.5),1-(((cch5-0.12954545454)/0.1609090909)^2.5)",
             "image": {
-                "remove_background": true
+                "filters": [
+                    [
+                        "remove_background",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             }
         },
         {
@@ -22,7 +30,6 @@
                         ]
                     ]
                 ],
-
                 "remove_background": true
             }
         },
@@ -30,7 +37,15 @@
             "name": "Airmass RGB",
             "expression": "e=(5, brightness_temperature_celsius, -64.650000, -29.250000);a=({6.2um}, brightness_temperature_celsius, -100, 50);b=({7.3um}, brightness_temperature_celsius, -100, 50);c=({9.6um}, brightness_temperature_celsius, -100, 50);d=({10.3um}, brightness_temperature_celsius, -100, 50);(a-b-(-0.15333333333333332))/0.15733333333333335,(c-d-(-0.28800000000000003))/0.3326666666666667,1-e",
             "image": {
-                "remove_background": true
+                "filters": [
+                    [
+                        "remove_background",
+                        [
+                            true,
+                            null
+                        ]
+                    ]
+                ]
             }
         }
     ],

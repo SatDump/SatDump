@@ -130,49 +130,109 @@
             "name": "Mid Stratosphere CO2 Temperature",
             "description": "descriptions/sounders/MidStratoCO2T.md",
             "expression": "cch=(2, brightness_temperature, 213.15, 243.15);lut=lut(lut/cal/bluered.png);lut(cch, 0, 0), lut(cch, 0, 1), lut(cch, 0, 2)",
-            "image": {
-                "individual_equalize": false
-            }
+    "image": {
+        "filters": [
+            [
+                "equalize",
+                [
+                    true,
+                    {
+                        "per_channel": true
+                    }
+                ]
+            ]
+        ]
+    }
         },
         {
             "name": "Low Stratosphere CO2 Temperature",
             "description": "descriptions/sounders/LowStratoCO2T.md",
             "expression": "cch=(3, brightness_temperature, 213.15, 243.15);lut=lut(lut/cal/bluered.png);lut(cch, 0, 0), lut(cch, 0, 1), lut(cch, 0, 2)",
-            "image": {
-                "individual_equalize": false
-            }
+    "image": {
+        "filters": [
+            [
+                "equalize",
+                [
+                    true,
+                    {
+                        "per_channel": true
+                    }
+                ]
+            ]
+        ]
+    }
         },
         {
             "name": "Top Troposphere CO2 Temperature",
             "description": "descriptions/sounders/TopTropoCO2T.md",
             "expression": "cch=(4, brightness_temperature, 213.15, 243.15);lut=lut(lut/cal/bluered.png);lut(cch, 0, 0), lut(cch, 0, 1), lut(cch, 0, 2)",
-            "image": {
-                "individual_equalize": false
-            }
+    "image": {
+        "filters": [
+            [
+                "equalize",
+                [
+                    true,
+                    {
+                        "per_channel": true
+                    }
+                ]
+            ]
+        ]
+    }
         },
         {
             "name": "High Troposphere CO2 Temperature",
             "description": "descriptions/sounders/HighTropoCO2T.md",
             "expression": "cch=(5, brightness_temperature, 223.15, 252.15);lut=lut(lut/cal/bluered.png);lut(cch, 0, 0), lut(cch, 0, 1), lut(cch, 0, 2)",
-            "image": {
-                "individual_equalize": false
-            }
+    "image": {
+        "filters": [
+            [
+                "equalize",
+                [
+                    true,
+                    {
+                        "per_channel": true
+                    }
+                ]
+            ]
+        ]
+    }
         },
         {
             "name": "Mid Troposphere CO2/H2O Temperature",
             "description": "descriptions/sounders/MidTropoCO2T.md",
             "expression": "cch=(6, brightness_temperature, 213.15, 283.15);lut=lut(lut/cal/bluered.png);lut(cch, 0, 0), lut(cch, 0, 1), lut(cch, 0, 2)",
-            "image": {
-                "individual_equalize": false
-            }
+    "image": {
+        "filters": [
+            [
+                "equalize",
+                [
+                    true,
+                    {
+                        "per_channel": true
+                    }
+                ]
+            ]
+        ]
+    }
         },
         {
             "name": "Low Troposphere CO2/H2O Temperature",
             "description": "descriptions/sounders/LowTropoCO2T.md",
             "expression": "cch=(7, brightness_temperature, 213.15, 293.15);lut=lut(lut/cal/bluered.png);lut(cch, 0, 0), lut(cch, 0, 1), lut(cch, 0, 2)",
-            "image": {
-                "individual_equalize": false
-            }
+    "image": {
+        "filters": [
+            [
+                "equalize",
+                [
+                    true,
+                    {
+                        "per_channel": true
+                    }
+                ]
+            ]
+        ]
+    }
         }
     ],
     "default": {

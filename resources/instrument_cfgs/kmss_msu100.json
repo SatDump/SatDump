@@ -12,39 +12,44 @@
                             true,
                             null
                         ]
-                    ]
-                ],
-                "hue_saturation": true,
-                "hue_saturation_cfg": {
-                    "overlap": 10.0,
-                    "hue": [
-                        0.0,
-                        0.3333333333333334,
-                        0.0,
-                        0.3888888888888885,
-                        0.0,
-                        0.0,
-                        0.0
                     ],
-                    "lightness": [
-                        0.0,
-                        0.02777777777777778,
-                        0.0,
-                        0.01111111111111111,
-                        0.0,
-                        0.0,
-                        0.0
-                    ],
-                    "saturation": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
+                    [
+                        "hue_saturation",
+                        [
+                            true,
+                            {
+                                "overlap": 10.0,
+                                "hue": [
+                                    0.0,
+                                    0.3333333333333334,
+                                    0.0,
+                                    0.3888888888888885,
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ],
+                                "lightness": [
+                                    0.0,
+                                    0.02777777777777778,
+                                    0.0,
+                                    0.01111111111111111,
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ],
+                                "saturation": [
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            }
+                        ]
                     ]
-                }
+                ]
             }
         },
         {
@@ -70,7 +75,17 @@
             "name": "NDVI (Uncalibrated)",
             "expression": "(ch3-ch2)/(ch3+ch2)",
             "image": {
-                "equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": false
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "geocorrect": true
@@ -79,7 +94,17 @@
             "name": "OSAVI (Uncalibrated)",
             "expression": "(ch3-ch2)/(ch3+ch2+0.16)",
             "image": {
-                "equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": false
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "geocorrect": true
@@ -88,7 +113,17 @@
             "name": "Vegetation classification",
             "expression": "ch2/ch1",
             "image": {
-                "equalize": true,
+                "filters": [
+                    [
+                        "equalize",
+                        [
+                            true,
+                            {
+                                "per_channel": false
+                            }
+                        ]
+                    ]
+                ],
                 "geocorrect": true
             },
             "geocorrect": true

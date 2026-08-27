@@ -4,25 +4,65 @@
         {
             "name": "AVHRR 221 False Color",
             "expression": "ch15, ch15, ch7",
-            "equalize": true,
+            "filters": [
+                [
+                    "equalize",
+                    [
+                        true,
+                        {
+                            "per_channel": false
+                        }
+                    ]
+                ]
+            ],
             "description": "descriptions/221.md"
         },
         {
             "name": "True Color",
             "expression": "ch8,ch6,ch4",
-            "equalize": true,
+            "filters": [
+                [
+                    "equalize",
+                    [
+                        true,
+                        {
+                            "per_channel": false
+                        }
+                    ]
+                ]
+            ],
             "description": "descriptions/TrueColor.md"
         },
         {
             "name": "CIR (Color Infrared)",
             "expression": "ch17,ch8,ch6",
-            "equalize": true,
+            "filters": [
+                [
+                    "equalize",
+                    [
+                        true,
+                        {
+                            "per_channel": false
+                        }
+                    ]
+                ]
+            ],
             "description": "descriptions/CIR.md"
         },
         {
             "name": "Bathymetric",
             "expression": "ch8,ch6,ch3",
-            "equalize": true,
+            "filters": [
+                [
+                    "equalize",
+                    [
+                        true,
+                        {
+                            "per_channel": false
+                        }
+                    ]
+                ]
+            ],
             "description": "descriptions/Bathymetric.md"
         }
     ]
