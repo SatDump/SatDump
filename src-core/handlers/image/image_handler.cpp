@@ -494,6 +494,8 @@ namespace satdump
             geocorrect_image = getValueOrDefault(p["geocorrect"], geocorrect_image);
             if (p.contains("filters"))
                 active_filters = p["filters"];
+            else
+                active_filters.clear();
         }
 
         nlohmann::json ImageHandler::getConfig()

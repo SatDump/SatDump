@@ -1,4 +1,5 @@
 #include "net_source.h"
+#include "i18n.h"
 #include "imgui/imgui_stdlib.h"
 
 void NetSource::set_settings(nlohmann::json settings)
@@ -111,10 +112,7 @@ void NetSource::stop()
     output_stream->flush();
 }
 
-void NetSource::close()
-{
-    is_open = false;
-}
+void NetSource::close() { is_open = false; }
 
 void NetSource::set_frequency(uint64_t frequency)
 {
@@ -133,40 +131,34 @@ void NetSource::drawControlUI()
 
     current_samplerate.draw();
 
-    if (ImGui::RadioButton("UDP##netsource", mode == MODE_UDP))
+    if (ImGui::RadioButton(_("UDP##netsource"), mode == MODE_UDP))
         mode = MODE_UDP;
-    if (ImGui::RadioButton("NNG Sub##netsource", mode == MODE_NNGSUB))
+    if (ImGui::RadioButton(_("NNG Sub##netsource"), mode == MODE_NNGSUB))
         mode = MODE_NNGSUB;
 
     if (mode == MODE_UDP)
     {
-        ImGui::InputInt("Port", &port);
+        ImGui::InputInt(_("Port"), &port);
     }
     else if (mode == MODE_NNGSUB)
     {
-        ImGui::InputText("Address", &address);
-        ImGui::InputInt("Port", &port);
+        ImGui::InputText(_("Address"), &address);
+        ImGui::InputInt(_("Port"), &port);
     }
 
     if (is_started)
         style::endDisabled();
 }
 
-void NetSource::set_samplerate(uint64_t samplerate)
-{
-    current_samplerate.set(samplerate);
-}
+void NetSource::set_samplerate(uint64_t samplerate) { current_samplerate.set(samplerate); }
 
-uint64_t NetSource::get_samplerate()
-{
-    return current_samplerate.get();
-}
+uint64_t NetSource::get_samplerate() { return current_samplerate.get(); }
 
 std::vector<dsp::SourceDescriptor> NetSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
-    results.push_back({"net_source", "Network Source", "0", false});
+    results.push_back({"net_source", _("Network Source"), "0", false});
 
     return results;
 }
