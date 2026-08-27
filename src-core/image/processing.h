@@ -28,8 +28,9 @@ namespace satdump
         /**
          * @brief Adaptive noise reduction filter
          * @param img image to process
+         * @param p progress float
          */
-        void kuwahara_filter(Image &img);
+        void kuwahara_filter(Image &img, float *p = nullptr);
 
         /**
          * @brief Perform histogram equalization

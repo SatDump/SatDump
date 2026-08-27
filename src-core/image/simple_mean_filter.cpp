@@ -21,7 +21,7 @@ namespace satdump
             return val / float(abs(xmax - xmin) * abs(ymax - ymin));
         }
 
-        void simple_mean_filter(Image &img, int radius, simple_mean_filter_mode_t mode)
+        void simple_mean_filter(Image &img, int radius, simple_mean_filter_mode_t mode, float *p)
         {
             int width = img.width();
             int height = img.height();
@@ -43,6 +43,9 @@ namespace satdump
                         else if (mode == EDGE)
                             img2.setf(c, x, y, img.getf(c, x, y) - mean);
                     }
+
+                    if (p != nullptr)
+                        *p = c * (1.0 / (float)img.channels()) + ((float(x) / float(width)) / (float)img.channels());
                 }
             }
 

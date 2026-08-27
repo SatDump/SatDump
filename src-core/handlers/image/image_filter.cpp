@@ -180,7 +180,7 @@ namespace satdump
 
             filters.insert({"median_blur", {_("Median Blur"), [](image::Image &img, nlohmann::json, float *) { image::median_blur(img); }}});
 
-            filters.insert({"despeckle", {_("Despeckle"), [](image::Image &img, nlohmann::json, float *) { image::kuwahara_filter(img); }}});
+            filters.insert({"despeckle", {_("Despeckle"), [](image::Image &img, nlohmann::json, float *p) { image::kuwahara_filter(img, p); }}});
 
             filters.insert({"brightness_contrast",
                             {_("Brightness/contrast"),
@@ -192,7 +192,7 @@ namespace satdump
                              }, //
                              []() { return std::make_shared<BrightnessContrastConfigurator>(); }, true}});
 
-            filters.insert({"remove_background", {_("Remove Background"), [](image::Image &img, nlohmann::json, float *) { image::remove_background(img, nullptr); }}});
+            filters.insert({"remove_background", {_("Remove Background"), [](image::Image &img, nlohmann::json, float *p) { image::remove_background(img, p); }}});
 
             filters.insert({"hue_saturation",
                             {_("Hue/Saturation"), [](image::Image &img, nlohmann::json cfg, float *) { image::hue_saturation(img, cfg); }, //
@@ -203,7 +203,7 @@ namespace satdump
                              []() { return std::make_shared<AdaptiveDespeckleConfigurator>(); }, true}});
 
             filters.insert({"simple_mean_filter",
-                            {_("Simple Mean Filter"), [](image::Image &img, nlohmann::json cfg, float *) { image::simple_mean_filter(img, cfg["radius"], cfg["mode"]); }, //
+                            {_("Simple Mean Filter"), [](image::Image &img, nlohmann::json cfg, float *p) { image::simple_mean_filter(img, cfg["radius"], cfg["mode"], p); }, //
                              []() { return std::make_shared<SimpleMeanFilterConfigurator>(); }, true}});
 
             return filters;
