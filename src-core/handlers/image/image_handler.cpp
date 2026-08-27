@@ -165,6 +165,7 @@ namespace satdump
                             auto min = ImGui::GetCursorScreenPos();
                             auto max = ImGui::GetCursorScreenPos() + ImVec2(ImGui::GetContentRegionAvail().x, ImGui::CalcTextSize(name.c_str()).y);
                             max.x = min.x + (max.x - min.x) * f.second.progress;
+                            min.y += ImGui::CalcTextSize(name.c_str()).y * 0.9;
                             ImGui::GetWindowDrawList()->AddRectFilled(min, max, style::theme.yellow);
                         }
                         else if (f.second.progress == -1)
@@ -174,6 +175,7 @@ namespace satdump
                             float offset = fmod(ImGui::GetTime() * 100, (max.x - min.x));
                             max.x = offset + min.x + (max.x - min.x) * 0.1;
                             min.x = offset;
+                            min.y += ImGui::CalcTextSize(name.c_str()).y * 0.9;
                             ImGui::GetWindowDrawList()->AddRectFilled(min, max, style::theme.yellow);
                         }
 
@@ -478,7 +480,8 @@ namespace satdump
         {
             rotate_image = getValueOrDefault(p["rotate180"], rotate_image);
             geocorrect_image = getValueOrDefault(p["geocorrect"], geocorrect_image);
-            active_filters = getValueOrDefault(p["filters"], active_filters);
+            if (p.contains("filters"))
+                active_filters = p["filters"];
         }
 
         nlohmann::json ImageHandler::getConfig()
