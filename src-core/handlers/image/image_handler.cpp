@@ -365,7 +365,7 @@ namespace satdump
                         }
                         else
                         {
-                            active_filters.push_back({filter.first, {true, {}}});
+                            active_filters.push_back({filter.first, {{}}});
                             asyncProcess();
                         }
                     }
