@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-27 16:28+0200\n"
-"PO-Revision-Date: 2026-08-27 08:14+0200\n"
+"PO-Revision-Date: 2026-08-27 20:56+0200\n"
 "Last-Translator: Meti\n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -129,7 +129,7 @@ msgstr "Vybratý adresár:"
 
 #: plugins/firstparty_support/loader/eumetsat.cpp:201
 msgid "Refresh##archiveloader_refresh"
-msgstr "ObnoviŤ##archiveloader_refresh"
+msgstr "Obnoviť##archiveloader_refresh"
 
 #: plugins/firstparty_support/loader/eumetsat.cpp:204
 msgid "Date: "
@@ -423,7 +423,7 @@ msgstr ""
 
 #: src-interface/notify_logger_sink.cpp:23
 msgid "Notice"
-msgstr ""
+msgstr "Poznámka"
 
 #: src-interface/notify_logger_sink.cpp:29
 msgid "Warning"
@@ -579,7 +579,7 @@ msgstr "Zastaviť##stopprocessing"
 
 #: src-interface/recorder/recorder.cpp:518
 msgid "Recording"
-msgstr "Nahráva sa"
+msgstr "Nahrávanie"
 
 #: src-interface/recorder/recorder.cpp:524
 msgid "Format##basebandrecordformat"
@@ -1013,37 +1013,36 @@ msgstr "Prekrytie"
 
 #: src-core/handlers/image/image_filter.cpp:108
 msgid "Adaptive"
-msgstr ""
+msgstr "Adaptívne"
 
 #: src-core/handlers/image/image_filter.cpp:110
 msgid "Recursive"
-msgstr ""
+msgstr "Rekurzívnne"
 
 #: src-core/handlers/image/image_filter.cpp:113
 #: src-core/handlers/image/image_filter.cpp:135
 msgid "Radius"
-msgstr ""
+msgstr "Priemer"
 
 #: src-core/handlers/image/image_filter.cpp:117
 msgid "Black Level"
-msgstr ""
+msgstr "Úroveň čiernej"
 
 #: src-core/handlers/image/image_filter.cpp:118
-#, fuzzy
 msgid "White Level"
-msgstr "Vstupná úroveň"
+msgstr "Úroveň bielej"
 
 #: src-core/handlers/image/image_filter.cpp:139
 msgid "Smooth"
-msgstr ""
+msgstr "Vyhladiť"
 
 #: src-core/handlers/image/image_filter.cpp:141
 msgid "Sharpen"
-msgstr ""
+msgstr "Zaostriť"
 
 #: src-core/handlers/image/image_filter.cpp:143
 msgid "Edge"
-msgstr ""
+msgstr "Okraj"
 
 # The term "Equalize" literally means "Vyrovnať", but in image editing (i.e. GIMP) they use the word "Equalize" as a foreign term, adjusted to Slovak it is "Ekvalizovať"
 #: src-core/handlers/image/image_filter.cpp:167
@@ -1076,19 +1075,17 @@ msgid "Remove Background"
 msgstr "Odstrániť pozadie"
 
 #: src-core/handlers/image/image_filter.cpp:198
-#, fuzzy
 msgid "Hue Saturation"
-msgstr "Odtieň/Saturácia"
+msgstr "Odtieň Saturácia"
 
 # This is apparently kept stock in software, since there is no real translation
 #: src-core/handlers/image/image_filter.cpp:202
-#, fuzzy
 msgid "Adaptive Despeckle"
-msgstr "Despeckle"
+msgstr "Adaptívny despeckle"
 
 #: src-core/handlers/image/image_filter.cpp:206
 msgid "Simple Mean Filter"
-msgstr ""
+msgstr "Jednoduchý priemerovací filter"
 
 #: src-core/handlers/image/image_handler.cpp:42
 msgid "Cannot crop while processing!"
@@ -1103,23 +1100,20 @@ msgid "Image"
 msgstr "Obraz"
 
 #: src-core/handlers/image/image_handler.cpp:113
-#, fuzzy
 msgid "Rotate 0"
-msgstr "Otočiť 180"
+msgstr "Otočiť 0"
 
 #: src-core/handlers/image/image_handler.cpp:115
-#, fuzzy
 msgid "Rotate 90"
-msgstr "Otočiť 180"
+msgstr "Otočiť 90"
 
 #: src-core/handlers/image/image_handler.cpp:117
 msgid "Rotate 180"
 msgstr "Otočiť 180"
 
 #: src-core/handlers/image/image_handler.cpp:119
-#, fuzzy
 msgid "Rotate 270"
-msgstr "Otočiť 180"
+msgstr "Otočiť  270"
 
 #: src-core/handlers/image/image_handler.cpp:123
 msgid "Geo Correct"
@@ -1147,7 +1141,7 @@ msgstr "Prosím počkajte na dokončenie ukladania!"
 #: src-core/handlers/image/image_handler.cpp:145
 #: src-core/handlers/image/image_handler.cpp:335
 msgid "Filters"
-msgstr ""
+msgstr "Filtre"
 
 #: src-core/handlers/image/image_handler.cpp:258
 msgid "Save cancelled"
@@ -1199,12 +1193,12 @@ msgstr "Nové premietnutie"
 #. Render filters menu
 #: src-core/handlers/image/image_handler.cpp:335
 msgid ""
-msgstr ""
+msgstr ""
 
 #: src-core/handlers/image/image_handler.cpp:376
-#, fuzzy, c-format
+#, c-format
 msgid "Raw %d : %d F %f"
-msgstr "Surové: %d"
+msgstr "Surové %d : %d F %f"
 
 #: src-core/handlers/image/image_handler.cpp:385
 #, c-format
@@ -1231,9 +1225,8 @@ msgstr "Zemepisná šírka: %f"
 
 #: src-core/handlers/image/image_handler.cpp:437
 #: src-core/handlers/image/image_handler.cpp:438
-#, fuzzy
 msgid "Filter Config"
-msgstr "Konfigurácia rotoru"
+msgstr "Konfigurácia filtra"
 
 # Not many good choices here sadly
 #: src-core/handlers/image/image_handler.cpp:442
@@ -1243,7 +1236,7 @@ msgstr "Použiť"
 
 #: src-core/handlers/image/image_handler.cpp:452
 msgid "Cancel"
-msgstr ""
+msgstr "Zrušiť"
 
 #: src-core/handlers/image/image_handler.cpp:534
 msgid "Failed Geo-Correcting image!"
