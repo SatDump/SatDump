@@ -180,7 +180,7 @@ namespace satdump
 
             filters.insert({"median_blur", {_("Median Blur"), [](image::Image &img, nlohmann::json, float *) { image::median_blur(img); }}});
 
-            filters.insert({"despeckle", {_("Despeckle"), [](image::Image &img, nlohmann::json, float *p) { image::kuwahara_filter(img, p); }}});
+            filters.insert({"kuwahara_filter", {_("Kuwahara Filter"), [](image::Image &img, nlohmann::json, float *p) { image::kuwahara_filter(img, p); }}});
 
             filters.insert({"brightness_contrast",
                             {_("Brightness/contrast"),
