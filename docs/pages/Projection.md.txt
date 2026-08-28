@@ -37,7 +37,17 @@ This is an example how one instrument could be listed:
                             "height": 2048,
                             "old_algo": true,
                             "draw_map": true,
-                            "equalize": true,
+                                    "filters": [
+            [
+                "equalize",
+                [
+                    true,
+                    {
+                        "per_channel": false
+                    }
+                ]
+            ]
+        ],
                             "config": {
                                 "type": "equirectangular"
                             }
@@ -75,7 +85,17 @@ There are a few general settings which all projection types have in common.
         "height": 2048,
         "old_algo": false,
         "draw_map": true,
-        "equalize": true,
+                "filters": [
+            [
+                "equalize",
+                [
+                    true,
+                    {
+                        "per_channel": false
+                    }
+                ]
+            ]
+        ],
         "config": {
             ...
         }
@@ -101,7 +121,17 @@ Example:
         "height": 2048,
         "old_algo": false,
         "draw_map": true,
-        "equalize": true,
+                "filters": [
+            [
+                "equalize",
+                [
+                    true,
+                    {
+                        "per_channel": false
+                    }
+                ]
+            ]
+        ],
         "config": {
             "type": "equirectangular",
             "tl_lon": -30.0,
@@ -124,7 +154,17 @@ Example:
         "height": 2048,
         "old_algo": false,
         "draw_map": true,
-        "equalize": true,
+                "filters": [
+            [
+                "equalize",
+                [
+                    true,
+                    {
+                        "per_channel": false
+                    }
+                ]
+            ]
+        ],
         "config": {
             "type": "mercator"
         }
@@ -146,7 +186,17 @@ Example:
         "height": 4096,
         "old_algo": false,
         "draw_map": true,
-        "equalize": true,
+                "filters": [
+            [
+                "equalize",
+                [
+                    true,
+                    {
+                        "per_channel": false
+                    }
+                ]
+            ]
+        ],
         "config": {
             "type": "stereo",
             "center_lon": 50.0,
@@ -172,7 +222,17 @@ For `tpers` projection, the following parameters are needed (else it will use de
         "height": 4096,
         "old_algo": false,
         "draw_map": true,
-        "equalize": true,
+                "filters": [
+            [
+                "equalize",
+                [
+                    true,
+                    {
+                        "per_channel": false
+                    }
+                ]
+            ]
+        ],
         "config": {
             "type": "tpers",
             "alt": 30000.0,
@@ -197,7 +257,17 @@ For `azeq` projection, the following parameters are needed (else it will use def
         "height": 4096,
         "old_algo": false,
         "draw_map": true,
-        "equalize": true,
+                "filters": [
+            [
+                "equalize",
+                [
+                    true,
+                    {
+                        "per_channel": false
+                    }
+                ]
+            ]
+        ],
         "config": {
             "type": "azeq",
             "lon": 10.0,
