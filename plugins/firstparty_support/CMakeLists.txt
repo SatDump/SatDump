@@ -3,7 +3,7 @@ project(firstparty_support)
 
 if(NOT ANDROID)
   find_package(PkgConfig)
-  pkg_check_modules(HDF5 hdf5)
+  pkg_check_modules(HDF5 hdf5 hdf5_hl hdf5_cpp)
 endif()
 
 if(${HDF5_FOUND})
@@ -31,7 +31,7 @@ if(${HDF5_FOUND})
   target_include_directories(firstparty_support
                              PUBLIC ${HDF5_INCLUDE_DIRS})
   target_link_directories(firstparty_support PUBLIC ${HDF5_LIBRARY_DIRS})
-  target_link_libraries(firstparty_support PUBLIC hdf5 hdf5_hl hdf5_cpp xrit_support)
+  target_link_libraries(firstparty_support PUBLIC ${HDF5_LIBRARIES} xrit_support)
 
   if(MSVC OR BUILD_MSVC)
     install(
