@@ -3,6 +3,8 @@ project(firstparty_support)
 
 if(NOT ANDROID)
   find_package(PkgConfig)
+  set(HDF5_NEW_FOUND=0)
+  set(HDF5_FOUND=0)
   pkg_check_modules(HDF5 hdf5)
   pkg_check_modules(HDF5_NEW hdf5 hdf5_hl hdf5_cpp)
 endif()
