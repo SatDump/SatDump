@@ -38,9 +38,7 @@ file(GLOB_RECURSE SatDump_core_CPPS *.cpp
     libs/mqttc/*.c
 )
 
-if(MSVC OR BUILD_MSVC)
-    list(REMOVE_ITEM SatDump_core_CPPS ${PROJECT_SOURCE_DIR}/src-core/satdump_varst.cpp)
-endif()
+list(REMOVE_ITEM SatDump_core_CPPS ${PROJECT_SOURCE_DIR}/src-core/satdump_varst.cpp)
 
 ################################################################
 ####### AngelScript START
