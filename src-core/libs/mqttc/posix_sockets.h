@@ -1,4 +1,3 @@
-#include <unistd.h>
 #if !defined(__POSIX_SOCKET_TEMPLATE_H__)
 #define __POSIX_SOCKET_TEMPLATE_H__
 
@@ -7,6 +6,7 @@
 #if !defined(WIN32)
 #include <sys/socket.h>
 #include <netdb.h>
+#include <unistd.h>
 #else
 #include <ws2tcpip.h>
 #endif
@@ -44,7 +44,11 @@ int open_nb_socket(const char* addr, const char* port) {
         /* connect to server */
         rv = connect(sockfd, p->ai_addr, p->ai_addrlen);
         if(rv == -1) {
+#if defined(_WIN32)
+          closesocket(sockfd);
+#else
           close(sockfd);
+#endif
           sockfd = -1;
           continue;
         }
@@ -59,7 +63,7 @@ int open_nb_socket(const char* addr, const char* port) {
     if (sockfd != -1) fcntl(sockfd, F_SETFL, fcntl(sockfd, F_GETFL) | O_NONBLOCK);
 #else
     if (sockfd != INVALID_SOCKET) {
-        int iMode = 1;
+        u_long iMode = 1;
         ioctlsocket(sockfd, FIONBIO, &iMode);
     }
 #endif

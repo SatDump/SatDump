@@ -5,6 +5,7 @@
 #include <H5LTpublic.h>
 #include <cstdint>
 #include <string>
+#include "common/utils.h"
 
 namespace satdump
 {

@@ -272,7 +272,7 @@ git clone https://github.com/EttusResearch/uhd # v4.8 (latest as of this writing
 cd uhd\host
 $null = mkdir build
 cd build
-cmake $build_args -DENABLE_MAN_PAGES=OFF -DENABLE_MANUAL=OFF -DENABLE_PYTHON_API=OFF -DENABLE_EXAMPLES=OFF -DENABLE_UTILS=OFF -DENABLE_TESTS=OFF -DPYTHON_EXECUTABLE="$((Get-Command python3).Source)" ..
+cmake $build_args -DENABLE_MAN_PAGES=OFF -DENABLE_MANUAL=OFF -DENABLE_PYTHON_API=OFF -DENABLE_EXAMPLES=OFF -DENABLE_UTILS=OFF -DENABLE_TESTS=OFF -DPYTHON_EXECUTABLE="$((Get-Command python).Source)" ..
 cmake --build . --config Release
 cmake --install .
 cd ..\..\..

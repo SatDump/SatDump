@@ -392,7 +392,7 @@ namespace proba
                     {
                         std::string vegs_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/Vegetation-X";
 
-                        for (auto &tocorr_inst : (std::vector<std::vector<vegetation::VegetationX *>>){
+                        for (auto &tocorr_inst : std::vector<std::vector<vegetation::VegetationX *>>({
                                  {&vegx_reader1, &vegx_reader14, &vegx_reader15}, //
                                  {&vegx_reader8, &vegx_reader12, &vegx_reader13}, //
                                  {&vegx_reader5, &vegx_reader6, &vegx_reader7},   //
@@ -400,7 +400,7 @@ namespace proba
                                  {&vegx_reader16, &vegx_reader17, &vegx_reader18}, //
                                  {&vegx_reader2, &vegx_reader3, &vegx_reader9},    //
                                  {&vegx_reader4, &vegx_reader10, &vegx_reader11},  //
-                             })
+                            }))
                         {
                             std::vector<int> to_corr;
 

@@ -4,7 +4,7 @@ include(CheckCXXSourceCompiles)
 
 find_library(LITEXM2SDR_LIBRARY m2sdr)
 
-if(LITEXM2SDR_LIBRARY OR MSVC) # OR ANDROID)
+if(LITEXM2SDR_LIBRARY) # OR ANDROID)
     message("Building with LiteX M2SDR support")
     file(GLOB_RECURSE litex_m2sdr_sdr_support_CPPS *.cpp)
     add_library(litex_m2sdr_sdr_support SHARED ${litex_m2sdr_sdr_support_CPPS})

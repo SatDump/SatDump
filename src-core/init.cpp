@@ -1,7 +1,9 @@
+#define SATDUMP_DLL_EXPORT 1
+
 #include "db/kepler/kepler_handler.h"
 #include "i18n.h"
 #include <cstdlib>
-#define SATDUMP_DLL_EXPORT 1
+
 #include "core/config.h"
 #include "core/plugin.h"
 #include "core/resources.h"
@@ -24,6 +26,10 @@
 #include "common/dsp/buffer.h"
 
 #include "products/product.h"
+
+#if defined(_WIN32)
+#include <Windows.h>
+#endif
 
 // TODOREWORK?
 extern "C"
@@ -48,9 +54,17 @@ namespace satdump
     void initLanguage(std::string lang)
     {
         if (lang.size())
+#if defined(_WIN32)
+            SetEnvironmentVariable("LANGUAGE", lang.c_str());
+#else
             setenv("LANGUAGE", lang.c_str(), true);
+#endif
         else
+#if defined(_WIN32)
+            SetEnvironmentVariable("LANGUAGE", ""); // TODOREWORK check
+#else
             unsetenv("LANGUAGE");
+#endif
 
         setlocale(LC_ALL, "");
         bindtextdomain("satdump", resources::getResourcePath("i18n").c_str());

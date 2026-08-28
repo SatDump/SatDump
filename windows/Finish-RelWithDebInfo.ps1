@@ -31,15 +31,15 @@ function Parse-DumpBin($binary_path)
     return $return_val
 }
 
-#Copy all files into the Release folder
+#Copy all files into the RelWithDebInfo folder
 cd $BuildPath
-rm -r -fo Release\plugins | Out-Null
-mkdir Release\plugins | Out-Null
-cp plugins\Release\*.dll Release\plugins
-rm -r -fo Release\resources | Out-Null
-cp -r $SourcePath\resources Release
-cp $SourcePath\satdump_cfg.json Release
-cd Release
+rm -r -fo RelWithDebInfo\plugins | Out-Null
+mkdir RelWithDebInfo\plugins | Out-Null
+cp plugins\RelWithDebInfo\*.dll RelWithDebInfo\plugins
+rm -r -fo RelWithDebInfo\resources | Out-Null
+cp -r $SourcePath\resources RelWithDebInfo
+cp $SourcePath\satdump_cfg.json RelWithDebInfo
+cd RelWithDebInfo
 
 $input_dlls = Get-ChildItem -Recurse -Filter *.dll
 $input_dlls += Get-ChildItem -Recurse -Filter *.exe

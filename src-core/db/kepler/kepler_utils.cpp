@@ -7,6 +7,7 @@
 #include "utils/string.h"
 #include <exception>
 #include <thread>
+#include "common/utils.h"
 
 namespace satdump
 {

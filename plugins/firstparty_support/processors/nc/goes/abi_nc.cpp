@@ -2,6 +2,7 @@
 #include "../../hdf_utils.h"
 #include <H5Cpp.h>
 #include <H5LTpublic.h>
+#include "common/utils.h"
 
 namespace satdump
 {

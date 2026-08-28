@@ -7,6 +7,7 @@
 #include "utils/time.h"
 #include <cstring>
 #include <fstream>
+#include "common/utils.h"
 
 namespace elektro_arktika
 {

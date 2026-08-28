@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <algorithm>
 
 namespace elektro_arktika
 {
@@ -104,7 +105,7 @@ namespace elektro_arktika
                     last_time = dat;
                 }
 
-                ImPlot::PlotLine("Data", time.data(), data.data(), std::min(time.size(), data.size()));
+                ImPlot::PlotLine("Data", time.data(), data.data(), std::min<int>(time.size(), data.size()));
 
                 ImPlot::EndPlot();
 

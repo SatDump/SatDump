@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <exception>
 #include <string>
+#include "common/utils.h"
 
 namespace satdump
 {

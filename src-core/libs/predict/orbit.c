@@ -8,6 +8,10 @@
 #include "sun.h"
 #include "unsorted.h"
 
+#ifdef _WIN32
+#define timegm _mkgmtime
+#endif
+
 bool is_eclipsed(const double pos[3], const double sol[3], double *depth);
 bool predict_decayed(const predict_orbital_elements_t *orbital_elements, predict_julian_date_t time);
 
