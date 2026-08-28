@@ -56,5 +56,5 @@ jobs:
       - name: Upload ZIP
         uses: actions/upload-artifact@v3
         with:
-          name: SatDump-Ubuntu-24.04
+          name: SatDump-Debian
           path: ${{runner.workspace}}/build/*.deb
