@@ -7,7 +7,7 @@ if(NOT ANDROID)
   pkg_check_modules(HDF5NEW hdf5 hdf5_hl hdf5_cpp)
 endif()
 
-if(${HDF5_FOUND} OR ${HDF5NEW_FOUND})
+if(HDF5_FOUND OR HDF5NEW_FOUND)
 
   # Core Plugin
   file(
