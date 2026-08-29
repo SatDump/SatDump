@@ -4,10 +4,11 @@ project(firstparty_support)
 if(NOT ANDROID)
   find_package(PkgConfig)
   pkg_check_modules(HDF5 hdf5)
-  pkg_check_modules(HDF5NEW hdf5 hdf5_hl hdf5_cpp)
+  pkg_check_modules(HDF5HL hdf5_hl hdf5_cpp)
+  pkg_check_modules(HDF5CPP hdf5_cpp)
 endif()
 
-if(HDF5_FOUND OR HDF5NEW_FOUND)
+if(HDF5_FOUND)
 
   # Core Plugin
   file(
@@ -33,8 +34,8 @@ if(HDF5_FOUND OR HDF5NEW_FOUND)
                              PUBLIC ${HDF5_INCLUDE_DIRS})
   target_link_directories(firstparty_support PUBLIC ${HDF5_LIBRARY_DIRS})
 
-  if(${HDF5NEW_FOUND})
-    target_link_libraries(firstparty_support PUBLIC ${HDF5_LIBRARIES} xrit_support)
+  if(HDF5HL_FOUND OR HDF5CPP)
+    target_link_libraries(firstparty_support PUBLIC ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${HDF5CPP_LIBRARIES} xrit_support)
   else()
     target_link_libraries(firstparty_support PUBLIC hdf5 hdf5_hl hdf5_cpp xrit_support)
   endif()
