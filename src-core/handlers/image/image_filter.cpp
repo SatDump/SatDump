@@ -195,7 +195,7 @@ namespace satdump
             filters.insert({"remove_background", {_("Remove Background"), [](image::Image &img, nlohmann::json, float *p) { image::remove_background(img, p); }}});
 
             filters.insert({"hue_saturation",
-                            {_("Hue/Saturation"), [](image::Image &img, nlohmann::json cfg, float *) { image::hue_saturation(img, cfg); }, //
+                            {_("Hue/Saturation"), [](image::Image &img, nlohmann::json cfg, float *p) { image::hue_saturation(img, cfg, p); }, //
                              []() { return std::make_shared<HueSaturationConfigurator>(); }, true}});
 
             filters.insert({"adaptive_despeckle",
