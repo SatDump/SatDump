@@ -61,7 +61,7 @@ if($env:PROCESSOR_ARCHITECTURE -ne $arch)
 #Setup vcpkg
 Write-Output "Configuring vcpkg..."
 cd "$(Split-Path -Parent $MyInvocation.MyCommand.Path)\.."
-git clone https://github.com/microsoft/vcpkg -b 2025.01.13
+git clone https://github.com/microsoft/vcpkg -b 2026.07.29
 cd vcpkg
 .\bootstrap-vcpkg.bat
 
