@@ -184,11 +184,11 @@ namespace satdump
 
             filters.insert({"brightness_contrast",
                             {_("Brightness/contrast"),
-                             [](image::Image &img, nlohmann::json cfg, float *)
+                             [](image::Image &img, nlohmann::json cfg, float *p)
                              {
                                  float brightness = cfg["brightness"];
                                  float contrast = cfg["contrast"];
-                                 image::brightness_contrast(img, brightness, contrast);
+                                 image::brightness_contrast(img, brightness, contrast, p);
                              }, //
                              []() { return std::make_shared<BrightnessContrastConfigurator>(); }, true}});
 

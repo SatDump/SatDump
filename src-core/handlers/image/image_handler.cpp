@@ -144,7 +144,7 @@ namespace satdump
                 wasMenuTriggered = needs_to_update;
             }
 
-            if (ImGui::CollapsingHeader(_("Filters")))
+            if (ImGui::CollapsingHeader(_("Filters")), ImGuiTreeNodeFlags_DefaultOpen)
             {
                 if (needs_to_be_disabled)
                     style::beginDisabled();
