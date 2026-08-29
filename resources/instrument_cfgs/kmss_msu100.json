@@ -63,8 +63,7 @@
                             "per_channel": true
                         }
                     ]
-                ],
-                "geocorrect": true
+                ]
             },
             "description": "descriptions/CIR.md"
         },
@@ -79,10 +78,8 @@
                             "per_channel": false
                         }
                     ]
-                ],
-                "geocorrect": true
-            },
-            "geocorrect": true
+                ]
+            }
         },
         {
             "name": "OSAVI (Uncalibrated)",
@@ -95,10 +92,8 @@
                             "per_channel": false
                         }
                     ]
-                ],
-                "geocorrect": true
-            },
-            "geocorrect": true
+                ]
+            }
         },
         {
             "name": "Vegetation classification",
@@ -111,10 +106,8 @@
                             "per_channel": false
                         }
                     ]
-                ],
-                "geocorrect": true
-            },
-            "geocorrect": true
+                ]
+            }
         }
     ]
 }
