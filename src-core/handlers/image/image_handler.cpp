@@ -571,9 +571,6 @@ namespace satdump
                         }
                     }
 
-                    for (auto &f : active_filters)
-                        f.second.progress = 0;
-
                     if (geocorrect_image)
                     { // TODOREWORK handle disabling projs, etc
                         bool success = false;
@@ -593,6 +590,9 @@ namespace satdump
             }
             else
                 curr_image.clear();
+
+            for (auto &f : active_filters)
+                f.second.progress = 0;
 
             ////////////////////////
             subhandlers_mtx.lock();
