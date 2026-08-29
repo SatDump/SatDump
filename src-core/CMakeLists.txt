@@ -39,6 +39,7 @@ file(GLOB_RECURSE SatDump_core_CPPS *.cpp
 )
 
 list(REMOVE_ITEM SatDump_core_CPPS ${PROJECT_SOURCE_DIR}/src-core/satdump_varst.cpp)
+list(REMOVE_ITEM SatDump_core_CPPS ${PROJECT_BINARY_DIR}/src-core/satdump_varst.cpp)
 
 ################################################################
 ####### AngelScript START
