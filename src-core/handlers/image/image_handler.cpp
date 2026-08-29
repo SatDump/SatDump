@@ -492,10 +492,18 @@ namespace satdump
         {
             rotate_image = getValueOrDefault(p["rotate180"], rotate_image);
             geocorrect_image = getValueOrDefault(p["geocorrect"], geocorrect_image);
-            if (p.contains("filters"))
-                active_filters = p["filters"];
-            else
-                active_filters.clear();
+
+            try
+            {
+                if (p.contains("filters"))
+                    active_filters = p["filters"];
+                else
+                    active_filters.clear();
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Error parsing filters : %s", e.what());
+            }
         }
 
         nlohmann::json ImageHandler::getConfig()
