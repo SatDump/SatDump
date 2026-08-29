@@ -65,7 +65,7 @@ namespace satdump
                 // Set frequency
                 if (rtsa_api->AARTSAAPI_ConfigFind(&aaronia_device, &root, &config, L"main/centerfreq") == AARTSAAPI_OK)
                     rtsa_api->AARTSAAPI_ConfigSetFloat(&aaronia_device, &config, p_frequency);
-                logger->debug("Set Aaronia frequency to %d", p_frequency);
+                logger->debug("Set Aaronia frequency to %f", p_frequency);
             }
         }
 

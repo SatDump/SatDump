@@ -158,7 +158,7 @@ namespace satdump
                 else
                     d_min_level = -20;
 
-                add_param_range(p, "ref_level", "float", d_min_level, 10.0f, 1);
+                add_param_range(p, "ref_level", "float", d_min_level, 10.0f, 1, "Ref Level");
                 add_param_list(p, "agc_mode", "string", {"manual", "peak", "power"}, "AGC Mode");
                 add_param_simple(p, "enable_amp", "bool", "Amp");
                 add_param_simple(p, "enable_preamp", "bool", "Preamp");
