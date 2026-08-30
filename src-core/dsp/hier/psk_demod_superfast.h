@@ -2,12 +2,13 @@
 
 #include "common/dsp/block.h"
 #include "common/dsp/complex.h"
-#include "dsp/agc/agc.h"
+#include "dsp/agc/agc_fast.h"
 #include "dsp/block.h"
-#include "dsp/clock_recovery/clock_recovery_mm.h"
+#include "dsp/clock_recovery/clock_recovery_mm_fast.h"
+#include "dsp/filter/fft.h"
 #include "dsp/filter/rrc.h"
 #include "dsp/path/splitter.h"
-#include "dsp/pll/costas.h"
+#include "dsp/pll/costas_fast.h"
 #include "dsp/utils/psk_snr_estimator.h"
 #include "logger.h"
 #include "nlohmann/json.hpp"
@@ -18,13 +19,13 @@ namespace satdump
 {
     namespace ndsp
     {
-        class PSKDemodHierBlock : public Block
+        class PSKDemodSuperFastHierBlock : public Block
         {
         private:
-            RRC_Block<FIRBlock<complex_t>> rrc_blk;
-            AGCBlock<complex_t> agc_blk;
-            CostasBlock pll_blk;
-            MMClockRecoveryBlock<complex_t> rec_blk;
+            RRC_Block<FFTFilterBlock<complex_t>> rrc_blk;
+            AGCFastBlock<complex_t> agc_blk;
+            MMClockRecoveryFastBlock<complex_t> rec_blk;
+            CostasFastBlock pll_blk;
 
             SplitterBlock<complex_t> const_split_blk;
             PSKSnrEstimatorBlock snr_est_blk;
@@ -38,8 +39,8 @@ namespace satdump
             bool advanced_mode = false;
 
         public:
-            PSKDemodHierBlock();
-            ~PSKDemodHierBlock();
+            PSKDemodSuperFastHierBlock();
+            ~PSKDemodSuperFastHierBlock();
 
             std::vector<BlockIO> get_inputs() { return rrc_blk.get_inputs(); }
             std::vector<BlockIO> get_outputs() { return {const_split_blk.get_output_by_id("main")}; }
@@ -56,9 +57,9 @@ namespace satdump
                 else
                 {
                     agc_blk.link(&rrc_blk, 0, 0, 4);
-                    pll_blk.link(&agc_blk, 0, 0, 4);
-                    rec_blk.link(&pll_blk, 0, 0, 4);
-                    const_split_blk.link(&rec_blk, 0, 0, 4);
+                    rec_blk.link(&agc_blk, 0, 0, 4);
+                    pll_blk.link(&rec_blk, 0, 0, 4);
+                    const_split_blk.link(&pll_blk, 0, 0, 4);
 
                     snr_est_blk.set_input(const_split_blk.get_output_by_id("snr"), 0);
                 }
@@ -70,8 +71,8 @@ namespace satdump
 
                 rrc_blk.start();
                 agc_blk.start();
-                pll_blk.start();
                 rec_blk.start();
+                pll_blk.start();
                 const_split_blk.start();
 
                 snr_est_blk.start();
@@ -83,8 +84,8 @@ namespace satdump
             {
                 rrc_blk.stop(stop_snow);
                 agc_blk.stop(stop_snow);
-                pll_blk.stop(stop_snow);
                 rec_blk.stop(stop_snow);
+                pll_blk.stop(stop_snow);
                 const_split_blk.stop(stop_snow);
 
                 snr_est_blk.stop(stop_snow);

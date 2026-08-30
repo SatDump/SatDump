@@ -2,11 +2,13 @@
 #include "common/widgets/menuitem_tooltip.h"
 #include "core/backend.h"
 #include "dsp/flowgraph/dsp_flowgraph_register.h"
+#include "i18n.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_flags.h"
 #include "imgui/imnodes/imnodes.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
+#include "utils/time.h"
 #include <complex.h>
 
 namespace satdump
@@ -103,6 +105,7 @@ namespace satdump
                         flow_thread.join();
                     auto fun = [&]() { flowgraph.run(); };
                     flow_thread = std::thread(fun);
+                    start_time = getTime();
                 }
             }
 
@@ -142,6 +145,9 @@ namespace satdump
                 };
                 tq.push(fun);
             }
+
+            if (flowgraph.isRunning())
+                ImGui::Text(_("Runtime : %.2f s"), getTime() - start_time);
         }
 
         void DSPFlowGraphHandler::drawContents(ImVec2 win_size)

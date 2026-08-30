@@ -18,13 +18,13 @@ namespace satdump
 {
     namespace ndsp
     {
-        class PSKDemodHierBlock : public Block
+        class PSKDemodFastHierBlock : public Block
         {
         private:
             RRC_Block<FIRBlock<complex_t>> rrc_blk;
             AGCBlock<complex_t> agc_blk;
-            CostasBlock pll_blk;
             MMClockRecoveryBlock<complex_t> rec_blk;
+            CostasBlock pll_blk;
 
             SplitterBlock<complex_t> const_split_blk;
             PSKSnrEstimatorBlock snr_est_blk;
@@ -38,8 +38,8 @@ namespace satdump
             bool advanced_mode = false;
 
         public:
-            PSKDemodHierBlock();
-            ~PSKDemodHierBlock();
+            PSKDemodFastHierBlock();
+            ~PSKDemodFastHierBlock();
 
             std::vector<BlockIO> get_inputs() { return rrc_blk.get_inputs(); }
             std::vector<BlockIO> get_outputs() { return {const_split_blk.get_output_by_id("main")}; }
@@ -56,9 +56,9 @@ namespace satdump
                 else
                 {
                     agc_blk.link(&rrc_blk, 0, 0, 4);
-                    pll_blk.link(&agc_blk, 0, 0, 4);
-                    rec_blk.link(&pll_blk, 0, 0, 4);
-                    const_split_blk.link(&rec_blk, 0, 0, 4);
+                    rec_blk.link(&agc_blk, 0, 0, 4);
+                    pll_blk.link(&rec_blk, 0, 0, 4);
+                    const_split_blk.link(&pll_blk, 0, 0, 4);
 
                     snr_est_blk.set_input(const_split_blk.get_output_by_id("snr"), 0);
                 }
@@ -70,8 +70,8 @@ namespace satdump
 
                 rrc_blk.start();
                 agc_blk.start();
-                pll_blk.start();
                 rec_blk.start();
+                pll_blk.start();
                 const_split_blk.start();
 
                 snr_est_blk.start();
@@ -83,8 +83,8 @@ namespace satdump
             {
                 rrc_blk.stop(stop_snow);
                 agc_blk.stop(stop_snow);
-                pll_blk.stop(stop_snow);
                 rec_blk.stop(stop_snow);
+                pll_blk.stop(stop_snow);
                 const_split_blk.stop(stop_snow);
 
                 snr_est_blk.stop(stop_snow);

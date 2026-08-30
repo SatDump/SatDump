@@ -54,6 +54,8 @@
 #include "dsp/hier/audio_demod.h"
 #include "dsp/hier/gfsk_mod.h"
 #include "dsp/hier/psk_demod.h"
+#include "dsp/hier/psk_demod_fast.h"
+#include "dsp/hier/psk_demod_superfast.h"
 #include "dsp/io/file_sink.h"
 #include "dsp/io/file_source.h"
 #include "dsp/io/iq_sink.h"
@@ -405,6 +407,8 @@ namespace satdump
                 registerNodeSimple<ndsp::ComplexToMagSquaredBlock>(flowgraph, "Conv/Complex To Mag²");
 
                 registerNodeSimple<ndsp::PSKDemodHierBlock>(flowgraph, "Modem/PSK Demod");
+                registerNodeSimple<ndsp::PSKDemodFastHierBlock>(flowgraph, "Modem/PSK Demod Fast");
+                registerNodeSimple<ndsp::PSKDemodSuperFastHierBlock>(flowgraph, "Modem/PSK Demod SuperFast");
 
                 registerNodeSimple<ndsp::AudioDemodHierBlock>(flowgraph, "Modem/Audio Demod");
 
