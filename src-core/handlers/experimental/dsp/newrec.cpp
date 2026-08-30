@@ -6,6 +6,7 @@
 #include "dsp/block.h"
 #include "dsp/device/dev.h"
 #include "dsp/displays/const_disp.h"
+#include "dsp/displays/level_helper.h"
 #include "dsp/io/iq_sink.h"
 #include "imgui/imgui.h"
 #include "logger.h"
@@ -50,6 +51,7 @@ namespace satdump
 
             // TMP
             const_disp = std::make_shared<ndsp::ConstellationDisplayBlock>();
+            level_disp = std::make_shared<ndsp::LevelHelperDisplayBlock>();
             iq_sink = std::make_shared<ndsp::IQSinkBlock>();
         }
 
@@ -195,6 +197,35 @@ namespace satdump
                             const_disp->stop();
                         });
                     const_present = false;
+                }
+            }
+
+            level_disp->draw({0, 0});
+
+            if (!level_present)
+            {
+                if (ImGui::Button("Add Level"))
+                {
+                    taskq.push(
+                        [this]()
+                        {
+                            level_disp->set_input(splitter->add_output("tmp_level", false), 0);
+                            level_disp->start();
+                        });
+                    level_present = true;
+                }
+            }
+            else
+            {
+                if (ImGui::Button("Del Level"))
+                {
+                    taskq.push(
+                        [this]()
+                        {
+                            splitter->del_output("tmp_level", true);
+                            level_disp->stop();
+                        });
+                    level_present = false;
                 }
             }
 
