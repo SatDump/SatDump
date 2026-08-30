@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/utils.h"
+#include "core/exception.h"
 #include "dsp/block.h"
 #include <fstream>
 
@@ -23,7 +24,12 @@ namespace satdump
             FileSinkBlock();
             ~FileSinkBlock();
 
-            void init() { file_writer = std::ofstream(p_file, std::ios::binary); }
+            void init()
+            {
+                file_writer = std::ofstream(p_file, std::ios::binary);
+                if (!file_writer.good())
+                    throw satdump_exception("Could not open " + p_file + " for write!");
+            }
 
             nlohmann::ordered_json get_cfg_list()
             {
