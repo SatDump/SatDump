@@ -1,6 +1,6 @@
 {
   "light": false,
-  "font": "IBMPlexSans-SemiBold",
+  "font": "IBMPlexSans-SmBld-FAT",
   "font_size": 16,
   "ImGuiStyle": {
     "WindowRounding": 0,
