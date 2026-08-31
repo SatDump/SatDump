@@ -1,6 +1,6 @@
 {
   "light": true,
-  "font": "px_sans_nouveaux",
+  "font": "px_sans_nouveaux-FAT",
   "font_size": 15,
   "ImGuiStyle": {
     "WindowRounding": 0.0,
