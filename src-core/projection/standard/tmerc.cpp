@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "tmerc.h"
 
 namespace proj
