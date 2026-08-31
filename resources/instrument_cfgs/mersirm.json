@@ -48,12 +48,9 @@
             "filters": [
                 [
                     "equalize",
-                    [
-                        true,
                         {
                             "per_channel": true
                         }
-                    ]
                 ],
                 [
                     "white_balance",
