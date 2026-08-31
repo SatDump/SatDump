@@ -16,6 +16,10 @@ namespace satdump
     void initSatDump(bool is_gui = false);
     void exitSatDump();
 
+    struct StyleOrUINeedUpdateEvent
+    {
+    };
+
 #if ENABLE_I18N
     void initLanguage(std::string lang = "");
     SATDUMP_DLL extern std::string current_language;

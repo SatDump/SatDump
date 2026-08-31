@@ -23,6 +23,7 @@ namespace style
     SATDUMP_DLL ImFont *baseFont;
     SATDUMP_DLL ImFont *bigFont;
     // SATDUMP_DLL ImFont *hugeFont;
+    SATDUMP_DLL std::string i18n_extraFont;
 
     void hexToImVec4(std::string color_hex, ImVec4 *this_color)
     {
@@ -295,6 +296,14 @@ namespace style
 
         baseFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/" + theme.font + ".ttf").c_str(), theme.font_size * font_scaling, &config, def);
         config.MergeMode = true;
+
+        if (i18n_extraFont.size())
+        {
+            if (resources::resourceExists("fonts/" + i18n_extraFont + ".ttf"))
+                io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/" + i18n_extraFont + ".ttf").c_str(), theme.font_size * font_scaling, &config, def);
+            else
+                logger->error("fonts/" + i18n_extraFont + ".ttf" + " does not exist!");
+        }
 
         for (int i = 0; i < 9; i++)
             baseFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/font.ttf").c_str(), theme.font_size * font_scaling, &config, list[i]);

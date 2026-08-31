@@ -1,3 +1,4 @@
+#include "core/style.h"
 #define SATDUMP_DLL_EXPORT 1
 
 #include "db/kepler/kepler_handler.h"
@@ -69,6 +70,16 @@ namespace satdump
         setlocale(LC_ALL, "");
         bindtextdomain("satdump", resources::getResourcePath("i18n").c_str());
         textdomain("satdump");
+
+        std::string old_val = style::i18n_extraFont;
+        std::string i18n_lang_extra_font(_("i18n_lang_extra_font"));
+        if (i18n_lang_extra_font != "i18n_lang_extra_font")
+            style::i18n_extraFont = i18n_lang_extra_font;
+        else
+            style::i18n_extraFont = "";
+
+        if (style::i18n_extraFont != old_val)
+            eventBus->fire_event<StyleOrUINeedUpdateEvent>({});
 
         current_language = lang;
     }

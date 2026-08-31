@@ -40,6 +40,7 @@ namespace style
     SATDUMP_DLL extern ImFont *baseFont;
     SATDUMP_DLL extern ImFont *bigFont;
     // SATDUMP_DLL extern ImFont *hugeFont;
+    SATDUMP_DLL extern std::string i18n_extraFont;
 
     void setStyle();
     void beginDisabled();
@@ -47,4 +48,4 @@ namespace style
     void setFonts(float dpi_scaling);
 
     float macos_framebuffer_scale();
-}
+} // namespace style

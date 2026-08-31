@@ -144,7 +144,7 @@ namespace satdump
                     ImGui::Text(_("Language"));
                     ImGui::TableSetColumnIndex(1);
                     {
-                        std::vector<std::string> options = {"fr", "en", "it", "pt-br", "sk"};
+                        std::vector<std::string> options = {"fr", "en", "it", "pt-br", "sk", "zh-cn"};
 
                         std::string lang = current_language == "" ? _("Auto") : current_language;
                         if (ImGui::BeginCombo("##languageCombo", lang.c_str()))

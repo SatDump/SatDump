@@ -1,4 +1,5 @@
 #include "i18n.h"
+#include "init.h"
 #include "libs/base64/base64.h"
 #include "utils/time.h"
 #include <string>
@@ -73,6 +74,8 @@ namespace satdump
                     });
             });
         eventBus->register_handler<TryOpenFileInMainExplorerEvent>([](TryOpenFileInMainExplorerEvent e) { explorer_app->tryOpenFileInExplorer(e.path); });
+
+        eventBus->register_handler<StyleOrUINeedUpdateEvent>([&](auto e) { update_ui = true; });
 
         // Load credits MD
         std::ifstream ifs(resources::getResourcePath("credits.md"));
