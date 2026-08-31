@@ -119,6 +119,7 @@ First time here? See the reference documents below to get started using SatDump.
 - Scott Tilley (VE7TIL)
 - Tomi HA6NAB
 - Thomas Douwes
+- BI4LOJ
 
 ### Special Thanks to
 - microp11 (Paul Maxan), for the reverse-engineering work & Scytale-C
