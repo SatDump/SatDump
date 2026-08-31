@@ -4,49 +4,40 @@
         {
             "name": "AVHRR 221 False Color",
             "expression": "ch3,ch3,ch2",
-            "filters": [
-                [
-                    "equalize",
-                    [
-                        true,
-                        {
-                            "per_channel": false
-                        }
-                    ]
-                ]
-            ],
+        "filters": [
+            [
+                "equalize",
+                {
+                    "per_channel": false
+                }
+            ]
+        ],
             "description": "descriptions/221.md"
         },
         {
             "name": "AVHRR 3a21 False Color",
             "expression": "ch5, ch3, ch2",
-            "filters": [
-                [
-                    "equalize",
-                    [
-                        true,
-                        {
-                            "per_channel": false
-                        }
-                    ]
-                ]
-            ],
+        "filters": [
+            [
+                "equalize",
+                {
+                    "per_channel": false
+                }
+            ]
+        ],
             "description": "descriptions/321.md"
         },
         {
             "name": "CIR (Color Infrared)",
             "expression": "ch3,ch2,ch1",
-            "filters": [
-                [
-                    "equalize",
-                    [
-                        true,
-                        {
-                            "per_channel": false
-                        }
-                    ]
-                ]
-            ],
+        "filters": [
+            [
+                "equalize",
+                {
+                    "per_channel": false
+                }
+            ]
+        ],
             "description": "descriptions/CIR.md"
         },
         {
