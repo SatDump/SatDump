@@ -260,10 +260,10 @@ namespace satdump
                         ImGui::Separator();
                     }
                     ImGui::EndListBox();
-
-                    if (needs_to_be_disabled)
-                        style::endDisabled();
                 }
+
+                if (needs_to_be_disabled)
+                    style::endDisabled();
             }
         }
 
