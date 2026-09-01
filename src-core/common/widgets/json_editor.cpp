@@ -250,6 +250,7 @@ namespace satdump
                             ImGui::TextUnformatted(this_key.c_str());
 
                         ImGui::TableSetColumnIndex(1);
+                        ImGui::SetNextItemWidth(200);
                         if (jsonItem.value().is_object())
                         {
                             ImGui::TextDisabled("%s", "[Object]");
