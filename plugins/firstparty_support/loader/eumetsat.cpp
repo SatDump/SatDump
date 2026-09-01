@@ -85,6 +85,13 @@ namespace satdump
             false,
         },
         {
+            "MetOp-SG METimage",
+            "EO%3AEUM%3ADAT%3A0464",
+            true,
+            true,
+            false,
+        },
+        {
             "AWS MWR",
             "EO%3AEUM%3ADAT%3A0905",
             true,

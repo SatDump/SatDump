@@ -594,6 +594,20 @@ namespace satdump
             for (auto &f : active_filters)
                 f.second.progress = 0;
 
+            int pre_proj_w = curr_image.width();
+            int pre_proj_h = curr_image.height();
+
+            // Special case for rotations
+            try
+            {
+                if (rotate_image)
+                    image::rotate(curr_image, rotate_image);
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Error processing image! %s", e.what());
+            }
+
             ////////////////////////
             subhandlers_mtx.lock();
             bool image_has_overlays = false;
@@ -614,13 +628,23 @@ namespace satdump
                 *p = cfg;
                 p->init(1, 0);
 
-                auto pfunc = [&p](double lat, double lon, double h, double w) mutable -> std::pair<double, double>
+                int rotate_image_l = rotate_image;
+
+                auto pfunc = [&p, this, rotate_image_l, pre_proj_w, pre_proj_h](double lat, double lon, double h, double w) mutable -> std::pair<double, double>
                 {
                     double x, y;
-                    if (p->forward(geodetic::geodetic_coords_t(lat, lon, 0, false), x, y) || x < 0 || x >= w || y < 0 || y >= h)
+                    if (p->forward(geodetic::geodetic_coords_t(lat, lon, 0, false), x, y) || x < 0 || x >= pre_proj_w || y < 0 || y >= pre_proj_h)
                         return {-1, -1};
-                    else
+                    else if (rotate_image_l == 0)
                         return {x, y};
+                    else if (rotate_image_l == 90)
+                        return {(w - 1) - y, x};
+                    else if (rotate_image_l == 180)
+                        return {(w - 1) - x, (h - 1) - y};
+                    else if (rotate_image_l == 270)
+                        return {y, (h - 1) - x};
+                    else
+                        return {-1, -1};
                 };
 
                 for (int i = subhandlers.size() - 1; i >= 0; i--)
@@ -633,17 +657,6 @@ namespace satdump
                         sh_h->draw_to_image(curr_image, pfunc);
                     }
                 }
-            }
-
-            // Special case for rotations, post-overlays
-            try
-            {
-                if (rotate_image)
-                    image::rotate(curr_image, rotate_image);
-            }
-            catch (std::exception &e)
-            {
-                logger->error("Error processing image! %s", e.what());
             }
 
             subhandlers_mtx.unlock();
