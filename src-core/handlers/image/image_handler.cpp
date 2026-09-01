@@ -594,8 +594,8 @@ namespace satdump
             for (auto &f : active_filters)
                 f.second.progress = 0;
 
-            int pre_proj_w = curr_image.width();
-            int pre_proj_h = curr_image.height();
+            int pre_proj_w = curr_image.size() ? curr_image.width() : image.width();
+            int pre_proj_h = curr_image.size() ? curr_image.height() : image.height();
 
             // Special case for rotations
             try
@@ -622,8 +622,8 @@ namespace satdump
                     curr_image = image;
 
                 nlohmann::json cfg = image::get_metadata_proj_cfg(curr_image);
-                cfg["width"] = curr_image.width();
-                cfg["height"] = curr_image.height();
+                cfg["width"] = pre_proj_w;
+                cfg["height"] = pre_proj_h;
                 std::unique_ptr<projection::Projection> p = std::make_unique<projection::Projection>();
                 *p = cfg;
                 p->init(1, 0);
