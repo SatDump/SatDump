@@ -173,7 +173,7 @@ namespace satdump
                             min.y += ImGui::CalcTextSize(name.c_str()).y * 0.9;
                             min.y += 5 * ui_scale;
                             max.y += 5 * ui_scale;
-                            ImGui::GetWindowDrawList()->AddRectFilled(min, max, style::theme.yellow);
+                            ImGui::GetWindowDrawList()->AddRectFilled(min, max, ImGui::GetColorU32(ImGuiCol_PlotHistogram));
                         }
                         else if (f.second.progress == -1)
                         {
@@ -185,7 +185,7 @@ namespace satdump
                             min.y += ImGui::CalcTextSize(name.c_str()).y * 0.9;
                             min.y += 5 * ui_scale;
                             max.y += 5 * ui_scale;
-                            ImGui::GetWindowDrawList()->AddRectFilled(min, max, style::theme.yellow);
+                            ImGui::GetWindowDrawList()->AddRectFilled(min, max, ImGui::GetColorU32(ImGuiCol_PlotHistogram));
                         }
 
                         // Settings
