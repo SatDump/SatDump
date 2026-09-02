@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-31 15:06+0200\n"
+"POT-Creation-Date: 2026-09-02 17:32+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,7 +20,7 @@ msgstr ""
 #: plugins/bitview_app/main.cpp:38 plugins/wip_tracking_app/main.cpp:21
 #: plugins/wip_settings_editor_app/main.cpp:17
 #: plugins/experimental_devices_support/main.cpp:21
-#: plugins/tools_app/main.cpp:24 src-interface/main_ui.cpp:177
+#: plugins/tools_app/main.cpp:24 src-interface/main_ui.cpp:180
 #: src-core/explorer/explorer.cpp:279
 msgid "Add"
 msgstr ""
@@ -113,7 +113,7 @@ msgid "EUMETSAT User «Consumer Secret»"
 msgstr ""
 
 #. Main "Open" menu, for files, other handlers, etc
-#: plugins/firstparty_support/main_loader.cpp:79 src-interface/main_ui.cpp:166
+#: plugins/firstparty_support/main_loader.cpp:79 src-interface/main_ui.cpp:169
 #: src-core/explorer/explorer.cpp:250
 msgid "File"
 msgstr ""
@@ -123,17 +123,17 @@ msgid "Load First-Party"
 msgstr ""
 
 #: plugins/firstparty_support/loader/aws.cpp:252
-#: plugins/firstparty_support/loader/eumetsat.cpp:201
+#: plugins/firstparty_support/loader/eumetsat.cpp:208
 msgid "Refresh##archiveloader_refresh"
 msgstr ""
 
 #: plugins/firstparty_support/loader/aws.cpp:259
-#: plugins/firstparty_support/loader/eumetsat.cpp:208
+#: plugins/firstparty_support/loader/eumetsat.cpp:215
 msgid "Current##archiveloader_setcurrenttime"
 msgstr ""
 
 #: plugins/firstparty_support/loader/aws.cpp:277
-#: plugins/firstparty_support/loader/eumetsat.cpp:225
+#: plugins/firstparty_support/loader/eumetsat.cpp:232
 msgid "Load##archiveloadertablebutton_"
 msgstr ""
 
@@ -166,12 +166,12 @@ msgstr ""
 msgid "Selected Folder:"
 msgstr ""
 
-#: plugins/firstparty_support/loader/eumetsat.cpp:170
+#: plugins/firstparty_support/loader/eumetsat.cpp:177
 #, c-format
 msgid "Error updating product list! %s"
 msgstr ""
 
-#: plugins/firstparty_support/loader/eumetsat.cpp:204
+#: plugins/firstparty_support/loader/eumetsat.cpp:211
 msgid "Date: "
 msgstr ""
 
@@ -293,36 +293,36 @@ msgid ""
 "Windows too?)"
 msgstr ""
 
-#: src-interface/main_ui.cpp:168 src-interface/recorder/recorder.cpp:450
+#: src-interface/main_ui.cpp:171 src-interface/recorder/recorder.cpp:450
 #: src-core/explorer/explorer.cpp:178
 msgid "Processing"
 msgstr ""
 
-#: src-interface/main_ui.cpp:171 src-interface/main_ui.cpp:227
-#: src-interface/main_ui.cpp:233
+#: src-interface/main_ui.cpp:174 src-interface/main_ui.cpp:230
+#: src-interface/main_ui.cpp:236
 #: src-core/handlers/vector/shapefile_handler.cpp:43
 msgid "Settings"
 msgstr ""
 
-#: src-interface/main_ui.cpp:179 src-interface/recorder/recorder.h:230
+#: src-interface/main_ui.cpp:182 src-interface/recorder/recorder.h:230
 msgid "Recorder"
 msgstr ""
 
-#: src-interface/main_ui.cpp:218 src-core/explorer/explorer.cpp:412
+#: src-interface/main_ui.cpp:221 src-core/explorer/explorer.cpp:412
 #: src-core/explorer/explorer.cpp:414
 msgid "Start Processing"
 msgstr ""
 
-#: src-interface/main_ui.cpp:241 src-interface/main_ui.cpp:247
-#: src-interface/main_ui.cpp:260
+#: src-interface/main_ui.cpp:244 src-interface/main_ui.cpp:250
+#: src-interface/main_ui.cpp:263
 msgid "About"
 msgstr ""
 
-#: src-interface/main_ui.cpp:256
+#: src-interface/main_ui.cpp:259
 msgid "Help"
 msgstr ""
 
-#: src-interface/main_ui.cpp:258
+#: src-interface/main_ui.cpp:261
 msgid "Documentation"
 msgstr ""
 
@@ -708,6 +708,26 @@ msgstr ""
 
 #: src-interface/recorder/recorder.cpp:788
 msgid "Live Processing"
+msgstr ""
+
+#: src-core/pipeline/modules/instrument_utils.cpp:13
+msgid "Decoding..."
+msgstr ""
+
+#: src-core/pipeline/modules/instrument_utils.cpp:15
+msgid "Processing..."
+msgstr ""
+
+#: src-core/pipeline/modules/instrument_utils.cpp:17
+msgid "Saving..."
+msgstr ""
+
+#: src-core/pipeline/modules/instrument_utils.cpp:19
+msgid "Done"
+msgstr ""
+
+#: src-core/pipeline/modules/instrument_utils.cpp:21
+msgid "Invalid!"
 msgstr ""
 
 #: src-core/imgui/dialogs/widget.cpp:22
@@ -1504,15 +1524,15 @@ msgstr ""
 msgid "Can't drag parent onto child handler!"
 msgstr ""
 
-#: src-core/init.cpp:75
+#: src-core/init.cpp:81
 msgid "i18n_lang_extra_font"
 msgstr ""
 
-#: src-core/init.cpp:104
+#: src-core/init.cpp:110
 msgid "Starting "
 msgstr ""
 
-#: src-core/init.cpp:130
+#: src-core/init.cpp:136
 #, c-format
 msgid ""
 "Error loading SatDump config! SatDump will now exit. Error:\n"
@@ -1520,35 +1540,35 @@ msgid ""
 msgstr ""
 
 #. List them
-#: src-core/init.cpp:180
+#: src-core/init.cpp:186
 msgid "Registered pipelines :"
 msgstr ""
 
-#: src-core/init.cpp:205
+#: src-core/init.cpp:211
 #, c-format
 msgid "DSP Buffer size was changed to %d"
 msgstr ""
 
-#: src-core/init.cpp:214
+#: src-core/init.cpp:220
 msgid "Could not open ephemeris data! NOVAS will not work!"
 msgstr ""
 
-#: src-core/init.cpp:228
+#: src-core/init.cpp:234
 msgid "SatDump has NOT been built in Release mode."
 msgstr ""
 
-#: src-core/init.cpp:229
+#: src-core/init.cpp:235
 msgid "If you are not a developer but intending to use the software,"
 msgstr ""
 
-#: src-core/init.cpp:230
+#: src-core/init.cpp:236
 msgid "you probably do not want this. If so, make sure to"
 msgstr ""
 
-#: src-core/init.cpp:231
+#: src-core/init.cpp:237
 msgid "specify -DCMAKE_BUILD_TYPE=Release in CMake."
 msgstr ""
 
-#: src-core/init.cpp:240
+#: src-core/init.cpp:246
 msgid "Exiting SatDump! Bye!"
 msgstr ""
