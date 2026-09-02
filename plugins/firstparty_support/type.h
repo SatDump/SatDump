@@ -20,6 +20,9 @@ namespace satdump
             NATIVE_METOP_IASI,
             NATIVE_METOP_GOME,
 
+            // MetOp-SG
+            NETCDF_METOPSG_METIMAGE,
+
             // AWS
             NETCDF_AWS_MWR,
 
