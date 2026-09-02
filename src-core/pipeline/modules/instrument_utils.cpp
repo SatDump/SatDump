@@ -1,5 +1,6 @@
 #include "instrument_utils.h"
 #include "core/style.h"
+#include "i18n.h"
 #include "imgui/imgui.h"
 
 // namespace satdump
@@ -9,15 +10,15 @@
 void drawStatus(instrument_status_t status)
 {
     if (status == DECODING)
-        ImGui::TextColored(style::theme.yellow, "Decoding...");
+        ImGui::TextColored(style::theme.yellow, _("Decoding..."));
     else if (status == PROCESSING)
-        ImGui::TextColored(style::theme.magenta, "Processing...");
+        ImGui::TextColored(style::theme.magenta, _("Processing..."));
     else if (status == SAVING)
-        ImGui::TextColored(style::theme.light_green, "Saving...");
+        ImGui::TextColored(style::theme.light_green, _("Saving..."));
     else if (status == DONE)
-        ImGui::TextColored(style::theme.green, "Done");
+        ImGui::TextColored(style::theme.green, _("Done"));
     else
-        ImGui::TextColored(style::theme.red, "Invalid!");
+        ImGui::TextColored(style::theme.red, _("Invalid!"));
 };
 //     } // namespace pipeline
 // } // namespace satdump
