@@ -181,6 +181,12 @@ namespace satdump
                     // pixel coverage is determined by fractional
                     // part of y co-ordinate
 
+                    if (x < 0 || x >= d_width || (floor(intersectY) - 1) < 0 || floor(intersectY) >= d_height)
+                    {
+                        intersectY += gradient;
+                        continue;
+                    }
+
                     auto rcolor1 = get_pixel_color(x, floor(intersectY));
                     auto rcolor2 = get_pixel_color(x, floor(intersectY) - 1);
 
@@ -194,6 +200,7 @@ namespace satdump
 
                     draw_pixel(floor(intersectY), x, color_l1);
                     draw_pixel(floor(intersectY) - 1, x, color_l2);
+
                     intersectY += gradient;
                 }
             }
@@ -204,6 +211,12 @@ namespace satdump
                 {
                     // pixel coverage is determined by fractional
                     // part of y co-ordinate
+
+                    if (x < 0 || x >= d_width || (floor(intersectY) - 1) < 0 || floor(intersectY) >= d_height)
+                    {
+                        intersectY += gradient;
+                        continue;
+                    }
 
                     auto rcolor1 = get_pixel_color(x, floor(intersectY));
                     auto rcolor2 = get_pixel_color(x, floor(intersectY) - 1);
@@ -218,6 +231,7 @@ namespace satdump
 
                     draw_pixel(x, floor(intersectY), color_l1);
                     draw_pixel(x, floor(intersectY) - 1, color_l2);
+
                     intersectY += gradient;
                 }
             }

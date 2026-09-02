@@ -632,19 +632,24 @@ namespace satdump
 
                 auto pfunc = [&p, this, rotate_image_l, pre_proj_w, pre_proj_h](double lat, double lon, double h, double w) mutable -> std::pair<double, double>
                 {
-                    double x, y;
+                    double x, y, x2, y2;
                     if (p->forward(geodetic::geodetic_coords_t(lat, lon, 0, false), x, y) || x < 0 || x >= pre_proj_w || y < 0 || y >= pre_proj_h)
-                        return {-1, -1};
+                        x2 = -1, y2 = -1;
                     else if (rotate_image_l == 0)
-                        return {x, y};
+                        x2 = x, y2 = y;
                     else if (rotate_image_l == 90)
-                        return {(w - 1) - y, x};
+                        x2 = (w - 1) - y, y2 = x;
                     else if (rotate_image_l == 180)
-                        return {(w - 1) - x, (h - 1) - y};
+                        x2 = (w - 1) - x, y2 = (h - 1) - y;
                     else if (rotate_image_l == 270)
-                        return {y, (h - 1) - x};
+                        x2 = y, y2 = (h - 1) - x;
                     else
+                        x2 = -1, y2 = -1;
+
+                    if (x2 < 0 || x2 >= w || y2 < 0 || y2 >= h)
                         return {-1, -1};
+                    else
+                        return {x2, y2};
                 };
 
                 for (int i = subhandlers.size() - 1; i >= 0; i--)

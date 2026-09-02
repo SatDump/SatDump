@@ -75,7 +75,7 @@ namespace dbf_file
                 data_in.read(&vecBuffer[0], record.m_uLength);
                 //                out.write(&vecBuffer[0], record.m_uLength);
                 std::string name = std::string(record.m_archName);
-                std::string val = removeExtraSpaces(std::string(&vecBuffer[0], &vecBuffer[record.m_uLength]));
+                std::string val = removeExtraSpaces(std::string(&vecBuffer[0], record.m_uLength));
                 v[rec_n][name] = val;
             }
 
@@ -84,4 +84,4 @@ namespace dbf_file
 
         return v;
     }
-}
+} // namespace dbf_file
