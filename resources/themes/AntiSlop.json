@@ -49,7 +49,7 @@
     "ResizeGripActive": "#757575F2",
     "PlotLines": "#66E6FFFF",
     "PlotLinesHovered": "#FF6E59FF",
-    "PlotHistogram": "#BA9926FF", //is actually the progressbar
+    "PlotHistogram": "#24a148FF", //is actually the progressbar
     "PlotHistogramHovered": "#FF9900FF",
     "TextSelectedBg": "#e5e0df59",
     "ModalWindowDimBg": "#CCCCCC59",
