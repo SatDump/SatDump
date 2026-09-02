@@ -54,6 +54,12 @@ namespace satdump
 #if ENABLE_I18N
     void initLanguage(std::string lang)
     {
+#if defined(_WIN32)
+        SetEnvironmentVariable("LC_NUMERIC", "C");
+#else
+        setenv("LC_NUMERIC", "C", true);
+#endif
+
         if (lang.size())
 #if defined(_WIN32)
             SetEnvironmentVariable("LANGUAGE", lang.c_str());

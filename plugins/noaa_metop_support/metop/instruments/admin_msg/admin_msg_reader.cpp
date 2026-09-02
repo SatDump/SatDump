@@ -13,10 +13,7 @@ namespace metop
             message_out = new uint8_t[MAX_MSG_SIZE];
         }
 
-        AdminMsgReader::~AdminMsgReader()
-        {
-            delete[] message_out;
-        }
+        AdminMsgReader::~AdminMsgReader() { delete[] message_out; }
 
         void AdminMsgReader::work(ccsds::CCSDSPacket &packet)
         {
@@ -38,10 +35,10 @@ namespace metop
             // TLE Parsing
             try
             {
-                // std::string xml_str(message_out, &message_out[outsize]);
+                std::string xml_str(message_out, &message_out[outsize]);
 
                 // Parse
-                doc.parse<0>((char *)message_out); // const char * to char * is needed...
+                doc.parse<0>((char *)xml_str.c_str()); // const char * to char * is needed...
                 root_node = doc.first_node("multi-mission-administrative-message");
 
                 // Convert to our usual TLE Registry stuff
@@ -77,5 +74,5 @@ namespace metop
 
             count++;
         }
-    } // namespace modis
-} // namespace eos
+    } // namespace admin_msg
+} // namespace metop
