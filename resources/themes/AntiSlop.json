@@ -3,12 +3,12 @@
   "font": "IBMPlexSans-SmBld-FAT",
   "font_size": 16,
   "ImGuiStyle": {
-    "WindowRounding": 0,
-    "ChildRounding": 0,
-    "FrameRounding": 0,
-    "GrabRounding": 0,
-    "PopupRounding": 0,
-    "ScrollbarRounding": 0.01
+    "WindowRounding": 0.0,
+    "ChildRounding": 0.0,
+    "FrameRounding": 0.0,
+    "GrabRounding": 0.0,
+    "PopupRounding": 0.0,
+    "ScrollbarRounding": 0.0
   },
   "ImGuiColors": {
     "Text": "#FFFFFFFF",
