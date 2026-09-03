@@ -2,6 +2,9 @@
 #include "imgui/imgui.h"
 #include "core/style.h"
 #include "logger.h"
+#include <iomanip>
+#include <locale>
+#include <sstream>
 
 namespace rotator
 {
@@ -93,7 +96,10 @@ namespace rotator
         float saz = 0, sel = 0;
         int ret_sz = 0;
         std::string cmd = command("p\x0a", &ret_sz);
-        if (sscanf(cmd.c_str(), "%f\n%f", &saz, &sel) == 2)
+        std::istringstream response(cmd);
+        response.imbue(std::locale::classic());
+
+        if (response >> saz >> sel)
         {
             corrupted_cmd_count = 0;
             *az = saz;
@@ -118,10 +124,13 @@ namespace rotator
         if (client == nullptr)
             return ROT_ERROR_CON;
 
-        char command_out[30];
-        sprintf(command_out, "P %.2f %.2f\x0a", az, el);
+        std::ostringstream command_out;
+        command_out.imbue(std::locale::classic());
+        command_out << std::fixed << std::setprecision(2)
+                    << "P " << az << " " << el << "\x0a";
+
         int ret_sz = 0;
-        std::string cmd = command(std::string(command_out), &ret_sz);
+        std::string cmd = command(command_out.str(), &ret_sz);
         int result = 0;
         if (sscanf(cmd.c_str(), "RPRT %d", &result) == 1)
         {
