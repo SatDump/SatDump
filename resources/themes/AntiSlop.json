@@ -80,6 +80,37 @@
     "treeview_icon": "#808080FF"
   },
   "ImNodesColors": {
-    "NodeBackground": "#050505FF"
+    "NodeBackground": "#262626FF", //background of the not selected box in the flowgraphs
+    "NodeBackgroundHovered": "#262626FF",
+    "NodeBackgroundSelected": "#262626FF",
+    "NodeOutline": "#343a3fFF" ,
+    "TitleBar": "#4589ffFF",
+    "TitleBarHovered": "#0f62feFF",
+    "TitleBarSelected": "#0f62feFF",
+    "Link": "#0043ceFF",
+    "LinkHovered": "#0f62feFF",
+    "LinkSelected": "#0f62feFF",
+    "Pin": "#0043ceFF",
+    "PinHovered": "#0f62feFF",
+    "BoxSelector": "#78a9ff80", //shows what is selected in the flowgraph
+    "BoxSelectorOutline": "#78a9ffD0",
+    "GridBackground": "#161616FF",
+    "GridLine": "#262626FF",
+    "GridLinePrimary": "#393939FF",
+    "MiniMapBackground": "#393939C0",
+    "MiniMapBackgroundHovered": "#393939FF",
+    "MiniMapOutline": "#F4F4F4FF",
+    "MiniMapOutlineHovered": "#F4F4F4FF",
+    "MiniMapNodeBackground": "#a8a8a8FF",
+    "MiniMapNodeBackgroundHovered": "#C6c6c6FF",
+    "MiniMapNodeBackgroundSelected": "#c6c6c6FF",
+    "MiniMapNodeOutline": "#F4F4F4FF",
+    "MiniMapLink": "#0F62FEFF",
+    "MiniMapLinkSelected": "#0F62FEFF",
+    "MiniMapCanvas": "#a8a8a888", //shows the part of the flowgraph in view
+    "MiniMapCanvasOutline": "#e0e0e0FF"
+  },
+  "ImNodesStyles": {
+    "NodeCornerRounding": 0.0
   }
 }
