@@ -112,13 +112,13 @@ namespace satdump
                 if (needs_to_be_disabled)
                     style::beginDisabled();
 
-                if (ImGui::RadioButton(_("Rotate 0"), rotate_image == 0))
+                if (ImGui::RadioButton(_("Rotate 0°"), rotate_image == 0))
                     needs_to_update = 1, rotate_image = 0;
-                if (ImGui::RadioButton(_("Rotate 90"), rotate_image == 90))
+                if (ImGui::RadioButton(_("Rotate 90°"), rotate_image == 90))
                     needs_to_update = 1, rotate_image = 90;
-                if (ImGui::RadioButton(_("Rotate 180"), rotate_image == 180))
+                if (ImGui::RadioButton(_("Rotate 180°"), rotate_image == 180))
                     needs_to_update = 1, rotate_image = 180;
-                if (ImGui::RadioButton(_("Rotate 270"), rotate_image == 270))
+                if (ImGui::RadioButton(_("Rotate 270°"), rotate_image == 270))
                     needs_to_update = 1, rotate_image = 270;
 
                 if (image_proj_valid)
