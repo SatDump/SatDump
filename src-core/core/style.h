@@ -1,6 +1,7 @@
 #pragma once
 #include "dll_export.h"
 #include "imgui/imgui.h"
+#include "imgui/imnodes/imnodes.h"
 #include <string>
 
 SATDUMP_DLL extern float ui_scale;               // UI Scaling factor, for DPI scaling
@@ -34,6 +35,8 @@ namespace style
         ImColor overlay_bg;
         ImColor freq_highlight;
         ImColor treeview_icon;
+
+        ImNodesStyle imnodes_style;
     };
 
     SATDUMP_DLL extern Theme theme;

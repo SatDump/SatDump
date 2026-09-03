@@ -6,6 +6,7 @@
 #include "flowgraph/image_nodes.h"
 #include "flowgraph/imageproduct_node.h"
 #include "imgui/imnodes/imnodes.h"
+#include "imgui/imnodes/imnodes_internal.h"
 
 namespace satdump
 {
@@ -16,6 +17,7 @@ namespace satdump
             // TODOREWORK
             if (ImNodes::GetCurrentContext() == nullptr)
                 ImNodes::CreateContext();
+            ImNodes::GetCurrentContext()->Style = style::theme.imnodes_style;
 
             flowgraph.node_internal_registry.emplace("image_product_source", []() { return std::make_shared<ImageProductSource_Node>(); });
             flowgraph.node_internal_registry.emplace("image_product_expression", []() { return std::make_shared<ImageProductExpression_Node>(); });

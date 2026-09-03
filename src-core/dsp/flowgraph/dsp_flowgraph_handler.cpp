@@ -1,6 +1,7 @@
 #include "dsp_flowgraph_handler.h"
 #include "common/widgets/menuitem_tooltip.h"
 #include "core/backend.h"
+#include "core/style.h"
 #include "dsp/flowgraph/dsp_flowgraph_register.h"
 #include "i18n.h"
 #include "imgui/imgui.h"
@@ -153,7 +154,10 @@ namespace satdump
         void DSPFlowGraphHandler::drawContents(ImVec2 win_size)
         {
             if (imnode_ctx == nullptr)
+            {
                 imnode_ctx = ImNodes::CreateContext();
+                imnode_ctx->Style = style::theme.imnodes_style;
+            }
             ImNodes::SetCurrentContext(imnode_ctx);
 
             ctx.config().color = ImGui::GetColorU32(ImGuiCol_WindowBg);
