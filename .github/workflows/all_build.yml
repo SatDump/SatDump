@@ -257,7 +257,7 @@ jobs:
         working-directory: ${{runner.workspace}}/build
         shell: bash
         # Execute the build.  You can specify a specific target with "--target <NAME>"
-        run: cd /home/runner/work/SatDump/build/SatDump/ && mkdir SatDump.AppDir && cd SatDump.AppDir && wget https://raw.githubusercontent.com/SatDump/SatDump/refs/heads/master/satdump.svg && wget https://raw.githubusercontent.com/probonopd/AppImages/master/pkg2appimage && chmod +x pkg2appimage && sudo apt install -y imagemagick desktop-file-utils libfuse2
+        run:  wget https://raw.githubusercontent.com/SatDump/SatDump/refs/heads/master/satdump.svg && install -D satdump.svg /home/runner/work/SatDump/build/SatDump/SatDump.AppDir/satdump.svg  && wget https://raw.githubusercontent.com/probonopd/AppImages/master/pkg2appimage && chmod +x pkg2appimage && sudo apt install -y imagemagick desktop-file-utils libfuse2
 
       - name: Make AppImage
         working-directory: ${{runner.workspace}}/build
