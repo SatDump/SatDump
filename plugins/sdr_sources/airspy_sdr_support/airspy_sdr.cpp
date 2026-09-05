@@ -136,6 +136,7 @@ void AirspySource::start()
     airspy_set_samplerate(airspy_dev_obj, current_samplerate);
 
     is_started = true;
+    output_stream->clearWriteStop();
 
     set_frequency(d_frequency);
 
@@ -152,6 +153,7 @@ void AirspySource::stop()
     if (is_started)
     {
         airspy_set_rf_bias(airspy_dev_obj, false);
+        output_stream->stopWriter();
         airspy_stop_rx(airspy_dev_obj);
         airspy_close(airspy_dev_obj);
     }
@@ -194,7 +196,7 @@ void AirspySource::drawControlUI()
         gain_type = 1;
         gain_changed = true;
     }
-    if (RImGui::RadioButton("Manual", gain_type == 22))
+    if (RImGui::RadioButton("Manual", gain_type == 2))
     {
         gain_type = 2;
         gain_changed = true;
