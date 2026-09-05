@@ -18,7 +18,8 @@ namespace satdump
          * @param image the image to use
          * @param brightness brightness factor
          * @param contrast contrast factor
+         * @param p progress pointer
          */
-        void brightness_contrast(Image &image, float brightness, float contrast);
+        void brightness_contrast(Image &image, float brightness, float contrast, float *p = nullptr);
     } // namespace image
 } // namespace satdump

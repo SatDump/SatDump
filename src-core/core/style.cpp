@@ -1,6 +1,7 @@
+#include "imgui/imnodes/imnodes.h"
+#include "nlohmann/json.hpp"
 #define SATDUMP_DLL_EXPORT 1
 
-#include "style.h"
 #include "backend.h"
 #include "config.h"
 #include "core/resources.h"
@@ -8,6 +9,7 @@
 #include "imgui/imgui_internal.h"
 #include "logger.h"
 #include "nlohmann/json_utils.h"
+#include "style.h"
 #include <filesystem>
 
 #ifdef __APPLE__
@@ -17,12 +19,15 @@
 SATDUMP_DLL float ui_scale = 1;                 // UI Scaling factor, set to 1 (no scaling) by default
 SATDUMP_DLL int demod_constellation_size = 200; // Demodulator constellation size
 
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ImVec2, x, y)
+
 namespace style
 {
     SATDUMP_DLL Theme theme;
     SATDUMP_DLL ImFont *baseFont;
     SATDUMP_DLL ImFont *bigFont;
     // SATDUMP_DLL ImFont *hugeFont;
+    SATDUMP_DLL std::string i18n_extraFont;
 
     void hexToImVec4(std::string color_hex, ImVec4 *this_color)
     {
@@ -212,6 +217,90 @@ namespace style
             }
         }
 
+        // ImNodes
+        ImNodes::StyleColorsDark(&theme.imnodes_style);
+
+        // ImNodes Colors
+        if (data.contains("ImNodesColors") && data["ImNodesColors"].is_object())
+        {
+            const std::map<std::string, ImNodesCol_> color_map = {
+                {"NodeBackground", ImNodesCol_NodeBackground},
+                {"NodeBackgroundHovered", ImNodesCol_NodeBackgroundHovered},
+                {"NodeBackgroundSelected", ImNodesCol_NodeBackgroundSelected},
+                {"NodeOutline", ImNodesCol_NodeOutline},
+                {"TitleBar", ImNodesCol_TitleBar},
+                {"TitleBarHovered", ImNodesCol_TitleBarHovered},
+                {"TitleBarSelected", ImNodesCol_TitleBarSelected},
+                {"Link", ImNodesCol_Link},
+                {"LinkHovered", ImNodesCol_LinkHovered},
+                {"LinkSelected", ImNodesCol_LinkSelected},
+                {"Pin", ImNodesCol_Pin},
+                {"PinHovered", ImNodesCol_PinHovered},
+                {"BoxSelector", ImNodesCol_BoxSelector},
+                {"BoxSelectorOutline", ImNodesCol_BoxSelectorOutline},
+                {"GridBackground", ImNodesCol_GridBackground},
+                {"GridLine", ImNodesCol_GridLine},
+                {"GridLinePrimary", ImNodesCol_GridLinePrimary},
+                {"MiniMapBackground", ImNodesCol_MiniMapBackground},
+                {"MiniMapBackgroundHovered", ImNodesCol_MiniMapBackgroundHovered},
+                {"MiniMapOutline", ImNodesCol_MiniMapOutline},
+                {"MiniMapOutlineHovered", ImNodesCol_MiniMapOutlineHovered},
+                {"MiniMapNodeBackground", ImNodesCol_MiniMapNodeBackground},
+                {"MiniMapNodeBackgroundHovered", ImNodesCol_MiniMapNodeBackgroundHovered},
+                {"MiniMapNodeBackgroundSelected", ImNodesCol_MiniMapNodeBackgroundSelected},
+                {"MiniMapNodeOutline", ImNodesCol_MiniMapNodeOutline},
+                {"MiniMapLink", ImNodesCol_MiniMapLink},
+                {"MiniMapLinkSelected", ImNodesCol_MiniMapLinkSelected},
+                {"MiniMapCanvas", ImNodesCol_MiniMapCanvas},
+                {"MiniMapCanvasOutline", ImNodesCol_MiniMapCanvasOutline},
+            };
+
+            for (auto &color : data["ImNodesColors"].items())
+            {
+                if (!color.value().is_string())
+                {
+                    logger->debug("Invalid theme color for %s", color.key().c_str());
+                    continue;
+                }
+
+                std::map<std::string, ImNodesCol_>::const_iterator color_pos = color_map.find(color.key());
+                if (color_pos != color_map.end())
+                {
+                    ImVec4 col;
+                    hexToImVec4(color.value(), &col);
+                    theme.imnodes_style.Colors[color_pos->second] = ImGui::GetColorU32(col);
+                }
+                else
+                    logger->debug("Invalid theme color: %s", color.key().c_str());
+            }
+        }
+
+        // ImNodes Styles
+        if (data.contains("ImNodesStyles") && data["ImNodesStyles"].is_object())
+        {
+            auto &c = data["ImNodesStyles"];
+
+            theme.imnodes_style.GridSpacing = getValueOrDefault(c["GridSpacing"], theme.imnodes_style.GridSpacing);
+
+            theme.imnodes_style.NodeCornerRounding = getValueOrDefault(c["NodeCornerRounding"], theme.imnodes_style.NodeCornerRounding);
+            theme.imnodes_style.NodePadding = getValueOrDefault(c["NodePadding"], theme.imnodes_style.NodePadding);
+            theme.imnodes_style.NodeBorderThickness = getValueOrDefault(c["NodeBorderThickness"], theme.imnodes_style.NodeBorderThickness);
+
+            theme.imnodes_style.LinkThickness = getValueOrDefault(c["LinkThickness"], theme.imnodes_style.LinkThickness);
+            theme.imnodes_style.LinkLineSegmentsPerLength = getValueOrDefault(c["LinkLineSegmentsPerLength"], theme.imnodes_style.LinkLineSegmentsPerLength);
+            theme.imnodes_style.LinkHoverDistance = getValueOrDefault(c["LinkHoverDistance"], theme.imnodes_style.LinkHoverDistance);
+
+            theme.imnodes_style.PinCircleRadius = getValueOrDefault(c["PinCircleRadius"], theme.imnodes_style.PinCircleRadius);
+            theme.imnodes_style.PinQuadSideLength = getValueOrDefault(c["PinQuadSideLength"], theme.imnodes_style.PinQuadSideLength);
+            theme.imnodes_style.PinTriangleSideLength = getValueOrDefault(c["PinTriangleSideLength"], theme.imnodes_style.PinTriangleSideLength);
+            theme.imnodes_style.PinLineThickness = getValueOrDefault(c["PinLineThickness"], theme.imnodes_style.PinLineThickness);
+            theme.imnodes_style.PinHoverRadius = getValueOrDefault(c["PinHoverRadius"], theme.imnodes_style.PinHoverRadius);
+            theme.imnodes_style.PinOffset = getValueOrDefault(c["PinOffset"], theme.imnodes_style.PinOffset);
+
+            theme.imnodes_style.MiniMapPadding = getValueOrDefault(c["MiniMapPadding"], theme.imnodes_style.MiniMapPadding);
+            theme.imnodes_style.MiniMapOffset = getValueOrDefault(c["MiniMapOffset"], theme.imnodes_style.MiniMapOffset);
+        }
+
         // Custom SatDump Colors
         if (data.contains("SatDumpColors") && data["SatDumpColors"].is_object())
         {
@@ -295,6 +384,14 @@ namespace style
 
         baseFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/" + theme.font + ".ttf").c_str(), theme.font_size * font_scaling, &config, def);
         config.MergeMode = true;
+
+        if (i18n_extraFont.size())
+        {
+            if (resources::resourceExists("fonts/" + i18n_extraFont + ".ttf"))
+                io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/" + i18n_extraFont + ".ttf").c_str(), theme.font_size * font_scaling, &config, def);
+            else
+                logger->error("fonts/" + i18n_extraFont + ".ttf" + " does not exist!");
+        }
 
         for (int i = 0; i < 9; i++)
             baseFont = io.Fonts->AddFontFromFileTTF(resources::getResourcePath("fonts/font.ttf").c_str(), theme.font_size * font_scaling, &config, list[i]);

@@ -112,13 +112,13 @@ namespace satdump
                 if (needs_to_be_disabled)
                     style::beginDisabled();
 
-                if (ImGui::RadioButton(_("Rotate 0"), rotate_image == 0))
+                if (ImGui::RadioButton(_("Rotate 0°"), rotate_image == 0))
                     needs_to_update = 1, rotate_image = 0;
-                if (ImGui::RadioButton(_("Rotate 90"), rotate_image == 90))
+                if (ImGui::RadioButton(_("Rotate 90°"), rotate_image == 90))
                     needs_to_update = 1, rotate_image = 90;
-                if (ImGui::RadioButton(_("Rotate 180"), rotate_image == 180))
+                if (ImGui::RadioButton(_("Rotate 180°"), rotate_image == 180))
                     needs_to_update = 1, rotate_image = 180;
-                if (ImGui::RadioButton(_("Rotate 270"), rotate_image == 270))
+                if (ImGui::RadioButton(_("Rotate 270°"), rotate_image == 270))
                     needs_to_update = 1, rotate_image = 270;
 
                 if (image_proj_valid)
@@ -144,7 +144,7 @@ namespace satdump
                 wasMenuTriggered = needs_to_update;
             }
 
-            if (ImGui::CollapsingHeader(_("Filters")))
+            if (ImGui::CollapsingHeader(_("Filters"), ImGuiTreeNodeFlags_DefaultOpen))
             {
                 if (needs_to_be_disabled)
                     style::beginDisabled();
@@ -173,7 +173,7 @@ namespace satdump
                             min.y += ImGui::CalcTextSize(name.c_str()).y * 0.9;
                             min.y += 5 * ui_scale;
                             max.y += 5 * ui_scale;
-                            ImGui::GetWindowDrawList()->AddRectFilled(min, max, style::theme.yellow);
+                            ImGui::GetWindowDrawList()->AddRectFilled(min, max, ImGui::GetColorU32(ImGuiCol_PlotHistogram));
                         }
                         else if (f.second.progress == -1)
                         {
@@ -185,7 +185,7 @@ namespace satdump
                             min.y += ImGui::CalcTextSize(name.c_str()).y * 0.9;
                             min.y += 5 * ui_scale;
                             max.y += 5 * ui_scale;
-                            ImGui::GetWindowDrawList()->AddRectFilled(min, max, style::theme.yellow);
+                            ImGui::GetWindowDrawList()->AddRectFilled(min, max, ImGui::GetColorU32(ImGuiCol_PlotHistogram));
                         }
 
                         // Settings
@@ -260,10 +260,10 @@ namespace satdump
                         ImGui::Separator();
                     }
                     ImGui::EndListBox();
-
-                    if (needs_to_be_disabled)
-                        style::endDisabled();
                 }
+
+                if (needs_to_be_disabled)
+                    style::endDisabled();
             }
         }
 
@@ -492,10 +492,18 @@ namespace satdump
         {
             rotate_image = getValueOrDefault(p["rotate180"], rotate_image);
             geocorrect_image = getValueOrDefault(p["geocorrect"], geocorrect_image);
-            if (p.contains("filters"))
-                active_filters = p["filters"];
-            else
-                active_filters.clear();
+
+            try
+            {
+                if (p.contains("filters"))
+                    active_filters = p["filters"];
+                else
+                    active_filters.clear();
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Error parsing filters : %s", e.what());
+            }
         }
 
         nlohmann::json ImageHandler::getConfig()
@@ -563,9 +571,6 @@ namespace satdump
                         }
                     }
 
-                    for (auto &f : active_filters)
-                        f.second.progress = 0;
-
                     if (geocorrect_image)
                     { // TODOREWORK handle disabling projs, etc
                         bool success = false;
@@ -586,6 +591,23 @@ namespace satdump
             else
                 curr_image.clear();
 
+            for (auto &f : active_filters)
+                f.second.progress = 0;
+
+            int pre_proj_w = curr_image.size() ? curr_image.width() : image.width();
+            int pre_proj_h = curr_image.size() ? curr_image.height() : image.height();
+
+            // Special case for rotations
+            try
+            {
+                if (rotate_image)
+                    image::rotate(curr_image, rotate_image);
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Error processing image! %s", e.what());
+            }
+
             ////////////////////////
             subhandlers_mtx.lock();
             bool image_has_overlays = false;
@@ -600,19 +622,34 @@ namespace satdump
                     curr_image = image;
 
                 nlohmann::json cfg = image::get_metadata_proj_cfg(curr_image);
-                cfg["width"] = curr_image.width();
-                cfg["height"] = curr_image.height();
+                cfg["width"] = pre_proj_w;
+                cfg["height"] = pre_proj_h;
                 std::unique_ptr<projection::Projection> p = std::make_unique<projection::Projection>();
                 *p = cfg;
                 p->init(1, 0);
 
-                auto pfunc = [&p](double lat, double lon, double h, double w) mutable -> std::pair<double, double>
+                int rotate_image_l = rotate_image;
+
+                auto pfunc = [&p, this, rotate_image_l, pre_proj_w, pre_proj_h](double lat, double lon, double h, double w) mutable -> std::pair<double, double>
                 {
-                    double x, y;
-                    if (p->forward(geodetic::geodetic_coords_t(lat, lon, 0, false), x, y) || x < 0 || x >= w || y < 0 || y >= h)
+                    double x, y, x2, y2;
+                    if (p->forward(geodetic::geodetic_coords_t(lat, lon, 0, false), x, y) || x < 0 || x >= pre_proj_w || y < 0 || y >= pre_proj_h)
+                        x2 = -1, y2 = -1;
+                    else if (rotate_image_l == 0)
+                        x2 = x, y2 = y;
+                    else if (rotate_image_l == 90)
+                        x2 = (w - 1) - y, y2 = x;
+                    else if (rotate_image_l == 180)
+                        x2 = (w - 1) - x, y2 = (h - 1) - y;
+                    else if (rotate_image_l == 270)
+                        x2 = y, y2 = (h - 1) - x;
+                    else
+                        x2 = -1, y2 = -1;
+
+                    if (x2 < 0 || x2 >= w || y2 < 0 || y2 >= h)
                         return {-1, -1};
                     else
-                        return {x, y};
+                        return {x2, y2};
                 };
 
                 for (int i = subhandlers.size() - 1; i >= 0; i--)
@@ -625,17 +662,6 @@ namespace satdump
                         sh_h->draw_to_image(curr_image, pfunc);
                     }
                 }
-            }
-
-            // Special case for rotations, post-overlays
-            try
-            {
-                if (rotate_image)
-                    image::rotate(curr_image, rotate_image);
-            }
-            catch (std::exception &e)
-            {
-                logger->error("Error processing image! %s", e.what());
             }
 
             subhandlers_mtx.unlock();

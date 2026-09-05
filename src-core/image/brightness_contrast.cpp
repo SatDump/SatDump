@@ -5,7 +5,7 @@ namespace satdump
 {
     namespace image
     {
-        void brightness_contrast(Image &image, float brightness, float contrast)
+        void brightness_contrast(Image &image, float brightness, float contrast, float *p)
         {
             int channelCount = image.channels();
             const float scale = image.maxval() - 1;
@@ -16,7 +16,10 @@ namespace satdump
             if (channelCount == 4)
                 channelCount = 3;
 
-            for (size_t i = 0; i < image.height() * image.width() * channelCount; i++)
+            int width = image.width();
+            int height = image.height();
+
+            for (size_t i = 0; i < height * width * channelCount; i++)
             {
                 float v = float(image.get(i)) / scale;
 
@@ -28,6 +31,9 @@ namespace satdump
                 v = (v - 0.5) * slant + 0.5;
 
                 image.set(i, std::min<float>(scale, std::max<float>(0, v * scale)));
+
+                if (p != nullptr)
+                    *p = float(i) / float(height * width * channelCount);
             }
         }
     } // namespace image

@@ -1,14 +1,15 @@
 #pragma once
 
-#include <vector>
-#include <string>
 #include "nlohmann/json.hpp"
+#include <exception>
+#include <string>
+#include <vector>
 
 //// TODOREWORK
-#include "logger.h"
+#include "core/style.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_stdlib.h"
-#include "core/style.h"
+#include "logger.h"
 
 namespace satdump
 {
@@ -99,27 +100,19 @@ namespace satdump
             std::vector<InOut> node_io;
 
         public:
-            Node(Flowgraph *f, std::string id, std::shared_ptr<NodeInternal> i)
-                : id(f->getNewNodeID()), internal_id(id), title(i->title), internal(i)
+            Node(Flowgraph *f, std::string id, std::shared_ptr<NodeInternal> i) : id(f->getNewNodeID()), internal_id(id), title(i->title), internal(i)
             {
                 for (auto &io : internal->inputs)
                     node_io.push_back({f->getNewNodeIOID(&node_io), io.name, false});
                 for (auto &io : internal->outputs)
                     node_io.push_back({f->getNewNodeIOID(&node_io), io.name, true});
-                internal->add_io_callback = [this, f](NodeInternal::InOutConfig io, bool out)
-                {
-                    node_io.push_back({f->getNewNodeIOID(&node_io), io.name, out});
-                };
+                internal->add_io_callback = [this, f](NodeInternal::InOutConfig io, bool out) { node_io.push_back({f->getNewNodeIOID(&node_io), io.name, out}); };
             }
 
-            Node(Flowgraph *f, nlohmann::json j, std::shared_ptr<NodeInternal> i)
-                : id(j["id"]), internal_id(j["int_id"]), title(i->title), node_io(j["io"].get<std::vector<InOut>>()), internal(i)
+            Node(Flowgraph *f, nlohmann::json j, std::shared_ptr<NodeInternal> i) : id(j["id"]), internal_id(j["int_id"]), title(i->title), node_io(j["io"].get<std::vector<InOut>>()), internal(i)
             {
                 internal->from_json(j["int_cfg"]);
-                internal->add_io_callback = [this, f](NodeInternal::InOutConfig io, bool out)
-                {
-                    node_io.push_back({f->getNewNodeIOID(&node_io), io.name, out});
-                };
+                internal->add_io_callback = [this, f](NodeInternal::InOutConfig io, bool out) { node_io.push_back({f->getNewNodeIOID(&node_io), io.name, out}); };
 
                 pos_x = j.contains("pos_x") ? j["pos_x"].get<float>() : 0;
                 pos_y = j.contains("pos_y") ? j["pos_y"].get<float>() : 0;
@@ -184,8 +177,15 @@ namespace satdump
 
             for (auto &n : j["nodes"].items())
             {
-                auto i = node_internal_registry[n.value()["int_id"]]();
-                nodes.push_back(std::make_shared<Node>(this, n.value(), i));
+                try
+                {
+                    auto i = node_internal_registry[n.value()["int_id"]]();
+                    nodes.push_back(std::make_shared<Node>(this, n.value(), i));
+                }
+                catch (std::exception &e)
+                {
+                    logger->error("Error adding node : %s", n.value().dump().c_str());
+                }
             }
             links = j["links"];
         }
@@ -193,4 +193,4 @@ namespace satdump
     public:
         void run();
     };
-}
+} // namespace satdump

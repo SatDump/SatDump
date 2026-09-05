@@ -48,8 +48,9 @@ namespace satdump
          * https://github.com/GNOME/gimp
          * @param image image to hue shift
          * @param hueSaturation parameters to use
+         * @param p progress pointer
          */
-        void hue_saturation(Image &image, HueSaturation hueSaturation);
+        void hue_saturation(Image &image, HueSaturation hueSaturation, float *p = nullptr);
 
         /**
          * @brief Convert RGB to HSL

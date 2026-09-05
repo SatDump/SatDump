@@ -4,50 +4,41 @@
         {
             "name": "MERSI-RM 321",
             "expression": "ch3, ch2, ch1",
-            "filters": [
-                [
-                    "equalize",
-                    [
-                        true,
-                        {
-                            "per_channel": true
-                        }
-                    ]
-                ]
-            ],
+        "filters": [
+            [
+                "equalize",
+                {
+                    "per_channel": true
+                }
+            ]
+        ],
             "geocorrect": true
         },
         {
             "name": "AVHRR 221 False Color",
             "expression": "ch2, ch2, ch1",
-            "filters": [
-                [
-                    "equalize",
-                    [
-                        true,
-                        {
-                            "per_channel": true
-                        }
-                    ]
-                ]
-            ],
+        "filters": [
+            [
+                "equalize",
+                {
+                    "per_channel": true
+                }
+            ]
+        ],
             "geocorrect": true,
             "description": "descriptions/221.md"
         },
         {
             "name": "AVHRR 3a21 False Color",
             "expression": "ch5, ch2, ch1",
-            "filters": [
-                [
-                    "equalize",
-                    [
-                        true,
-                        {
-                            "per_channel": false
-                        }
-                    ]
-                ]
-            ],
+        "filters": [
+            [
+                "equalize",
+                {
+                    "per_channel": false
+                }
+            ]
+        ],
             "geocorrect": true,
             "description": "descriptions/321.md"
         },
@@ -57,12 +48,9 @@
             "filters": [
                 [
                     "equalize",
-                    [
-                        true,
                         {
                             "per_channel": true
                         }
-                    ]
                 ],
                 [
                     "white_balance",
@@ -78,34 +66,28 @@
         {
             "name": "AVHRR 543b IR False Color",
             "expression": "1-ch8, 1-ch7, 1-ch6",
-            "filters": [
-                [
-                    "equalize",
-                    [
-                        true,
-                        {
-                            "per_channel": true
-                        }
-                    ]
-                ]
-            ],
+        "filters": [
+            [
+                "equalize",
+                {
+                    "per_channel": true
+                }
+            ]
+        ],
             "geocorrect": true,
             "description": "descriptions/543b.md"
         },
         {
             "name": "Day Microphysics",
             "expression": "ch1, ch5^2.5, ch7",
-            "filters": [
-                [
-                    "equalize",
-                    [
-                        true,
-                        {
-                            "per_channel": true
-                        }
-                    ]
-                ]
-            ],
+        "filters": [
+            [
+                "equalize",
+                {
+                    "per_channel": true
+                }
+            ]
+        ],
             "geocorrect": true,
             "description": "descriptions/DayMicro.md"
         }

@@ -15,12 +15,15 @@ namespace satdump
         };
 
         bool checkVerbose(int argc, char *argv[]);
+        bool checkHelp(int argc, char *argv[]);
 
         class CommandHandler
         {
         private:
             const bool is_gui;
             CLI::App app;
+
+            bool is_help = false;
 
             std::vector<std::shared_ptr<satdump::CmdHandler>> cmd_handlers;
 

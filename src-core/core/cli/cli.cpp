@@ -27,6 +27,15 @@ namespace satdump
             return verbose;
         }
 
+        bool checkHelp(int argc, char *argv[])
+        {
+            bool help = false;
+            for (int i = 0; i < argc; i++)
+                if (std::string(argv[i]) == "-h" || std::string(argv[i]) == "--help" || std::string(argv[i]) == "--help-all")
+                    help = true;
+            return help;
+        }
+
         CommandHandler::CommandHandler(bool is_gui) : is_gui(is_gui), app("SatDump v" + satdump::SATDUMP_VERSION)
         {
             // Command basics
@@ -61,6 +70,7 @@ namespace satdump
 
         int CommandHandler::parse(int argc, char *argv[])
         {
+            is_help = checkHelp(argc, argv);
             CLI11_PARSE(app, argc, argv);
             return 0;
         }
@@ -69,6 +79,9 @@ namespace satdump
 
         bool CommandHandler::run()
         {
+            if (is_help)
+                return false;
+
             for (auto *subcom : app.get_subcommands())
             {
                 //  std::cout << "Subcommand: " << subcom->get_name() << '\n';

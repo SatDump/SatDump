@@ -1,6 +1,7 @@
 #pragma once
 #include "dll_export.h"
 #include "imgui/imgui.h"
+#include "imgui/imnodes/imnodes.h"
 #include <string>
 
 SATDUMP_DLL extern float ui_scale;               // UI Scaling factor, for DPI scaling
@@ -34,12 +35,15 @@ namespace style
         ImColor overlay_bg;
         ImColor freq_highlight;
         ImColor treeview_icon;
+
+        ImNodesStyle imnodes_style;
     };
 
     SATDUMP_DLL extern Theme theme;
     SATDUMP_DLL extern ImFont *baseFont;
     SATDUMP_DLL extern ImFont *bigFont;
     // SATDUMP_DLL extern ImFont *hugeFont;
+    SATDUMP_DLL extern std::string i18n_extraFont;
 
     void setStyle();
     void beginDisabled();
@@ -47,4 +51,4 @@ namespace style
     void setFonts(float dpi_scaling);
 
     float macos_framebuffer_scale();
-}
+} // namespace style

@@ -23,8 +23,8 @@ namespace satdump
         private:
             RRC_Block<FIRBlock<complex_t>> rrc_blk;
             AGCBlock<complex_t> agc_blk;
-            MMClockRecoveryBlock<complex_t> rec_blk;
             CostasBlock pll_blk;
+            MMClockRecoveryBlock<complex_t> rec_blk;
 
             SplitterBlock<complex_t> const_split_blk;
             PSKSnrEstimatorBlock snr_est_blk;
@@ -48,12 +48,6 @@ namespace satdump
 
             void init()
             {
-                /*if (running)
-                {
-                    pll_blk.stop(true, true);
-                    rec_blk.stop(true, true);
-                    agc_blk.stop(true, true);
-                }*/
 
                 if (constellation == "oqpsk")
                 {
@@ -62,19 +56,12 @@ namespace satdump
                 else
                 {
                     agc_blk.link(&rrc_blk, 0, 0, 4);
-                    rec_blk.link(&agc_blk, 0, 0, 4);
-                    pll_blk.link(&rec_blk, 0, 0, 4);
-                    const_split_blk.link(&pll_blk, 0, 0, 4);
+                    pll_blk.link(&agc_blk, 0, 0, 4);
+                    rec_blk.link(&pll_blk, 0, 0, 4);
+                    const_split_blk.link(&rec_blk, 0, 0, 4);
 
                     snr_est_blk.set_input(const_split_blk.get_output_by_id("snr"), 0);
                 }
-
-                /*if (running)
-                {
-                    agc_blk.start();
-                    rec_blk.start();
-                    pll_blk.start();
-                }*/
             }
 
             void start()
@@ -83,8 +70,8 @@ namespace satdump
 
                 rrc_blk.start();
                 agc_blk.start();
-                rec_blk.start();
                 pll_blk.start();
+                rec_blk.start();
                 const_split_blk.start();
 
                 snr_est_blk.start();
@@ -96,8 +83,8 @@ namespace satdump
             {
                 rrc_blk.stop(stop_snow);
                 agc_blk.stop(stop_snow);
-                rec_blk.stop(stop_snow);
                 pll_blk.stop(stop_snow);
+                rec_blk.stop(stop_snow);
                 const_split_blk.stop(stop_snow);
 
                 snr_est_blk.stop(stop_snow);

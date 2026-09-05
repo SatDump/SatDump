@@ -16,6 +16,7 @@
 #include "processors/nat/metop/mhs_nat.h"
 #include "processors/nc/aws/mwr_nc.h"
 #include "processors/nc/gk2a/ami_nc.h"
+#include "processors/nc/metopsg/metimage_nc.h"
 #include "type.h"
 #include "utils/string.h"
 #include "utils/time.h"
@@ -273,6 +274,33 @@ namespace satdump
                      return i;
                  },
                  []() { return std::make_shared<FCINcProcessor>(); }},
+
+                {NETCDF_METOPSG_METIMAGE,
+                 [](std::shared_ptr<satdump::utils::FilesIteratorItem> &f)
+                 {
+                     FirstPartyProductInfo i;
+
+                     char sat[3];
+                     int len;
+                     std::tm timeS;
+                     memset(&timeS, 0, sizeof(std::tm));
+                     uint32_t test1, test2;
+                     if (sscanf(f->name.c_str(), "W_XX-EUMETSAT-Darmstadt,SAT,SG%2s-VII-1B-RAD_C_EUMT_%4d%2d%2d%2d%2d%2d_G_O_%14u_%14u_C_N_T__.nc%n", &sat, &timeS.tm_year, &timeS.tm_mon,
+                                &timeS.tm_mday, &timeS.tm_hour, &timeS.tm_min, &timeS.tm_sec, &test1, &test2, &len) == 9 &&
+                         len == f->name.size())
+                     {
+                         i.type = NETCDF_METOPSG_METIMAGE;
+
+                         timeS.tm_year -= 1900;
+                         timeS.tm_mon -= 1;
+                         i.timestamp = timegm(&timeS);
+
+                         i.name = "MetOp-SG " + std::string(sat, sat + 2) + " FCI " + timestamp_to_string(i.timestamp);
+                     }
+
+                     return i;
+                 },
+                 []() { return std::make_shared<METIMAGENcProcessor>(); }},
 
                 {NETCDF_GOES_ABI,
                  [](std::shared_ptr<satdump::utils::FilesIteratorItem> &f)

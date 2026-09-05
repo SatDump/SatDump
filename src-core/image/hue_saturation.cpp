@@ -1,5 +1,6 @@
 #include "hue_saturation.h"
 #include "core/exception.h"
+#include <cstddef>
 #include <limits>
 
 namespace satdump
@@ -71,7 +72,7 @@ namespace satdump
                 return value + (v * (1.0 - value));
         }
 
-        void hue_saturation(Image &image, HueSaturation config)
+        void hue_saturation(Image &image, HueSaturation config, float *p)
         {
             if (image.channels() < 3)
                 throw satdump_exception("Hue Saturation requires as least 3 channels!");
@@ -83,11 +84,14 @@ namespace satdump
 
             float overlap = (config.overlap / 100.0) / 2.0;
 
-            for (size_t pixel = 0; pixel < image.width() * image.height(); pixel++)
+            int width = image.width();
+            int height = image.height();
+
+            for (size_t pixel = 0; pixel < width * height; pixel++)
             {
-                rgb_r = image.get(image.width() * image.height() * 0 + pixel) / scale;
-                rgb_g = image.get(image.width() * image.height() * 1 + pixel) / scale;
-                rgb_b = image.get(image.width() * image.height() * 2 + pixel) / scale;
+                rgb_r = image.get(width * height * 0 + pixel) / scale;
+                rgb_g = image.get(width * height * 1 + pixel) / scale;
+                rgb_b = image.get(width * height * 2 + pixel) / scale;
 
                 rgb_to_hsl(rgb_r, rgb_g, rgb_b, hsl_h, hsl_s, hsl_l);
                 {
@@ -157,9 +161,12 @@ namespace satdump
                 }
                 hsl_to_rgb(hsl_h, hsl_s, hsl_l, rgb_r, rgb_g, rgb_b);
 
-                image.set(image.width() * image.height() * 0 + pixel, rgb_r * scale);
-                image.set(image.width() * image.height() * 1 + pixel, rgb_g * scale);
-                image.set(image.width() * image.height() * 2 + pixel, rgb_b * scale);
+                image.set(width * height * 0 + pixel, rgb_r * scale);
+                image.set(width * height * 1 + pixel, rgb_g * scale);
+                image.set(width * height * 2 + pixel, rgb_b * scale);
+
+                if (p != nullptr)
+                    *p = float(pixel) / float(width * height);
             }
         }
 

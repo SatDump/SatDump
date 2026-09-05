@@ -1,14 +1,14 @@
 {
   "light": false,
-  "font": "IBMPlexSans-SemiBold",
+  "font": "IBMPlexSans-SmBld-FAT",
   "font_size": 16,
   "ImGuiStyle": {
-    "WindowRounding": 0,
-    "ChildRounding": 0,
-    "FrameRounding": 0,
-    "GrabRounding": 0,
-    "PopupRounding": 0,
-    "ScrollbarRounding": 0
+    "WindowRounding": 0.0,
+    "ChildRounding": 0.0,
+    "FrameRounding": 0.0,
+    "GrabRounding": 0.0,
+    "PopupRounding": 0.0,
+    "ScrollbarRounding": 0.0
   },
   "ImGuiColors": {
     "Text": "#FFFFFFFF",
@@ -21,14 +21,17 @@
     "FrameBg": "#3336388A",
     "FrameBgHovered": "#3336388A",
     "FrameBgActive": "#3336388A",
-    "TitleBg": "#000000FF",
+    "TitleBg": "#121619FF",
     "TitleBgActive": "#4A4A4AFF",
-    "TitleBgCollapsed": "#00000082",
+    "TitleBgCollapsed": "#12161982",
+    "Tab": "#002d9cFF",
+    "TabHovered": "#0f62feFF",
+    "TabActive": "#0f62feFF",
     "MenuBarBg": "#242424FF",
     "ScrollbarBg": "#17141487",
-    "ScrollbarGrab": "#0f62feFF",
-    "ScrollbarGrabHovered": "#0f62feFF",
-    "ScrollbarGrabActive": "#0f62feFF",
+    "ScrollbarGrab": "#697077FF",
+    "ScrollbarGrabHovered": "#697077FF",
+    "ScrollbarGrabActive": "#697077FF",
     "CheckMark": "#FFFFFFFF",
     "SliderGrab": "#0f62feFF",
     "SliderGrabActive": "#0f62feFF",
@@ -46,7 +49,7 @@
     "ResizeGripActive": "#757575F2",
     "PlotLines": "#66E6FFFF",
     "PlotLinesHovered": "#FF6E59FF",
-    "PlotHistogram": "#BA9926FF",
+    "PlotHistogram": "#24a148FF", //is actually the progressbar
     "PlotHistogramHovered": "#FF9900FF",
     "TextSelectedBg": "#e5e0df59",
     "ModalWindowDimBg": "#CCCCCC59",
@@ -66,7 +69,7 @@
     "lavender": "#be95ffFF",
     "light_green": "#a7F0baFF",
     "light_cyan": "#bae6ffFF",
-    "constellation": "#0f62feFF",
+    "constellation": "#FFFFFFFF",
     "plot_bg": "#1216198A",
     "fft_graduations": "#e5e0df66",
     "notification_bg": "#17141464",
@@ -75,5 +78,39 @@
     "overlay_bg": "#000000B5",
     "freq_highlight": "#98BAE180",
     "treeview_icon": "#808080FF"
+  },
+  "ImNodesColors": {
+    "NodeBackground": "#262626FF", //background of the not selected box in the flowgraphs
+    "NodeBackgroundHovered": "#262626FF",
+    "NodeBackgroundSelected": "#262626FF",
+    "NodeOutline": "#343a3fFF" ,
+    "TitleBar": "#4589ffFF",
+    "TitleBarHovered": "#0f62feFF",
+    "TitleBarSelected": "#0f62feFF",
+    "Link": "#0043ceFF",
+    "LinkHovered": "#0f62feFF",
+    "LinkSelected": "#0f62feFF",
+    "Pin": "#0043ceFF",
+    "PinHovered": "#0f62feFF",
+    "BoxSelector": "#78a9ff80", //shows what is selected in the flowgraph
+    "BoxSelectorOutline": "#78a9ffD0",
+    "GridBackground": "#161616FF",
+    "GridLine": "#262626FF",
+    "GridLinePrimary": "#393939FF",
+    "MiniMapBackground": "#393939C0",
+    "MiniMapBackgroundHovered": "#393939FF",
+    "MiniMapOutline": "#F4F4F4FF",
+    "MiniMapOutlineHovered": "#F4F4F4FF",
+    "MiniMapNodeBackground": "#a8a8a8FF",
+    "MiniMapNodeBackgroundHovered": "#C6c6c6FF",
+    "MiniMapNodeBackgroundSelected": "#c6c6c6FF",
+    "MiniMapNodeOutline": "#F4F4F4FF",
+    "MiniMapLink": "#0F62FEFF",
+    "MiniMapLinkSelected": "#0F62FEFF",
+    "MiniMapCanvas": "#a8a8a888", //shows the part of the flowgraph in view
+    "MiniMapCanvasOutline": "#e0e0e0FF"
+  },
+  "ImNodesStyles": {
+    "NodeCornerRounding": 0.0
   }
 }

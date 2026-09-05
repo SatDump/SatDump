@@ -1,8 +1,9 @@
 #pragma once
 
-#include "dsp/displays/const_disp.h"
 #include "dsp/device/dev.h"
 #include "dsp/device/options_displayer.h"
+#include "dsp/displays/const_disp.h"
+#include "dsp/displays/level_helper.h"
 #include "dsp/fft/fft_pan.h"
 #include "dsp/io/iq_sink.h"
 #include "dsp/io/iq_types.h"
@@ -43,6 +44,9 @@ namespace satdump
             // TESTING
             bool const_present = false;
             std::shared_ptr<ndsp::ConstellationDisplayBlock> const_disp;
+
+            bool level_present = false;
+            std::shared_ptr<ndsp::LevelHelperDisplayBlock> level_disp;
 
             bool recording = false;
             ndsp::IQType rec_type;

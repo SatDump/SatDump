@@ -57,6 +57,9 @@ namespace satdump
             std::string node_search = "";
 
         private:
+            double start_time = 0;
+
+        private:
             //! @brief Name of variable to add
             std::string to_add_var_name;
 
