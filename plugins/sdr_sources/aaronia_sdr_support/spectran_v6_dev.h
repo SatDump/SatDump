@@ -7,12 +7,6 @@
 #include "dynload.h"
 #include <unistd.h>
 
-#ifdef __ANDROID__
-#include "airspy.h"
-#else
-#include <libairspy/airspy.h>
-#endif
-
 // #define SPECTRAN_SAMPLERATE_46M 46080000
 #define SPECTRAN_SAMPLERATE_61_44M 61440000
 #define SPECTRAN_SAMPLERATE_92M 92160000
