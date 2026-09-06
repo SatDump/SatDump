@@ -14,16 +14,12 @@ namespace satdump
     public:
         satdump_exception_t(const std::string &arg, const char *file, int line) : std::runtime_error(arg)
         {
-            msg = arg + " => " + std::string(file).substr(SOURCE_PATH_SIZE) + ":" + std::to_string(line);
+            std::string str(file);
+            msg = arg + " => " + str.substr(std::min<int>(str.length(), SOURCE_PATH_SIZE)) + ":" + std::to_string(line);
         }
 
-        ~satdump_exception_t() throw()
-        {
-        }
+        ~satdump_exception_t() throw() {}
 
-        const char *what() const throw()
-        {
-            return msg.c_str();
-        }
+        const char *what() const throw() { return msg.c_str(); }
     };
-}
+} // namespace satdump
