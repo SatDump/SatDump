@@ -11,6 +11,7 @@ namespace cpu_features
         bool CPU_X86_SSE42 = false;
         bool CPU_X86_AVX = false;
         bool CPU_X86_AVX2 = false;
+        bool CPU_X86_AVX512 = false;
         bool CPU_ARM_NEON = false;
         bool CPU_ARM_NEON7 = false;
         bool CPU_ARM_NEON8 = false;
