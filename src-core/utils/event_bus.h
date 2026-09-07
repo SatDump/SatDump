@@ -9,6 +9,7 @@
 #include <string>
 #include <typeinfo>
 #include <vector>
+#include <mutex>
 
 namespace satdump
 {
@@ -28,6 +29,7 @@ namespace satdump
     {
     private:
         std::vector<std::pair<std::string, std::function<void(void *)>>> all_handlers;
+        std::recursive_mutex handlers_m;
 
     public:
         /**
@@ -39,6 +41,8 @@ namespace satdump
         template <typename T>
         void register_handler(std::function<void(T)> handler_fun)
         {
+            std::lock_guard<std::recursive_mutex> lock(handlers_m);
+
             all_handlers.push_back({std::string(typeid(T).name()), [handler_fun](void *raw)
                                     {
                                         T evt = *((T *)raw); // Cast struct to original type
@@ -55,6 +59,8 @@ namespace satdump
         template <typename T>
         void fire_event(T evt)
         {
+            std::lock_guard<std::recursive_mutex> lock(handlers_m);
+
             for (std::pair<std::string, std::function<void(void *)>> h : all_handlers) // Iterate through all registered functions
                 if (std::string(typeid(T).name()) == h.first)                          // Check struct type is the same
                     h.second((void *)&evt);                                            // Fire handler up
@@ -70,6 +76,8 @@ namespace satdump
          */
         void fire_event(void *evt, std::string evt_name)
         {
+            std::lock_guard<std::recursive_mutex> lock(handlers_m);
+
             for (std::pair<std::string, std::function<void(void *)>> h : all_handlers) // Iterate through all registered functions
                 if (evt_name == h.first)                                               // Check struct type is the same
                     h.second(evt);                                                     // Fire handler up
