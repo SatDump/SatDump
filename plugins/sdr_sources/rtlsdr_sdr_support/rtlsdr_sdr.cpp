@@ -211,8 +211,7 @@ void RtlSdrSource::stop()
         rtlsdr_cancel_async(rtlsdr_dev_obj);
         thread_should_run = false;
         logger->info("Waiting for the thread...");
-        if (is_started)
-            output_stream->stopWriter();
+        output_stream->stopWriter();
         if (work_thread.joinable())
             work_thread.join();
         logger->info("Thread stopped");
