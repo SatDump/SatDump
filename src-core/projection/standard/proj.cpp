@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "proj.h"
 
 #include "common/geodetic/wgs84.h"
