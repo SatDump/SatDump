@@ -4,6 +4,7 @@ if(!!(Get-Command 'tf' -ErrorAction SilentlyContinue) -eq $false)
     exit
 }
 
+mkdir deps
 cd deps
 
 mkdir output
