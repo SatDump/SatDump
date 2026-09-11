@@ -372,7 +372,7 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
             POST_EXCLUDE_REGEXES
             ".*system32/.*\\.dll"
             DIRECTORIES
-            "${PROJECT_SOURCE_DIR}/../output/bin"
+            "${PROJECT_SOURCE_DIR}/windows/deps/output/bin"
         )
     else()
         set(CPACK_GENERATOR DEB)
