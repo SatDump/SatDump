@@ -98,7 +98,7 @@ git clone https://github.com/HDFGroup/hdf5 --depth 1 -b  2.0.0
 cd hdf5
 mkdir build
 cd build
-cmake $cmake_params .. -DBUILD_SHARED_LIBS=ON -DHDF5_BUILD_CPP_LIB=1
+cmake $cmake_params .. -DBUILD_SHARED_LIBS=ON -DHDF5_BUILD_CPP_LIB=1 -DHDF5_ENABLE_ZLIB_SUPPORT=ON
 ninja install
 cd ../..
 
