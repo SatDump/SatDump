@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.12)
 project(firstparty_support)
 
-if(NOT ANDROID)
+if(MSVC)
+  set(HDF5_FOUND true)
+  set(HDF5HL_FOUND true)
+  set(HDF5_LIBRARIES libhdf5 libhdf5_hl libhdf5_cpp)
+elseif(NOT ANDROID)
   find_package(PkgConfig)
   pkg_check_modules(HDF5 hdf5)
   pkg_check_modules(HDF5HL hdf5_hl hdf5_cpp)
@@ -40,7 +44,7 @@ if(HDF5_FOUND)
     target_link_libraries(firstparty_support PUBLIC hdf5 hdf5_hl hdf5_cpp xrit_support)
   endif()
 
-  if(MSVC OR BUILD_MSVC)
+  if(MSVC)
     install(
       TARGETS firstparty_support
       DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins
@@ -57,7 +61,7 @@ if(HDF5_FOUND)
     target_link_libraries(firstparty_loader_support
                           PUBLIC firstparty_support satdump_interface)
 
-    if(MSVC OR BUILD_MSVC)
+    if(MSVC)
       install(
         TARGETS firstparty_loader_support
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins

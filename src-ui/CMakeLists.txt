@@ -68,7 +68,7 @@ else()
 #    endif()
 endif()
 
-if(MSVC OR BUILD_MSVC)
+if(MSVC)
     install(TARGETS satdump-ui DESTINATION ${CMAKE_INSTALL_BINDIR} RUNTIME_DEPENDENCY_SET satdump_deps)
 else()
     install(TARGETS satdump-ui DESTINATION ${CMAKE_INSTALL_BINDIR})

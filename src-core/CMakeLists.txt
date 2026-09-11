@@ -6,7 +6,7 @@ include(CMakePushCheckState)
 include(CheckCCompilerFlag)
 
 # Set the resources path
-if(MSVC OR BUILD_MSVC)
+if(MSVC)
     set(RESOURCES_PATH "./")
     set(LIBRARIES_PATH "./")
 else()
@@ -169,7 +169,7 @@ if(MSVC)
     target_link_libraries(satdump_core PUBLIC fftw3f.dll)
     target_link_libraries(satdump_core PUBLIC nng.dll)
     target_link_libraries(satdump_core PUBLIC tiff.dll)
-    target_link_libraries(satdump_core PUBLIC libcurl.dll)
+    target_link_libraries(satdump_core PUBLIC libcurl_imp.dll)
     target_link_libraries(satdump_core PUBLIC sqlite3.dll)
 
     if(BUILD_ZIQ)
@@ -303,7 +303,7 @@ if(APPLE)
 endif()
 
 # Install
-if(MSVC OR BUILD_MSVC)
+if(MSVC)
     install(TARGETS satdump_core DESTINATION ${CMAKE_INSTALL_BINDIR} RUNTIME_DEPENDENCY_SET satdump_deps)
 else()
     install(TARGETS satdump_core DESTINATION ${CMAKE_INSTALL_LIBDIR})

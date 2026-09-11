@@ -4,7 +4,7 @@ include(CheckCXXSourceCompiles)
 
 find_library(BLADERF_LIBRARY bladeRF)
 
-if(BLADERF_LIBRARY OR MSVC) # OR ANDROID)
+if(BLADERF_LIBRARY) # OR ANDROID)
     message("Building with BladeRF support")
     file(GLOB_RECURSE bladerf_sdr_support_CPPS *.cpp)
     add_library(bladerf_sdr_support SHARED ${bladerf_sdr_support_CPPS})

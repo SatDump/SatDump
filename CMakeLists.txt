@@ -22,10 +22,6 @@ else()
     endif()
 endif()
 
-if(MSVC OR BUILD_MSVC)
-    set(VCPKG_APPLOCAL_DEPS CACHE BOOL FALSE)
-endif()
-
 project(SatDump)
 
 option(BUILD_GUI "Build the GUI" ON)
@@ -33,7 +29,6 @@ option(BUILD_TESTING "Build the testing program" OFF)
 option(BUILD_TOOLS "Build the tools programs" OFF)
 option(BUILD_ZIQ "Build support for the custom ZIQ format" ON)
 option(BUILD_ZIQ2 "Build support for the custom ZIQ2 format (Very WIP)" OFF)
-option(BUILD_MSVC "Build for Windows with MSVC" OFF) # Seems like "MSVC" as a macro messed up below for some reason...
 option(BUILD_OPENCL "Build with OpenCL GPU Accelerations" ON)
 option(BUILD_OPENMP "Build with OpenMP Optimizations" ON)
 option(BUILD_DOCS "Build with Doxygen Documentation" OFF)
@@ -125,7 +120,7 @@ else()
     set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 endif()
 
-if(MSVC OR BUILD_MSVC)
+if(MSVC)
     add_compile_definitions(
         _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
         _USE_MATH_DEFINES
@@ -158,8 +153,9 @@ if(MSVC OR BUILD_MSVC)
     set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4286,4217")
 
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-    include_directories(vcpkg/installed/${VCPKG_TARGET_TRIPLET}/include)
-    link_directories(vcpkg/installed/${VCPKG_TARGET_TRIPLET}/lib)
+    include_directories(windows/deps/output/include)
+    link_directories(windows/deps/output/lib)
+    link_directories(windows/deps/output/bin)
 endif()
 
 if((NOT DEFINED ENV{CI}) AND NOT DEFINED ANDROID)
@@ -321,7 +317,7 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
     set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
     set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 
-    if(MSVC OR BUILD_MSVC)
+    if(MSVC)
         set(CPACK_PACKAGING_INSTALL_PREFIX "/")
     else()
         set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
@@ -332,7 +328,7 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
     #set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
     set(CPACK_PACKAGE_VERSION ${SATDUMP_VERSION})
 
-    if(MSVC OR BUILD_MSVC)
+    if(MSVC)
         # Customize NSIS template
         file(READ "${CMAKE_ROOT}/Modules/Internal/CPack/NSIS.template.in" NSIS_template)
         set(CREATE_ICONS_REPLACE "  SetOutPath \"$INSTDIR\\bin\"\n@CPACK_NSIS_CREATE_ICONS@\n@CPACK_NSIS_CREATE_ICONS_EXTRA@\n  SetOutPath \"$INSTDIR\"")
@@ -376,7 +372,7 @@ if((NOT ANDROID) AND ENABLE_INSTALL)
             POST_EXCLUDE_REGEXES
             ".*system32/.*\\.dll"
             DIRECTORIES
-            "${PROJECT_SOURCE_DIR}/vcpkg/installed/${VCPKG_TARGET_TRIPLET}/bin"
+            "${PROJECT_SOURCE_DIR}/../output/bin"
         )
     else()
         set(CPACK_GENERATOR DEB)

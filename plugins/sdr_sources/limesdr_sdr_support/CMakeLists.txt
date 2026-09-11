@@ -5,7 +5,7 @@ project(limesdr_sdr_support)
 
 find_library(LIMESDR_LIBRARY LimeSuite)
 
-if(LIMESDR_LIBRARY OR MSVC OR ANDROID)
+if(LIMESDR_LIBRARY OR ANDROID)
     message("Building with LimeSDR support")
     file(GLOB_RECURSE limesdr_sdr_support_CPPS *.cpp)
     add_library(limesdr_sdr_support SHARED ${limesdr_sdr_support_CPPS})

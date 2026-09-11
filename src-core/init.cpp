@@ -1,5 +1,6 @@
-#include "core/style.h"
 #define SATDUMP_DLL_EXPORT 1
+
+#include "core/style.h"
 
 #include "db/kepler/kepler_handler.h"
 #include "i18n.h"

@@ -4,7 +4,7 @@ project(sdrpp_server_support)
 
 find_package(ZSTD)
 
-if(ZSTD_FOUND OR MSVC OR ANDROID)
+if(ZSTD_FOUND OR ANDROID)
     message("Building with SDR++ Server support")
     file(GLOB_RECURSE sdrpp_server_support_CPPS *.cpp)
     add_library(sdrpp_server_support SHARED ${sdrpp_server_support_CPPS})

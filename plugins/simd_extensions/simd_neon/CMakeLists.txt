@@ -27,7 +27,7 @@ if(NEON_FOUND)
 
     if(UNIX OR ANDROID)
         set(FINAL_FLAGS_NEON "${NEON_C_FLAGS}")
-    elseif(MSVC OR BUILD_MSVC)
+    elseif(MSVC)
         set(FINAL_FLAGS_NEON "${NEON_C_FLAGS}")
     endif()
 

@@ -1,9 +1,10 @@
+#define SATDUMP_DLL_EXPORT2 1
+
 #include "i18n.h"
 #include "init.h"
 #include "libs/base64/base64.h"
 #include "utils/time.h"
 #include <string>
-#define SATDUMP_DLL_EXPORT2 1
 
 #include "explorer/explorer.h"
 
