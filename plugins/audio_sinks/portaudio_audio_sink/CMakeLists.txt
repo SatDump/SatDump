@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.12)
 project(portaudio_audio_sink)
 
-find_library(PORTAUDIO_LIBRARY portaudio)
+if(MSVC)
+    find_library(PORTAUDIO_LIBRARY portaudio_x64)
+else()
+    find_library(PORTAUDIO_LIBRARY portaudio)
+endif()
 
 if(PORTAUDIO_LIBRARY)
     message("Building with PortAudio sink")
@@ -9,7 +13,7 @@ if(PORTAUDIO_LIBRARY)
     add_library(portaudio_audio_sink SHARED ${portaudio_audio_sink})
 
     if(MSVC)
-        target_link_libraries(portaudio_audio_sink PUBLIC satdump_core portaudio.dll)
+        target_link_libraries(portaudio_audio_sink PUBLIC satdump_core portaudio_x64.dll)
         install(TARGETS portaudio_audio_sink DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins RUNTIME_DEPENDENCY_SET satdump_deps)
     else()
         target_link_libraries(portaudio_audio_sink PUBLIC satdump_core ${PORTAUDIO_LIBRARY})
