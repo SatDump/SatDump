@@ -46,7 +46,7 @@ jobs:
       - name: Build Deps
         if: steps.win-deps-x64.outputs.cache-hit != 'true'
         shell: powershell
-        working-directory: ${{runner.workspace}}/windows
+        working-directory: ${{github.workspace}}\windows
         run: ${{github.workspace}}\windows\build_deps.ps1
 
       # - name: Add support to NSIS for long PATHs
