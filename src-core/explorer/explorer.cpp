@@ -5,6 +5,7 @@
 #include "core/plugin.h"
 #include "core/resources.h"
 #include "core/style.h"
+#include "handlers/dataset/flowgraph/processing_flowgraph_handler.h"
 #include "i18n.h"
 #include "image/image.h"
 #include "image/io.h"
@@ -285,6 +286,9 @@ namespace satdump
                     { // TODOREWORK?
                         if (ImGui::MenuItem(_("DSP Flowgraph")))
                             addHandler(std::make_shared<handlers::DSPFlowGraphHandler>());
+                        if (ImGui::MenuItem(_("Processing Flowgraph")))
+                            addHandler(std::make_shared<handlers::ProcessingFlowGraphHandler>());
+
                         ImGui::EndMenu();
                     }
 
@@ -421,7 +425,7 @@ namespace satdump
                         ImGui::SetCursorPos({((float)dims.first / 2) - (line_size.x / 2), last_pos + (26 * 2) * scale});
                         if (ImGui::Button("Add Buggy Recorder"))
                             addHandler(std::make_shared<handlers::NewRecHandler>());
-                            //addHandler(std::make_shared<handlers::RecFrontendHandler>(std::make_shared<handlers::RecBackend>()));
+                        // addHandler(std::make_shared<handlers::RecFrontendHandler>(std::make_shared<handlers::RecBackend>()));
                     }
                     else
                     {
@@ -545,6 +549,12 @@ namespace satdump
                                            {
                                                logger->trace("Viewer loading DSP flowgraph " + path);
                                                e->addHandler(std::make_shared<handlers::DSPFlowGraphHandler>(path), true);
+                                           }});
+                    else if (std::filesystem::path(path).extension().string() == ".satdump_processing_flowgraph")
+                        loaders.push_back({"Processing Flowgraph Loader", [](std::string path, ExplorerApplication *e)
+                                           {
+                                               logger->trace("Viewer loading Processing flowgraph " + path);
+                                               e->addHandler(std::make_shared<handlers::ProcessingFlowGraphHandler>(path), true);
                                            }});
 
                     // Plugin loaders

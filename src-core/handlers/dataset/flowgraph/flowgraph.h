@@ -72,6 +72,7 @@ namespace satdump
     {
     public:
         std::map<std::string, std::function<std::shared_ptr<NodeInternal>()>> node_internal_registry;
+        bool is_running = false;
 
     public:
         class Node
@@ -189,6 +190,8 @@ namespace satdump
             }
             links = j["links"];
         }
+
+        bool isRunning() { return is_running; }
 
     public:
         void run();

@@ -1,6 +1,6 @@
 #include "flowgraph.h"
-#include <limits>
 #include "core/exception.h"
+#include <limits>
 
 #include "imgui/imnodes/imnodes.h"
 #include "imgui/imnodes/imnodes_internal.h"
@@ -8,13 +8,9 @@
 
 namespace satdump
 {
-    Flowgraph::Flowgraph()
-    {
-    }
+    Flowgraph::Flowgraph() {}
 
-    Flowgraph::~Flowgraph()
-    {
-    }
+    Flowgraph::~Flowgraph() {}
 
     int Flowgraph::getNewNodeID()
     {
@@ -126,76 +122,75 @@ namespace satdump
 
         ImNodes::EndNodeEditor();
 
-        int start_att, end_att;
-        if (ImNodes::IsLinkCreated(&start_att, &end_att))
+        if (!is_running)
         {
-            links.push_back({getNewLinkID(), start_att, end_att});
-            logger->trace("LINK CREATE %d %d", start_att, end_att);
-        }
-
-        int link_id;
-        if (ImNodes::IsLinkDestroyed(&link_id))
-        {
-            auto iter = std::find_if(
-                links.begin(), links.end(), [link_id](const Link &link) -> bool
-                { return link.id == link_id; });
-            logger->trace("LINK DELETE %d %d", iter->start, iter->end);
-            links.erase(iter);
-        }
-
-        if (ImGui::IsKeyPressed(ImGuiKey_Delete))
-        {
-            int node_s = ImNodes::NumSelectedNodes();
-
-            if (node_s > 0)
+            int start_att, end_att;
+            if (ImNodes::IsLinkCreated(&start_att, &end_att))
             {
-                std::vector<int> nodes_ids(node_s);
-                ImNodes::GetSelectedNodes(nodes_ids.data());
-
-                for (auto &id : nodes_ids)
-                {
-                    auto iter = std::find_if(
-                        nodes.begin(), nodes.end(), [id](const std::shared_ptr<Node> &node) -> bool
-                        { return node->id == id; });
-                    logger->trace("NODE DELETE %d", id);
-                    for (auto &linkid : iter->get()->node_io)
-                    {
-                        auto liter = std::find_if(
-                            links.begin(), links.end(), [linkid](const Link &link) -> bool
-                            { return link.start == linkid.id || link.end == linkid.id; });
-                        if (liter != links.end())
-                            links.erase(liter);
-                    }
-                    nodes.erase(iter);
-                }
-            }
-        }
-
-        if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-            ImGui::OpenPopup("##popuprightclickflowgraph");
-        if (ImGui::BeginPopup("##popuprightclickflowgraph"))
-        {
-            if (ImGui::BeginMenu("Add Node"))
-            {
-                for (auto &opt : node_internal_registry)
-                {
-                    if (ImGui::MenuItem(opt.first.c_str()))
-                    {
-                        auto mpos = ImGui::GetMousePos();
-                        auto ptr = addNode(opt.first, opt.second());
-                        ptr->pos_was_set = true;
-                        ImNodes::SetNodeScreenSpacePos(ptr->id, mpos);
-                    }
-                }
-                ImGui::EndMenu();
+                links.push_back({getNewLinkID(), start_att, end_att});
+                logger->trace("LINK CREATE %d %d", start_att, end_att);
             }
 
-            ImGui::EndPopup();
+            int link_id;
+            if (ImNodes::IsLinkDestroyed(&link_id))
+            {
+                auto iter = std::find_if(links.begin(), links.end(), [link_id](const Link &link) -> bool { return link.id == link_id; });
+                logger->trace("LINK DELETE %d %d", iter->start, iter->end);
+                links.erase(iter);
+            }
+
+            if (ImGui::IsKeyPressed(ImGuiKey_Delete))
+            {
+                int node_s = ImNodes::NumSelectedNodes();
+
+                if (node_s > 0)
+                {
+                    std::vector<int> nodes_ids(node_s);
+                    ImNodes::GetSelectedNodes(nodes_ids.data());
+
+                    for (auto &id : nodes_ids)
+                    {
+                        auto iter = std::find_if(nodes.begin(), nodes.end(), [id](const std::shared_ptr<Node> &node) -> bool { return node->id == id; });
+                        logger->trace("NODE DELETE %d", id);
+                        for (auto &linkid : iter->get()->node_io)
+                        {
+                            auto liter = std::find_if(links.begin(), links.end(), [linkid](const Link &link) -> bool { return link.start == linkid.id || link.end == linkid.id; });
+                            if (liter != links.end())
+                                links.erase(liter);
+                        }
+                        nodes.erase(iter);
+                    }
+                }
+            }
+
+            if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+                ImGui::OpenPopup("##popuprightclickflowgraph");
+            if (ImGui::BeginPopup("##popuprightclickflowgraph"))
+            {
+                if (ImGui::BeginMenu("Add Node"))
+                {
+                    for (auto &opt : node_internal_registry)
+                    {
+                        if (ImGui::MenuItem(opt.first.c_str()))
+                        {
+                            auto mpos = ImGui::GetMousePos();
+                            auto ptr = addNode(opt.first, opt.second());
+                            ptr->pos_was_set = true;
+                            ImNodes::SetNodeScreenSpacePos(ptr->id, mpos);
+                        }
+                    }
+                    ImGui::EndMenu();
+                }
+
+                ImGui::EndPopup();
+            }
         }
     }
 
     void Flowgraph::run()
     {
+        is_running = true;
+
         for (auto &n : nodes)
             n->internal->reset();
 
@@ -298,5 +293,7 @@ namespace satdump
 
         for (auto &n : nodes)
             n->internal->reset();
+
+        is_running = false;
     }
-}
+} // namespace satdump
