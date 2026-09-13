@@ -2,7 +2,7 @@
 
 #include "core/exception.h"
 #include "logger.h"
-#include <sdrplay_api.h>
+#include "sdrplay_api.h"
 
 #ifdef _WIN32
 #include "libs/dlfcn/dlfcn.h"
