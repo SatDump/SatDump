@@ -76,18 +76,19 @@ jobs:
           name: SatDump-Windows_x64_Installer
           path: ${{runner.workspace}}/build/SatDump-*.exe
 
-      # - name: Add dumpbin to PATH
-      #   run: echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\$((Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC" | Sort-Object Name -Descending | Select-Object -First 1).Name)\bin\Hostx64\x64" >> $env:GITHUB_PATH
+      - name: Add dumpbin to PATH
+        run: echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\$((Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC" | Sort-Object Name -Descending | Select-Object -First 1).Name)\bin\Hostx64\x64" >> $env:GITHUB_PATH
 
-      # - name: Build Portable
-      #   shell: powershell
-      #   run: ${{github.workspace}}\windows\Finish-Release.ps1 -platform x64-windows -BuildPath ${{runner.workspace}}\build
+      - name: Build Portable
+        shell: powershell
+        working-directory: ${{runner.workspace}}/build
+        run: ${{github.workspace}}\windows\make_portable.ps1
 
-      # - name: Upload Portable
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: SatDump-Windows_x64_Portable
-      #     path: ${{runner.workspace}}/build/Release/*
+      - name: Upload Portable
+        uses: actions/upload-artifact@v4
+        with:
+          name: SatDump-Windows_x64_Portable
+          path: ${{runner.workspace}}/build/portable/*
 
   # build_windows_arm64:
   #   runs-on: windows-2022
