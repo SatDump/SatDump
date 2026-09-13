@@ -300,6 +300,7 @@ endif()
 
 if(APPLE)
     target_link_libraries(satdump_core PUBLIC "-framework CoreGraphics")
+    target_link_libraries(satdump_core PUBLIC intl)
 endif()
 
 # Install
