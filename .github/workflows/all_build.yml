@@ -48,9 +48,9 @@ jobs:
         shell: powershell
         run: ${{github.workspace}}\windows\build_deps.ps1
 
-      - name: Add support to NSIS for long PATHs
-        shell: powershell
-        run: ${{github.workspace}}\windows\Get-NSIS-LongStrings.ps1
+      # - name: Add support to NSIS for long PATHs
+      #   shell: powershell
+      #   run: ${{github.workspace}}\windows\Get-NSIS-LongStrings.ps1
 
       - name: Create Build Environment
         run: cmake -E make_directory ${{runner.workspace}}/build
