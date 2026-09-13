@@ -299,4 +299,13 @@ cmake $cmake_params ../host -DCMAKE_CXX_FLAGS="/EHsc /FIwinsock2.h" -DCMAKE_POLI
 ninja install
 cd ../..
 
+# libarmadillo
+git clone https://gitlab.com/armadillo-lib/armadillo-code armadillo --depth 1 -b 15.6.x
+cd armadillo
+mkdir build
+cd build
+cmake $cmake_params .. -DBUILD_SHARED_LIBS=ON 
+ninja install
+cd ../..
+
 cd ..
