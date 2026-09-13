@@ -1,5 +1,5 @@
 # Output folder
-if (Test-Path -path $folder) {
+if (Test-Path -path portable) {
     rm -r -fo portable
 }
 mkdir portable
