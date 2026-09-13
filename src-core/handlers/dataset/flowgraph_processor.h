@@ -2,6 +2,7 @@
 
 #include "flowgraph/flowgraph.h"
 #include "processor.h"
+#include "utils/imgui_context_wrapper.h"
 
 namespace satdump
 {
@@ -10,6 +11,10 @@ namespace satdump
         class Flowgraph_DatasetProductProcessor : public DatasetProductProcessor
         {
         private:
+            //! @brief Context for zoom
+            ImNodesContext *imnode_ctx = nullptr;
+            ContainedContext ctx;
+
             Flowgraph flowgraph;
 
         private: // TODOREWORK?
@@ -59,7 +64,7 @@ namespace satdump
 
             bool can_process();
             void process(float *progress = nullptr);
-            void renderUI();
+            void renderUI(ImVec2 win_size);
         };
     } // namespace handlers
 } // namespace satdump

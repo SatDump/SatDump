@@ -46,6 +46,7 @@ jobs:
       - name: Build Deps
         if: steps.win-deps-x64.outputs.cache-hit != 'true'
         shell: powershell
+        working-directory: ${{runner.workspace}}/windows
         run: ${{github.workspace}}\windows\build_deps.ps1
 
       # - name: Add support to NSIS for long PATHs
@@ -57,7 +58,7 @@ jobs:
 
       - name: Configure CMake
         working-directory: ${{runner.workspace}}/build
-        run: cmake -G Ninja -DCMAKE_FIND_ROOT_PATH=${{github.workspace}}/windows/deps/output -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/windows/deps/output -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_PROCESSOR=x64-windows "$Env:GITHUB_WORKSPACE"
+        run: cmake -G Ninja -DCMAKE_FIND_ROOT_PATH=../windows/deps/output -DCMAKE_INSTALL_PREFIX=../windows/deps/output -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_PROCESSOR=x64-windows "$Env:GITHUB_WORKSPACE"
 
       - name: Build
         working-directory: ${{runner.workspace}}/build

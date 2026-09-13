@@ -60,7 +60,7 @@ namespace satdump
 
             virtual bool can_process() = 0;
             virtual void process(float *progress = nullptr) = 0;
-            virtual void renderUI() = 0;
+            virtual void renderUI(ImVec2 win_size) = 0;
 
             void renderParams()
             {

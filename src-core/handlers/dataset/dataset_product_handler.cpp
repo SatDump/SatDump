@@ -80,7 +80,7 @@ namespace satdump
                 if (proc_now)
                     style::beginDisabled();
                 if (processor)
-                    processor->renderUI();
+                    processor->renderUI(win_size);
                 if (proc_now)
                     style::endDisabled();
                 ImGui::EndTabItem();
