@@ -38,6 +38,11 @@ jobs:
         if: steps.win-deps-x64.outputs.cache-hit != 'true'
         uses: microsoft/setup-msbuild@v2
 
+      - name: Setup VS Dev Env
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
       - name: Build Deps
         if: steps.win-deps-x64.outputs.cache-hit != 'true'
         shell: powershell
