@@ -88,8 +88,8 @@ cd ../..
 # TIFF
 git clone https://github.com/libsdl-org/libtiff --depth 1 -b v4.6.0
 cd libtiff
-mkdir build
-cd build
+mkdir build2
+cd build2
 cmake $cmake_params .. -DBUILD_SHARED_LIBS=ON -Dtiff-tools=OFF -Dtiff-tests=OFF -Dtiff-docs=OFF
 ninja install
 cd ../..
