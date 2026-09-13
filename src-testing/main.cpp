@@ -22,4 +22,20 @@ namespace satdump
     std::vector<KeplerData> get_tle_simple_url_group();
 }
 
+struct KeplerFetcherBase
+{
+    const std::string type;
+    const bool is_multi;
+    const bool is_historical;
+
+    KeplerFetcherBase(std::string type, bool is_multi, bool is_historical) : type(type), is_multi(is_multi), is_historical(is_historical) {}
+};
+
+struct KeplerFetcherBasicBundle : public KeplerFetcherBase
+{
+    KeplerFetcherBasicBundle() : KeplerFetcherBase("basic_omm_bundle", true, false) {}
+
+    std::string url;
+};
+
 int main(int argc, char *argv[]) { initLogger(); }
