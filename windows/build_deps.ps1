@@ -1,8 +1,8 @@
-if(!!(Get-Command 'tf' -ErrorAction SilentlyContinue) -eq $false)
-{
-    Write-Error "You must run this script within Developer Powershell for Visual Studio"
-    exit
-}
+# if(!!(Get-Command 'tf' -ErrorAction SilentlyContinue) -eq $false)
+# {
+#     Write-Error "You must run this script within Developer Powershell for Visual Studio"
+#     exit
+# }
 
 mkdir deps
 cd deps
