@@ -1,5 +1,7 @@
 # Output folder
-rm -r -fo portable
+if (Test-Path -path $folder) {
+    rm -r -fo portable
+}
 mkdir portable
 
 # Core
