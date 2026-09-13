@@ -170,8 +170,8 @@ cd ../..
 # Portaudio
 git clone https://github.com/PortAudio/portaudio --depth 1 -b v19.7.0
 cd portaudio
-mkdir build
-cd build
+mkdir build2
+cd build2
 cmake $cmake_params .. -DBUILD_SHARED_LIBS=ON -DCMAKE_POLICY_VERSION_MINIMUM="3.5"
 ninja install
 cd ../..
