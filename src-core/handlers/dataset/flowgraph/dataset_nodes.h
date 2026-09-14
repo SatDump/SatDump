@@ -1,23 +1,38 @@
 #pragma once
 
+#include "core/exception.h"
+#include "core/plugin.h"
+#include "explorer/explorer.h"
+#include "handlers/dataset/dataset_product_handler.h"
 #include "handlers/dataset/flowgraph/flowgraph.h"
+#include "handlers/handler.h"
 
 namespace satdump
 {
     class DatasetProductSource_Node : public NodeInternal
     {
     private:
-        // Flowgraph_DatasetProductProcessor *proc;
+        std::shared_ptr<handlers::Handler> handler;
         std::string product_id;
         int product_index = 0;
 
     public:
-        DatasetProductSource_Node(/*Flowgraph_DatasetProductProcessor *proc*/) : NodeInternal("Dataset Product Source") /*, proc(proc)*/ { outputs.push_back({"Product"}); }
+        DatasetProductSource_Node(std::shared_ptr<handlers::Handler> handler) : NodeInternal("Dataset Product Source"), handler(handler) { outputs.push_back({"Product"}); }
 
         void process()
         {
-            //  outputs[0].ptr = std::shared_ptr<products::Product>(proc->get_instrument_products(product_id, product_index), [](products::Product *) {}); // No Deleter
-            has_run = true;
+            std::shared_ptr<handlers::Handler> p;
+            eventBus->fire_event<explorer::GetParantOfHandlerEvent>({handler, p});
+            if (p && p->getID() == "dataset_product_handler")
+            {
+                handlers::DatasetProductHandler *proc = ((handlers::DatasetProductHandler *)p.get());
+                outputs[0].ptr = std::shared_ptr<products::Product>(proc->get_instrument_products(product_id, product_index), [](products::Product *) {}); // No Deleter
+                has_run = true;
+            }
+            else
+            {
+                throw satdump_exception("Must be below a dataset product handler!");
+            }
         }
 
         void render()

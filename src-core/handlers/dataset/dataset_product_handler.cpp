@@ -19,7 +19,7 @@ namespace satdump
             available_presets.push_back(loadJsonFile(resources::getResourcePath("pipeline_cfgs/AVHRR_MCIR_Sample.json")));
         }
 
-        DatasetProductHandler::~DatasetProductHandler() { ProcessingHandler::~ProcessingHandler(); }
+        DatasetProductHandler::~DatasetProductHandler() {}
 
         void DatasetProductHandler::drawMenu() {}
 
@@ -27,7 +27,7 @@ namespace satdump
         {
             // ImGui::BeginTabBar("##datasetproducttabbar");
 
-            bool proc_now = is_processing;
+            bool proc_now = false;
 
             /*if (ImGui::BeginTabItem("Presets"))*/
             {
@@ -52,7 +52,7 @@ namespace satdump
                     ImGui::EndListBox();
                 }
 
-                if (processor)
+                /*if (processor)
                     processor->renderParams();
 
                 if (ImGui::Button("Generate"))
@@ -64,7 +64,7 @@ namespace satdump
                 {
                     std::string str = processor->getCfg().dump(4);
                     ImGui::SetClipboardText(str.c_str());
-                }
+                }*/
 
                 if (proc_now)
                     style::endDisabled();
@@ -84,17 +84,6 @@ namespace satdump
             }*/
 
             // ImGui::EndTabBar();
-        }
-
-        void DatasetProductHandler::do_process()
-        {
-            if (processor)
-            {
-                if (processor->can_process())
-                    processor->process();
-            }
-            else
-                logger->error("Invalid processor!\n");
         }
     } // namespace handlers
 } // namespace satdump

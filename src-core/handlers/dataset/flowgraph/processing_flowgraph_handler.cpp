@@ -7,6 +7,7 @@
 #include "handlers/dataset/flowgraph/datasetproc_node.h"
 #include "handlers/dataset/flowgraph/image_nodes.h"
 #include "handlers/dataset/flowgraph/imageproduct_node.h"
+#include "handlers/handler.h"
 #include "i18n.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_flags.h"
@@ -15,6 +16,7 @@
 #include "nlohmann/json_utils.h"
 #include "utils/time.h"
 #include <complex.h>
+#include <memory>
 
 namespace satdump
 {
@@ -34,7 +36,7 @@ namespace satdump
             flowgraph.node_internal_registry.emplace("image_equalize", []() { return std::make_shared<ImageEqualize_Node>(); });
             flowgraph.node_internal_registry.emplace("image_source", []() { return std::make_shared<ImageSource_Node>(); });
 
-            flowgraph.node_internal_registry.emplace("dataset_product_source", [this]() { return std::make_shared<DatasetProductSource_Node>(); });
+            flowgraph.node_internal_registry.emplace("dataset_product_source", [this]() { return std::make_shared<DatasetProductSource_Node>(std::shared_ptr<Handler>(this)); });
 
             if (file != "")
                 flowgraph.setJSON(loadCborFile(file));
