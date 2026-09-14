@@ -1,5 +1,5 @@
 param(
-    [string]$source_path="$(Split-Path -Parent $MyInvocation.MyCommand.Path)\..",
+    [string]$source_path="$(Split-Path -Parent $MyInvocation.MyCommand.Path)\.."
 )
 
 # Output folder
