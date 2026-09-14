@@ -60,7 +60,7 @@ foreach($input_dll in $input_dlls)
 }
 
 $dll_array = $dll_array | select -Unique
-$available_dlls = Get-ChildItem ../windows/deps/output/bin -Filter *.dll
+$available_dlls = Get-ChildItem $source_path/windows/deps/output/bin -Filter *.dll
 $dlls_to_copy = @()
 foreach($available_dll in $available_dlls)
 {
