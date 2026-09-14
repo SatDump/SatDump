@@ -91,7 +91,7 @@ jobs:
           path: ${{runner.workspace}}/build/portable/*
 
   build_windows_arm64:
-    runs-on: windows-2022
+    runs-on: windows-11-arm
 
     steps:
       - uses: actions/checkout@v4
