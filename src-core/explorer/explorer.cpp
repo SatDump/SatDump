@@ -6,7 +6,6 @@
 #include "core/resources.h"
 #include "core/style.h"
 #include "handlers/dataset/flowgraph/processing_flowgraph_handler.h"
-#include "handlers/experimental/pipeline/pipeline.h"
 #include "i18n.h"
 #include "image/image.h"
 #include "image/io.h"
@@ -83,8 +82,8 @@ namespace satdump
                 });
 
             // Returns parent of handler if available
-            eventBus->register_handler<GetParantOfHandlerEvent>(
-                [this](const GetParantOfHandlerEvent &v)
+            eventBus->register_handler<GetParentOfHandlerEvent>(
+                [this](const GetParentOfHandlerEvent &v)
                 {
                     v.p = nullptr;
 
@@ -328,8 +327,6 @@ namespace satdump
                             addHandler(std::make_shared<handlers::RecFrontendHandler>(std::make_shared<handlers::TestHttpBackend>(std::make_shared<handlers::RecBackend>())));
                         if (ImGui::MenuItem("TestRemoteClient"))
                             addHandler(std::make_shared<handlers::RecFrontendHandler>(std::make_shared<handlers::TestHttpClientBackend>()));
-                        if (ImGui::MenuItem("Pipeline"))
-                            addHandler(std::make_shared<handlers::PipelineHandler>());
                         ImGui::EndMenu();
                     }
 

@@ -29,7 +29,7 @@ namespace satdump
             std::shared_ptr<handlers::Handler> &h;
         };
 
-        struct GetParantOfHandlerEvent
+        struct GetParentOfHandlerEvent
         {
             std::shared_ptr<handlers::Handler> &h;
             std::shared_ptr<handlers::Handler> &p;
