@@ -1,3 +1,7 @@
+param(
+    [string]$source_path="$(Split-Path -Parent $MyInvocation.MyCommand.Path)\..",
+)
+
 # Output folder
 if (Test-Path -path portable) {
     rm -r -fo portable
@@ -14,8 +18,8 @@ mkdir portable/plugins
 cp plugins/*.dll portable/plugins
 
 # Resources
-cp -r ../resources portable
-cp ../satdump_cfg.json portable
+cp -r $source_path/resources portable
+cp $source_path/satdump_cfg.json portable
 
 # Add DLLs
 function Parse-DumpBin($binary_path)
