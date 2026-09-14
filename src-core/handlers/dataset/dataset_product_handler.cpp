@@ -5,9 +5,6 @@
 #include "core/resources.h"
 #include "nlohmann/json_utils.h"
 
-// TODOREWORK #include "lua_processor.h"
-#include "flowgraph_processor.h"
-
 namespace satdump
 {
     namespace handlers
@@ -28,11 +25,11 @@ namespace satdump
 
         void DatasetProductHandler::drawContents(ImVec2 win_size)
         {
-            ImGui::BeginTabBar("##datasetproducttabbar");
+            // ImGui::BeginTabBar("##datasetproducttabbar");
 
             bool proc_now = is_processing;
 
-            if (ImGui::BeginTabItem("Presets"))
+            /*if (ImGui::BeginTabItem("Presets"))*/
             {
                 if (proc_now)
                     style::beginDisabled();
@@ -48,8 +45,8 @@ namespace satdump
                             /* TODOREWORK if (p["processor"].get<std::string>() == "lua_processor")
                                 processor = std::make_unique<Lua_DatasetProductProcessor>(dataset_handler, this, p);
                             else*/
-                            if (p["processor"].get<std::string>() == "flowgraph_processor")
-                                processor = std::make_unique<Flowgraph_DatasetProductProcessor>(dataset_handler, this, p);
+                            // if (p["processor"].get<std::string>() == "flowgraph_processor")
+                            //     processor = std::make_unique<Flowgraph_DatasetProductProcessor>(dataset_handler, this, p);
                         }
                     }
                     ImGui::EndListBox();
@@ -72,10 +69,10 @@ namespace satdump
                 if (proc_now)
                     style::endDisabled();
 
-                ImGui::EndTabItem();
+                //   ImGui::EndTabItem();
             }
 
-            if (processor && ImGui::BeginTabItem("Edit"))
+            /*if (processor && ImGui::BeginTabItem("Edit"))
             {
                 if (proc_now)
                     style::beginDisabled();
@@ -84,9 +81,9 @@ namespace satdump
                 if (proc_now)
                     style::endDisabled();
                 ImGui::EndTabItem();
-            }
+            }*/
 
-            ImGui::EndTabBar();
+            // ImGui::EndTabBar();
         }
 
         void DatasetProductHandler::do_process()

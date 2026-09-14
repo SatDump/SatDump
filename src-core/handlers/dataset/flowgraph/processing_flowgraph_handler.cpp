@@ -3,6 +3,7 @@
 #include "core/backend.h"
 #include "core/style.h"
 #include "dsp/flowgraph/dsp_flowgraph_register.h"
+#include "handlers/dataset/flowgraph/dataset_nodes.h"
 #include "handlers/dataset/flowgraph/datasetproc_node.h"
 #include "handlers/dataset/flowgraph/image_nodes.h"
 #include "handlers/dataset/flowgraph/imageproduct_node.h"
@@ -33,7 +34,7 @@ namespace satdump
             flowgraph.node_internal_registry.emplace("image_equalize", []() { return std::make_shared<ImageEqualize_Node>(); });
             flowgraph.node_internal_registry.emplace("image_source", []() { return std::make_shared<ImageSource_Node>(); });
 
-            // flowgraph.node_internal_registry.emplace("dataset_product_source", [this]() { return std::make_shared<DatasetProductSource_Node>(this); });
+            flowgraph.node_internal_registry.emplace("dataset_product_source", [this]() { return std::make_shared<DatasetProductSource_Node>(); });
 
             if (file != "")
                 flowgraph.setJSON(loadCborFile(file));
