@@ -91,5 +91,5 @@ while($last_count -ne $dlls_to_copy.Count)
 # Copy determined dependencies
 foreach($dll_to_copy in $dlls_to_copy)
 {
-    cp $dll_to_copy.FullName .
+    cp $dll_to_copy.FullName ./portable
 }
