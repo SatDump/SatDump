@@ -124,7 +124,7 @@ namespace meteor
             file_reader.input_function = [this](int8_t *buf, size_t len) -> int
             {
                 read_data((uint8_t *)buf, len);
-                return false;
+                return should_run();
             };
 
             while (should_run())
