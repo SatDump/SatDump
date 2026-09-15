@@ -1,3 +1,8 @@
+param(
+    [bool]$is_cross=0,
+    [bool]$is_arm=0
+)
+
 # if(!!(Get-Command 'tf' -ErrorAction SilentlyContinue) -eq $false)
 # {
 #     Write-Error "You must run this script within Developer Powershell for Visual Studio"
@@ -11,6 +16,10 @@ mkdir output
 $output_folder=$(Resolve-Path output)
 $python_interpreter=$($(Get-Command python).Path)
 $cmake_params="-G Ninja", "-DCMAKE_FIND_ROOT_PATH='$output_folder'", "-DCMAKE_INSTALL_PREFIX='$output_folder'", "-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_SYSTEM_NAME=Windows", "-DPYTHON_EXECUTABLE:FILEPATH=$python_interpreter"
+
+if($is_cross) {
+    $cmake_params+="-DCMAKE_CROSSCOMPILING=ON"
+}
 
 # ZLib
 git clone https://github.com/madler/zlib --depth 1 -b v1.3.1
@@ -186,13 +195,15 @@ ninja install
 cd ../..
 
 # LimeSuite
-git clone https://github.com/myriadrf/Limesuite --depth 1 -b v23.11.0
-cd Limesuite
-mkdir build2
-cd build2
-cmake $cmake_params .. -DBUILD_SHARED_LIBS=ON -DCMAKE_POLICY_VERSION_MINIMUM="3.5"
-ninja install
-cd ../..
+if(!$is_arm) {
+    git clone https://github.com/myriadrf/Limesuite --depth 1 -b v23.11.0
+    cd Limesuite
+    mkdir build2
+    cd build2
+    cmake $cmake_params .. -DBUILD_SHARED_LIBS=ON -DCMAKE_POLICY_VERSION_MINIMUM="3.5"
+    ninja install
+    cd ../..
+}
 
 # libxml2
 git clone https://github.com/gnome/libxml2 --depth 1 -b v2.15.4
@@ -271,33 +282,35 @@ cmake $cmake_params ../host -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON -DBUILD_SHARED
 ninja install
 cd ../..
 
-# Boost
-git clone https://github.com/boostorg/boost --depth 1 -b boost-1.92.0 --recursive
-cd boost
-mkdir build
-cd build
-cmake $cmake_params .. -DBUILD_SHARED_LIBS=ON
-ninja install
-cd ../..
-cp -r $output_folder/include/boost-1_92/boost $output_folder/include
+if(!$is_arm) {
+    # Boost
+    git clone https://github.com/boostorg/boost --depth 1 -b boost-1.92.0 --recursive
+    cd boost
+    mkdir build
+    cd build
+    cmake $cmake_params .. -DBUILD_SHARED_LIBS=ON
+    ninja install
+    cd ../..
+    cp -r $output_folder/include/boost-1_92/boost $output_folder/include
 
-# Protobuf
-git clone https://github.com/protocolbuffers/protobuf --depth 1 -b v36.1
-cd protobuf
-mkdir build
-cd build
-cmake $cmake_params .. -DBUILD_SHARED_LIBS=ON
-ninja install
-cd ../..
+    # Protobuf
+    git clone https://github.com/protocolbuffers/protobuf --depth 1 -b v36.1
+    cd protobuf
+    mkdir build
+    cd build
+    cmake $cmake_params .. -DBUILD_SHARED_LIBS=ON
+    ninja install
+    cd ../..
 
-# LIBUHD
-git clone https://github.com/ettusresearch/uhd --depth 1 -b v4.10.0.0
-cd uhd
-mkdir build
-cd build
-cmake $cmake_params ../host -DCMAKE_CXX_FLAGS="/EHsc /FIwinsock2.h" -DCMAKE_POLICY_VERSION_MINIMUM="3.5" -DBUILD_SHARED_LIBS=ON -DENABLE_MAN_PAGES=OFF -DENABLE_MANUAL=OFF -DENABLE_PYTHON_API=OFF -DENABLE_EXAMPLES=OFF -DENABLE_UTILS=OFF -DENABLE_TESTS=OFF 
-ninja install
-cd ../..
+    # LIBUHD
+    git clone https://github.com/ettusresearch/uhd --depth 1 -b v4.10.0.0
+    cd uhd
+    mkdir build
+    cd build
+    cmake $cmake_params ../host -DCMAKE_CXX_FLAGS="/EHsc /FIwinsock2.h" -DCMAKE_POLICY_VERSION_MINIMUM="3.5" -DBUILD_SHARED_LIBS=ON -DENABLE_MAN_PAGES=OFF -DENABLE_MANUAL=OFF -DENABLE_PYTHON_API=OFF -DENABLE_EXAMPLES=OFF -DENABLE_UTILS=OFF -DENABLE_TESTS=OFF 
+    ninja install
+    cd ../..
+}
 
 # libarmadillo
 git clone https://gitlab.com/armadillo-lib/armadillo-code armadillo --depth 1 -b 15.6.x

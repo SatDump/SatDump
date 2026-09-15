@@ -91,7 +91,7 @@ jobs:
           path: ${{runner.workspace}}/build/portable/*
 
   build_windows_arm64:
-    runs-on: windows-11-arm
+    runs-on: windows-2022
 
     steps:
       - uses: actions/checkout@v4
@@ -126,7 +126,7 @@ jobs:
         if: steps.win-deps-arm64.outputs.cache-hit != 'true'
         shell: powershell
         working-directory: ${{github.workspace}}\windows
-        run: ${{github.workspace}}\windows\build_deps.ps1
+        run: ${{github.workspace}}\windows\build_deps.ps1 -is_cross 1 -is_arm 1
 
       # - name: Add support to NSIS for long PATHs
       #   shell: powershell
@@ -137,7 +137,7 @@ jobs:
 
       - name: Configure CMake
         working-directory: ${{runner.workspace}}/build
-        run: cmake -G Ninja -DCMAKE_FIND_ROOT_PATH=../windows/deps/output -DCMAKE_INSTALL_PREFIX=../windows/deps/output -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_PROCESSOR=arm64-windows "$Env:GITHUB_WORKSPACE"
+        run: cmake -G Ninja -DCMAKE_FIND_ROOT_PATH=../windows/deps/output -DCMAKE_INSTALL_PREFIX=../windows/deps/output -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_PROCESSOR=arm64-windows -DCMAKE_CROSSCOMPILING=ON -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SYSTEM_PROCESSOR=ARM64 "$Env:GITHUB_WORKSPACE"
 
       - name: Build
         working-directory: ${{runner.workspace}}/build
