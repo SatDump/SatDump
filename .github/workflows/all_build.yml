@@ -120,7 +120,7 @@ jobs:
       - name: Setup VS Dev Env
         uses: ilammy/msvc-dev-cmd@v1
         with:
-          arch: arm64
+          arch: amd64_arm64
 
       - name: Build Deps
         if: steps.win-deps-arm64.outputs.cache-hit != 'true'
