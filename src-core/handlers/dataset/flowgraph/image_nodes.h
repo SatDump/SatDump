@@ -1,12 +1,13 @@
 #pragma once
 
 #include "flowgraph.h"
+#include "image/expression.h"
 #include "image/io.h"
 #include "image/meta.h"
+#include "image/processing.h"
+#include "imgui/imgui.h"
 #include "projection/projection.h"
 #include "projection/reprojector.h"
-#include "image/expression.h"
-#include "image/processing.h"
 
 namespace satdump
 {
@@ -16,11 +17,7 @@ namespace satdump
         std::string path;
 
     public:
-        ImageSink_Node()
-            : NodeInternal("Image Sink")
-        {
-            inputs.push_back({"Image"});
-        }
+        ImageSink_Node() : NodeInternal("Image Sink") { inputs.push_back({"Image"}); }
 
         void process()
         {
@@ -44,10 +41,7 @@ namespace satdump
             return j;
         }
 
-        void from_json(nlohmann::json j)
-        {
-            path = j["path"];
-        }
+        void from_json(nlohmann::json j) { path = j["path"]; }
     };
 
     class ImageSource_Node : public NodeInternal
@@ -56,11 +50,7 @@ namespace satdump
         std::string product_path;
 
     public:
-        ImageSource_Node()
-            : NodeInternal("Image Source")
-        {
-            outputs.push_back({"Image"});
-        }
+        ImageSource_Node() : NodeInternal("Image Source") { outputs.push_back({"Image"}); }
 
         void process()
         {
@@ -84,10 +74,7 @@ namespace satdump
             return j;
         }
 
-        void from_json(nlohmann::json j)
-        {
-            product_path = j["path"];
-        }
+        void from_json(nlohmann::json j) { product_path = j["path"]; }
     };
 
     class ImageGetProj_Node : public NodeInternal
@@ -96,8 +83,7 @@ namespace satdump
         std::string path;
 
     public:
-        ImageGetProj_Node()
-            : NodeInternal("Image Get Projection")
+        ImageGetProj_Node() : NodeInternal("Image Get Projection")
         {
             inputs.push_back({"Image"});
             outputs.push_back({"Projection"});
@@ -128,8 +114,7 @@ namespace satdump
         float progress = 0;
 
     public:
-        ImageReproj_Node()
-            : NodeInternal("Reproj Image")
+        ImageReproj_Node() : NodeInternal("Reproj Image")
         {
             inputs.push_back({"Image"});
             inputs.push_back({"Projection"});
@@ -188,11 +173,7 @@ namespace satdump
         std::string expression;
 
     public:
-        ImageExpression_Node()
-            : NodeInternal("Image Expression")
-        {
-            outputs.push_back({"Image"});
-        }
+        ImageExpression_Node() : NodeInternal("Image Expression") { outputs.push_back({"Image"}); }
 
         void process()
         {
@@ -258,8 +239,7 @@ namespace satdump
         bool per_channel = false;
 
     public:
-        ImageEqualize_Node()
-            : NodeInternal("Equalize Image")
+        ImageEqualize_Node() : NodeInternal("Equalize Image")
         {
             inputs.push_back({"Image"});
             outputs.push_back({"Image"});
@@ -274,10 +254,7 @@ namespace satdump
             has_run = true;
         }
 
-        void render()
-        {
-            ImGui::Checkbox("Per Channel", &per_channel);
-        }
+        void render() { ImGui::Checkbox("Per Channel", &per_channel); }
 
         nlohmann::json to_json()
         {
@@ -286,9 +263,90 @@ namespace satdump
             return j;
         }
 
-        void from_json(nlohmann::json j)
-        {
-            per_channel = j["per_channel"];
-        }
+        void from_json(nlohmann::json j) { per_channel = j["per_channel"]; }
     };
-}
+
+    class ImageSetAlpha_Node : public NodeInternal
+    {
+    private:
+        float alpha = 1.0;
+
+    public:
+        ImageSetAlpha_Node() : NodeInternal("Set Alpha Image")
+        {
+            inputs.push_back({"Image"});
+            outputs.push_back({"Image"});
+        }
+
+        void process()
+        {
+            std::shared_ptr<image::Image> img = std::static_pointer_cast<image::Image>(inputs[0].ptr);
+
+            if (img->channels() == 2)
+            {
+                for (size_t x = 0; x < img->width() * img->height(); x++)
+                    img->setf(1, x, img->getf(1, x) * alpha);
+            }
+            else if (img->channels() == 4)
+            {
+                for (size_t x = 0; x < img->width() * img->height(); x++)
+                    img->setf(3, x, img->getf(3, x) * alpha);
+            }
+            else
+                logger->error("Image must have alpha!");
+
+            outputs[0].ptr = img;
+
+            has_run = true;
+        }
+
+        void render()
+        {
+            ImGui::SetNextItemWidth(200);
+            ImGui::SliderFloat("Alpha", &alpha, 0, 1);
+        }
+
+        nlohmann::json to_json()
+        {
+            nlohmann::json j;
+            j["alpha"] = alpha;
+            return j;
+        }
+
+        void from_json(nlohmann::json j) { alpha = j["alpha"]; }
+    };
+
+    class ImageOverlay_Node : public NodeInternal
+    {
+
+    public:
+        ImageOverlay_Node() : NodeInternal("Overlay Image")
+        {
+            inputs.push_back({"Image 1"});
+            inputs.push_back({"Image 2"});
+            outputs.push_back({"Image"});
+        }
+
+        void process()
+        {
+            std::shared_ptr<image::Image> img1 = std::static_pointer_cast<image::Image>(inputs[0].ptr);
+            std::shared_ptr<image::Image> img2 = std::static_pointer_cast<image::Image>(inputs[1].ptr);
+
+            img1->draw_image_alpha(*img2);
+
+            outputs[0].ptr = img1;
+
+            has_run = true;
+        }
+
+        void render() {}
+
+        nlohmann::json to_json()
+        {
+            nlohmann::json j;
+            return j;
+        }
+
+        void from_json(nlohmann::json j) {}
+    };
+} // namespace satdump

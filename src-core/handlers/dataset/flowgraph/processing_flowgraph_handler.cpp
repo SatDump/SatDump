@@ -35,6 +35,8 @@ namespace satdump
             flowgraph.node_internal_registry.emplace("image_handler_sink", [this]() { return std::make_shared<ImageHandlerSink_Node>(this); });
             flowgraph.node_internal_registry.emplace("image_equalize", []() { return std::make_shared<ImageEqualize_Node>(); });
             flowgraph.node_internal_registry.emplace("image_source", []() { return std::make_shared<ImageSource_Node>(); });
+            flowgraph.node_internal_registry.emplace("image_overlay", []() { return std::make_shared<ImageOverlay_Node>(); });
+            flowgraph.node_internal_registry.emplace("image_set_alpha", []() { return std::make_shared<ImageSetAlpha_Node>(); });
 
             flowgraph.node_internal_registry.emplace("dataset_product_source", [this]() { return std::make_shared<DatasetProductSource_Node>(std::shared_ptr<Handler>(this)); });
 
