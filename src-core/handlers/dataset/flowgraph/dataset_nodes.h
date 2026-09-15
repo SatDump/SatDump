@@ -22,7 +22,7 @@ namespace satdump
         void process()
         {
             std::shared_ptr<handlers::Handler> p;
-            eventBus->fire_event<explorer::GetParantOfHandlerEvent>({handler, p});
+            eventBus->fire_event<explorer::GetParentOfHandlerEvent>({handler, p});
             if (p && p->getID() == "dataset_product_handler")
             {
                 handlers::DatasetProductHandler *proc = ((handlers::DatasetProductHandler *)p.get());
