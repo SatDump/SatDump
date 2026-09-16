@@ -69,7 +69,7 @@
     "lavender": "#be95ffFF",
     "light_green": "#a7F0baFF",
     "light_cyan": "#bae6ffFF",
-    "constellation": "#FFFFFFFF",
+    "constellation": "#00FF00FF",//"#FFFFFFFF",
     "plot_bg": "#1216198A",
     "fft_graduations": "#e5e0df66",
     "notification_bg": "#17141464",
@@ -83,7 +83,7 @@
     "NodeBackground": "#262626FF", //background of the not selected box in the flowgraphs
     "NodeBackgroundHovered": "#262626FF",
     "NodeBackgroundSelected": "#262626FF",
-    "NodeOutline": "#343a3fFF" ,
+    "NodeOutline": "#343a3fFF",
     "TitleBar": "#4589ffFF",
     "TitleBarHovered": "#0f62feFF",
     "TitleBarSelected": "#0f62feFF",

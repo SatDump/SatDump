@@ -1,8 +1,10 @@
 #pragma once
 
+#include "core/exception.h"
 #include "flowgraph.h"
-#include "products/image_product.h"
 #include "products/image/product_expression.h"
+#include "products/image_product.h"
+#include "products/product.h"
 
 namespace satdump
 {
@@ -12,11 +14,7 @@ namespace satdump
         std::string product_path;
 
     public:
-        ImageProductSource_Node()
-            : NodeInternal("Image Product Source")
-        {
-            outputs.push_back({"Product"});
-        }
+        ImageProductSource_Node() : NodeInternal("Image Product Source") { outputs.push_back({"Product", "product"}); }
 
         void process()
         {
@@ -38,10 +36,7 @@ namespace satdump
             return j;
         }
 
-        void from_json(nlohmann::json j)
-        {
-            product_path = j["path"];
-        }
+        void from_json(nlohmann::json j) { product_path = j["path"]; }
     };
 
     class ImageProductExpression_Node : public NodeInternal
@@ -53,22 +48,29 @@ namespace satdump
         float progress = 0;
 
     public:
-        ImageProductExpression_Node()
-            : NodeInternal("Image Product Expression")
+        ImageProductExpression_Node() : NodeInternal("Image Product Expression")
         {
-            inputs.push_back({"Product"});
-            outputs.push_back({"Image"});
+            inputs.push_back({"Product", "product"});
+            outputs.push_back({"Image", "img"});
         }
 
         void process()
         {
             processing = true;
-            std::shared_ptr<satdump::products::ImageProduct> img_pro = std::static_pointer_cast<satdump::products::ImageProduct>(inputs[0].ptr);
 
-            std::shared_ptr<image::Image> img_out = std::make_shared<image::Image>();
-            *img_out = products::generate_expression_product_composite(img_pro.get(), expression, &progress);
+            if (std::static_pointer_cast<satdump::products::Product>(inputs[0].ptr)->type == "image")
+            {
+                std::shared_ptr<satdump::products::ImageProduct> img_pro = std::static_pointer_cast<satdump::products::ImageProduct>(inputs[0].ptr);
 
-            outputs[0].ptr = img_out;
+                std::shared_ptr<image::Image> img_out = std::make_shared<image::Image>();
+                *img_out = products::generate_expression_product_composite(img_pro.get(), expression, &progress);
+
+                outputs[0].ptr = img_out;
+            }
+            else
+            {
+                throw satdump_exception("Must be an image product!");
+            }
 
             has_run = true;
             processing = false;
@@ -90,9 +92,6 @@ namespace satdump
             return j;
         }
 
-        void from_json(nlohmann::json j)
-        {
-            expression = j["expression"];
-        }
+        void from_json(nlohmann::json j) { expression = j["expression"]; }
     };
-}
+} // namespace satdump

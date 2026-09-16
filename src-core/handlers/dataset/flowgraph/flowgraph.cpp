@@ -5,12 +5,104 @@
 #include "imgui/imnodes/imnodes.h"
 #include "imgui/imnodes/imnodes_internal.h"
 #include "logger.h"
+#include "utils/string.h"
 
 namespace satdump
 {
     Flowgraph::Flowgraph() {}
 
     Flowgraph::~Flowgraph() {}
+
+    void Flowgraph::renderAddMenu(std::pair<const std::string, NodeInternalReg> &opt, std::vector<std::string> cats, int pos)
+    {
+        if (pos == (cats.size() - 1))
+        {
+            if (ImGui::MenuItem(cats[pos].c_str()))
+            {
+                auto mpos = ImGui::GetMousePos();
+                auto ptr = addNode(opt.first, opt.second.inst());
+                ptr->pos_was_set = true;
+                ImNodes::SetNodeScreenSpacePos(ptr->id, mpos);
+            }
+        }
+        else
+        {
+            if (ImGui::BeginMenu(cats[pos].c_str()))
+            {
+                renderAddMenu(opt, cats, pos + 1);
+                ImGui::EndMenu();
+            }
+        }
+    }
+
+    void Flowgraph::renderCatT(CatT &cats, bool searching)
+    {
+        for (auto &c : cats.cats)
+        {
+            if (searching)
+                ImGui::SetNextItemOpen(true);
+
+            if (ImGui::TreeNode(c.first.c_str()))
+            {
+                renderCatT(c.second, searching);
+                ImGui::TreePop();
+            }
+        }
+
+        for (auto &c : cats.sub)
+        {
+            auto split = splitString(c.second.menuname, '/');
+            std::string name = split.size() ? split[split.size() - 1] : c.second.menuname;
+
+            if (ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_Leaf))
+                ImGui::TreePop();
+            if (ImGui::IsItemClicked())
+                addNode(c.first, c.second.inst());
+        }
+    }
+
+    void Flowgraph::renderAddMenuList(std::string search)
+    {
+        std::lock_guard<std::mutex> lg(flow_mtx);
+
+        // Extract categories
+        std::vector<std::pair<std::string, NodeInternalReg>> regs;
+        std::vector<std::vector<std::string>> categs;
+        for (auto &opt : node_internal_registry)
+        {
+            if (search.size() && !isStringPresent(opt.second.menuname, search))
+                continue;
+
+            regs.push_back({opt.first, opt.second});
+            categs.push_back(splitString(opt.second.menuname, '/'));
+        }
+
+        CatT cats;
+
+        // Organize in a recursive fashion
+        for (int i = 0; i < regs.size(); i++)
+        {
+            CatT *cCats = &cats;
+            for (int c = 0; c < categs[i].size(); c++)
+            {
+                std::string cat = categs[i][c];
+
+                if (c == categs[i].size() - 1)
+                {
+                    cCats->sub.emplace(regs[i].first, regs[i].second);
+                }
+                else
+                {
+                    if (!cCats->cats.count(cat))
+                        cCats->cats.emplace(cat, CatT());
+                    cCats = &cCats->cats[cat];
+                }
+            }
+        }
+
+        // Render
+        renderCatT(cats, search.size());
+    }
 
     int Flowgraph::getNewNodeID()
     {
@@ -171,13 +263,8 @@ namespace satdump
                 {
                     for (auto &opt : node_internal_registry)
                     {
-                        if (ImGui::MenuItem(opt.first.c_str()))
-                        {
-                            auto mpos = ImGui::GetMousePos();
-                            auto ptr = addNode(opt.first, opt.second());
-                            ptr->pos_was_set = true;
-                            ImNodes::SetNodeScreenSpacePos(ptr->id, mpos);
-                        }
+                        std::vector<std::string> cats = splitString(opt.second.menuname, '/');
+                        renderAddMenu(opt, cats, 0);
                     }
                     ImGui::EndMenu();
                 }
@@ -244,8 +331,15 @@ namespace satdump
                                             {
                                                 if (n2->node_io[b].id == l.end)
                                                 {
-                                                    n2->internal->inputs[b2] = i->outputs[o];
-                                                    logger->trace("Assigned to : " + n2->internal->title);
+                                                    if (n2->internal->inputs[b2].type == i->outputs[o].type)
+                                                    {
+                                                        n2->internal->inputs[b2].ptr = i->outputs[o].ptr;
+                                                        logger->trace("Assigned to : " + n2->internal->title);
+                                                    }
+                                                    else
+                                                    {
+                                                        throw satdump_exception("Incompatible types! " + n2->internal->inputs[b2].type + " and " + i->outputs[o].type);
+                                                    }
                                                 }
 
                                                 b2++;

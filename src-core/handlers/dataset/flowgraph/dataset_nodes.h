@@ -17,7 +17,7 @@ namespace satdump
         int product_index = 0;
 
     public:
-        DatasetProductSource_Node(std::shared_ptr<handlers::Handler> handler) : NodeInternal("Dataset Product Source"), handler(handler) { outputs.push_back({"Product"}); }
+        DatasetProductSource_Node(std::shared_ptr<handlers::Handler> handler) : NodeInternal("Dataset Product Source"), handler(handler) { outputs.push_back({"Product", "product"}); }
 
         void process()
         {

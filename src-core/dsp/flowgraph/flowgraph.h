@@ -44,7 +44,7 @@ namespace satdump
                 struct NodeInternalReg
                 {
                     std::string menuname;
-                    std::function<std::shared_ptr<NodeInternal>(const Flowgraph *f)> func;
+                    std::function<std::shared_ptr<NodeInternal>(const Flowgraph *f)> inst;
                 };
 
                 //! @brief Node registry

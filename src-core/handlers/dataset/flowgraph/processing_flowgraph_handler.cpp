@@ -26,19 +26,20 @@ namespace satdump
         {
             handler_tree_icon = u8"\uf92f";
 
-            flowgraph.node_internal_registry.emplace("image_product_source", []() { return std::make_shared<ImageProductSource_Node>(); });
-            flowgraph.node_internal_registry.emplace("image_product_expression", []() { return std::make_shared<ImageProductExpression_Node>(); });
-            flowgraph.node_internal_registry.emplace("image_sink", []() { return std::make_shared<ImageSink_Node>(); });
-            flowgraph.node_internal_registry.emplace("image_get_proj", []() { return std::make_shared<ImageGetProj_Node>(); });
-            flowgraph.node_internal_registry.emplace("image_reproj", []() { return std::make_shared<ImageReproj_Node>(); });
-            flowgraph.node_internal_registry.emplace("image_equation", []() { return std::make_shared<ImageExpression_Node>(); });
-            flowgraph.node_internal_registry.emplace("image_handler_sink", [this]() { return std::make_shared<ImageHandlerSink_Node>(this); });
-            flowgraph.node_internal_registry.emplace("image_equalize", []() { return std::make_shared<ImageEqualize_Node>(); });
-            flowgraph.node_internal_registry.emplace("image_source", []() { return std::make_shared<ImageSource_Node>(); });
-            flowgraph.node_internal_registry.emplace("image_overlay", []() { return std::make_shared<ImageOverlay_Node>(); });
-            flowgraph.node_internal_registry.emplace("image_set_alpha", []() { return std::make_shared<ImageSetAlpha_Node>(); });
+            flowgraph.node_internal_registry.insert({"image_product_source", {"Image Product Source", []() { return std::make_shared<ImageProductSource_Node>(); }}});
+            flowgraph.node_internal_registry.insert({"image_product_expression", {"Image Product Expression", []() { return std::make_shared<ImageProductExpression_Node>(); }}});
+            flowgraph.node_internal_registry.insert({"image_sink", {"Image Sink", []() { return std::make_shared<ImageSink_Node>(); }}});
+            flowgraph.node_internal_registry.insert({"image_get_proj", {"Image Get Projection", []() { return std::make_shared<ImageGetProj_Node>(); }}});
+            flowgraph.node_internal_registry.insert({"image_reproj", {"Reproject Image", []() { return std::make_shared<ImageReproj_Node>(); }}});
+            flowgraph.node_internal_registry.insert({"image_equation", {"Image Equation", []() { return std::make_shared<ImageExpression_Node>(); }}});
+            flowgraph.node_internal_registry.insert({"image_handler_sink", {"Image Handler Sink", [this]() { return std::make_shared<ImageHandlerSink_Node>(this); }}});
+            flowgraph.node_internal_registry.insert({"image_equalize", {"Equalize Image", []() { return std::make_shared<ImageEqualize_Node>(); }}});
+            flowgraph.node_internal_registry.insert({"image_source", {"Image Source", []() { return std::make_shared<ImageSource_Node>(); }}});
+            flowgraph.node_internal_registry.insert({"image_overlay", {"Overlay Image", []() { return std::make_shared<ImageOverlay_Node>(); }}});
+            flowgraph.node_internal_registry.insert({"image_set_alpha", {"Image Set Alpha", []() { return std::make_shared<ImageSetAlpha_Node>(); }}});
 
-            flowgraph.node_internal_registry.emplace("dataset_product_source", [this]() { return std::make_shared<DatasetProductSource_Node>(std::shared_ptr<Handler>(this)); });
+            flowgraph.node_internal_registry.insert(
+                {"dataset_product_source", {"Dataset Product Source", [this]() { return std::make_shared<DatasetProductSource_Node>(std::shared_ptr<Handler>(this)); }}});
 
             if (file != "")
                 flowgraph.setJSON(loadCborFile(file));
@@ -97,14 +98,14 @@ namespace satdump
 
                 if (ImGui::Button("Update"))
                     flowgraph.updateVars();
-            }
+            }*/
 
             if (ImGui::CollapsingHeader("Blocks"))
             {
                 ImGui::SetNextItemWidth(ImGui::GetWindowSize().x);
                 ImGui::InputTextWithHint("##SearchBlocks", "Search Blocks", &node_search);
                 flowgraph.renderAddMenuList(node_search);
-            }*/
+            }
         }
 
         void ProcessingFlowGraphHandler::drawMenuBar()

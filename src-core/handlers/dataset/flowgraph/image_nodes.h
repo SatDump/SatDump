@@ -17,7 +17,7 @@ namespace satdump
         std::string path;
 
     public:
-        ImageSink_Node() : NodeInternal("Image Sink") { inputs.push_back({"Image"}); }
+        ImageSink_Node() : NodeInternal("Image Sink") { inputs.push_back({"Image", "img"}); }
 
         void process()
         {
@@ -50,7 +50,7 @@ namespace satdump
         std::string product_path;
 
     public:
-        ImageSource_Node() : NodeInternal("Image Source") { outputs.push_back({"Image"}); }
+        ImageSource_Node() : NodeInternal("Image Source") { outputs.push_back({"Image", "img"}); }
 
         void process()
         {
@@ -85,8 +85,8 @@ namespace satdump
     public:
         ImageGetProj_Node() : NodeInternal("Image Get Projection")
         {
-            inputs.push_back({"Image"});
-            outputs.push_back({"Projection"});
+            inputs.push_back({"Image", "img"});
+            outputs.push_back({"Projection", "proj"});
         }
 
         void process()
@@ -116,9 +116,9 @@ namespace satdump
     public:
         ImageReproj_Node() : NodeInternal("Reproj Image")
         {
-            inputs.push_back({"Image"});
-            inputs.push_back({"Projection"});
-            outputs.push_back({"Image"});
+            inputs.push_back({"Image", "img"});
+            inputs.push_back({"Projection", "proj"});
+            outputs.push_back({"Image", "img"});
         }
 
         void process()
@@ -173,7 +173,7 @@ namespace satdump
         std::string expression;
 
     public:
-        ImageExpression_Node() : NodeInternal("Image Expression") { outputs.push_back({"Image"}); }
+        ImageExpression_Node() : NodeInternal("Image Expression") { outputs.push_back({"Image", "img"}); }
 
         void process()
         {
@@ -210,7 +210,7 @@ namespace satdump
             if (ImGui::Button("Add"))
             {
                 std::string name = "Img" + std::to_string(channels.size() + 1);
-                addInputDynamic({name});
+                addInputDynamic({name, "img"});
                 channels.push_back({name, "chimg" + std::to_string(channels.size() + 1)});
             }
         }
@@ -229,7 +229,7 @@ namespace satdump
             channels = j["channels"];
             inputs.clear();
             for (auto &c : channels)
-                inputs.push_back({c.input_name});
+                inputs.push_back({c.input_name, "img"});
         }
     };
 
@@ -241,8 +241,8 @@ namespace satdump
     public:
         ImageEqualize_Node() : NodeInternal("Equalize Image")
         {
-            inputs.push_back({"Image"});
-            outputs.push_back({"Image"});
+            inputs.push_back({"Image", "img"});
+            outputs.push_back({"Image", "img"});
         }
 
         void process()
@@ -274,8 +274,8 @@ namespace satdump
     public:
         ImageSetAlpha_Node() : NodeInternal("Set Alpha Image")
         {
-            inputs.push_back({"Image"});
-            outputs.push_back({"Image"});
+            inputs.push_back({"Image", "img"});
+            outputs.push_back({"Image", "img"});
         }
 
         void process()
@@ -322,9 +322,9 @@ namespace satdump
     public:
         ImageOverlay_Node() : NodeInternal("Overlay Image")
         {
-            inputs.push_back({"Image 1"});
-            inputs.push_back({"Image 2"});
-            outputs.push_back({"Image"});
+            inputs.push_back({"Image 1", "img"});
+            inputs.push_back({"Image 2", "img"});
+            outputs.push_back({"Image", "img"});
         }
 
         void process()
