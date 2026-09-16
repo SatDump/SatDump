@@ -51,11 +51,13 @@ function Parse-DumpBin($binary_path)
 
 $input_dlls = Get-ChildItem -Recurse -ErrorAction SilentlyContinue -Filter portable/*.dll
 $input_dlls += Get-ChildItem -ErrorAction SilentlyContinue -Recurse -Filter portable/*.exe
+$input_dlls += Get-ChildItem -ErrorAction SilentlyContinue -Recurse -Filter portable/plugins/*.dll
 $dll_array = @()
 
 # Read dependencies
 foreach($input_dll in $input_dlls)
 {
+    Write-Output $input_dll.FullName 
     $dll_array += Parse-Dumpbin $input_dll.FullName
 }
 
@@ -91,5 +93,6 @@ while($last_count -ne $dlls_to_copy.Count)
 # Copy determined dependencies
 foreach($dll_to_copy in $dlls_to_copy)
 {
+    Write-Output $dll_to_copy.FullName 
     cp $dll_to_copy.FullName ./portable
 }
