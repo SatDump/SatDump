@@ -82,7 +82,7 @@ jobs:
       - name: Build Portable
         shell: powershell
         working-directory: ${{runner.workspace}}/build
-        run: ${{github.workspace}}\windows\make_portable.ps1 -source_path "$Env:GITHUB_WORKSPACE"
+        run: ninja install; ${{github.workspace}}\windows\make_portable.ps1 -source_path "$Env:GITHUB_WORKSPACE"
 
       - name: Upload Portable
         uses: actions/upload-artifact@v4
@@ -161,7 +161,7 @@ jobs:
       - name: Build Portable
         shell: powershell
         working-directory: ${{runner.workspace}}/build
-        run: ${{github.workspace}}\windows\make_portable.ps1 -source_path "$Env:GITHUB_WORKSPACE"
+        run: ninja install; ${{github.workspace}}\windows\make_portable.ps1 -source_path "$Env:GITHUB_WORKSPACE"
 
       - name: Upload Portable
         uses: actions/upload-artifact@v4
