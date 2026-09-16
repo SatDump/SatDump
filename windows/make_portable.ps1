@@ -63,6 +63,8 @@ foreach($input_dll in $input_dlls)
     $dll_array += Parse-Dumpbin $input_dll.FullName
 }
 
+$dll_array = $dll_array | select -Unique
+
 Write-Output "Required DLLs..."
 
 foreach($req_dll in $dll_array)
@@ -72,7 +74,6 @@ foreach($req_dll in $dll_array)
 
 Write-Output "Available DLLs..."
 
-$dll_array = $dll_array | select -Unique
 $available_dlls = Get-ChildItem $source_path/windows/deps/output/bin -Filter *.dll
 $dlls_to_copy = @()
 foreach($available_dll in $available_dlls)
