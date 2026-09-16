@@ -110,7 +110,7 @@ namespace satdump
                 logger->error("There should only be one Kepler per norad! %d (%d)", norad, tles.size());
         }
 
-        {
+        /*{
             time_t tt = time(0);
             std::vector<int> norads;
             for (auto &t : get_all_tles())
@@ -138,7 +138,7 @@ namespace satdump
                 }
                 h->tr_end();
             }
-        }
+        }*/
 
         // Update last update timestamp & other stuff
         h->set_meta("kepler_last_updated", std::to_string(time(0)));

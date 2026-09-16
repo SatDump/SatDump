@@ -63,6 +63,13 @@ foreach($input_dll in $input_dlls)
     $dll_array += Parse-Dumpbin $input_dll.FullName
 }
 
+Write-Output "Required DLLs..."
+
+foreach($req_dll in $dll_array)
+{
+    Write-Output $req_dll
+}
+
 Write-Output "Available DLLs..."
 
 $dll_array = $dll_array | select -Unique

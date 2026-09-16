@@ -6,6 +6,7 @@
  */
 
 #include <functional>
+#include <mutex>
 #include <string>
 #include <typeinfo>
 #include <vector>
@@ -27,6 +28,7 @@ namespace satdump
     class EventBus
     {
     private:
+        std::mutex handlers_mtx;
         std::vector<std::pair<std::string, std::function<void(void *)>>> all_handlers;
 
     public:
@@ -39,6 +41,7 @@ namespace satdump
         template <typename T>
         void register_handler(std::function<void(T)> handler_fun)
         {
+            std::scoped_lock l(handlers_mtx);
             all_handlers.push_back({std::string(typeid(T).name()), [handler_fun](void *raw)
                                     {
                                         T evt = *((T *)raw); // Cast struct to original type
@@ -55,9 +58,15 @@ namespace satdump
         template <typename T>
         void fire_event(T evt)
         {
+            std::scoped_lock l(handlers_mtx);
             for (std::pair<std::string, std::function<void(void *)>> h : all_handlers) // Iterate through all registered functions
                 if (std::string(typeid(T).name()) == h.first)                          // Check struct type is the same
-                    h.second((void *)&evt);                                            // Fire handler up
+                {
+                    handlers_mtx.unlock();
+                    h.second((void *)&evt); // Fire handler up
+                    handlers_mtx.lock();
+                    return;
+                }
         }
 
         /**
@@ -70,9 +79,15 @@ namespace satdump
          */
         void fire_event(void *evt, std::string evt_name)
         {
+            std::scoped_lock l(handlers_mtx);
             for (std::pair<std::string, std::function<void(void *)>> h : all_handlers) // Iterate through all registered functions
                 if (evt_name == h.first)                                               // Check struct type is the same
-                    h.second(evt);                                                     // Fire handler up
+                {
+                    handlers_mtx.unlock();
+                    h.second((void *)&evt); // Fire handler up
+                    handlers_mtx.lock();
+                    return;
+                }
         }
     };
 } // namespace satdump
