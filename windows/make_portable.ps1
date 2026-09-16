@@ -54,6 +54,8 @@ $input_dlls += Get-ChildItem -ErrorAction SilentlyContinue -Recurse -Filter port
 $input_dlls += Get-ChildItem -ErrorAction SilentlyContinue -Recurse -Filter portable/plugins/*.dll
 $dll_array = @()
 
+Write-Output "Input DLLs/EXE..."
+
 # Read dependencies
 foreach($input_dll in $input_dlls)
 {
@@ -61,11 +63,14 @@ foreach($input_dll in $input_dlls)
     $dll_array += Parse-Dumpbin $input_dll.FullName
 }
 
+Write-Output "Available DLLs..."
+
 $dll_array = $dll_array | select -Unique
 $available_dlls = Get-ChildItem $source_path/windows/deps/output/bin -Filter *.dll
 $dlls_to_copy = @()
 foreach($available_dll in $available_dlls)
 {
+    Write-Output $available_dll.FullName 
     if($dll_array.Contains($available_dll.Name))
     {
         $dlls_to_copy += $available_dll
@@ -89,6 +94,8 @@ while($last_count -ne $dlls_to_copy.Count)
         }
     }
 }
+
+Write-Output "Copying dependencies..."
 
 # Copy determined dependencies
 foreach($dll_to_copy in $dlls_to_copy)
