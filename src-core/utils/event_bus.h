@@ -65,7 +65,6 @@ namespace satdump
                     handlers_mtx.unlock();
                     h.second((void *)&evt); // Fire handler up
                     handlers_mtx.lock();
-                    return;
                 }
         }
 
@@ -86,7 +85,6 @@ namespace satdump
                     handlers_mtx.unlock();
                     h.second((void *)&evt); // Fire handler up
                     handlers_mtx.lock();
-                    return;
                 }
         }
     };
