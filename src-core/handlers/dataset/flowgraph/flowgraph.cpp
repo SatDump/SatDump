@@ -159,6 +159,10 @@ namespace satdump
 
     void Flowgraph::render()
     {
+        std::lock_guard<std::mutex> lg(flow_mtx);
+
+        ImNodes::PushStyleVar(ImNodesStyleVar_PinCircleRadius, 6);
+        ImNodes::PushStyleVar(ImNodesStyleVar_LinkThickness, 4);
         ImNodes::PushAttributeFlag(ImNodesAttributeFlags_EnableLinkDetachWithDragClick);
 
         ImNodes::BeginNodeEditor();
@@ -214,24 +218,26 @@ namespace satdump
 
         ImNodes::EndNodeEditor();
 
+        ImNodes::PopAttributeFlag();
+        ImNodes::PopStyleVar();
+        ImNodes::PopStyleVar();
+
+        // Lock down edition when running!
         if (!is_running)
         {
             int start_att, end_att;
             if (ImNodes::IsLinkCreated(&start_att, &end_att))
-            {
                 links.push_back({getNewLinkID(), start_att, end_att});
-                logger->trace("LINK CREATE %d %d", start_att, end_att);
-            }
 
             int link_id;
             if (ImNodes::IsLinkDestroyed(&link_id))
             {
                 auto iter = std::find_if(links.begin(), links.end(), [link_id](const Link &link) -> bool { return link.id == link_id; });
-                logger->trace("LINK DELETE %d %d", iter->start, iter->end);
                 links.erase(iter);
             }
 
-            if (ImGui::IsKeyPressed(ImGuiKey_Delete))
+            ///////////////////// Node Key Handlers
+            if (!ImGui::IsAnyItemActive() && ImGui::IsKeyPressed(ImGuiKey_Delete))
             {
                 int node_s = ImNodes::NumSelectedNodes();
 
@@ -243,13 +249,18 @@ namespace satdump
                     for (auto &id : nodes_ids)
                     {
                         auto iter = std::find_if(nodes.begin(), nodes.end(), [id](const std::shared_ptr<Node> &node) -> bool { return node->id == id; });
-                        logger->trace("NODE DELETE %d", id);
+
+                        // ImNodes still holds delete selected nodes until a new one is selected. Avoid a crash
+                        if (iter == nodes.end())
+                            continue;
+
                         for (auto &linkid : iter->get()->node_io)
                         {
                             auto liter = std::find_if(links.begin(), links.end(), [linkid](const Link &link) -> bool { return link.start == linkid.id || link.end == linkid.id; });
                             if (liter != links.end())
                                 links.erase(liter);
                         }
+
                         nodes.erase(iter);
                     }
                 }

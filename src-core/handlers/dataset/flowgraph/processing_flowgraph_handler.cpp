@@ -38,8 +38,7 @@ namespace satdump
             flowgraph.node_internal_registry.insert({"image_overlay", {"Overlay Image", []() { return std::make_shared<ImageOverlay_Node>(); }}});
             flowgraph.node_internal_registry.insert({"image_set_alpha", {"Image Set Alpha", []() { return std::make_shared<ImageSetAlpha_Node>(); }}});
 
-            flowgraph.node_internal_registry.insert(
-                {"dataset_product_source", {"Dataset Product Source", [this]() { return std::make_shared<DatasetProductSource_Node>(std::shared_ptr<Handler>(this)); }}});
+            flowgraph.node_internal_registry.insert({"dataset_product_source", {"Dataset Product Source", [this]() { return std::make_shared<DatasetProductSource_Node>(this); }}});
 
             if (file != "")
                 flowgraph.setJSON(loadCborFile(file));

@@ -12,17 +12,18 @@ namespace satdump
     class DatasetProductSource_Node : public NodeInternal
     {
     private:
-        std::shared_ptr<handlers::Handler> handler;
+        handlers::Handler *handler;
         std::string product_id;
         int product_index = 0;
 
     public:
-        DatasetProductSource_Node(std::shared_ptr<handlers::Handler> handler) : NodeInternal("Dataset Product Source"), handler(handler) { outputs.push_back({"Product", "product"}); }
+        DatasetProductSource_Node(handlers::Handler *handler) : NodeInternal("Dataset Product Source"), handler(handler) { outputs.push_back({"Product", "product"}); }
 
         void process()
         {
             std::shared_ptr<handlers::Handler> p;
-            eventBus->fire_event<explorer::GetParentOfHandlerEvent>({handler, p});
+            std::shared_ptr<handlers::Handler> h(handler, [](auto &) {});
+            eventBus->fire_event<explorer::GetParentOfHandlerEvent>({h, p});
             if (p && p->getID() == "dataset_product_handler")
             {
                 handlers::DatasetProductHandler *proc = ((handlers::DatasetProductHandler *)p.get());
