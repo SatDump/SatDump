@@ -36,21 +36,12 @@ cmake $cmake_params .. -DBUILD_SHARED_LIBS=ON
 ninja install
 cd ../..
 
-# WolfSSL
-git clone https://github.com/wolfSSL/wolfssl --depth 1 -b v5.7.2-stable
-cd wolfssl
-mkdir build
-cd build
-cmake $cmake_params .. -DBUILD_SHARED_LIBS=yes -DWOLFSSL_CURL=yes -DWOLFSSL_CRYPT_TESTS=no -DWOLFSSL_EXAMPLES=no
-ninja install
-cd ../..
-
 # Curl
 git clone https://github.com/curl/curl --depth 1 -b curl-8_9_1
 cd curl
 mkdir build
 cd build
-cmake $cmake_params .. -DHTTP_ONLY=ON -DBUILD_STATIC_LIBS=OFF -DCURL_USE_WOLFSSL=ON -DUSE_LIBIDN2=OFF -DCURL_USE_LIBPSL=OFF
+cmake $cmake_params .. -DHTTP_ONLY=ON -DBUILD_STATIC_LIBS=OFF -DCURL_USE_SCHANNEL=ON -DUSE_LIBIDN2=OFF -DCURL_USE_LIBPSL=OFF
 ninja install
 cd ../..
 
