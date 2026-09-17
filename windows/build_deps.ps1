@@ -17,6 +17,12 @@ $output_folder=$(Resolve-Path output)
 $python_interpreter=$($(Get-Command python).Path)
 $cmake_params="-G Ninja", "-DCMAKE_FIND_ROOT_PATH='$output_folder'", "-DCMAKE_INSTALL_PREFIX='$output_folder'", "-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_SYSTEM_NAME=Windows", "-DPYTHON_EXECUTABLE:FILEPATH=$python_interpreter"
 
+if($is_arm) {
+    $cmake_params+="-DCMAKE_SYSTEM_PROCESSOR=ARM64"
+} else {
+    $cmake_params+="-DCMAKE_SYSTEM_PROCESSOR=AMD64"
+}
+
 if($is_cross) {
     $cmake_params+="-DCMAKE_CROSSCOMPILING=ON"
 }
