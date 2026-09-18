@@ -404,7 +404,7 @@ namespace satdump
                         ImGui::BeginTooltip();
 
                         for (int i = 0; i < img.channels(); i++)
-                            ImGui::Text(_("Raw %d : %d F %f"), i + 1, img.get(0, x, y), img.getf(0, x, y));
+                            ImGui::Text(_("Raw %d : %d F %f"), i + 1, img.get(i, x, y), img.getf(i, x, y));
 
                         if (image_calib_valid && image.channels() == 1)
                         {
