@@ -58,14 +58,12 @@ namespace satdump
         template <typename T>
         void fire_event(T evt)
         {
-            std::scoped_lock l(handlers_mtx);
-            for (std::pair<std::string, std::function<void(void *)>> h : all_handlers) // Iterate through all registered functions
-                if (std::string(typeid(T).name()) == h.first)                          // Check struct type is the same
-                {
-                    handlers_mtx.unlock();
-                    h.second((void *)&evt); // Fire handler up
-                    handlers_mtx.lock();
-                }
+            handlers_mtx.lock();
+            auto lcopy = all_handlers; // Local copy for thread safety
+            handlers_mtx.unlock();
+            for (std::pair<std::string, std::function<void(void *)>> h : lcopy) // Iterate through all registered functions
+                if (std::string(typeid(T).name()) == h.first)                   // Check struct type is the same
+                    h.second((void *)&evt);                                     // Fire handler up
         }
 
         /**
@@ -78,14 +76,12 @@ namespace satdump
          */
         void fire_event(void *evt, std::string evt_name)
         {
-            std::scoped_lock l(handlers_mtx);
-            for (std::pair<std::string, std::function<void(void *)>> h : all_handlers) // Iterate through all registered functions
-                if (evt_name == h.first)                                               // Check struct type is the same
-                {
-                    handlers_mtx.unlock();
-                    h.second((void *)&evt); // Fire handler up
-                    handlers_mtx.lock();
-                }
+            handlers_mtx.lock();
+            auto lcopy = all_handlers; // Local copy for thread safety
+            handlers_mtx.unlock();
+            for (std::pair<std::string, std::function<void(void *)>> h : lcopy) // Iterate through all registered functions
+                if (evt_name == h.first)                                        // Check struct type is the same
+                    h.second((void *)&evt);                                     // Fire handler up
         }
     };
 } // namespace satdump

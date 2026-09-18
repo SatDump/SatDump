@@ -7,13 +7,17 @@
 #include "utils/event_bus.h"
 #include "utils/task_scheduler.h"
 
-#define PLUGIN_LOADER(constructor)                       \
-    extern "C"                                           \
-    {                                                    \
-        satdump::Plugin *loader()                        \
-        {                                                \
-            return (satdump::Plugin *)new constructor(); \
-        }                                                \
+#define PLUGIN_ABI_VERSION 1
+
+#define PLUGIN_LOADER(constructor)                                 \
+    extern "C"                                                     \
+    {                                                              \
+        satdump::Plugin *loader()                                  \
+        {                                                          \
+            return (satdump::Plugin *)new constructor();           \
+        }                                                          \
+                                                                   \
+        const extern int SATDUMP_ABI_VERSION = PLUGIN_ABI_VERSION; \
     }
 
 namespace satdump

@@ -1,6 +1,6 @@
-#include <algorithm>
 #define SATDUMP_DLL_EXPORT 1
 #include "plugin.h"
+#include <algorithm>
 #ifdef _WIN32
 #include "libs/dlfcn/dlfcn.h"
 #else
@@ -20,11 +20,30 @@ std::shared_ptr<satdump::Plugin> loadPlugin(std::string plugin)
     if (!dynlib)
         throw satdump_exception("Error loading " + plugin + "! Error : " + std::string(dlerror()));
 
-    void *create = dlsym(dynlib, "loader");
+    // Check ABI compatibility
+    void *abi = dlsym(dynlib, "SATDUMP_ABI_VERSION");
     const char *dlsym_error = dlerror();
     if (dlsym_error != NULL)
-        logger->warn("Possible error loading symbols from plugin!");
+    {
+        logger->error("Error loading ABI symbol from plugin! : %s", dlsym_error);
+        return nullptr;
+    }
+    else if (*((int *)abi) != PLUGIN_ABI_VERSION)
+    {
+        logger->warn("Plugin ABI mismatch!");
+        return nullptr;
+    }
 
+    // Load it, for real
+    void *create = dlsym(dynlib, "loader");
+    dlsym_error = dlerror();
+    if (dlsym_error != NULL)
+    {
+        logger->warn("Possible error loading symbols from plugin! : %s", dlsym_error);
+        return nullptr;
+    }
+
+    // Init
     satdump::Plugin *pluginObject = reinterpret_cast<satdump::Plugin *(*)()>(create)();
     pluginObject->init();
     logger->trace("Plugin " + pluginObject->getID() + " loaded!");
@@ -100,8 +119,11 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
             try
             {
                 std::shared_ptr<satdump::Plugin> pl = loadPlugin(path);
-                loaded_plugins.insert({pl->getID(), pl});
-                already_loaded_plugins.push_back(currfile);
+                if (pl)
+                {
+                    loaded_plugins.insert({pl->getID(), pl});
+                    already_loaded_plugins.push_back(currfile);
+                }
             }
             catch (std::runtime_error &e)
             {

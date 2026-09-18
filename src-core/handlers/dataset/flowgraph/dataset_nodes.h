@@ -6,6 +6,7 @@
 #include "handlers/dataset/dataset_product_handler.h"
 #include "handlers/dataset/flowgraph/flowgraph.h"
 #include "handlers/handler.h"
+#include <memory>
 
 namespace satdump
 {
@@ -22,7 +23,7 @@ namespace satdump
         void process()
         {
             std::shared_ptr<handlers::Handler> p;
-            std::shared_ptr<handlers::Handler> h(handler, [](auto &) {});
+            std::shared_ptr<handlers::Handler> h(handler, [](handlers::Handler *) {});
             eventBus->fire_event<explorer::GetParentOfHandlerEvent>({h, p});
             if (p && p->getID() == "dataset_product_handler")
             {
