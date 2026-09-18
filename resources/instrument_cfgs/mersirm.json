@@ -49,7 +49,7 @@
                 [
                     "equalize",
                         {
-                            "per_channel": true
+                            "per_channel": false
                         }
                 ],
                 [
@@ -78,7 +78,7 @@
             "description": "descriptions/543b.md"
         },
         {
-            "name": "Day Microphysics",
+            "name": "Day Microphysics (Uncal)",
             "expression": "ch1, ch5^2.5, ch7",
         "filters": [
             [
