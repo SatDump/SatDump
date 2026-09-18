@@ -409,8 +409,6 @@ namespace satdump
                         if (image_calib_valid && image.channels() == 1)
                         {
                             int xc = x; // Correction only needs to be undone for calib
-                            if (correct_fwd_lut.size() > 0 && x > 0 && x < correct_fwd_lut.size())
-                                xc = correct_fwd_lut[x];
 
                             double val = image_calib.getVal(img.getf(0, xc, y));
                             ImGui::Text(_("Unit : %f %s"), val, image_calib.unit.c_str());
@@ -437,6 +435,9 @@ namespace satdump
                                 x = x1;
                             }
                         }
+
+                        if (correct_fwd_lut.size() > 0 && x > 0 && x < correct_fwd_lut.size())
+                            x = correct_fwd_lut[x];
 
                         if (image_proj_valid)
                         {
