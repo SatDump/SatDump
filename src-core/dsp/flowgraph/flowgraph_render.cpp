@@ -66,6 +66,10 @@ namespace satdump
             {
                 std::lock_guard<std::mutex> lg(flow_mtx);
 
+                bool is_run = is_running;
+                if (is_run)
+                    style::beginDisabled();
+
                 // Extract categories
                 std::vector<std::pair<std::string, NodeInternalReg>> regs;
                 std::vector<std::vector<std::string>> categs;
@@ -103,6 +107,9 @@ namespace satdump
 
                 // Render
                 renderCatT(cats, search.size());
+
+                if (is_run)
+                    style::endDisabled();
             }
 
             void Flowgraph::render()
