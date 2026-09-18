@@ -121,6 +121,7 @@ void loadPlugins(std::map<std::string, std::shared_ptr<satdump::Plugin>> &loaded
                 std::shared_ptr<satdump::Plugin> pl = loadPlugin(path);
                 if (pl)
                 {
+                    logger->trace("Loaded plugin : " + pl->getID() + "!");
                     loaded_plugins.insert({pl->getID(), pl});
                     already_loaded_plugins.push_back(currfile);
                 }
