@@ -21,7 +21,7 @@ namespace satdump
                     if (ImGui::MenuItem(cats[pos].c_str()))
                     {
                         auto mpos = ImGui::GetMousePos();
-                        auto ptr = addNode(opt.first, opt.second.func(this));
+                        auto ptr = addNode(opt.first, opt.second.inst(this));
                         ptr->pos_was_set = true;
                         ImNodes::SetNodeScreenSpacePos(ptr->id, mpos);
                     }
@@ -58,7 +58,7 @@ namespace satdump
                     if (ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_Leaf))
                         ImGui::TreePop();
                     if (ImGui::IsItemClicked())
-                        addNode(c.first, c.second.func(this));
+                        addNode(c.first, c.second.inst(this));
                 }
             }
 

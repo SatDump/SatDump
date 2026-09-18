@@ -4,7 +4,7 @@ project(fobos_sdr_support)
 
 find_library(FOBOS_LIBRARY fobos)
 
-if(FOBOS_LIBRARY OR MSVC)
+if(FOBOS_LIBRARY)
     message("Building with FobosSDR support")
     file(GLOB_RECURSE fobos_sdr_support_CPPS *.cpp)
     add_library(fobos_sdr_support SHARED ${fobos_sdr_support_CPPS})

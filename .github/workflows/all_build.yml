@@ -21,8 +21,8 @@ jobs:
         uses: actions/cache@v4
         id: win-deps-x64
         with:
-          path: vcpkg
-          key: win-deps-x64-${{ hashFiles('windows/Configure-vcpkg.ps1') }}
+          path: windows/deps
+          key: win-deps-x64-${{ hashFiles('windows/build_deps.ps1') }}
 
       - name: Set up Python 3.13
         if: steps.win-deps-x64.outputs.cache-hit != 'true'
@@ -38,39 +38,32 @@ jobs:
         if: steps.win-deps-x64.outputs.cache-hit != 'true'
         uses: microsoft/setup-msbuild@v2
 
-      - name: Configure vcpkg
+      - name: Setup VS Dev Env
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Build Deps
         if: steps.win-deps-x64.outputs.cache-hit != 'true'
         shell: powershell
-        run: ${{github.workspace}}\windows\Configure-vcpkg.ps1 -platform x64-windows
+        working-directory: ${{github.workspace}}\windows
+        run: ${{github.workspace}}\windows\build_deps.ps1
 
-      - name: Clean up vcpkg
-        if: steps.win-deps-x64.outputs.cache-hit != 'true'
-        run: rm -recurse -force $Env:GITHUB_WORKSPACE/vcpkg/packages, $Env:GITHUB_WORKSPACE/vcpkg/downloads, $Env:GITHUB_WORKSPACE/vcpkg/buildtrees
-
-      - name: Download Aaronia RTSA API
-        if: steps.win-deps-x64.outputs.cache-hit != 'true'
-        shell: powershell
-        run: Invoke-WebRequest -Uri "https://www.satdump.org/Aaronia_RTSA_Suite_PRO_2.2.0.12821_Setup_64bit.exe" -OutFile $Env:GITHUB_WORKSPACE/vcpkg/rtsa.exe
-
-      - name: Install Aaronia RTSA API
-        shell: cmd
-        run: start /wait vcpkg\rtsa.exe /q2 /install
-
-      - name: Add support to NSIS for long PATHs
-        shell: powershell
-        run: ${{github.workspace}}\windows\Get-NSIS-LongStrings.ps1
+      # - name: Add support to NSIS for long PATHs
+      #   shell: powershell
+      #   run: ${{github.workspace}}\windows\Get-NSIS-LongStrings.ps1
 
       - name: Create Build Environment
         run: cmake -E make_directory ${{runner.workspace}}/build
 
       - name: Configure CMake
         working-directory: ${{runner.workspace}}/build
-        run: cmake -DVCPKG_TARGET_TRIPLET="x64-windows" -DPLUGIN_AARONIA_SDR_SUPPORT=ON -DBUILD_MSVC=ON -DCMAKE_TOOLCHAIN_FILE="${{github.workspace}}\vcpkg\scripts\buildsystems\vcpkg.cmake" "$Env:GITHUB_WORKSPACE"
+        run: cmake -G Ninja -DCMAKE_FIND_ROOT_PATH=${{github.workspace}}/windows/deps/output -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/windows/deps/output -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_PROCESSOR=AMD64 "$Env:GITHUB_WORKSPACE"
 
       - name: Build
         working-directory: ${{runner.workspace}}/build
         shell: bash
-        run: cmake --build . --config $BUILD_TYPE
+        run: ninja
 
       - name: Build Installer
         working-directory: ${{runner.workspace}}/build
@@ -88,13 +81,14 @@ jobs:
 
       - name: Build Portable
         shell: powershell
-        run: ${{github.workspace}}\windows\Finish-Release.ps1 -platform x64-windows -BuildPath ${{runner.workspace}}\build
+        working-directory: ${{runner.workspace}}/build
+        run: ${{github.workspace}}\windows\make_portable.ps1 -source_path "$Env:GITHUB_WORKSPACE"
 
       - name: Upload Portable
         uses: actions/upload-artifact@v4
         with:
           name: SatDump-Windows_x64_Portable
-          path: ${{runner.workspace}}/build/Release/*
+          path: ${{runner.workspace}}/build/portable/*
 
   build_windows_arm64:
     runs-on: windows-2022
@@ -106,8 +100,8 @@ jobs:
         uses: actions/cache@v4
         id: win-deps-arm64
         with:
-          path: vcpkg
-          key: win-deps-arm64-${{ hashFiles('windows/Configure-vcpkg.ps1') }}
+          path: windows/deps
+          key: win-deps-arm64-${{ hashFiles('windows/build_deps.ps1') }}
 
       - name: Set up Python 3.13
         if: steps.win-deps-arm64.outputs.cache-hit != 'true'
@@ -123,30 +117,32 @@ jobs:
         if: steps.win-deps-arm64.outputs.cache-hit != 'true'
         uses: microsoft/setup-msbuild@v2
 
-      - name: Configure vcpkg
+      - name: Setup VS Dev Env
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64_arm64
+
+      - name: Build Deps
         if: steps.win-deps-arm64.outputs.cache-hit != 'true'
         shell: powershell
-        run: ${{github.workspace}}\windows\Configure-vcpkg.ps1 -platform arm64-windows
+        working-directory: ${{github.workspace}}\windows
+        run: ${{github.workspace}}\windows\build_deps.ps1 -is_cross 1 -is_arm 1
 
-      - name: Clean up vcpkg
-        if: steps.win-deps-arm64.outputs.cache-hit != 'true'
-        run: rm -recurse -force $Env:GITHUB_WORKSPACE/vcpkg/packages, $Env:GITHUB_WORKSPACE/vcpkg/downloads, $Env:GITHUB_WORKSPACE/vcpkg/buildtrees
-
-      - name: Add support to NSIS for long PATHs
-        shell: powershell
-        run: ${{github.workspace}}\windows\Get-NSIS-LongStrings.ps1
+      # - name: Add support to NSIS for long PATHs
+      #   shell: powershell
+      #   run: ${{github.workspace}}\windows\Get-NSIS-LongStrings.ps1
 
       - name: Create Build Environment
         run: cmake -E make_directory ${{runner.workspace}}/build
 
       - name: Configure CMake
         working-directory: ${{runner.workspace}}/build
-        run: cmake -A ARM64 -DVCPKG_TARGET_TRIPLET="arm64-windows" -DVCPKG_HOST_TRIPLET="x64-windows" -DVCPKG_USE_HOST_TOOLS=ON -DCMAKE_SYSTEM_VERSION="10.0.22621.0" -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SYSTEM_PROCESSOR=ARM64 -DCMAKE_CROSSCOMPILING=ON -DPLUGIN_LIMESDR_SDR_SUPPORT=OFF -DBUILD_MSVC=ON -DCMAKE_TOOLCHAIN_FILE="${{github.workspace}}\vcpkg\scripts\buildsystems\vcpkg.cmake" "$Env:GITHUB_WORKSPACE"
+        run: cmake -G Ninja -DCMAKE_FIND_ROOT_PATH=${{github.workspace}}/windows/deps/output -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/windows/deps/output -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_PROCESSOR=arm64-windows -DCMAKE_CROSSCOMPILING=ON -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SYSTEM_PROCESSOR=ARM64 "$Env:GITHUB_WORKSPACE"
 
       - name: Build
         working-directory: ${{runner.workspace}}/build
         shell: bash
-        run: cmake --build . --config $BUILD_TYPE
+        run: ninja
 
       - name: Build Installer
         working-directory: ${{runner.workspace}}/build
@@ -164,13 +160,14 @@ jobs:
 
       - name: Build Portable
         shell: powershell
-        run: ${{github.workspace}}\windows\Finish-Release.ps1 -platform arm64-windows -BuildPath ${{runner.workspace}}\build
+        working-directory: ${{runner.workspace}}/build
+        run: ${{github.workspace}}\windows\make_portable.ps1 -source_path "$Env:GITHUB_WORKSPACE"
 
       - name: Upload Portable
         uses: actions/upload-artifact@v4
         with:
           name: SatDump-Windows_arm64_Portable
-          path: ${{runner.workspace}}/build/Release/*
+          path: ${{runner.workspace}}/build/portable/*
 
   build_android:
     runs-on: android-release
@@ -385,7 +382,7 @@ jobs:
         # These are preinstalled in the GitHub runners, cause needless warnings to appear
         # Add these back if these ever become missing for some reason
         # sqlite3 libtool autoconf libjpeg-turbo libtiff libusb libpng zstd
-        run: brew install dylibbundler automake meson orc libxml2 zlib portaudio boost nng volk libomp glfw3 fftw libxml2 portaudio jemalloc nng armadillo hdf5 
+        run: brew install gettext dylibbundler automake meson orc libxml2 zlib portaudio boost nng volk libomp glfw3 fftw libxml2 portaudio jemalloc nng armadillo hdf5 
 
       - name: Create Build Environment
         # Some projects don't allow in-source building, so create a separate build directory
@@ -448,7 +445,7 @@ jobs:
         # These are preinstalled in the GitHub runners, cause needless warnings to appear
         # Add these back if these ever become missing for some reason
         # sqlite3 zstd libpng libtiff libjpeg-turbo libusb
-        run: brew install dylibbundler libtool autoconf automake meson orc libxml2 zlib portaudio boost nng volk libomp glfw3 fftw libxml2 portaudio jemalloc nng armadillo hdf5 
+        run: brew install gettext dylibbundler libtool autoconf automake meson orc libxml2 zlib portaudio boost nng volk libomp glfw3 fftw libxml2 portaudio jemalloc nng armadillo hdf5 
 
       - name: Create Build Environment
         # Some projects don't allow in-source building, so create a separate build directory

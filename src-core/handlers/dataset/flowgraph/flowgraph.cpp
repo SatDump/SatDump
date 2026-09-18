@@ -1,19 +1,107 @@
 #include "flowgraph.h"
-#include <limits>
 #include "core/exception.h"
+#include <limits>
 
 #include "imgui/imnodes/imnodes.h"
 #include "imgui/imnodes/imnodes_internal.h"
 #include "logger.h"
+#include "utils/string.h"
 
 namespace satdump
 {
-    Flowgraph::Flowgraph()
+    Flowgraph::Flowgraph() {}
+
+    Flowgraph::~Flowgraph() {}
+
+    void Flowgraph::renderAddMenu(std::pair<const std::string, NodeInternalReg> &opt, std::vector<std::string> cats, int pos)
     {
+        if (pos == (cats.size() - 1))
+        {
+            if (ImGui::MenuItem(cats[pos].c_str()))
+            {
+                auto mpos = ImGui::GetMousePos();
+                auto ptr = addNode(opt.first, opt.second.inst());
+                ptr->pos_was_set = true;
+                ImNodes::SetNodeScreenSpacePos(ptr->id, mpos);
+            }
+        }
+        else
+        {
+            if (ImGui::BeginMenu(cats[pos].c_str()))
+            {
+                renderAddMenu(opt, cats, pos + 1);
+                ImGui::EndMenu();
+            }
+        }
     }
 
-    Flowgraph::~Flowgraph()
+    void Flowgraph::renderCatT(CatT &cats, bool searching)
     {
+        for (auto &c : cats.cats)
+        {
+            if (searching)
+                ImGui::SetNextItemOpen(true);
+
+            if (ImGui::TreeNode(c.first.c_str()))
+            {
+                renderCatT(c.second, searching);
+                ImGui::TreePop();
+            }
+        }
+
+        for (auto &c : cats.sub)
+        {
+            auto split = splitString(c.second.menuname, '/');
+            std::string name = split.size() ? split[split.size() - 1] : c.second.menuname;
+
+            if (ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_Leaf))
+                ImGui::TreePop();
+            if (ImGui::IsItemClicked())
+                addNode(c.first, c.second.inst());
+        }
+    }
+
+    void Flowgraph::renderAddMenuList(std::string search)
+    {
+        std::lock_guard<std::mutex> lg(flow_mtx);
+
+        // Extract categories
+        std::vector<std::pair<std::string, NodeInternalReg>> regs;
+        std::vector<std::vector<std::string>> categs;
+        for (auto &opt : node_internal_registry)
+        {
+            if (search.size() && !isStringPresent(opt.second.menuname, search))
+                continue;
+
+            regs.push_back({opt.first, opt.second});
+            categs.push_back(splitString(opt.second.menuname, '/'));
+        }
+
+        CatT cats;
+
+        // Organize in a recursive fashion
+        for (int i = 0; i < regs.size(); i++)
+        {
+            CatT *cCats = &cats;
+            for (int c = 0; c < categs[i].size(); c++)
+            {
+                std::string cat = categs[i][c];
+
+                if (c == categs[i].size() - 1)
+                {
+                    cCats->sub.emplace(regs[i].first, regs[i].second);
+                }
+                else
+                {
+                    if (!cCats->cats.count(cat))
+                        cCats->cats.emplace(cat, CatT());
+                    cCats = &cCats->cats[cat];
+                }
+            }
+        }
+
+        // Render
+        renderCatT(cats, search.size());
     }
 
     int Flowgraph::getNewNodeID()
@@ -71,6 +159,10 @@ namespace satdump
 
     void Flowgraph::render()
     {
+        std::lock_guard<std::mutex> lg(flow_mtx);
+
+        ImNodes::PushStyleVar(ImNodesStyleVar_PinCircleRadius, 6);
+        ImNodes::PushStyleVar(ImNodesStyleVar_LinkThickness, 4);
         ImNodes::PushAttributeFlag(ImNodesAttributeFlags_EnableLinkDetachWithDragClick);
 
         ImNodes::BeginNodeEditor();
@@ -126,76 +218,77 @@ namespace satdump
 
         ImNodes::EndNodeEditor();
 
-        int start_att, end_att;
-        if (ImNodes::IsLinkCreated(&start_att, &end_att))
-        {
-            links.push_back({getNewLinkID(), start_att, end_att});
-            logger->trace("LINK CREATE %d %d", start_att, end_att);
-        }
+        ImNodes::PopAttributeFlag();
+        ImNodes::PopStyleVar();
+        ImNodes::PopStyleVar();
 
-        int link_id;
-        if (ImNodes::IsLinkDestroyed(&link_id))
+        // Lock down edition when running!
+        if (!is_running)
         {
-            auto iter = std::find_if(
-                links.begin(), links.end(), [link_id](const Link &link) -> bool
-                { return link.id == link_id; });
-            logger->trace("LINK DELETE %d %d", iter->start, iter->end);
-            links.erase(iter);
-        }
+            int start_att, end_att;
+            if (ImNodes::IsLinkCreated(&start_att, &end_att))
+                links.push_back({getNewLinkID(), start_att, end_att});
 
-        if (ImGui::IsKeyPressed(ImGuiKey_Delete))
-        {
-            int node_s = ImNodes::NumSelectedNodes();
-
-            if (node_s > 0)
+            int link_id;
+            if (ImNodes::IsLinkDestroyed(&link_id))
             {
-                std::vector<int> nodes_ids(node_s);
-                ImNodes::GetSelectedNodes(nodes_ids.data());
-
-                for (auto &id : nodes_ids)
-                {
-                    auto iter = std::find_if(
-                        nodes.begin(), nodes.end(), [id](const std::shared_ptr<Node> &node) -> bool
-                        { return node->id == id; });
-                    logger->trace("NODE DELETE %d", id);
-                    for (auto &linkid : iter->get()->node_io)
-                    {
-                        auto liter = std::find_if(
-                            links.begin(), links.end(), [linkid](const Link &link) -> bool
-                            { return link.start == linkid.id || link.end == linkid.id; });
-                        if (liter != links.end())
-                            links.erase(liter);
-                    }
-                    nodes.erase(iter);
-                }
-            }
-        }
-
-        if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-            ImGui::OpenPopup("##popuprightclickflowgraph");
-        if (ImGui::BeginPopup("##popuprightclickflowgraph"))
-        {
-            if (ImGui::BeginMenu("Add Node"))
-            {
-                for (auto &opt : node_internal_registry)
-                {
-                    if (ImGui::MenuItem(opt.first.c_str()))
-                    {
-                        auto mpos = ImGui::GetMousePos();
-                        auto ptr = addNode(opt.first, opt.second());
-                        ptr->pos_was_set = true;
-                        ImNodes::SetNodeScreenSpacePos(ptr->id, mpos);
-                    }
-                }
-                ImGui::EndMenu();
+                auto iter = std::find_if(links.begin(), links.end(), [link_id](const Link &link) -> bool { return link.id == link_id; });
+                links.erase(iter);
             }
 
-            ImGui::EndPopup();
+            ///////////////////// Node Key Handlers
+            if (!ImGui::IsAnyItemActive() && ImGui::IsKeyPressed(ImGuiKey_Delete))
+            {
+                int node_s = ImNodes::NumSelectedNodes();
+
+                if (node_s > 0)
+                {
+                    std::vector<int> nodes_ids(node_s);
+                    ImNodes::GetSelectedNodes(nodes_ids.data());
+
+                    for (auto &id : nodes_ids)
+                    {
+                        auto iter = std::find_if(nodes.begin(), nodes.end(), [id](const std::shared_ptr<Node> &node) -> bool { return node->id == id; });
+
+                        // ImNodes still holds delete selected nodes until a new one is selected. Avoid a crash
+                        if (iter == nodes.end())
+                            continue;
+
+                        for (auto &linkid : iter->get()->node_io)
+                        {
+                            auto liter = std::find_if(links.begin(), links.end(), [linkid](const Link &link) -> bool { return link.start == linkid.id || link.end == linkid.id; });
+                            if (liter != links.end())
+                                links.erase(liter);
+                        }
+
+                        nodes.erase(iter);
+                    }
+                }
+            }
+
+            if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+                ImGui::OpenPopup("##popuprightclickflowgraph");
+            if (ImGui::BeginPopup("##popuprightclickflowgraph"))
+            {
+                if (ImGui::BeginMenu("Add Node"))
+                {
+                    for (auto &opt : node_internal_registry)
+                    {
+                        std::vector<std::string> cats = splitString(opt.second.menuname, '/');
+                        renderAddMenu(opt, cats, 0);
+                    }
+                    ImGui::EndMenu();
+                }
+
+                ImGui::EndPopup();
+            }
         }
     }
 
     void Flowgraph::run()
     {
+        is_running = true;
+
         for (auto &n : nodes)
             n->internal->reset();
 
@@ -249,8 +342,15 @@ namespace satdump
                                             {
                                                 if (n2->node_io[b].id == l.end)
                                                 {
-                                                    n2->internal->inputs[b2] = i->outputs[o];
-                                                    logger->trace("Assigned to : " + n2->internal->title);
+                                                    if (n2->internal->inputs[b2].type == i->outputs[o].type)
+                                                    {
+                                                        n2->internal->inputs[b2].ptr = i->outputs[o].ptr;
+                                                        logger->trace("Assigned to : " + n2->internal->title);
+                                                    }
+                                                    else
+                                                    {
+                                                        throw satdump_exception("Incompatible types! " + n2->internal->inputs[b2].type + " and " + i->outputs[o].type);
+                                                    }
                                                 }
 
                                                 b2++;
@@ -298,5 +398,7 @@ namespace satdump
 
         for (auto &n : nodes)
             n->internal->reset();
+
+        is_running = false;
     }
-}
+} // namespace satdump

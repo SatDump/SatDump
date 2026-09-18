@@ -4,27 +4,30 @@
 #include "../processing_handler.h"
 #include "dataset_handler.h"
 
-#include "processor.h"
-
 namespace satdump
 {
     namespace handlers
     {
-        class DatasetProductHandler : public Handler, public ProcessingHandler
+        class DatasetProductHandler : public Handler
         {
         public:
             DatasetProductHandler();
             ~DatasetProductHandler();
+
+            products::Product *get_instrument_products(std::string v, int index)
+            {
+                std::vector<products::Product *> pro;
+                for (auto &h : dataset_handler->all_products)
+                    if (h->instrument_name == v)
+                        pro.push_back(h.get());
+                return index < pro.size() ? pro[index] : nullptr;
+            };
 
             DatasetHandler *dataset_handler;
 
             // Presets / processor list
             std::string current_cfg;
             std::vector<nlohmann::json> available_presets;
-            std::unique_ptr<DatasetProductProcessor> processor;
-
-            // Proc function
-            void do_process();
 
             // The Rest
             void drawMenu();

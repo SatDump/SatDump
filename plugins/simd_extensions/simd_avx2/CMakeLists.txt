@@ -27,7 +27,7 @@ if(CXX_HAS_AVX_2)
 
     if(UNIX OR ANDROID)
         set(FINAL_FLAGS_AVX2 "-mavx2")
-    elseif(MSVC OR BUILD_MSVC)
+    elseif(MSVC)
         set(FINAL_FLAGS_AVX2 "${AVX2_C_FLAGS}")
     endif()
 

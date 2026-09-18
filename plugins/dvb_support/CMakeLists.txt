@@ -28,7 +28,7 @@ if(SSE41_FOUND)
 
     if(UNIX OR ANDROID)
         set(FINAL_FLAGS_SSE41 "-msse4.1")
-    elseif(MSVC OR BUILD_MSVC)
+    elseif(MSVC)
         set(FINAL_FLAGS_SSE41 "${SSE41_C_FLAGS}")
     endif()
 

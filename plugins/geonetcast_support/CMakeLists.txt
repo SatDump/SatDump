@@ -6,7 +6,7 @@ add_library(geonetcast_support SHARED ${geonetcast_support_CPPS})
 target_link_libraries(geonetcast_support PUBLIC satdump_core)
 target_include_directories(geonetcast_support PUBLIC src .)
 
-if(MSVC OR BUILD_MSVC)
+if(MSVC)
   install(
     TARGETS geonetcast_support
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins

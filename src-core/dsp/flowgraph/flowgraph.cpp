@@ -140,7 +140,7 @@ namespace satdump
                         {
                             try
                             {
-                                auto i = node_internal_registry[n.value()["int_id"]].func(this);
+                                auto i = node_internal_registry[n.value()["int_id"]].inst(this);
                                 auto nn = std::make_shared<Node>(this, n.value(), i);
                                 nodes.push_back(nn);
                             }

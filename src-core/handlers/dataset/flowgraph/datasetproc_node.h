@@ -12,7 +12,7 @@ namespace satdump
         handlers::Handler *ptr;
 
     public:
-        ImageHandlerSink_Node(handlers::Handler *ptr) : NodeInternal("Image Handler Sink"), ptr(ptr) { inputs.push_back({"Image"}); }
+        ImageHandlerSink_Node(handlers::Handler *ptr) : NodeInternal("Image Handler Sink"), ptr(ptr) { inputs.push_back({"Image", "img"}); }
 
         void process()
         {

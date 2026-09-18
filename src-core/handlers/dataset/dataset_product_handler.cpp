@@ -5,9 +5,6 @@
 #include "core/resources.h"
 #include "nlohmann/json_utils.h"
 
-// TODOREWORK #include "lua_processor.h"
-#include "flowgraph_processor.h"
-
 namespace satdump
 {
     namespace handlers
@@ -22,17 +19,17 @@ namespace satdump
             available_presets.push_back(loadJsonFile(resources::getResourcePath("pipeline_cfgs/AVHRR_MCIR_Sample.json")));
         }
 
-        DatasetProductHandler::~DatasetProductHandler() { ProcessingHandler::~ProcessingHandler(); }
+        DatasetProductHandler::~DatasetProductHandler() {}
 
         void DatasetProductHandler::drawMenu() {}
 
         void DatasetProductHandler::drawContents(ImVec2 win_size)
         {
-            ImGui::BeginTabBar("##datasetproducttabbar");
+            // ImGui::BeginTabBar("##datasetproducttabbar");
 
-            bool proc_now = is_processing;
+            bool proc_now = false;
 
-            if (ImGui::BeginTabItem("Presets"))
+            /*if (ImGui::BeginTabItem("Presets"))*/
             {
                 if (proc_now)
                     style::beginDisabled();
@@ -48,14 +45,14 @@ namespace satdump
                             /* TODOREWORK if (p["processor"].get<std::string>() == "lua_processor")
                                 processor = std::make_unique<Lua_DatasetProductProcessor>(dataset_handler, this, p);
                             else*/
-                            if (p["processor"].get<std::string>() == "flowgraph_processor")
-                                processor = std::make_unique<Flowgraph_DatasetProductProcessor>(dataset_handler, this, p);
+                            // if (p["processor"].get<std::string>() == "flowgraph_processor")
+                            //     processor = std::make_unique<Flowgraph_DatasetProductProcessor>(dataset_handler, this, p);
                         }
                     }
                     ImGui::EndListBox();
                 }
 
-                if (processor)
+                /*if (processor)
                     processor->renderParams();
 
                 if (ImGui::Button("Generate"))
@@ -67,37 +64,26 @@ namespace satdump
                 {
                     std::string str = processor->getCfg().dump(4);
                     ImGui::SetClipboardText(str.c_str());
-                }
+                }*/
 
                 if (proc_now)
                     style::endDisabled();
 
-                ImGui::EndTabItem();
+                //   ImGui::EndTabItem();
             }
 
-            if (processor && ImGui::BeginTabItem("Edit"))
+            /*if (processor && ImGui::BeginTabItem("Edit"))
             {
                 if (proc_now)
                     style::beginDisabled();
                 if (processor)
-                    processor->renderUI();
+                    processor->renderUI(win_size);
                 if (proc_now)
                     style::endDisabled();
                 ImGui::EndTabItem();
-            }
+            }*/
 
-            ImGui::EndTabBar();
-        }
-
-        void DatasetProductHandler::do_process()
-        {
-            if (processor)
-            {
-                if (processor->can_process())
-                    processor->process();
-            }
-            else
-                logger->error("Invalid processor!\n");
+            // ImGui::EndTabBar();
         }
     } // namespace handlers
 } // namespace satdump

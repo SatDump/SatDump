@@ -19,3 +19,4 @@ compile_commands.json
 as.predefined
 deps/
 src-core/satdump_varst.cpp
+windows/deps

@@ -5,7 +5,11 @@
 #include "dsp/block.h"
 #include "dsp/device/dev.h"
 #include "dynload.h"
+#ifdef _WIN32
+#include <Windows.h>
+#else
 #include <unistd.h>
+#endif
 
 // #define SPECTRAN_SAMPLERATE_46M 46080000
 #define SPECTRAN_SAMPLERATE_61_44M 61440000
