@@ -505,7 +505,7 @@ jobs:
         "build_ubuntu_2404",
         "build_macos_intel",
         "build_macos_silicon",
-        #"build_linux_arm64",
+        "build_linux_arm64",
         "build_android"]
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
