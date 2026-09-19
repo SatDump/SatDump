@@ -158,7 +158,8 @@ static void SetGridTicks(ImPlotPlot &plot, float target_px = 48.0f)
     const double xmin = x.Range.Min, xmax = x.Range.Max;
     const double ymin = y.Range.Min, ymax = y.Range.Max;
     const double xspan = xmax - xmin;
-    if (xspan <= 0.0)
+    const double yspan = ymax - ymin;
+    if (xspan <= 0.0 || yspan <= 0.0)
         return;
 
     const float wpx = plot.PlotRect.GetWidth();
@@ -172,8 +173,9 @@ static void SetGridTicks(ImPlotPlot &plot, float target_px = 48.0f)
         return;
 
     const int MAX_TICKS = 2048;
-    if (xspan / step > MAX_TICKS)
-        step = TickStep(xspan / MAX_TICKS);
+    const double maxspan = std::max(xspan, yspan);
+    if (maxspan / step > MAX_TICKS)
+        step = TickStep(maxspan / MAX_TICKS);
 
     static thread_local std::vector<double> xticks;
     static thread_local std::vector<double> yticks;
