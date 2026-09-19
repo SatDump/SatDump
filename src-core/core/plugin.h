@@ -9,15 +9,21 @@
 
 #define PLUGIN_ABI_VERSION 1
 
-#define PLUGIN_LOADER(constructor)                                 \
-    extern "C"                                                     \
-    {                                                              \
-        satdump::Plugin *loader()                                  \
-        {                                                          \
-            return (satdump::Plugin *)new constructor();           \
-        }                                                          \
-                                                                   \
-        const extern int SATDUMP_ABI_VERSION = PLUGIN_ABI_VERSION; \
+#ifdef _MSC_VER
+#define PLUGIN_DLL __declspec(dllexport)
+#else
+#define PLUGIN_DLL
+#endif
+
+#define PLUGIN_LOADER(constructor)                                            \
+    extern "C"                                                                \
+    {                                                                         \
+        satdump::Plugin *loader()                                             \
+        {                                                                     \
+            return (satdump::Plugin *)new constructor();                      \
+        }                                                                     \
+                                                                              \
+        PLUGIN_DLL const extern int SATDUMP_ABI_VERSION = PLUGIN_ABI_VERSION; \
     }
 
 namespace satdump
