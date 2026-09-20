@@ -259,8 +259,14 @@ namespace satdump
                         ImGui::PopID();
                         ImGui::Separator();
                     }
+
+                    if (active_filters.size() == 0)
+                        ImGui::TextDisabled(_("Filters will appear here"));
+
                     ImGui::EndListBox();
                 }
+
+                ImGui::TextDisabled(_(u8"Click the \uF0C3 icon in the menu bar to add filters..."));
 
                 if (needs_to_be_disabled)
                     style::endDisabled();
