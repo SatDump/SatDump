@@ -67,6 +67,7 @@ namespace satdump
         sigaction(SIGABRT, &sa, nullptr);
         sigaction(SIGFPE, &sa, nullptr);
         sigaction(SIGILL, &sa, nullptr);
+        sigaction(SIGBUS, &sa, nullptr);
 #endif
     }
 } // namespace satdump

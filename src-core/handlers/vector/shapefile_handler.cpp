@@ -10,6 +10,7 @@
 
 #include "core/style.h"
 #include "imgui/implot/implot.h"
+#include <exception>
 
 namespace satdump
 {
@@ -150,6 +151,7 @@ namespace satdump
             image::TextDrawer text_drawer;
             text_drawer.init_font(resources::getResourcePath("fonts/font.ttf"));
 
+            try
             {
                 std::function<void(std::vector<std::vector<shapefile::point_t>>, int num)> polylineDraw =
                     [this, color, &img, &projectionFunc](std::vector<std::vector<shapefile::point_t>> parts, int num)
@@ -231,6 +233,10 @@ namespace satdump
                 for (shapefile::MultiPointRecord &multipointRecord : file->multipoint_records)
                     for (shapefile::point_t p : multipointRecord.points)
                         pointDraw(p, multipointRecord.record_number - 1);
+            }
+            catch (std::exception &e)
+            {
+                logger->error("Error applying overlay! %s", e.what());
             }
         }
     } // namespace handlers
