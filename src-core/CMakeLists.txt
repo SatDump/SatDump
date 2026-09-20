@@ -220,6 +220,14 @@ else()
         target_link_libraries(satdump_core PUBLIC ${JEMALLOC_LIBRARY})
     endif()
 
+    # Backtrace if needed
+    find_library(BACKTRACE_LIBRARY backtrace)
+    if(ENABLE_CRASHDUMP AND BACKTRACE_LIBRARY)
+        message("-- Building CrashDump with libbacktrace!")
+        target_link_libraries(satdump_core PUBLIC ${BACKTRACE_LIBRARY})
+        target_compile_definitions(satdump_core PUBLIC SATDUMP_CRASHDUMP=1)
+    endif()
+
     # VOLK
     pkg_check_modules(VOLK REQUIRED volk)
     check_cxx_source_compiles("#include <volk/volk_alloc.hh>\n int main() { return 0; }" VOLK_HAS_ALLOC)

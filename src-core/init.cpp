@@ -1,3 +1,4 @@
+#include "core/crashdump.h"
 #define SATDUMP_DLL_EXPORT 1
 
 #include "core/style.h"
@@ -96,6 +97,8 @@ namespace satdump
 
     void initSatDump(bool is_gui)
     {
+        initCrashDump();
+
 #if ENABLE_I18N
         initLanguage();
 #endif
