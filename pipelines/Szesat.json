@@ -1,0 +1,58 @@
+{
+  "szesat1_uhf": {
+    "name": "SZESAT-1 UHF 9600bps",
+    "live": true,
+    "live_cfg": [
+      [
+        1,
+        0
+      ],
+      [
+        2,
+        0
+      ]
+    ],
+    "parameters": {
+      "start_timestamp": {
+        "type": "timestamp",
+        "value": -1,
+        "name": "Start Timestamp",
+        "description": "Unix timestamp of the start of the file provided.\nRequired for doppler correction, along with your QTH.\n\nIf your baseband filename is a support format it will be read automatically."
+      },
+      "enable_doppler": {
+        "type": "bool",
+        "value": true,
+        "name": "Doppler Correction",
+        "description": "Apply doppler correction"
+      }
+    },
+    "frequencies": [
+      [
+        "Main",
+        437.4e6
+      ]
+    ],
+    "work": {
+      "baseband": {},
+      "soft": {
+        "xfsk_burst_demod": {
+          "symbolrate": 9600,
+          "enable_doppler": true,
+          "satellite_norad": 57167,
+          "satellite_frequency": 437.4e6
+        }
+      },
+      "frm": {
+        "szesat_decoder": {
+          "frame_length": 255,
+          "thresold": 4,
+          "rs_enable": true,
+          "check_crc":  true
+        }
+      },
+      "products": {
+        
+      }
+    }
+  }
+}
