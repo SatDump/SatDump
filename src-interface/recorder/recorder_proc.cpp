@@ -286,11 +286,11 @@ namespace satdump
 #endif
     }
 
-    void RecorderApplication::try_init_tracking_widget()
+    void RecorderApplication::try_init_tracking_widget(nlohmann::json cli_set)
     {
         if (tracking_widget == nullptr)
         {
-            tracking_widget = new TrackingWidget();
+            tracking_widget = new TrackingWidget(cli_set);
 
             tracking_widget->aos_callback = [this](AutoTrackCfg autotrack_cfg, SatellitePass, TrackedObject obj)
             {

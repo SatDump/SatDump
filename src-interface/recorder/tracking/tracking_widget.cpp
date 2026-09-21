@@ -10,7 +10,7 @@
 
 namespace satdump
 {
-    TrackingWidget::TrackingWidget()
+    TrackingWidget::TrackingWidget(nlohmann::json cli_set)
     {
         try
         {
@@ -74,9 +74,8 @@ namespace satdump
         auto_scheduler.start();
 
         // Attempt to apply provided CLI settings
-        if (satdump::satdump_cfg.main_cfg.contains("cli"))
         {
-            auto &cli_settings = satdump::satdump_cfg.main_cfg["cli"];
+            auto &cli_settings = cli_set;
 
             if (cli_settings.contains("engage_autotrack") && cli_settings["engage_autotrack"].get<bool>())
             {

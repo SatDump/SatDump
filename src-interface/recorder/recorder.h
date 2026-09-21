@@ -190,7 +190,7 @@ namespace satdump
         void stop_recording();
         void load_rec_path_data();
 
-        void try_init_tracking_widget();
+        void try_init_tracking_widget(nlohmann::json cli_set = {});
 
         uint64_t get_samplerate()
         {

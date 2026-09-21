@@ -76,7 +76,7 @@ namespace satdump
         }
 
     public:
-        TrackingWidget();
+        TrackingWidget(nlohmann::json cli_set = {});
         ~TrackingWidget();
 
         void render();

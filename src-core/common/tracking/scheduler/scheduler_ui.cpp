@@ -167,9 +167,18 @@ namespace satdump
                         double cpass_xe = ((cpass.los_time - curr_time) / (12.0 * 3600.0)) * d_pplot_size;
 
                         std::string name = "NORAD " + norad;
+#if 0
                         std::optional<TLE> this_tle = db_keplers->get_from_norad(norad);
                         if (this_tle.has_value())
                             name = this_tle->name;
+#else
+                        for (auto &n : tle_registry)
+                            if (n.norad == norad)
+                            {
+                                name = n.name;
+                                break;
+                            }
+#endif
 
                         if (cpass_xs < 0)
                             cpass_xs = 0;
@@ -240,7 +249,18 @@ namespace satdump
             for (auto &cpass : enabled_satellites)
             {
                 int dl_pos = 0;
-                std::optional<satdump::TLE> thisTLE = db_keplers->get_from_norad(cpass.norad);
+                std::optional<satdump::TLE> thisTLE;
+#if 0
+                thisTLE = db_keplers->get_from_norad(cpass.norad);
+#else
+                for (auto &n : tle_registry)
+                    if (n.norad == cpass.norad)
+                    {
+                        thisTLE = (std::optional<satdump::TLE>)n;
+                        break;
+                    }
+#endif
+
                 std::string object_name = (thisTLE.has_value() ? thisTLE->name : "NORAD #" + std::to_string(cpass.norad));
                 for (auto &downlink : cpass.downlinks)
                 {

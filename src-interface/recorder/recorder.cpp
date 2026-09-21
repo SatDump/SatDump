@@ -173,7 +173,7 @@ namespace satdump
             if (cli_settings.contains("engage_autotrack") && cli_settings["engage_autotrack"].get<bool>())
             {
                 tracking_started_cli = true;
-                try_init_tracking_widget();
+                try_init_tracking_widget(cli_set);
             }
         }
 
