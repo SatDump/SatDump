@@ -534,3 +534,12 @@ option(PLUGIN_WEBHOOK_APP "Enable Webhook Application" ON)
 if(BUILD_GUI AND PLUGIN_WEBHOOK_APP)
   add_subdirectory(webhook_app)
 endif()
+
+# ##############################################################################
+set(EXTERNAL_PLUGINS "Optional external plugins" CACHE STRING "")
+
+foreach (PLUGIN IN LISTS EXTERNAL_PLUGINS)
+  message("External plugin ${PLUGIN}")
+  cmake_path(GET PLUGIN STEM PLUGIN_STEM)
+  add_subdirectory(${PLUGIN} plugins/${PLUGIN_STEM})
+endforeach()
