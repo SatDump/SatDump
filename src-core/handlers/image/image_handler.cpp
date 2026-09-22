@@ -209,9 +209,10 @@ namespace satdump
                         ImGui::SameLine();
 
                         // Delete
+                        bool del_this_handle = false;
                         if (widgets::VerySmallButton(u8"\uF1F8") && i < active_filters.size())
                         {
-                            active_filters.erase(active_filters.begin() + i);
+                            del_this_handle = true;
                             quit = true;
                             asyncProcess();
                         }
@@ -258,6 +259,10 @@ namespace satdump
                         ImGui::EndGroup();
                         ImGui::PopID();
                         ImGui::Separator();
+
+                        // Actual delete
+                        if (del_this_handle)
+                            active_filters.erase(active_filters.begin() + i);
                     }
 
                     if (active_filters.size() == 0)

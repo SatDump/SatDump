@@ -536,7 +536,7 @@ if(BUILD_GUI AND PLUGIN_WEBHOOK_APP)
 endif()
 
 # ##############################################################################
-set(EXTERNAL_PLUGINS "Optional external plugins" CACHE STRING "")
+set(EXTERNAL_PLUGINS "" CACHE STRING "Optional external plugins")
 
 foreach (PLUGIN IN LISTS EXTERNAL_PLUGINS)
   message("External plugin ${PLUGIN}")
