@@ -479,7 +479,7 @@ namespace fengyun_svissr
             if (save_telemetry)
             {
                 logger->debug("Processing satellite telemetry...");
-                std::string active_sensor = (Calib_2_block[10] >> 7) == 1 ? "Primary" : "Backup";
+                std::string active_sensor = (Calib_2_block[10] & 0b1) == 1 ? "Primary" : "Backup";
 
                 uint8_t active_detectors = satdump::majority_law_vec(detector_telemetry_stats)[0];
                 std::string telemetry_data = SVISSRTelemetryDumper::dump_telemetry_to_JSON(*orbit_attitude_block, attitude_prediction_data, orbit_prediction_data, active_sensor, active_detectors);
