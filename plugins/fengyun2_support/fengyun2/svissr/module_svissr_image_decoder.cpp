@@ -65,6 +65,7 @@ namespace fengyun_svissr
         subcommunication_frames.clear();
         current_subcom_frame.clear();
         group_retransmissions.clear();
+        detector_telemetry_stats.clear();
     }
 
     std::string SVISSRImageDecoderModule::getSvissrFilename(std::tm *timeReadable, std::string channel)
@@ -571,6 +572,7 @@ namespace fengyun_svissr
         current_subcom_frame.clear();
         group_retransmissions.clear();
         final_subcom_frame.clear();
+        detector_telemetry_stats.clear();
 
         writingImage = false;
     }
