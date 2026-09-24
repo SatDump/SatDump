@@ -740,7 +740,7 @@ namespace fengyun_svissr
             // When the sun pulse angle is lost, satellite sets this value of FFFFFF
             // Since it uses them for timing SVISSR lines, it means it isn't transmitting data.
             // Useful to let the user know!
-            uint32_t sun_pulse_angle = frame[91] >> 8;
+            uint32_t sun_pulse_angle = frame[91] & 0xFFFFFF;
             if (sun_pulse_angle == 0xFFFFFF)
             {
                 sat_is_eclipsed = true;
