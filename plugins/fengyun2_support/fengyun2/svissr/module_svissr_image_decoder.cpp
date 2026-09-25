@@ -1,5 +1,5 @@
 #include "module_svissr_image_decoder.h"
-#include "svissr_blocks.h"
+#include "dump_svissr_telemetry.h"
 
 #include <filesystem>
 #include <vector>
@@ -38,6 +38,8 @@ namespace fengyun_svissr
         counter_locked = false;
         global_counter = 0;
         apply_correction = parameters.contains("apply_correction") ? parameters["apply_correction"].get<bool>() : false;
+        save_telemetry = parameters.contains("save_telemetry") ? parameters["save_telemetry"].get<bool>() : false;
+
         backwardScan = false;
 
         fsfsm_enable_output = false;
@@ -63,6 +65,7 @@ namespace fengyun_svissr
         subcommunication_frames.clear();
         current_subcom_frame.clear();
         group_retransmissions.clear();
+        detector_telemetry_stats.clear();
     }
 
     std::string SVISSRImageDecoderModule::getSvissrFilename(std::tm *timeReadable, std::string channel)
@@ -136,6 +139,65 @@ namespace fengyun_svissr
         }
 
         return errors;
+    }
+
+    /**
+     * @brief Dumps the MANAM data to a file in the MANAM directory.
+     * Creates the directory if it doesn't exist.
+     *
+     * @param unix_timestamp Timestamp for filename: 'MANAM_<timestamp>.txt'
+     * @param manam_data The actual data to dump
+     */
+    void SVISSRImageDecoderModule::write_MANAM(time_t unix_timestamp, std::vector<uint8_t> manam_data)
+    {
+        std::string manam_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MANAM";
+
+        if (!std::filesystem::exists(manam_directory))
+            std::filesystem::create_directory(manam_directory);
+
+        const time_t timevalue = unix_timestamp;
+        std::tm timeReadable = *gmtime(&timevalue);
+        std::string timestamp = std::to_string(timeReadable.tm_year + 1900) + "-" +
+                                (timeReadable.tm_mon + 1 > 9 ? std::to_string(timeReadable.tm_mon + 1) : "0" + std::to_string(timeReadable.tm_mon + 1)) + "-" +
+                                (timeReadable.tm_mday > 9 ? std::to_string(timeReadable.tm_mday) : "0" + std::to_string(timeReadable.tm_mday)) + "_" +
+                                (timeReadable.tm_hour > 9 ? std::to_string(timeReadable.tm_hour) : "0" + std::to_string(timeReadable.tm_hour)) + "-" +
+                                (timeReadable.tm_min > 9 ? std::to_string(timeReadable.tm_min) : "0" + std::to_string(timeReadable.tm_min));
+
+        std::string manam_path = manam_directory + "/MANAM_" + timestamp + ".txt";
+        logger->info("Saving MANAM to " + manam_path + "...");
+
+        std::ofstream outfile(manam_path, std::ios::out | std::ios::binary);
+        outfile.write(reinterpret_cast<const char *>(&manam_data[0]), 10250);
+        outfile.close();
+    }
+    /**
+     * @brief Dumps the Telemetry data to a file in the 'Telemetry' directory.
+     * Creates the directory if it doesn't exist.
+     *
+     * @param unix_timestamp Timestamp for filename: 'Telemetry_<timestamp>.jsonc'
+     * @param telemetry_json String containing formatted JSONC
+     */
+    void SVISSRImageDecoderModule::write_telemetry(time_t unix_timestamp, std::string telemetry_jsonc)
+    {
+        std::string telemetry_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/Telemetry";
+
+        if (!std::filesystem::exists(telemetry_directory))
+            std::filesystem::create_directory(telemetry_directory);
+
+        const time_t timevalue = unix_timestamp;
+        std::tm timeReadable = *gmtime(&timevalue);
+        std::string timestamp = std::to_string(timeReadable.tm_year + 1900) + "-" +
+                                (timeReadable.tm_mon + 1 > 9 ? std::to_string(timeReadable.tm_mon + 1) : "0" + std::to_string(timeReadable.tm_mon + 1)) + "-" +
+                                (timeReadable.tm_mday > 9 ? std::to_string(timeReadable.tm_mday) : "0" + std::to_string(timeReadable.tm_mday)) + "_" +
+                                (timeReadable.tm_hour > 9 ? std::to_string(timeReadable.tm_hour) : "0" + std::to_string(timeReadable.tm_hour)) + "-" +
+                                (timeReadable.tm_min > 9 ? std::to_string(timeReadable.tm_min) : "0" + std::to_string(timeReadable.tm_min));
+
+        std::string telemetry_path = telemetry_directory + "/Telemetry_" + timestamp + ".jsonc";
+        logger->info("Saving telemetry to " + telemetry_path + "...");
+
+        std::ofstream outfile(telemetry_path, std::ios::out | std::ios::binary);
+        outfile.write(telemetry_jsonc.c_str(), telemetry_jsonc.size());
+        outfile.close();
     }
 
     /**
@@ -262,7 +324,12 @@ namespace fengyun_svissr
             logger->warn("Reception was too short or SNR was too low: Timestamps, projections, and calibration will be disabled!");
         }
 
-        if (process_subcom_data)
+        if (!process_subcom_data)
+        {
+            // Too damaged or too low SNR, default to system time
+            unix_timestamp = time(0);
+        }
+        else
         {
             logger->debug("Processing subcom data...");
 
@@ -273,20 +340,18 @@ namespace fengyun_svissr
             // get_subcom_block returns a vector, to directly map to memory we need to reinterpret cast
             OrbitAndAttitudeData *orbit_attitude_block = reinterpret_cast<OrbitAndAttitudeData *>(orbit_attitude_data_unstructured.data());
 
-            // TODOREWORK: Implement when J2000 is supported.
-
-            // - J2000 projection data handling -
-            /*
             AttitudePredictionSubBlock attitude_prediction_data;
-            majority_law(orbit_attitude_block->ATTITUDE_PREDICTION_SUBBLOCKS, reinterpret_cast<uint8_t*>(&attitude_prediction_data));
+            satdump::majority_law(orbit_attitude_block->ATTITUDE_PREDICTION_SUBBLOCKS, reinterpret_cast<uint8_t *>(&attitude_prediction_data));
 
             OrbitPredictionSubBlock orbit_prediction_data;
-            majority_law(orbit_attitude_block->ORBIT_PREDICTION_SUBBLOCKS, reinterpret_cast<uint8_t*>(&orbit_prediction_data));
+            satdump::majority_law(orbit_attitude_block->ORBIT_PREDICTION_SUBBLOCKS, reinterpret_cast<uint8_t *>(&orbit_prediction_data));
 
-            // Everything is not loaded into orbit_attitude_block, attitude_prediction_data, and orbit_prediction_data
-            */
-            // - Timestamp handling -
             unix_timestamp = ((orbit_attitude_block->IMAGE_START_TIME * 1e-8) - 40587) * 86400;
+
+            // - J2000 projection data handling -
+
+            // TODOREWORK: Implement when J2000 is supported.
+            // Everything is not loaded into orbit_attitude_block, attitude_prediction_data, and orbit_prediction_data
 
             // ----> Simplified mapping (GCP) <----
 
@@ -344,27 +409,7 @@ namespace fengyun_svissr
 
             // ----> MANAM <----
 
-            std::vector<uint8_t> manam_data = get_subcom_block(final_subcom_frame, MANAM);
-
-            std::string manam_directory = d_output_file_hint.substr(0, d_output_file_hint.rfind('/')) + "/MANAM";
-
-            if (!std::filesystem::exists(manam_directory))
-                std::filesystem::create_directory(manam_directory);
-
-            const time_t timevalue = unix_timestamp;
-            std::tm timeReadable = *gmtime(&timevalue);
-            std::string timestamp = std::to_string(timeReadable.tm_year + 1900) + "-" +
-                                    (timeReadable.tm_mon + 1 > 9 ? std::to_string(timeReadable.tm_mon + 1) : "0" + std::to_string(timeReadable.tm_mon + 1)) + "-" +
-                                    (timeReadable.tm_mday > 9 ? std::to_string(timeReadable.tm_mday) : "0" + std::to_string(timeReadable.tm_mday)) + "_" +
-                                    (timeReadable.tm_hour > 9 ? std::to_string(timeReadable.tm_hour) : "0" + std::to_string(timeReadable.tm_hour)) + "-" +
-                                    (timeReadable.tm_min > 9 ? std::to_string(timeReadable.tm_min) : "0" + std::to_string(timeReadable.tm_min));
-
-            std::string manam_path = manam_directory + "/MANAM_" + timestamp + ".txt";
-            std::ofstream outfile(manam_path, std::ios::out | std::ios::binary);
-
-            // Writes the rudimentary MANAM schedule
-            outfile.write(reinterpret_cast<const char *>(&manam_data[0]), 10250);
-            outfile.close();
+            write_MANAM(unix_timestamp, get_subcom_block(final_subcom_frame, MANAM));
 
             // ----> Calibration 2 <----
             // Calibration 1 block has the same data, just a lower resolution for IR - no point in getting it
@@ -429,11 +474,17 @@ namespace fengyun_svissr
                     LUTs[ir_channel + 1][1023 - lut_index] = value;
                 }
             }
-        }
-        // Too damaged or too low SNR, default to system time
-        else
-        {
-            unix_timestamp = time(0);
+
+            // - Telemetry -
+            if (save_telemetry)
+            {
+                logger->debug("Processing satellite telemetry...");
+                std::string active_sensor = (Calib_2_block[10] & 0b1) == 1 ? "Primary" : "Backup";
+
+                uint8_t active_detectors = satdump::majority_law_vec(detector_telemetry_stats)[0];
+                std::string telemetry_data = SVISSRTelemetryDumper::dump_telemetry_to_JSON(*orbit_attitude_block, attitude_prediction_data, orbit_prediction_data, active_sensor, active_detectors);
+                write_telemetry(unix_timestamp, telemetry_data);
+            }
         }
 
         // Sanity check, if the timestamp isn't between the years 2000 and 2050, consider it to be incorrect
@@ -513,6 +564,7 @@ namespace fengyun_svissr
         current_subcom_frame.clear();
         group_retransmissions.clear();
         final_subcom_frame.clear();
+        detector_telemetry_stats.clear();
 
         writingImage = false;
     }
@@ -547,7 +599,7 @@ namespace fengyun_svissr
             // Read a buffer
             read_data((uint8_t *)frame, FRAME_SIZE);
 
-            // Parse counter, masked since first four bits should NEVER be 0
+            // Parse counter, masked since only the last 3 bytes are used
             int counter = (frame[67] << 8 | frame[68]) & 0x0fff;
 
             // Does correction logic if specified by the user
@@ -658,6 +710,14 @@ namespace fengyun_svissr
             // Store the last GID to make sure we can parse the retransmission groups
             last_group_id = group_id;
 
+            // Parse detector status if we are supposed to
+            if (save_telemetry)
+            {
+                std::vector<uint8_t> detector_status;
+                detector_status.push_back(frame[69]);
+                detector_telemetry_stats.push_back(detector_status);
+            }
+
             // Parse Spacecraft ID (SC/ID)
             int scid = frame[91];
 
@@ -669,6 +729,19 @@ namespace fengyun_svissr
                 // Unlocks since we are locked at an impossible value.. somehow
                 counter_locked = false;
                 continue;
+            }
+
+            // When the sun pulse angle is lost, satellite sets this value of FFFFFF
+            // Since it uses them for timing SVISSR lines, it means it isn't transmitting data.
+            // Useful to let the user know!
+            uint32_t sun_pulse_angle = frame[91] & 0xFFFFFF;
+            if (sun_pulse_angle == 0xFFFFFF)
+            {
+                sat_is_eclipsed = true;
+            }
+            else
+            {
+                sat_is_eclipsed = false;
             }
 
             // We only want forward scan data
@@ -857,7 +930,11 @@ namespace fengyun_svissr
             ImGui::ProgressBar((float)approx_progess / 100.0f, ImVec2(200 * ui_scale, 20 * ui_scale));
             ImGui::Text("State : ");
             ImGui::SameLine();
-            if (writingImage)
+            if (sat_is_eclipsed)
+            {
+                ImGui::TextColored(style::theme.red, "Satellite is eclipsed...");
+            }
+            else if (writingImage)
                 ImGui::TextColored(style::theme.green, "Writing images...");
             else if (backwardScan)
                 ImGui::TextColored(style::theme.red, "Imager rollback...");
