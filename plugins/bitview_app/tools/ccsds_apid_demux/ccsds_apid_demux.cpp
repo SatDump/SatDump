@@ -1,6 +1,7 @@
 #include "ccsds_apid_demux.h"
 #include "bit_container.h"
 #include "common/ccsds/ccsds_aos/demuxer.h"
+#include "common/ccsds/ccsds_tm/demuxer.h"
 #include "core/style.h"
 #include "imgui/imgui.h"
 #include "logger.h"
@@ -25,6 +26,7 @@ namespace satdump
         ImGui::InputInt("CADU Width (bytes)", &cadu_size_bytes);
         ImGui::InputInt("MPDU Data Size", &mpdu_data_size);
         ImGui::InputInt("MPDU Insert Zone Size", &insert_zone_size);
+        ImGui::InputInt("Secondary Header Extends PKT", &secondary_header_extra);
         ImGui::Checkbox("Split APIDs", &split_apid);
 
         if (ImGui::Button("Perform###2"))
@@ -58,8 +60,8 @@ namespace satdump
             };
             std::map<int, std::shared_ptr<APIDOut>> apids_outs;
 
-            ccsds::ccsds_aos::Demuxer demuxer_vcid_aos(mpdu_data_size, insert_zone_size, insert_zone_size);
-            ccsds::ccsds_aos::Demuxer demuxer_vcid_tm(mpdu_data_size, insert_zone_size, insert_zone_size);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid_aos(mpdu_data_size, (insert_zone_size > 0) || (secondary_header_extra > 0), insert_zone_size, secondary_header_extra);
+            ccsds::ccsds_tm::Demuxer demuxer_vcid_tm(mpdu_data_size, (insert_zone_size > 0) || (secondary_header_extra > 0), insert_zone_size, secondary_header_extra);
 
             for (int i = 0; i < size; i += cadu_size_bytes)
             {
@@ -113,8 +115,8 @@ namespace satdump
             std::ofstream fileout = std::ofstream(tmpfile, std::ios::binary);
             std::vector<BitContainer::FrameDef> frms;
 
-            ccsds::ccsds_aos::Demuxer demuxer_vcid_aos(mpdu_data_size, insert_zone_size, insert_zone_size);
-            ccsds::ccsds_aos::Demuxer demuxer_vcid_tm(mpdu_data_size, insert_zone_size, insert_zone_size);
+            ccsds::ccsds_aos::Demuxer demuxer_vcid_aos(mpdu_data_size, (insert_zone_size > 0) || (secondary_header_extra > 0), insert_zone_size, secondary_header_extra);
+            ccsds::ccsds_tm::Demuxer demuxer_vcid_tm(mpdu_data_size, (insert_zone_size > 0) || (secondary_header_extra > 0), insert_zone_size, secondary_header_extra);
 
             size_t pos = 0;
             for (int i = 0; i < size; i += cadu_size_bytes)
