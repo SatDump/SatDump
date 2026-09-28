@@ -53,6 +53,7 @@ namespace fengyun_svissr
         int valid_lines;
         float approx_progess;
         bool apply_correction;
+        bool save_telemetry;
         int global_counter;
         bool counter_locked = false;
 
@@ -105,15 +106,20 @@ namespace fengyun_svissr
 
         // Stats
         std::vector<int> scid_stats;
+        // Vector of vectors is used so bit level majority law can occur. Different from SC/ID
+        // since each individual bit is important (each shows one detector)
+        std::vector<std::vector<uint8_t>> detector_telemetry_stats;
 
         // Subcommunication block handling
         void save_subcom_frame();
         std::vector<MinorFrame> subcommunication_frames; /* 25 2097 byte groups forming a full subcommunication frame */
         MinorFrame current_subcom_frame;                 /* A full subcommunication frame */
         std::vector<Group> group_retransmissions;        /* Retransmissions of a given group */
+        void write_MANAM(time_t unix_timestamp, std::vector<uint8_t> manam_data);
+        void write_telemetry(time_t unix_timestamp, std::string telemetry_jsonc);
 
         // UI Stuff
-        float corr_history_ca[200];
+        bool sat_is_eclipsed = false;
         unsigned int textureID = 0;
         uint32_t *textureBuffer;
 

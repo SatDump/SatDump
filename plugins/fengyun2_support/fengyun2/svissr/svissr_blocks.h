@@ -153,13 +153,13 @@ struct OrbitAndAttitudeData
     uint8_t ATTITUDE_PREDICTION_SUBBLOCKS[10][64]; /* 10x 64-byte attitude prediction sub block*/
     uint8_t ORBIT_PREDICTION_SUBBLOCKS[8][256];    /* 8x 256-byte orbit prediction sub block */
     svissr_r6_t FIRST_ATTITUDE_PREDICTION;         /* R*6.8, Time of the first attitude prediction record, [MJD]*/
-    svissr_r6_t LATEST_ATTITUDE_PREDICTION;        /* R*6.8, Time of the last attitude prediction record, [MJD]*/
+    svissr_r6_t LATEST_ATTITUDE_PREDICTION;        /* R*6.8, Time of the latest attitude prediction record, [MJD]*/
     svissr_r6_t ATTITUDE_PREDICTION_INTERVAL;      /* R*6.8, fixed value (0.00347222), Interval time of attitude prediction data, [MJD]*/
     int16_t ATTITUDE_PREDICTION_NUMBER;            /* I*2 Number of attitude prediction data block, [=10] */
     svissr_r6_t FIRST_ORBITAL_PREDICTION;          /* R*6.8, Time of the first orbit prediction record, [MJD]*/
     svissr_r6_t LATEST_ORBITAL_PREDICTION;         /* R*6.8, Time of the last orbit prediction record, [MJD]*/
     svissr_r6_t ORBITAL_PREDICTION_INTERVAL;       /* R*6.8, fixed value (0.00347222), Interval time of orbit prediction data, [MJD]*/
-    int32_t ORBITAL_PREDICTION_COUNT;              /* I*2 Number of attitude prediction data block, [=8] */
+    int32_t ORBITAL_PREDICTION_COUNT;              /* I*2 Number of orbital prediction data block, [=8] */
     uint8_t spare3[216];
 }
 
@@ -188,8 +188,8 @@ struct AttitudePredictionSubBlock
     svissr_r6_t SAT_SPIN_YZ_PLANE_ANGLE;           /* R*6.11, Angle between satelltie spin axis and yz-plane, [rad] */
     svissr_r6_t DIHEDRAL_ANGLE;                    /* R*6.8, Dihedral angle between the Sun and Earth measured clockwise viewing from North, [rad]*/
     svissr_r6_t SPIN_RATE;                         /* R*6.8, Spin speed of satellite, [rpm] */
-    svissr_r6_t RIGHT_ASCENSION_SPIN_AXIS;         /* R*6.8, Right ascension of satellite spin axis on the sat orbit plane coordinate sysetm, [rad] */
-    svissr_r6_t DECLINATION_SPIN_AXIS;             /* R*6.8, Declination of satellite spin axis on the sat orbit plane coordinate sysetm, [rad]*/
+    svissr_r6_t RIGHT_ASCENSION_SPIN_AXIS;         /* R*6.8, Right ascension of satellite spin axis on the sat orbit plane coordinate system, [rad] */
+    svissr_r6_t DECLINATION_SPIN_AXIS;             /* R*6.8, Declination of satellite spin axis on the sat orbit plane coordinate system, [rad]*/
     uint8_t spare[16];
 }
 
