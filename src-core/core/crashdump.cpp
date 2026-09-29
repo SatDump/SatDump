@@ -1,7 +1,12 @@
 #include "crashdump.h"
 
 #ifdef SATDUMP_CRASHDUMP
+#include "utils/format.h"
+#ifdef SATDUMP_CRASHDUMP_CPPTRACE
 #include <cpptrace/cpptrace.hpp>
+#else
+#include <backtrace.h>
+#endif
 #include <csignal>
 #include <cstdlib>
 #include <cstring>
@@ -12,6 +17,23 @@
 namespace satdump
 {
 #ifdef SATDUMP_CRASHDUMP
+#ifndef SATDUMP_CRASHDUMP_CPPTRACE
+    static backtrace_state *bt_state = nullptr;
+
+    static int bt_callback(void *data, uintptr_t pc, const char *filename, int lineno, const char *function)
+    {
+        std::string &report = *((std::string *)data);
+        report += satdump::svformat("  at %s (%s:%d)\n", function ? function : "??", filename ? filename : "??", lineno);
+        return 0;
+    }
+
+    static void bt_error(void *data, const char *msg, int errnum)
+    {
+        std::string &report = *((std::string *)data);
+        report += satdump::svformat("  [backtrace error: %s (%d)]\n", msg, errnum);
+    }
+#endif
+
     static void crash_handler(int sig)
     {
         std::string report;
@@ -73,7 +95,11 @@ namespace satdump
 
         report += "Crash report (signal " + std::to_string(sig) + ")\n\n";
 
+#ifdef SATDUMP_CRASHDUMP_CPPTRACE
         report += cpptrace::generate_trace().to_string();
+#else
+        backtrace_full(bt_state, 0, bt_callback, bt_error, &report);
+#endif
 
         fprintf(stderr, "\n%s\n", report.c_str());
 
@@ -87,6 +113,11 @@ namespace satdump
     void initCrashDump()
     {
 #ifdef SATDUMP_CRASHDUMP
+
+#ifndef SATDUMP_CRASHDUMP_CPPTRACE
+        bt_state = backtrace_create_state(NULL, 1, bt_error, nullptr);
+#endif
+
         signal(SIGSEGV, crash_handler);
         signal(SIGABRT, crash_handler);
         signal(SIGFPE, crash_handler);
@@ -94,6 +125,7 @@ namespace satdump
 #ifndef _WIN32
         signal(SIGBUS, crash_handler);
 #endif
+
 #endif
     }
 } // namespace satdump

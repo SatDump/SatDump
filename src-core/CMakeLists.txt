@@ -157,11 +157,17 @@ if(APPLE AND BUILD_OPENMP)
     target_link_libraries(satdump_core PUBLIC omp)
 endif()
 
-# cpptrace if needed
+# cpptrace/backtrace if needed
 find_library(CPPTRACE_LIBRARY cpptrace)
+find_library(BACKTRACE_LIBRARY backtrace)
 if(ENABLE_CRASHDUMP AND CPPTRACE_LIBRARY)
     message("-- Building CrashDump with libcpptrace!")
     target_link_libraries(satdump_core PUBLIC ${CPPTRACE_LIBRARY})
+    target_compile_definitions(satdump_core PUBLIC SATDUMP_CRASHDUMP=1)
+    target_compile_definitions(satdump_core PUBLIC SATDUMP_CRASHDUMP_CPPTRACE=1)
+elseif()
+    message("-- Building CrashDump with libbacktrace!")
+    target_link_libraries(satdump_core PUBLIC ${BACKTRACE_LIBRARY})
     target_compile_definitions(satdump_core PUBLIC SATDUMP_CRASHDUMP=1)
 endif()
 

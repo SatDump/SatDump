@@ -34,7 +34,7 @@ option(BUILD_OPENMP "Build with OpenMP Optimizations" ON)
 option(BUILD_DOCS "Build with Doxygen Documentation" OFF)
 option(ENABLE_INSTALL "Enable INSTALL TARGET" ON)
 option(ENABLE_I18N "Enable internationalizaton (allows changing language)" ON)
-option(ENABLE_CRASHDUMP "Enable crashdump feature (requires libcpptrace)" ON)
+option(ENABLE_CRASHDUMP "Enable crashdump feature (requires libcpptrace or libbacktrace)" ON)
 
 # I18N
 if(ENABLE_I18N)
