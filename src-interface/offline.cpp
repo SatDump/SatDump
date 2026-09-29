@@ -42,7 +42,7 @@ namespace satdump
                 std::string frame_path = pipeline_selector->outputdirselect.getPath() + "/" + pipeline_selector->selected_pipeline.id + ".frm";
                 if (std::filesystem::exists(cadu_path) || std::filesystem::exists(frame_path))
                 {
-                    ImGui::TextColored(style::theme.red, "Warning, the output file already exists and will get overwritten!");
+                    ImGui::TextColored(style::theme.red, "Warning: The output file already exists and will get overwritten!");
                 }
             }
 
