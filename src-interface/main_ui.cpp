@@ -208,6 +208,12 @@ namespace satdump
                         ImGui::EndMenu();
                     }
 
+                    if (ImGui::MenuItem("Crash Now"))
+                    {
+                        int *ptr = 0;
+                        *ptr = 9999;
+                    }
+
                     ImGui::EndMenu();
                 }
 
