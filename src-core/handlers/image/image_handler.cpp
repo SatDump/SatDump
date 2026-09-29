@@ -414,13 +414,16 @@ namespace satdump
                         auto &img = getImage();
                         ImGui::BeginTooltip();
 
-                        for (int i = 0; i < img.channels(); i++)
-                            ImGui::Text(_("Raw %d : %d F %f"), i + 1, img.get(i, x, y), img.getf(i, x, y));
-
-                        if (image_calib_valid && image.channels() == 1 && x >= 0 && y >= 0 && x < img.width() && y < img.height())
+                        if (x >= 0 && y >= 0 && x < img.width() && y < img.height())
                         {
-                            double val = image_calib.getVal(img.getf(0, x, y));
-                            ImGui::Text(_("Unit : %f %s"), val, image_calib.unit.c_str());
+                            for (int i = 0; i < img.channels(); i++)
+                                ImGui::Text(_("Raw %d : %d F %f"), i + 1, img.get(i, x, y), img.getf(i, x, y));
+
+                            if (image_calib_valid && image.channels() == 1)
+                            {
+                                double val = image_calib.getVal(img.getf(0, x, y));
+                                ImGui::Text(_("Unit : %f %s"), val, image_calib.unit.c_str());
+                            }
                         }
 
                         // Handle rotations
