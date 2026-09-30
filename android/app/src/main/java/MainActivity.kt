@@ -146,13 +146,17 @@ class MainActivity : NativeActivity(), TextWatcher {
     }
 
     fun showSoftInput() {
-        val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputMethodManager.showSoftInput(editText, 0)
+        runOnUiThread {
+            val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.showSoftInput(editText, 0)
+        }
     }
 
     fun hideSoftInput() {
-        val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputMethodManager.hideSoftInputFromWindow(editText!!.windowToken, 0)
+        runOnUiThread {
+            val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.hideSoftInputFromWindow(editText!!.windowToken, 0)
+        }
     }
 
     // Queue for the Unicode characters to be polled from native code (via pollUnicodeChar())

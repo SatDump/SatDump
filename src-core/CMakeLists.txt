@@ -157,6 +157,20 @@ if(APPLE AND BUILD_OPENMP)
     target_link_libraries(satdump_core PUBLIC omp)
 endif()
 
+# cpptrace/backtrace if needed
+find_library(CPPTRACE_LIBRARY cpptrace)
+find_library(BACKTRACE_LIBRARY backtrace)
+if(ENABLE_CRASHDUMP AND CPPTRACE_LIBRARY)
+    message("-- Building CrashDump with libcpptrace!")
+    target_link_libraries(satdump_core PUBLIC ${CPPTRACE_LIBRARY})
+    target_compile_definitions(satdump_core PUBLIC SATDUMP_CRASHDUMP=1)
+    target_compile_definitions(satdump_core PUBLIC SATDUMP_CRASHDUMP_CPPTRACE=1)
+elseif(ENABLE_CRASHDUMP AND BACKTRACE_LIBRARY)
+    message("-- Building CrashDump with libbacktrace!")
+    target_link_libraries(satdump_core PUBLIC ${BACKTRACE_LIBRARY})
+    target_compile_definitions(satdump_core PUBLIC SATDUMP_CRASHDUMP=1)
+endif()
+
 if(BUILD_ZIQ2)
     target_compile_definitions(satdump_core PUBLIC BUILD_ZIQ2="1")
 endif()
@@ -218,14 +232,6 @@ else()
         find_package(Jemalloc REQUIRED)
         target_include_directories(satdump_core PUBLIC ${JEMALLOC_INCLUDE_DIR})
         target_link_libraries(satdump_core PUBLIC ${JEMALLOC_LIBRARY})
-    endif()
-
-    # Backtrace if needed
-    find_library(BACKTRACE_LIBRARY backtrace)
-    if(ENABLE_CRASHDUMP AND BACKTRACE_LIBRARY)
-        message("-- Building CrashDump with libbacktrace!")
-        target_link_libraries(satdump_core PUBLIC ${BACKTRACE_LIBRARY})
-        target_compile_definitions(satdump_core PUBLIC SATDUMP_CRASHDUMP=1)
     endif()
 
     # VOLK

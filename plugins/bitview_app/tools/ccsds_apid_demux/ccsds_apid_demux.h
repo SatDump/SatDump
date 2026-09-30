@@ -12,6 +12,7 @@ namespace satdump
         bool aos_mode = true;
         int mpdu_data_size = 884;
         int insert_zone_size = 0;
+        int secondary_header_extra = 0;
         bool split_apid = true;
         int cadu_size_bytes = 1024;
 

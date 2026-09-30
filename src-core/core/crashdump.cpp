@@ -2,7 +2,11 @@
 
 #ifdef SATDUMP_CRASHDUMP
 #include "utils/format.h"
+#ifdef SATDUMP_CRASHDUMP_CPPTRACE
+#include <cpptrace/cpptrace.hpp>
+#else
 #include <backtrace.h>
+#endif
 #include <csignal>
 #include <cstdlib>
 #include <cstring>
@@ -13,6 +17,7 @@
 namespace satdump
 {
 #ifdef SATDUMP_CRASHDUMP
+#ifndef SATDUMP_CRASHDUMP_CPPTRACE
     static backtrace_state *bt_state = nullptr;
 
     static int bt_callback(void *data, uintptr_t pc, const char *filename, int lineno, const char *function)
@@ -27,6 +32,7 @@ namespace satdump
         std::string &report = *((std::string *)data);
         report += satdump::svformat("  [backtrace error: %s (%d)]\n", msg, errnum);
     }
+#endif
 
     static void crash_handler(int sig)
     {
@@ -87,9 +93,14 @@ namespace satdump
         report += "developers for debugging purposes.\n";
         report += "\n=== START BACKTRACE ===\n\n";
 
-        report += satdump::svformat("Crash report (signal %d: %s)\n", sig, strsignal(sig));
+        report += "Crash report (signal " + std::to_string(sig) + ")\n\n";
 
+#ifdef SATDUMP_CRASHDUMP_CPPTRACE
+        report += cpptrace::generate_trace().to_string();
+#else
         backtrace_full(bt_state, 0, bt_callback, bt_error, &report);
+#endif
+
         fprintf(stderr, "\n%s\n", report.c_str());
 
         std::ofstream("satdump_crash_" + std::to_string(time(NULL)) + ".txt").write((char *)report.c_str(), report.size());
@@ -102,15 +113,19 @@ namespace satdump
     void initCrashDump()
     {
 #ifdef SATDUMP_CRASHDUMP
-        bt_state = backtrace_create_state(NULL, 1, bt_error, nullptr);
 
-        struct sigaction sa{};
-        sa.sa_handler = crash_handler;
-        sigaction(SIGSEGV, &sa, nullptr);
-        sigaction(SIGABRT, &sa, nullptr);
-        sigaction(SIGFPE, &sa, nullptr);
-        sigaction(SIGILL, &sa, nullptr);
-        sigaction(SIGBUS, &sa, nullptr);
+#ifndef SATDUMP_CRASHDUMP_CPPTRACE
+        bt_state = backtrace_create_state(NULL, 1, bt_error, nullptr);
+#endif
+
+        signal(SIGSEGV, crash_handler);
+        signal(SIGABRT, crash_handler);
+        signal(SIGFPE, crash_handler);
+        signal(SIGILL, crash_handler);
+#ifndef _WIN32
+        signal(SIGBUS, crash_handler);
+#endif
+
 #endif
     }
 } // namespace satdump

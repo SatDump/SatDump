@@ -81,7 +81,7 @@ namespace satdump
             handlers_mtx.unlock();
             for (std::pair<std::string, std::function<void(void *)>> h : lcopy) // Iterate through all registered functions
                 if (evt_name == h.first)                                        // Check struct type is the same
-                    h.second((void *)&evt);                                     // Fire handler up
+                    h.second((void *)evt);                                     // Fire handler up
         }
     };
 } // namespace satdump

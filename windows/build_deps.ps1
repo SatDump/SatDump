@@ -309,6 +309,15 @@ if(!$is_arm) {
     cd ../..
 }
 
+# cpptrace
+git clone https://github.com/jeremy-rifkin/cpptrace --depth 1 -b v1.0.4
+cd cpptrace
+mkdir build
+cd build
+cmake $cmake_params .. -DBUILD_SHARED_LIBS=ON 
+ninja install
+cd ../..
+
 <#
 # libarmadillo
 git clone https://gitlab.com/armadillo-lib/armadillo-code armadillo --depth 1 -b 15.6.x
