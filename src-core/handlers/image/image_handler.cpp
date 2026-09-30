@@ -411,6 +411,10 @@ namespace satdump
 
                     image_view.mouseCallback = [this](float x, float y)
                     {
+                        // Skip while processing!
+                        if (is_processing)
+                            return;
+
                         auto &img = getImage();
                         ImGui::BeginTooltip();
 
