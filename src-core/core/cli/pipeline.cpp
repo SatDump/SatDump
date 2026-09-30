@@ -32,9 +32,9 @@ namespace satdump
                 auto opt = std::make_shared<std::string>();
                 CLI::Option *f;
                 if (ep.value().contains("description"))
-                    f = sub_p->add_flag("--" + ep.key(), *opt, (const std::string)ep.value()["description"].get<std::string>());
+                    f = sub_p->add_option("--" + ep.key(), *opt, (const std::string)ep.value()["description"].get<std::string>());
                 else
-                    f = sub_p->add_flag("--" + ep.key(), *opt, "");
+                    f = sub_p->add_option("--" + ep.key(), *opt, "");
                 if (ep.value().contains("value"))
                 {
                     if (ep.value()["value"].is_string())
