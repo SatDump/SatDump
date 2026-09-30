@@ -240,7 +240,7 @@ namespace satdump
                 ImGui::SetNextWindowSize({750 * ui_scale, 0});
             }
 
-            if (ImGui::BeginPopupModal(_("Settings"), &settings_en, ImGuiWindowFlags_AlwaysVerticalScrollbar))
+            if (ImGui::BeginPopupModal(_("Settings"), &settings_en))
             {
                 settings::render();
                 ImGui::EndPopup();

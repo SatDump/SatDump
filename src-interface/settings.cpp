@@ -3,6 +3,7 @@
 #include "core/plugin.h"
 #include "i18n.h"
 #include "imgui/imgui.h"
+#include <cstddef>
 #include <string>
 
 #include "core/config.h"
@@ -112,208 +113,214 @@ namespace satdump
 
         void render()
         {
-            ImGui::SeparatorText(_("Core Settings"));
-            if (ImGui::CollapsingHeader(_("User Interface")))
+            if (ImGui::BeginChild("SettingsChild", {ImGui::GetContentRegionAvail().x, 600 * ui_scale}, 0, ImGuiWindowFlags_AlwaysVerticalScrollbar))
             {
-                if (ImGui::BeginTable("##satdumpuisettings", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+                ImGui::SeparatorText(_("Core Settings"));
+                if (ImGui::CollapsingHeader(_("User Interface")))
                 {
-                    // Theme Selection
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text(_("Theme"));
-                    if (ImGui::IsItemHovered())
-                        ImGui::SetTooltip(_("Set the style and color of SatDump"));
-                    ImGui::TableSetColumnIndex(1);
-                    ImGui::Combo("##themeselection", &selected_theme, themes_str.c_str());
-
-                    // Standard user interface settings
-                    for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_user_interface)
-                        p.second.draw();
-
-                    ImGui::EndTable();
-                }
-            }
-
-            if (ImGui::CollapsingHeader(_("General SatDump")))
-            {
-                if (ImGui::BeginTable("##satdumpgeneralsettings", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
-                {
-#if ENABLE_I18N
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text(_("Language"));
-                    ImGui::TableSetColumnIndex(1);
+                    if (ImGui::BeginTable("##satdumpuisettings", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
                     {
-                        std::vector<std::string> options = {"fr", "en", "it", "pt-br", "sk", "zh-cn"};
+                        // Theme Selection
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text(_("Theme"));
+                        if (ImGui::IsItemHovered())
+                            ImGui::SetTooltip(_("Set the style and color of SatDump"));
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::Combo("##themeselection", &selected_theme, themes_str.c_str());
 
-                        std::string lang = current_language == "" ? _("Auto") : current_language;
-                        if (ImGui::BeginCombo("##languageCombo", lang.c_str()))
-                        {
-                            if (ImGui::Selectable(_("Auto"), current_language == ""))
-                            {
-                                logger->info("Setting language to Auto");
-                                initLanguage();
-                                db->set_user("language", "");
-                            }
+                        // Standard user interface settings
+                        for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_user_interface)
+                            p.second.draw();
 
-                            for (auto &opt : options)
-                            {
-                                if (ImGui::Selectable(opt.c_str(), current_language == opt))
-                                {
-                                    logger->info("Setting language to : " + opt);
-                                    initLanguage(opt);
-                                    db->set_user("language", opt);
-                                }
-                            }
-
-                            ImGui::EndCombo();
-                        }
+                        ImGui::EndTable();
                     }
+                }
+
+                if (ImGui::CollapsingHeader(_("General SatDump")))
+                {
+                    if (ImGui::BeginTable("##satdumpgeneralsettings", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+                    {
+#if ENABLE_I18N
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text(_("Language"));
+                        ImGui::TableSetColumnIndex(1);
+                        {
+                            std::vector<std::string> options = {"fr", "en", "it", "pt-br", "sk", "zh-cn"};
+
+                            std::string lang = current_language == "" ? _("Auto") : current_language;
+                            if (ImGui::BeginCombo("##languageCombo", lang.c_str()))
+                            {
+                                if (ImGui::Selectable(_("Auto"), current_language == ""))
+                                {
+                                    logger->info("Setting language to Auto");
+                                    initLanguage();
+                                    db->set_user("language", "");
+                                }
+
+                                for (auto &opt : options)
+                                {
+                                    if (ImGui::Selectable(opt.c_str(), current_language == opt))
+                                    {
+                                        logger->info("Setting language to : " + opt);
+                                        initLanguage(opt);
+                                        db->set_user("language", opt);
+                                    }
+                                }
+
+                                ImGui::EndCombo();
+                            }
+                        }
 #endif
 
 #ifdef USE_OPENCL
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text(_("OpenCL Device"));
-                    if (ImGui::IsItemHovered())
-                        ImGui::SetTooltip(_("OpenCL Device SatDump will use for accelerated computing where it can help, eg, for some image processing tasks such as projections."));
-                    ImGui::TableSetColumnIndex(1);
-                    ImGui::Combo("##opencldeviceselection", &opencl_devices_id, opencl_devices_str.c_str());
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text(_("OpenCL Device"));
+                        if (ImGui::IsItemHovered())
+                            ImGui::SetTooltip(_("OpenCL Device SatDump will use for accelerated computing where it can help, eg, for some image processing tasks such as projections."));
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::Combo("##opencldeviceselection", &opencl_devices_id, opencl_devices_str.c_str());
 #endif
 
-                    for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_general)
-                        p.second.draw();
+                        for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_general)
+                            p.second.draw();
 
-                    // Keplers (used to be TLEs)
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text(_("Update Keplers Now"));
-                    ImGui::TableSetColumnIndex(1);
-                    bool disable_update_button = tles_are_update;
-                    if (disable_update_button)
-                        style::beginDisabled();
-                    if (ImGui::Button(_("Update###updateKeplers")))
-                    {
-                        ui_thread_pool.push(
-                            [](int)
-                            {
-                                tles_are_update = true;
-                                db_keplers->updateKeplerDatabase();
-                                tles_are_update = false;
-                            });
+                        // Keplers (used to be TLEs)
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text(_("Update Keplers Now"));
+                        ImGui::TableSetColumnIndex(1);
+                        bool disable_update_button = tles_are_update;
+                        if (disable_update_button)
+                            style::beginDisabled();
+                        if (ImGui::Button(_("Update###updateKeplers")))
+                        {
+                            ui_thread_pool.push(
+                                [](int)
+                                {
+                                    tles_are_update = true;
+                                    db_keplers->updateKeplerDatabase();
+                                    tles_are_update = false;
+                                });
+                        }
+                        if (disable_update_button)
+                            style::endDisabled();
+
+                        time_t last_update = std::stod(db->get_meta("kepler_last_updated", "0"));
+                        if (last_update == 0)
+                            strcpy(tle_last_update, _("Never"));
+                        else
+                        {
+                            struct tm ts;
+                            ts = *gmtime(&last_update);
+                            strftime(tle_last_update, sizeof(tle_last_update), "%Y-%m-%d %H:%M:%S UTC", &ts);
+                        }
+                        ImGui::SameLine(0.0f, 10.0f * ui_scale);
+                        ImGui::TextDisabled(_("Last updated: %s"), tle_last_update);
+
+                        // IERS
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text(_("Update IERS Bulletin Now"));
+                        ImGui::TableSetColumnIndex(1);
+                        disable_update_button = iers_are_update;
+                        if (disable_update_button)
+                            style::beginDisabled();
+                        if (ImGui::Button(_("Update###updateIERS")))
+                        {
+                            ui_thread_pool.push(
+                                [](int)
+                                {
+                                    iers_are_update = true;
+                                    db_iers->updateIERS();
+                                    iers_are_update = false;
+                                });
+                        }
+                        if (disable_update_button)
+                            style::endDisabled();
+
+                        last_update = std::stod(db->get_meta("iers_last_updated", "0"));
+                        if (last_update == 0)
+                            strcpy(iers_last_update, _("Never"));
+                        else
+                        {
+                            struct tm ts;
+                            ts = *gmtime(&last_update);
+                            strftime(iers_last_update, sizeof(iers_last_update), "%Y-%m-%d %H:%M:%S UTC", &ts);
+                        }
+                        ImGui::SameLine(0.0f, 10.0f * ui_scale);
+                        ImGui::TextDisabled(_("Last updated: %s"), iers_last_update);
+
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text(_("Clear Tile Map (OSM) Cache"));
+                        if (ImGui::IsItemHovered())
+                            ImGui::SetTooltip(_("Delete all cached tiles (OSM, and other sources)."));
+                        ImGui::TableSetColumnIndex(1);
+                        if (ImGui::Button(_("Clear Cache###deleteosmtiles")))
+                            if (std::filesystem::exists(satdump::user_path + "/osm_tiles/"))
+                                std::filesystem::remove_all(satdump::user_path + "/osm_tiles/");
+
+                        ImGui::EndTable();
                     }
-                    if (disable_update_button)
-                        style::endDisabled();
-
-                    time_t last_update = std::stod(db->get_meta("kepler_last_updated", "0"));
-                    if (last_update == 0)
-                        strcpy(tle_last_update, _("Never"));
-                    else
-                    {
-                        struct tm ts;
-                        ts = *gmtime(&last_update);
-                        strftime(tle_last_update, sizeof(tle_last_update), "%Y-%m-%d %H:%M:%S UTC", &ts);
-                    }
-                    ImGui::SameLine(0.0f, 10.0f * ui_scale);
-                    ImGui::TextDisabled(_("Last updated: %s"), tle_last_update);
-
-                    // IERS
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text(_("Update IERS Bulletin Now"));
-                    ImGui::TableSetColumnIndex(1);
-                    disable_update_button = iers_are_update;
-                    if (disable_update_button)
-                        style::beginDisabled();
-                    if (ImGui::Button(_("Update###updateIERS")))
-                    {
-                        ui_thread_pool.push(
-                            [](int)
-                            {
-                                iers_are_update = true;
-                                db_iers->updateIERS();
-                                iers_are_update = false;
-                            });
-                    }
-                    if (disable_update_button)
-                        style::endDisabled();
-
-                    last_update = std::stod(db->get_meta("iers_last_updated", "0"));
-                    if (last_update == 0)
-                        strcpy(iers_last_update, _("Never"));
-                    else
-                    {
-                        struct tm ts;
-                        ts = *gmtime(&last_update);
-                        strftime(iers_last_update, sizeof(iers_last_update), "%Y-%m-%d %H:%M:%S UTC", &ts);
-                    }
-                    ImGui::SameLine(0.0f, 10.0f * ui_scale);
-                    ImGui::TextDisabled(_("Last updated: %s"), iers_last_update);
-
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text(_("Clear Tile Map (OSM) Cache"));
-                    if (ImGui::IsItemHovered())
-                        ImGui::SetTooltip(_("Delete all cached tiles (OSM, and other sources)."));
-                    ImGui::TableSetColumnIndex(1);
-                    if (ImGui::Button(_("Clear Cache###deleteosmtiles")))
-                        if (std::filesystem::exists(satdump::user_path + "/osm_tiles/"))
-                            std::filesystem::remove_all(satdump::user_path + "/osm_tiles/");
-
-                    ImGui::EndTable();
                 }
+
+                if (ImGui::CollapsingHeader(_("File Input/Output")))
+                {
+                    if (ImGui::BeginTable("##satdumpoutput_directories", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+                    {
+                        for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_output_directories)
+                            p.second.draw();
+                        ImGui::EndTable();
+                    }
+                }
+
+                if (satdump_cfg.plugin_config_handlers.size() > 0)
+                {
+                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10 * ui_scale);
+                    ImGui::SeparatorText(_("Plugin Settings"));
+                    for (auto &plugin_hdl : satdump_cfg.plugin_config_handlers)
+                    {
+                        if (ImGui::CollapsingHeader(plugin_hdl.name.c_str()))
+                        {
+                            plugin_hdl.render();
+                        }
+                    }
+                }
+
+                if (advanced_mode)
+                {
+                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10 * ui_scale);
+                    ImGui::SeparatorText(_("Advanced Settings"));
+                    if (ImGui::CollapsingHeader(_("TLE Settings")))
+                    {
+                        widgets::JSONTreeEditor(satdump::satdump_cfg.main_cfg["tle_settings"], "tle_settings", false);
+                        if (ImGui::Button(_("Reset##tle_settings")))
+                            satdump::satdump_cfg.main_cfg["tle_settings"] = satdump::satdump_cfg.default_cfg["tle_settings"];
+                    }
+                    if (ImGui::CollapsingHeader(_("Advanced Settings")))
+                    {
+                        widgets::JSONTreeEditor(satdump::satdump_cfg.main_cfg["advanced_settings"], "advanced_settings");
+                        ImGui::SameLine();
+                        if (ImGui::Button(_("Reset##advanced_settings")))
+                            satdump::satdump_cfg.main_cfg["advanced_settings"] = satdump::satdump_cfg.default_cfg["advanced_settings"];
+                    }
+                    if (ImGui::CollapsingHeader(_("Default Pipeline Configs")))
+                    {
+                        widgets::JSONTreeEditor(pipeline::pipelines_json, "pipelines");
+                        ImGui::SameLine();
+                        if (ImGui::Button(_("Reset##pipelines")))
+                            pipeline::pipelines_json = pipeline::pipelines_system_json;
+                    }
+                }
+
+                ImGui::EndChild();
             }
 
-            if (ImGui::CollapsingHeader(_("File Input/Output")))
-            {
-                if (ImGui::BeginTable("##satdumpoutput_directories", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
-                {
-                    for (std::pair<std::string, satdump::params::EditableParameter> &p : settings_output_directories)
-                        p.second.draw();
-                    ImGui::EndTable();
-                }
-            }
+            ImGui::Separator();
 
-            if (satdump_cfg.plugin_config_handlers.size() > 0)
-            {
-                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10 * ui_scale);
-                ImGui::SeparatorText(_("Plugin Settings"));
-                for (auto &plugin_hdl : satdump_cfg.plugin_config_handlers)
-                {
-                    if (ImGui::CollapsingHeader(plugin_hdl.name.c_str()))
-                    {
-                        plugin_hdl.render();
-                    }
-                }
-            }
-
-            if (advanced_mode)
-            {
-                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10 * ui_scale);
-                ImGui::SeparatorText(_("Advanced Settings"));
-                if (ImGui::CollapsingHeader(_("TLE Settings")))
-                {
-                    widgets::JSONTreeEditor(satdump::satdump_cfg.main_cfg["tle_settings"], "tle_settings", false);
-                    if (ImGui::Button(_("Reset##tle_settings")))
-                        satdump::satdump_cfg.main_cfg["tle_settings"] = satdump::satdump_cfg.default_cfg["tle_settings"];
-                }
-                if (ImGui::CollapsingHeader(_("Advanced Settings")))
-                {
-                    widgets::JSONTreeEditor(satdump::satdump_cfg.main_cfg["advanced_settings"], "advanced_settings");
-                    ImGui::SameLine();
-                    if (ImGui::Button(_("Reset##advanced_settings")))
-                        satdump::satdump_cfg.main_cfg["advanced_settings"] = satdump::satdump_cfg.default_cfg["advanced_settings"];
-                }
-                if (ImGui::CollapsingHeader(_("Default Pipeline Configs")))
-                {
-                    widgets::JSONTreeEditor(pipeline::pipelines_json, "pipelines");
-                    ImGui::SameLine();
-                    if (ImGui::Button(_("Reset##pipelines")))
-                        pipeline::pipelines_json = pipeline::pipelines_system_json;
-                }
-            }
-
-            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5 * ui_scale);
             if (ImGui::Button("Save"))
             {
 #ifdef USE_OPENCL
