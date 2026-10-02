@@ -16,7 +16,7 @@ namespace satdump
                     {{"out", std::is_same_v<T, complex_t> ? DSP_SAMPLE_TYPE_CF32 : DSP_SAMPLE_TYPE_F32}})
         {
             // Buffer
-            if (buffer == nullptr)
+            if (buffer != nullptr)
                 volk_free(buffer); // TODOREWORK
 #if MM_DO_BRANCH
             buffer = create_volk_buffer<T>(pfb.ntaps * 4);
@@ -53,7 +53,7 @@ namespace satdump
         template <typename T>
         MMClockRecoveryFastBlock<T>::~MMClockRecoveryFastBlock()
         {
-            if (buffer == nullptr)
+            if (buffer != nullptr)
                 volk_free(buffer);
         }
 
