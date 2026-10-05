@@ -164,6 +164,8 @@ namespace satdump
 
                     if (!has_10msps)
                         c["samplerate"]["list"].push_back(10e6);
+                    else
+                        c["samplerate"]["list"].push_back(6e6);
 
                     p["samplerate"] = dev_samplerates[0];
 

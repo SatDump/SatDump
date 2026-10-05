@@ -117,6 +117,8 @@ void AirspySource::open()
 
     if (!has_10msps)
         available_samplerates.push_back(10e6);
+    else
+        available_samplerates.push_back(6e6);
 
     samplerate_widget.set_list(available_samplerates, false);
 
@@ -158,9 +160,7 @@ void AirspySource::stop()
     is_started = false;
 }
 
-void AirspySource::close()
-{
-}
+void AirspySource::close() {}
 
 void AirspySource::set_frequency(uint64_t frequency)
 {
@@ -230,10 +230,7 @@ void AirspySource::set_samplerate(uint64_t samplerate)
         throw satdump_exception("Unsupported samplerate : " + std::to_string(samplerate) + "!");
 }
 
-uint64_t AirspySource::get_samplerate()
-{
-    return samplerate_widget.get_value();
-}
+uint64_t AirspySource::get_samplerate() { return samplerate_widget.get_value(); }
 
 std::vector<dsp::SourceDescriptor> AirspySource::getAvailableSources()
 {
