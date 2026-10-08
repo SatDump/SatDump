@@ -740,7 +740,7 @@ namespace COMP
 				m_Buffer = std::vector<int>(m_Size, 0);
 				for (unsigned int i = 0; i < m_H; i++)
 					m_Data[i] = &m_Buffer[i * m_W];
-				m_Tmp = std::vector<int>(m_W > m_H ? m_W : m_H, 0);
+				m_Tmp = std::vector<int>(m_W > m_H ? m_W : m_H+1, 0);
 			}
 		}
 		COMP_CATCHTHIS
