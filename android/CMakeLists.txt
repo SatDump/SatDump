@@ -113,7 +113,9 @@ target_link_libraries(airspyhf PRIVATE usb)
 
 # LibRTLSDR
 file(GLOB_RECURSE librtlsdr_cpps deps/librtlsdr/*.c)
-add_library(rtlsdr STATIC ${librtlsdr_cpps})
+# Compile the pinned implementation with an Android path-based open entry point.
+list(REMOVE_ITEM librtlsdr_cpps "${CMAKE_CURRENT_SOURCE_DIR}/deps/librtlsdr/librtlsdr.c")
+add_library(rtlsdr STATIC ${librtlsdr_cpps} rtlsdr_path.c)
 target_include_directories(rtlsdr PRIVATE deps/librtlsdr/ deps/libusb)
 target_link_libraries(rtlsdr PRIVATE usb)
 

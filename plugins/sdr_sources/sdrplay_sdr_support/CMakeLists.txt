@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.12)
 project(sdrplay_sdr_support)
 
+# The proprietary SDRplay runtime is not available on Android.
+if(ANDROID)
+    return()
+endif()
+
 if(APPLE)
     include_directories("/usr/local/include")
     set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /usr/local/lib)

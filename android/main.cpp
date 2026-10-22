@@ -13,6 +13,7 @@ EGLDisplay g_EglDisplay = EGL_NO_DISPLAY;
 EGLSurface g_EglSurface = EGL_NO_SURFACE;
 static EGLContext g_EglContext = EGL_NO_CONTEXT;
 static bool g_Initialized = false;
+static bool g_Resumed = false;
 static char g_LogTag[] = "SatDump";
 extern struct android_app *g_App;
 extern std::string android_plugins_dir;
@@ -176,11 +177,19 @@ static void handleAppCmd(struct android_app *app, int32_t appCmd)
     switch (appCmd)
     {
     case APP_CMD_INIT_WINDOW:
-        init(app);
+        if (app->window != nullptr)
+            init(app);
         break;
     case APP_CMD_TERM_WINDOW:
-    case APP_CMD_PAUSE:
         shutdown();
+        break;
+    case APP_CMD_RESUME:
+        g_Resumed = true;
+        break;
+    case APP_CMD_PAUSE:
+        // USB permission dialogs pause the Activity without destroying its window.
+        // Preserve the EGL context and resume rendering when the dialog closes.
+        g_Resumed = false;
         break;
     case APP_CMD_SAVE_STATE:
         // satdump::recorder_app->save_settings(); // TODOREWORK!!!!
@@ -278,8 +287,8 @@ void android_main(struct android_app *app)
         int out_events;
         struct android_poll_source *out_data;
 
-        // Poll all events. If the app is not visible, this loop blocks until g_Initialized == true.
-        while (ALooper_pollAll(g_Initialized ? 0 : -1, NULL, &out_events, (void **)&out_data) >= 0)
+        // Block while paused or without a window, but keep processing lifecycle events.
+        while (ALooper_pollAll(g_Initialized && g_Resumed ? 0 : -1, NULL, &out_events, (void **)&out_data) >= 0)
         {
             // Process one event
             if (out_data != NULL)
@@ -290,7 +299,7 @@ void android_main(struct android_app *app)
             {
                 // shutdown() should have been called already while processing the
                 // app command APP_CMD_TERM_WINDOW. But we play save here
-                if (!g_Initialized)
+                if (g_Initialized)
                     shutdown();
 
                 return;
@@ -298,7 +307,8 @@ void android_main(struct android_app *app)
         }
 
         // Initiate a new frame
-        tick();
+        if (g_Initialized && g_Resumed)
+            tick();
     }
 
     satdump::exitSatDump();

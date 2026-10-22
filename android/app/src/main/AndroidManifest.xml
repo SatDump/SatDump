@@ -13,10 +13,14 @@
             android:name="com.altillimity.satdump.MainActivity"
             android:icon="@mipmap/ic_launcher_round"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:launchMode="singleTask"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:exported="true">
             <meta-data android:name="android.app.lib_name"
                 android:value="android_imgui" />
+
+            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:resource="@xml/device_filter" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -29,9 +33,5 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.hardware.usb.host" />
-    <uses-permission android:name="android.permission.USB_PERMISSION" />
-    <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
-        android:resource="@xml/device_filter" />
-    <uses-permission android:name="libusb.android.USB_PERMISSION" />
+    <uses-feature android:name="android.hardware.usb.host" android:required="true" />
 </manifest>

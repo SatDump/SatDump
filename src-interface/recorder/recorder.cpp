@@ -224,6 +224,20 @@ namespace satdump
 
     RecorderApplication::~RecorderApplication()
     {
+        // Stop scheduler callbacks before destroying the resources they use.
+        if (tracking_widget != nullptr)
+        {
+            delete tracking_widget;
+            tracking_widget = nullptr;
+        }
+#ifdef __ANDROID__
+        if (start_future.valid())
+        {
+            start_future.wait();
+            try { start_future.get(); } catch (const std::exception &) {}
+            source_ptr->stop();
+        }
+#endif
         save_settings();
 
     retry_vfo:
@@ -250,7 +264,17 @@ namespace satdump
 
     void RecorderApplication::drawMenu()
     {
+#ifdef __ANDROID__
+        poll_tracking();
+        if (is_started && source_ptr->stream_has_ended())
+        {
+            stop();
+            sdr_error.set_message(style::theme.red, "RTL-SDR reception ended: USB disconnected or read failed. Reconnect and refresh the source list.");
+        }
+        bool assume_started = is_started || start_pending;
+#else
         bool assume_started = is_started;
+#endif
         if (ImGui::CollapsingHeader(_("Source"), tracking_started_cli ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_DefaultOpen))
         {
             ImGui::Spacing();
@@ -328,6 +352,9 @@ namespace satdump
             if (assume_started && !disableLO)
                 style::endDisabled();
 
+#ifdef __ANDROID__
+            if (start_pending) style::beginDisabled();
+#endif
             bool pushed_color_xconv = xconverter_frequency != 0;
             if (pushed_color_xconv)
                 ImGui::PushStyleColor(ImGuiCol_Text, style::theme.green.Value);
@@ -337,6 +364,9 @@ namespace satdump
 
             if (pushed_color_xconv)
                 ImGui::PopStyleColor();
+#ifdef __ANDROID__
+            if (start_pending) style::endDisabled();
+#endif
 
             if (assume_started && disableLO)
                 style::endDisabled();
@@ -345,12 +375,31 @@ namespace satdump
             ImGui::Separator();
             ImGui::Spacing();
 
+#ifdef __ANDROID__
+            if (start_pending) style::beginDisabled();
+#endif
             if (widgets::FrequencyInput("Hz##mainfreq", &frequency_hz))
                 set_frequency(frequency_hz);
 
+#ifdef __ANDROID__
+            if (start_pending) style::endDisabled();
+#endif
             ImGui::Spacing();
+#ifdef __ANDROID__
+            // Native open updates gains and source state on the worker thread.
+            if (!start_future.valid()) source_ptr->drawControlUI();
+#else
             source_ptr->drawControlUI();
+#endif
 
+#ifdef __ANDROID__
+            if (start_pending)
+            {
+                ImGui::TextUnformatted(start_future.valid() ? "Opening SDR device..." : "Waiting for USB permission...");
+                if (!start_future.valid() && ImGui::Button(_("Cancel"))) stop();
+            }
+            else
+#endif
             if (!assume_started)
             {
                 if (ImGui::Button(_("Start")))

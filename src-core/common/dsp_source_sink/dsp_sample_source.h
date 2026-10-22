@@ -38,6 +38,13 @@ namespace dsp
         }
 
     public:
+#ifdef __ANDROID__
+        // Android USB permission is asynchronous. Recorder polls without blocking rendering.
+        virtual bool needs_async_start() { return false; }
+        virtual bool ready_to_start() { return true; }
+        virtual void cancel_prepare_start() {}
+        virtual bool stream_has_ended() { return false; }
+#endif
         virtual void open() = 0;                                                              // Open the device, source, etc, but don't start the stream yet
         virtual void start() { output_stream = std::make_shared<dsp::stream<complex_t>>(); }; // Start streaming samples
         virtual void stop() = 0;                                                              // Stop streaming samples

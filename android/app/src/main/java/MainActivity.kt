@@ -1,5 +1,8 @@
 package com.altillimity.satdump
 
+import android.hardware.usb.UsbDevice
+import android.hardware.usb.UsbManager
+import android.os.Build
 import android.app.NativeActivity
 import android.os.Bundle
 import android.content.Context
@@ -61,19 +64,74 @@ class MainActivity : NativeActivity(), TextWatcher {
         }
     }
 
-    // // Adapted from Ryzerth's implementation, a lot cleaner than my old Java crap!
-    private var ACTION_USB_PERMISSION = "libusb.android.USB_PERMISSION";
+    private val ACTION_USB_PERMISSION = "org.satdump.SatDump.USB_PERMISSION"
+    private val usbLock = Any()
+    // 0 = waiting, 1 = granted, -1 = denied, -2 = detached, -3 = request failed.
+    private val usbResults = mutableMapOf<String, Int>()
+    private val usbManager: UsbManager
+        get() = getSystemService(Context.USB_SERVICE) as UsbManager
 
-    private var usbReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if (ACTION_USB_PERMISSION == intent.action) {
-                synchronized(this) {
-                    var _this = context as MainActivity;
-                    Log.w(TAG, "Got Intent Reply USB!!!! Reset Activity (libusb bug?)");
-                    _this.recreate();
+    // Called from native code. Only the dialog request is dispatched to the UI thread.
+    fun rtlUsbPermission(path: String, request: Boolean): Int = synchronized(usbLock) {
+        val device = usbManager.deviceList[path] ?: return@synchronized -2
+        if (usbManager.hasPermission(device)) return@synchronized 1
+        if (!request) return@synchronized usbResults[path] ?: -3
+        if (usbResults[path] == 0) return@synchronized 0
+        usbResults[path] = 0
+        runOnUiThread {
+            synchronized(usbLock) {
+                val current = usbManager.deviceList[path]
+                if (current == null) {
+                    usbResults[path] = -2
+                } else if (usbManager.hasPermission(current)) {
+                    usbResults[path] = 1
+                } else {
+                    try {
+                        // Mutable so UsbManager can supply EXTRA_DEVICE/PERMISSION_GRANTED.
+                        // Package-scoping prevents other apps from receiving this callback.
+                        val flags = PendingIntent.FLAG_UPDATE_CURRENT or
+                            if (Build.VERSION.SDK_INT >= 31) PendingIntent.FLAG_MUTABLE else 0
+                        val reply = Intent(ACTION_USB_PERMISSION).setPackage(packageName)
+                            .setData(Uri.parse("satdump-usb:" + Uri.encode(path)))
+                        val pending = PendingIntent.getBroadcast(this, 0, reply, flags)
+                        usbManager.requestPermission(current, pending)
+                    } catch (e: RuntimeException) {
+                        usbResults[path] = -3
+                        Log.e(TAG, "Could not request USB permission for RTL-SDR", e)
+                    }
                 }
             }
         }
+        0
+    }
+
+    private val usbReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val device = intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE) ?: return
+            synchronized(usbLock) {
+                when (intent.action) {
+                    ACTION_USB_PERMISSION -> {
+                        if (usbResults[device.deviceName] != 0) return
+                        val granted = intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)
+                            && usbManager.hasPermission(device)
+                        usbResults[device.deviceName] = if (granted) 1 else -1
+                        if (granted) Log.i(TAG, "USB permission for RTL-SDR granted")
+                        else Log.w(TAG, "USB permission for RTL-SDR was denied")
+                    }
+                    UsbManager.ACTION_USB_DEVICE_DETACHED -> {
+                        usbResults[device.deviceName] = -2
+                        Log.i(TAG, "USB device detached: " + device.deviceName)
+                    }
+                    UsbManager.ACTION_USB_DEVICE_ATTACHED -> usbResults.remove(device.deviceName)
+                    else -> Unit
+                }
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        unregisterReceiver(usbReceiver)
+        super.onDestroy()
     }
 
     public var mLayout : ViewGroup? = null;
@@ -88,17 +146,11 @@ class MainActivity : NativeActivity(), TextWatcher {
         checkAndAsk(Manifest.permission.READ_EXTERNAL_STORAGE);
         checkAndAsk(Manifest.permission.INTERNET);
 
-        // Register events
-        //        usbManager = getSystemService(Context.USB_SERVICE) as UsbManager;
-        //        val permissionIntent = PendingIntent.getBroadcast(this, 0, Intent(ACTION_USB_PERMISSION), 0)
         val filter = IntentFilter(ACTION_USB_PERMISSION)
-        registerReceiver(usbReceiver, filter)
-
-        // Get permission for all USB devices
-        // val devList = usbManager!!.getDeviceList();
-        // for ((name, dev) in devList) {
-        //     usbManager!!.requestPermission(dev, permissionIntent);
-        // }
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED)
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
+        if (Build.VERSION.SDK_INT >= 33) registerReceiver(usbReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        else registerReceiver(usbReceiver, filter)
 
         // Hide system bars
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);

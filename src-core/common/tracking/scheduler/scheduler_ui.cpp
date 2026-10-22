@@ -166,7 +166,7 @@ namespace satdump
                         double cpass_xs = ((cpass.aos_time - curr_time) / (12.0 * 3600.0)) * d_pplot_size;
                         double cpass_xe = ((cpass.los_time - curr_time) / (12.0 * 3600.0)) * d_pplot_size;
 
-                        std::string name = "NORAD " + norad;
+                        std::string name = "NORAD " + std::to_string(norad);
 #if 0
                         std::optional<TLE> this_tle = db_keplers->get_from_norad(norad);
                         if (this_tle.has_value())

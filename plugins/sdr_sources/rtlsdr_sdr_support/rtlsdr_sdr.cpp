@@ -1,4 +1,5 @@
 #include "rtlsdr_sdr.h"
+#include "rtlsdr_android.h"
 
 void RtlSdrSource::_rx_callback(unsigned char *buf, uint32_t len, void *ctx)
 {
@@ -165,64 +166,127 @@ void RtlSdrSource::open()
     samplerate_widget.set_list(available_samplerates, true);
 }
 
+#ifdef __ANDROID__
+bool RtlSdrSource::ready_to_start()
+{
+    try
+    {
+        bool ready = rtl_android::permission(d_sdr_id, !permission_requested);
+        permission_requested = !ready;
+        return ready;
+    }
+    catch (...)
+    {
+        permission_requested = false;
+        throw;
+    }
+}
+#endif
+
 void RtlSdrSource::start()
 {
-    DSPSampleSource::start();
-
+    if (is_started) return;
+#ifdef __ANDROID__
+    if (!rtl_android::permission(d_sdr_id, false))
+        throw satdump_exception("Waiting for USB permission for RTL-SDR");
+    int rc = rtlsdr_open_path(&rtlsdr_dev_obj, d_sdr_id.c_str());
+#else
     int index = rtlsdr_get_index_by_serial(d_sdr_id.c_str());
-    if (index != -1 && rtlsdr_open(&rtlsdr_dev_obj, index) != 0)
-        throw satdump_exception("Could not open RTL-SDR device!");
-
-    // Set available gains
-    int gains[256];
-    int num_gains = rtlsdr_get_tuner_gains(rtlsdr_dev_obj, gains);
-    if (num_gains > 0)
+    if (index < 0)
+        throw satdump_exception("RTL-SDR dongle was not found (lookup code " + std::to_string(index) + ")");
+    int rc = rtlsdr_open(&rtlsdr_dev_obj, index);
+#endif
+    if (rc != 0)
     {
-        available_gains.clear();
-        for (int i = 0; i < num_gains; i++)
-            available_gains.push_back(gains[i]);
-        std::sort(available_gains.begin(), available_gains.end());
+        rtlsdr_dev_obj = nullptr;
+        std::string reason = rc == -3 ? "USB permission unavailable" : rc == -6 ? "USB device is busy" : "USB open failed";
+        throw satdump_exception("RTL-SDR: " + reason + " (rtlsdr_open code " + std::to_string(rc) + ")");
     }
+    try
+    {
+        DSPSampleSource::start();
 
-    uint64_t current_samplerate = samplerate_widget.get_value();
+        // Set available gains
+        int gains[256];
+        int num_gains = rtlsdr_get_tuner_gains(rtlsdr_dev_obj, gains);
+        if (num_gains > 0)
+        {
+            available_gains.clear();
+            for (int i = 0; i < num_gains; i++)
+                available_gains.push_back(gains[i]);
+            std::sort(available_gains.begin(), available_gains.end());
+        }
 
-    logger->debug("Set RTL-SDR samplerate to " + std::to_string(current_samplerate));
-    rtlsdr_set_sample_rate(rtlsdr_dev_obj, current_samplerate);
+        uint64_t current_samplerate = samplerate_widget.get_value();
 
-    is_started = true;
-    changed_agc = true;
+        logger->debug("Set RTL-SDR samplerate to " + std::to_string(current_samplerate));
+        rc = rtlsdr_set_sample_rate(rtlsdr_dev_obj, current_samplerate);
+        if (rc != 0)
+        {
+            rtlsdr_close(rtlsdr_dev_obj);
+            rtlsdr_dev_obj = nullptr;
+            throw satdump_exception("RTL-SDR samplerate configuration failed (code " + std::to_string(rc) + ")");
+        }
 
-    set_frequency(d_frequency);
+        is_started = true;
+        changed_agc = true;
 
-    set_bias();
-    set_gains();
-    set_ppm();
+        set_frequency(d_frequency);
 
-    rtlsdr_reset_buffer(rtlsdr_dev_obj);
-    display_gain = (float)gain / 10.0f;
-    thread_should_run = true;
-    work_thread = std::thread(&RtlSdrSource::mainThread, this);
+        set_bias();
+        set_gains();
+        set_ppm();
+
+        rc = rtlsdr_reset_buffer(rtlsdr_dev_obj);
+        if (rc != 0)
+        {
+            stop();
+            throw satdump_exception("RTL-SDR USB buffer reset failed (code " + std::to_string(rc) + ")");
+        }
+        display_gain = (float)gain / 10.0f;
+        thread_should_run = true;
+        thread_exited = false;
+        try { work_thread = std::thread(&RtlSdrSource::mainThread, this); }
+        catch (...) { thread_exited = true; stop(); throw; }
+    }
+    catch (...)
+    {
+        if (is_started) stop();
+        else if (rtlsdr_dev_obj)
+        {
+            rtlsdr_close(rtlsdr_dev_obj);
+            rtlsdr_dev_obj = nullptr;
+        }
+        throw;
+    }
 }
 
 void RtlSdrSource::stop()
 {
     if (is_started)
     {
-        rtlsdr_cancel_async(rtlsdr_dev_obj);
         thread_should_run = false;
+        rtlsdr_cancel_async(rtlsdr_dev_obj);
         logger->info("Waiting for the thread...");
         if (is_started)
             output_stream->stopWriter();
+        // Cancellation can race the worker entering read_async. Repeat until it exits.
+        while (!thread_exited)
+        {
+            rtlsdr_cancel_async(rtlsdr_dev_obj);
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        }
         if (work_thread.joinable())
             work_thread.join();
         logger->info("Thread stopped");
         rtlsdr_set_bias_tee(rtlsdr_dev_obj, false);
         rtlsdr_close(rtlsdr_dev_obj);
+        rtlsdr_dev_obj = nullptr;
     }
     is_started = false;
 }
 
-void RtlSdrSource::close() { is_open = false; }
+void RtlSdrSource::close() { stop(); is_open = false; }
 
 void RtlSdrSource::set_frequency(uint64_t frequency)
 {
@@ -303,6 +367,10 @@ std::vector<dsp::SourceDescriptor> RtlSdrSource::getAvailableSources()
 {
     std::vector<dsp::SourceDescriptor> results;
 
+#ifdef __ANDROID__
+    for (const auto &device : rtl_android::devices())
+        results.push_back({"rtlsdr", device.name, device.path});
+#else
     int c = rtlsdr_get_device_count();
 
     for (int i = 0; i < c; i++)
@@ -315,5 +383,6 @@ std::vector<dsp::SourceDescriptor> RtlSdrSource::getAvailableSources()
             results.push_back({"rtlsdr", std::string(manufact) + " " + std::string(product) + " #" + std::string(serial), std::string(serial)});
     }
 
+#endif
     return results;
 }

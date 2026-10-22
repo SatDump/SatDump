@@ -1,6 +1,12 @@
 #pragma once
 
 #include "core/config.h"
+#ifdef __ANDROID__
+#include <future>
+#include <deque>
+#include <map>
+#include <mutex>
+#endif
 #include "handlers/handler.h"
 #include "i18n.h"
 #include "imgui/imgui.h"
@@ -84,6 +90,24 @@ namespace satdump
     protected:
         uint64_t frequency_hz = 100000000;
         bool show_waterfall = true;
+#ifdef __ANDROID__
+        bool start_pending = false;
+        bool start_cancelled = false;
+        std::future<void> start_future;
+        struct TrackingEvent
+        {
+            bool aos;
+            AutoTrackCfg cfg;
+            SatellitePass pass;
+            TrackedObject object;
+        };
+        std::mutex tracking_events_mutex;
+        std::deque<TrackingEvent> tracking_events;
+        std::map<int, TrackingEvent> pending_tracking;
+        void poll_tracking();
+#endif
+        void tracking_aos(AutoTrackCfg cfg, SatellitePass pass, TrackedObject object);
+        void tracking_los(AutoTrackCfg cfg, SatellitePass pass, TrackedObject object);
         bool is_started = false, is_recording = false, is_processing = false, is_stopping_processing = false;
 
         double xconverter_frequency = 0;

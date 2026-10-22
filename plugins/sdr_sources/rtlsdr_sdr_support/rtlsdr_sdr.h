@@ -9,13 +9,14 @@
 #include "logger.h"
 #include "common/rimgui.h"
 #include <thread>
+#include <atomic>
 #include "common/widgets/double_list.h"
 
 class RtlSdrSource : public dsp::DSPSampleSource
 {
 protected:
     bool is_open = false, is_started = false;
-    rtlsdr_dev *rtlsdr_dev_obj;
+    rtlsdr_dev *rtlsdr_dev_obj = nullptr;
     static void _rx_callback(unsigned char *buf, uint32_t len, void *ctx);
 
     satdump::widgets::DoubleList samplerate_widget;
@@ -37,7 +38,11 @@ protected:
 
     std::thread work_thread;
 
-    bool thread_should_run = false;
+    std::atomic<bool> thread_should_run{false};
+    std::atomic<bool> thread_exited{true};
+#ifdef __ANDROID__
+    bool permission_requested = false;
+#endif
 
     void mainThread()
     {
@@ -47,8 +52,17 @@ protected:
 
         while (thread_should_run)
         {
-            rtlsdr_read_async(rtlsdr_dev_obj, _rx_callback, &output_stream, 0, buffer_size);
+            int rc = rtlsdr_read_async(rtlsdr_dev_obj, _rx_callback, &output_stream, 0, buffer_size);
+            if (rc != 0 || thread_should_run)
+            {
+                if (thread_should_run)
+                    logger->error("RTL-SDR reception ended (USB disconnected or read result %d); stop and reconnect", rc);
+                thread_should_run = false;
+                output_stream->stopWriter();
+                break;
+            }
         }
+        thread_exited = true;
     }
 
 public:
@@ -66,6 +80,12 @@ public:
     nlohmann::json get_settings();
 
     void open();
+#ifdef __ANDROID__
+    bool needs_async_start() override { return true; }
+    bool ready_to_start() override;
+    void cancel_prepare_start() override { permission_requested = false; }
+    bool stream_has_ended() override { return is_started && thread_exited && !thread_should_run; }
+#endif
     void start();
     void stop();
     void close();

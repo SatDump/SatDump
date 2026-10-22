@@ -4,6 +4,7 @@
 #include "dsp/block.h"
 #include "dsp/device/dev.h"
 #include "logger.h"
+#include <atomic>
 
 #ifdef __ANDROID__
 #include "rtl-sdr.h"
@@ -34,23 +35,23 @@ namespace satdump
             bool tuner_agc_enabled = false;
 
         private:
-            bool is_open = false, is_started = false;
-            rtlsdr_dev *rtlsdr_dev_obj;
+            bool is_open = false;
+            std::atomic<bool> is_started{false};
+            // Serialize lifecycle calls; protect the handle independently so Stop
+            // can cancel read_async while the receive worker owns the stream.
+            std::mutex lifecycle_mutex;
+            std::recursive_mutex device_mutex;
+            std::atomic<uint64_t> stop_generation{0};
+            rtlsdr_dev *rtlsdr_dev_obj = nullptr;
             std::vector<int> available_gains = {0, 496};
 
             static void _rx_callback(unsigned char *buf, uint32_t len, void *ctx);
 
             std::thread work_thread;
-            bool thread_should_run = false;
-            void mainThread()
-            {
-                int buffer_size = 8192; // TODOREWORK calculate_buffer_size_from_samplerate(samplerate_widget.get_value());
-                // std::min<int>(roundf(samplerate_widget.get_value() / (250 * 512)) * 512, dsp::STREAM_BUFFER_SIZE);
-                logger->trace("RTL-SDR Buffer size %d", buffer_size);
-
-                while (thread_should_run)
-                    rtlsdr_read_async(rtlsdr_dev_obj, _rx_callback, this, 0, buffer_size);
-            }
+            std::atomic<bool> thread_should_run{false};
+            std::atomic<bool> thread_exited{true};
+            void mainThread();
+            void close_device(); // device_mutex must be held
 
         public:
             RTLSDRDevBlock();
@@ -66,7 +67,7 @@ namespace satdump
 
                 p["serial"]["type"] = "string";
                 p["serial"]["hide"] = devInfo.cfg.contains("serial");
-                p["serial"]["disable"] = is_started;
+                p["serial"]["disable"] = is_started.load();
 
                 add_param_list(p, "samplerate", "samplerate", {250000, 1024000, 1536000, 1792000, 1920000, 2048000, 2160000, 2400000, 2560000, 2880000, 3200000});
 
@@ -112,6 +113,7 @@ namespace satdump
 
             cfg_res_t set_cfg(std::string key, nlohmann::json v)
             {
+                std::lock_guard<std::recursive_mutex> lock(device_mutex);
                 cfg_res_t r = RES_OK;
                 if (key == "serial")
                     p_serial = v;

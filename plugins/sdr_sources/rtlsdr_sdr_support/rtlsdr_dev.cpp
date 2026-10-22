@@ -1,4 +1,5 @@
 #include "rtlsdr_dev.h"
+#include "rtlsdr_android.h"
 #include "common/dsp/complex.h"
 #include "nlohmann/json.hpp"
 #include <logger.h>
@@ -15,11 +16,12 @@ namespace satdump
 
         RTLSDRDevBlock::~RTLSDRDevBlock()
         {
-            stop(); // TODOREWORK (make sure to close device)
+            stop(true);
         }
 
         void RTLSDRDevBlock::set_frequency()
         {
+            std::lock_guard<std::recursive_mutex> lock(device_mutex);
             if (is_open)
             {
                 int attempts = 0;
@@ -48,6 +50,7 @@ namespace satdump
 
         void RTLSDRDevBlock::set_gains()
         {
+            std::lock_guard<std::recursive_mutex> lock(device_mutex);
             if (is_open)
             {
                 int attempts;
@@ -110,6 +113,7 @@ namespace satdump
 
         void RTLSDRDevBlock::set_bias()
         {
+            std::lock_guard<std::recursive_mutex> lock(device_mutex);
             if (is_open)
             {
                 int attempts = 0;
@@ -126,6 +130,7 @@ namespace satdump
 
         void RTLSDRDevBlock::set_ppm()
         {
+            std::lock_guard<std::recursive_mutex> lock(device_mutex);
             if (is_open && ppm_val != last_ppm)
             {
                 last_ppm = ppm_val;
@@ -149,53 +154,128 @@ namespace satdump
             set_bias();
         }
 
+        void RTLSDRDevBlock::close_device()
+        {
+            if (rtlsdr_dev_obj)
+            {
+                rtlsdr_set_bias_tee(rtlsdr_dev_obj, false);
+                rtlsdr_close(rtlsdr_dev_obj);
+                rtlsdr_dev_obj = nullptr;
+            }
+            is_open = false;
+            is_started = false;
+        }
+
+        void RTLSDRDevBlock::mainThread()
+        {
+            const int buffer_size = 8192;
+            logger->trace("RTL-SDR Buffer size %d", buffer_size);
+            if (thread_should_run)
+            {
+                int rc = rtlsdr_read_async(rtlsdr_dev_obj, _rx_callback, this, 0, buffer_size);
+                if (thread_should_run)
+                    logger->error("RTL-SDR reception ended (USB disconnected or read result %d)", rc);
+            }
+            thread_should_run = false;
+            {
+                std::lock_guard<std::recursive_mutex> lock(device_mutex);
+                close_device();
+            }
+            // A disconnected source must terminate its consumers as well. The
+            // worker is the sole producer of the terminator, including on Stop.
+            outputs[0].fifo->wait_enqueue(outputs[0].fifo->newBufferTerminator());
+            thread_exited = true;
+        }
+
         void RTLSDRDevBlock::start()
         {
-            int index = rtlsdr_get_index_by_serial(p_serial.c_str());
-            if (index != -1 && rtlsdr_open(&rtlsdr_dev_obj, index) != 0)
-                throw satdump_exception("Could not open RTL-SDR device!");
-            logger->info("Opened RTL-SDR device! Serial : " + p_serial);
-            is_open = true;
-
-            // Set available gains
-            int gains[256];
-            int num_gains = rtlsdr_get_tuner_gains(rtlsdr_dev_obj, gains);
-            if (num_gains > 0)
+            const auto generation = stop_generation.load();
+            std::lock_guard<std::mutex> lifecycle_lock(lifecycle_mutex);
+            if (is_started) return;
+            if (work_thread.joinable()) work_thread.join();
+            auto cancelled = [this, generation] { return stop_generation.load() != generation; };
+            auto check_cancelled = [&] {
+                if (cancelled()) throw satdump_exception("RTL-SDR start was cancelled");
+            };
+            check_cancelled();
+            std::string serial;
             {
-                available_gains.clear();
-                for (int i = 0; i < num_gains; i++)
-                    available_gains.push_back(gains[i]);
-                std::sort(available_gains.begin(), available_gains.end());
+                std::lock_guard<std::recursive_mutex> lock(device_mutex);
+                serial = p_serial;
             }
+#ifdef __ANDROID__
+            // Flowgraph::run calls Start on its worker. Stop invalidates this
+            // operation through permission, opening, configuration and startup.
+            rtl_android::wait_permission(serial, cancelled);
+#endif
+            std::lock_guard<std::recursive_mutex> device_lock(device_mutex);
+            check_cancelled();
+            try
+            {
+#ifdef __ANDROID__
+                int rc = rtlsdr_open_path(&rtlsdr_dev_obj, serial.c_str());
+#else
+                int index = rtlsdr_get_index_by_serial(serial.c_str());
+                if (index < 0)
+                    throw satdump_exception("RTL-SDR dongle was not found (lookup code " + std::to_string(index) + ")");
+                int rc = rtlsdr_open(&rtlsdr_dev_obj, index);
+#endif
+                if (rc != 0)
+                {
+                    std::string reason = rc == -3 ? "USB permission unavailable" : rc == -6 ? "USB device is busy" : "USB open failed";
+                    throw satdump_exception("RTL-SDR: " + reason + " (rtlsdr_open code " + std::to_string(rc) + ")");
+                }
+                is_open = true;
+                check_cancelled();
+                logger->info("Opened RTL-SDR device! Serial : " + serial);
 
-            rtlsdr_set_sample_rate(rtlsdr_dev_obj, p_samplerate);
-            logger->debug("Set RTL-SDR samplerate to %d", p_samplerate);
+                int gains[256];
+                int num_gains = rtlsdr_get_tuner_gains(rtlsdr_dev_obj, gains);
+                if (num_gains > 0)
+                {
+                    available_gains.assign(gains, gains + num_gains);
+                    std::sort(available_gains.begin(), available_gains.end());
+                }
 
-            init();
-
-            rtlsdr_reset_buffer(rtlsdr_dev_obj);
-            thread_should_run = true;
-            work_thread = std::thread(&RTLSDRDevBlock::mainThread, this);
-            is_started = true;
+                rc = rtlsdr_set_sample_rate(rtlsdr_dev_obj, p_samplerate);
+                if (rc != 0)
+                    throw satdump_exception("RTL-SDR samplerate configuration failed (code " + std::to_string(rc) + ")");
+                logger->debug("Set RTL-SDR samplerate to %d", p_samplerate);
+                init();
+                rc = rtlsdr_reset_buffer(rtlsdr_dev_obj);
+                if (rc != 0)
+                    throw satdump_exception("RTL-SDR USB buffer reset failed (code " + std::to_string(rc) + ")");
+                check_cancelled();
+                thread_should_run = true;
+                thread_exited = false;
+                is_started = true;
+                work_thread = std::thread(&RTLSDRDevBlock::mainThread, this);
+            }
+            catch (...)
+            {
+                thread_should_run = false;
+                thread_exited = true;
+                close_device();
+                throw;
+            }
         }
 
         void RTLSDRDevBlock::stop(bool stop_now, bool force)
         {
-            if (stop_now && is_started) // TODOREWORK Split wait & stop?
+            if (!stop_now) return;
+            // Publish cancellation before waiting for an in-progress open.
+            ++stop_generation;
+            std::lock_guard<std::mutex> lifecycle_lock(lifecycle_mutex);
+            thread_should_run = false;
+            while (!thread_exited)
             {
-                rtlsdr_cancel_async(rtlsdr_dev_obj);
-                thread_should_run = false;
-                logger->info("Waiting for the RTL-SDR thread...");
-                if (work_thread.joinable())
-                    work_thread.join();
-                logger->info("RTL-SDR Thread stopped");
-                rtlsdr_set_bias_tee(rtlsdr_dev_obj, false);
-                rtlsdr_close(rtlsdr_dev_obj);
-
-                is_started = false;
-                is_open = false;
-                outputs[0].fifo->wait_enqueue(outputs[0].fifo->newBufferTerminator());
+                {
+                    std::lock_guard<std::recursive_mutex> lock(device_mutex);
+                    if (rtlsdr_dev_obj) rtlsdr_cancel_async(rtlsdr_dev_obj);
+                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(5));
             }
+            if (work_thread.joinable()) work_thread.join();
         }
 
         void RTLSDRDevBlock::_rx_callback(unsigned char *buf, uint32_t len, void *ctx)
@@ -221,12 +301,16 @@ namespace satdump
         {
             std::vector<DeviceInfo> r;
 
+#ifdef __ANDROID__
+            for (const auto &device : rtl_android::devices())
+                r.push_back({"rtlsdr", device.name, {{"serial", device.path}}, nlohmann::ordered_json::object()});
+#else
             int c = rtlsdr_get_device_count();
 
             for (int i = 0; i < c; i++)
             {
                 const char *name = rtlsdr_get_device_name(i);
-                char manufact[256], product[256], serial[256];
+                char manufact[256]{}, product[256]{}, serial[256]{};
                 std::string _name;
                 if (rtlsdr_get_device_usb_strings(i, manufact, product, serial) != 0)
                     _name = std::string(name) + " #" + std::to_string(i), std::to_string(i); //   results.push_back({"rtlsdr", std::string(name) + " #" + std::to_string(i), std::to_string(i)});
@@ -238,7 +322,7 @@ namespace satdump
 
                 rtlsdr_dev *rtlsdr_dev_obj;
                 int index = rtlsdr_get_index_by_serial(serial);
-                if (index != -1 && rtlsdr_open(&rtlsdr_dev_obj, index) == 0)
+                if (index >= 0 && rtlsdr_open(&rtlsdr_dev_obj, index) == 0)
                 {
                     // Get available gains
                     int gains[256];
@@ -258,6 +342,7 @@ namespace satdump
                 r.push_back({"rtlsdr", _name, p, _c});
             }
 
+#endif
             return r;
         }
     } // namespace ndsp
