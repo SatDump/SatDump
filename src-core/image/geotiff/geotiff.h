@@ -6,6 +6,7 @@
 
 #include "projection/standard/proj.h"
 #include <tiffio.h>
+#include <cstdint>
 
 namespace satdump
 {
