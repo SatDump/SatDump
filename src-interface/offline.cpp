@@ -7,6 +7,7 @@
 #include "handlers/processing/processing.h"
 #include "imgui/imgui.h"
 #include "main_ui.h"
+#include <filesystem>
 #include <string>
 
 namespace satdump
@@ -34,6 +35,16 @@ namespace satdump
             ImGui::Spacing();
 
             pipeline_selector->drawMainparams();
+
+            if (pipeline_selector->outputdirselect.getPath() != "")
+            {
+                std::string cadu_path = pipeline_selector->outputdirselect.getPath() + "/" + pipeline_selector->selected_pipeline.id + ".cadu";
+                std::string frame_path = pipeline_selector->outputdirselect.getPath() + "/" + pipeline_selector->selected_pipeline.id + ".frm";
+                if (std::filesystem::exists(cadu_path) || std::filesystem::exists(frame_path))
+                {
+                    ImGui::TextColored(style::theme.red, "Warning: The output file already exists and will get overwritten!");
+                }
+            }
 
             ImGui::Spacing();
             // ImGui::Separator();
