@@ -182,101 +182,131 @@ namespace goes
             int img_size_y = 18956;
             float subsat_lon = 61.5;
 
-            if (isImageInProgress)
+            if (!isImageInProgress)
             {
-                // Checks if time is set
-                if (image_time != 0)
-                {
-                    logger->debug("Using time from imagery frames");
-                }
-                // No image block headers passed CRC!
-                else
-                {
-                    // Did we get any valid Block 0 headers we can use instead?
-                    if (block_zero_timestamps.size() > 0)
-                    {
-                        logger->debug("Using time from satellite info block");
-                        image_time = satdump::most_common(block_zero_timestamps.begin(), block_zero_timestamps.end(), 0);
-                    }
-                    // There were no valid Block 0s received, use fallback
-                    else
-                    {
-                        logger->warn("Signal was too weak to get the timestamp! Using current system time instead");
-                        image_time = image_time_fallback;
-                    }
-                }
-
-                if (block_zero_x_size.size() > 0)
-                {
-                    logger->debug("Using image size from satellite info block");
-
-                    img_size_x = satdump::most_common(block_zero_x_size.begin(), block_zero_x_size.end(), 0);
-                    img_size_y = satdump::most_common(block_zero_y_size.begin(), block_zero_y_size.end(), 0);
-
-                    img_off_x = satdump::most_common(block_zero_x_offset.begin(), block_zero_x_offset.end(), -1);
-                    img_off_y = satdump::most_common(block_zero_y_offset.begin(), block_zero_y_offset.end(), -1);
-
-                    subsat_lon = satdump::most_common(block_zero_subsat_lon.begin(), block_zero_subsat_lon.end(), 0) / 1000.0;
-                }
-                else
-                {
-                    logger->warn("Signal was too weak to get imagery size/offset info! Using FD defaults instead!");
-                }
-
-                // Store new fallback time. Image start was detected NOW, so save NOW to use when saving this image.
-                image_time_fallback = time(0);
-
-                if (writeImagesAync)
-                {
-                    logger->debug("Saving Async...");
-                    isImageInProgress = false;
-                    isSavingInProgress = true;
-                    imageVectorMutex.lock();
-                    imagesVector.push_back({infraredImageReader1.getImage1(), infraredImageReader1.getImage2(), infraredImageReader2.getImage1(), infraredImageReader2.getImage2(),
-                                            visibleImageReader.getImage(), satdump::most_common(scid_stats.begin(), scid_stats.end(), 0), img_size_x, img_size_y, image_time, img_off_x, img_off_y,
-                                            subsat_lon});
-                    imageVectorMutex.unlock();
-                    isSavingInProgress = false;
-                }
-                else
-                {
-                    logger->debug("Saving...");
-                    isImageInProgress = false;
-                    isSavingInProgress = true;
-                    GVARImages images = {infraredImageReader1.getImage1(),
-                                         infraredImageReader1.getImage2(),
-                                         infraredImageReader2.getImage1(),
-                                         infraredImageReader2.getImage2(),
-                                         visibleImageReader.getImage(),
-                                         satdump::most_common(scid_stats.begin(), scid_stats.end(), 0),
-                                         img_size_x, //   most_common(vis_width_stats.begin(), vis_width_stats.end(), 0),
-                                         img_size_y,
-                                         image_time,
-                                         img_off_x,
-                                         img_off_y,
-                                         subsat_lon};
-                    writeImages(images, directory);
-                    isSavingInProgress = false;
-                }
-
-                // Resets image times
-                image_time = 0;
-                block_zero_timestamps.clear();
-
-                block_zero_x_offset.clear();
-                block_zero_y_offset.clear();
-                block_zero_x_size.clear();
-                block_zero_y_size.clear();
-                block_zero_subsat_lon.clear();
-
-                scid_stats.clear();
-                ir_width_stats.clear();
-
-                // Reset readers
-                infraredImageReader1.startNewFullDisk();
-                infraredImageReader2.startNewFullDisk();
-                visibleImageReader.startNewFullDisk();
+                return;
             }
+
+            // Checks if time is set
+            if (image_time != 0)
+            {
+                logger->debug("Using time from imagery frames");
+            }
+            // No image block headers passed CRC!
+            else
+            {
+                // Did we get any valid Block 0 headers we can use instead?
+                if (block_zero_timestamps.size() > 0)
+                {
+                    logger->debug("Using time from satellite info block");
+                    image_time = satdump::most_common(block_zero_timestamps.begin(), block_zero_timestamps.end(), 0);
+                }
+                // There were no valid Block 0s received, use fallback
+                else
+                {
+                    logger->warn("Signal was too weak to get the timestamp! Using current system time instead");
+                    image_time = image_time_fallback;
+                }
+            }
+
+            if (block_zero_x_size.size() > 0)
+            {
+                logger->debug("Using image size from satellite info block");
+
+                img_size_x = satdump::most_common(block_zero_x_size.begin(), block_zero_x_size.end(), 0);
+                img_size_y = satdump::most_common(block_zero_y_size.begin(), block_zero_y_size.end(), 0);
+
+                // Don't save the crops if we are not supposed to
+                // Smallest FD size is 20823x10819, if we pull data and it says anything smaller,
+                // we know it is a crop
+                if ((d_parameters.contains("only_full_disk") && d_parameters["only_full_disk"]) && img_size_x < 20822 && img_size_y < 10818)
+                {
+                    logger->warn("Crop detected, NOT saving!");
+                    // Reset values
+                    isImageInProgress = false;
+                    image_time = 0;
+                    block_zero_timestamps.clear();
+
+                    block_zero_x_offset.clear();
+                    block_zero_y_offset.clear();
+                    block_zero_x_size.clear();
+                    block_zero_y_size.clear();
+                    block_zero_subsat_lon.clear();
+
+                    scid_stats.clear();
+                    ir_width_stats.clear();
+
+                    // Reset readers
+                    infraredImageReader1.startNewFullDisk();
+                    infraredImageReader2.startNewFullDisk();
+                    visibleImageReader.startNewFullDisk();
+
+                    return;
+                }
+
+                img_off_x = satdump::most_common(block_zero_x_offset.begin(), block_zero_x_offset.end(), -1);
+                img_off_y = satdump::most_common(block_zero_y_offset.begin(), block_zero_y_offset.end(), -1);
+
+                subsat_lon = satdump::most_common(block_zero_subsat_lon.begin(), block_zero_subsat_lon.end(), 0) / 1000.0;
+            }
+            else
+            {
+                logger->warn("Signal was too weak to get imagery size/offset info! Using FD defaults instead!");
+            }
+
+            // Store new fallback time. Image start was detected NOW, so save NOW to use when saving this image.
+            image_time_fallback = time(0);
+
+            if (writeImagesAync)
+            {
+                logger->debug("Saving Async...");
+                isImageInProgress = false;
+                isSavingInProgress = true;
+                imageVectorMutex.lock();
+                imagesVector.push_back({infraredImageReader1.getImage1(), infraredImageReader1.getImage2(), infraredImageReader2.getImage1(), infraredImageReader2.getImage2(),
+                                        visibleImageReader.getImage(), satdump::most_common(scid_stats.begin(), scid_stats.end(), 0), img_size_x, img_size_y, image_time, img_off_x, img_off_y,
+                                        subsat_lon});
+                imageVectorMutex.unlock();
+                isSavingInProgress = false;
+            }
+            else
+            {
+                logger->debug("Saving...");
+                isImageInProgress = false;
+                isSavingInProgress = true;
+                GVARImages images = {infraredImageReader1.getImage1(),
+                                     infraredImageReader1.getImage2(),
+                                     infraredImageReader2.getImage1(),
+                                     infraredImageReader2.getImage2(),
+                                     visibleImageReader.getImage(),
+                                     satdump::most_common(scid_stats.begin(), scid_stats.end(), 0),
+                                     img_size_x, //   most_common(vis_width_stats.begin(), vis_width_stats.end(), 0),
+                                     img_size_y,
+                                     image_time,
+                                     img_off_x,
+                                     img_off_y,
+                                     subsat_lon};
+                writeImages(images, directory);
+                isSavingInProgress = false;
+            }
+
+            // Resets image times
+            image_time = 0;
+            block_zero_timestamps.clear();
+
+            block_zero_x_offset.clear();
+            block_zero_y_offset.clear();
+            block_zero_x_size.clear();
+            block_zero_y_size.clear();
+            block_zero_subsat_lon.clear();
+
+            scid_stats.clear();
+            ir_width_stats.clear();
+
+            // Reset readers
+            infraredImageReader1.startNewFullDisk();
+            infraredImageReader2.startNewFullDisk();
+            visibleImageReader.startNewFullDisk();
         }
 
         /**
