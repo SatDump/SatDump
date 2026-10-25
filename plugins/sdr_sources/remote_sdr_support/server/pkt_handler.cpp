@@ -41,9 +41,10 @@ void tcp_rx_handler(uint8_t *buffer, int len)
 
         if (pkt_type == dsp::remote::PKT_TYPE_SOURCEOPEN)
         {
-            source_mtx.lock();
+            std::lock_guard<std::mutex> lock(source_mtx);
             if (source_is_open)
             {
+                source_is_open = false;
                 current_sample_source->close();
                 current_sample_source.reset();
                 logger->info("Source closed!");
@@ -68,7 +69,6 @@ void tcp_rx_handler(uint8_t *buffer, int len)
                     logger->info("Source opened!");
                 }
             }
-            source_mtx.unlock();
         }
 
         if (pkt_type == dsp::remote::PKT_TYPE_SOURCECLOSE)
@@ -90,39 +90,36 @@ void tcp_rx_handler(uint8_t *buffer, int len)
 
         if (pkt_type == dsp::remote::PKT_TYPE_SETFREQ)
         {
-            source_mtx.lock();
+            std::lock_guard<std::mutex> lock(source_mtx);
             double freq;
             memcpy(&freq, &buffer[1], sizeof(double));
             logger->debug("Frequency sent %f", freq);
             if (source_is_open)
                 current_sample_source->set_frequency(freq);
-            source_mtx.unlock();
         }
 
         if (pkt_type == dsp::remote::PKT_TYPE_SETSETTINGS)
         {
-            source_mtx.lock();
+            std::lock_guard<std::mutex> lock(source_mtx);
             auto settings = nlohmann::json::from_cbor(std::vector<uint8_t>(&buffer[1], &buffer[len]));
             logger->debug("Setting source settings");
             if (source_is_open)
                 current_sample_source->set_settings(settings);
-            source_mtx.unlock();
         }
 
         if (pkt_type == dsp::remote::PKT_TYPE_GETSETTINGS)
         {
-            source_mtx.lock();
+            std::lock_guard<std::mutex> lock(source_mtx);
             nlohmann::json settings;
             logger->debug("Sending source settings");
             if (source_is_open)
                 settings = current_sample_source->get_settings();
             sendPacketWithVector(tcp_server, dsp::remote::PKT_TYPE_GETSETTINGS, nlohmann::json::to_cbor(settings));
-            source_mtx.unlock();
         }
 
         if (pkt_type == dsp::remote::PKT_TYPE_SAMPLERATESET)
         {
-            source_mtx.lock();
+            std::lock_guard<std::mutex> lock(source_mtx);
             memcpy(&last_samplerate, &buffer[1], sizeof(uint64_t));
             logger->debug("Samplerate sent %llu", last_samplerate);
             if (source_is_open)
@@ -133,8 +130,6 @@ void tcp_rx_handler(uint8_t *buffer, int len)
             std::vector<uint8_t> pkt(8);
             *((uint64_t*)&pkt[0]) = last_samplerate;
             sendPacketWithVector(tcp_server, dsp::remote::PKT_TYPE_SAMPLERATEFBK, pkt);
-
-            source_mtx.unlock();
         }
 
         if (pkt_type == dsp::remote::PKT_TYPE_BITDEPTHSET)
