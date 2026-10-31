@@ -84,6 +84,7 @@ namespace satdump
     protected:
         uint64_t frequency_hz = 100000000;
         bool show_waterfall = true;
+        bool last_show_waterfall = true;
         bool is_started = false, is_recording = false, is_processing = false, is_stopping_processing = false;
 
         double xconverter_frequency = 0;

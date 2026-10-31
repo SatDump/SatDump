@@ -750,6 +750,13 @@ namespace satdump
                 // ImGui::SetNextWindowSizeConstraints(ImVec2((right_width + offset * ui_scale), 50), ImVec2((right_width + offset * ui_scale), wf_size));
                 //                   ImGui::SetNextWindowSize(ImVec2((right_width + offset * ui_scale), show_waterfall ? waterfall_ratio * wf_size : wf_size));
                 ImGui::SetCursorScreenPos(ImVec2(left_width + 8, 25 * ui_scale));
+                // The #fft child is resizable (ResizeY), so ImGui only uses its size
+                // argument on first use. Force the height while the waterfall is hidden
+                // (FFT and its frequency scale fill the area), and once when it is shown
+                // again (back to the height set by waterfall_ratio).
+                if (!show_waterfall || !last_show_waterfall)
+                    ImGui::SetNextWindowSize(ImVec2((right_width + offset * ui_scale), show_waterfall ? waterfall_ratio * wf_size : wf_size));
+                last_show_waterfall = show_waterfall;
                 if (ImGui::BeginChild("#fft", ImVec2((right_width + offset * ui_scale), (show_waterfall ? waterfall_ratio * wf_size : wf_size)), ImGuiChildFlags_ResizeY, //
                                       ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoScrollbar |
                                           ImGuiWindowFlags_NoScrollWithMouse))
