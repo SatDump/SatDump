@@ -10,6 +10,14 @@ int AirspySource::_rx_callback(airspy_transfer *t)
 
 void AirspySource::set_gains()
 {
+    // libairspy turns both AGCs off when a sensitivity or linearity
+    // gain is set: keep our state (and the checkboxes) in sync with it
+    if (gain_type != 2)
+    {
+        lna_agc_enabled = false;
+        mixer_agc_enabled = false;
+    }
+
     if (!is_started)
         return;
 
@@ -72,12 +80,11 @@ void AirspySource::set_settings(nlohmann::json settings)
     lna_agc_enabled = getValueOrDefault(d_settings["lna_agc"], lna_agc_enabled);
     mixer_agc_enabled = getValueOrDefault(d_settings["mixer_agc"], mixer_agc_enabled);
 
-    if (is_started)
-    {
-        set_gains();
-        set_bias();
-        set_agcs();
-    }
+    // Each call is a no-op on the device until started, but set_gains()
+    // still syncs the AGC state with the selected gain mode
+    set_gains();
+    set_bias();
+    set_agcs();
 }
 
 nlohmann::json AirspySource::get_settings()
@@ -138,6 +145,7 @@ void AirspySource::start()
     airspy_set_samplerate(airspy_dev_obj, current_samplerate);
 
     is_started = true;
+    output_stream->clearWriteStop();
 
     set_frequency(d_frequency);
 
@@ -154,6 +162,7 @@ void AirspySource::stop()
     if (is_started)
     {
         airspy_set_rf_bias(airspy_dev_obj, false);
+        output_stream->stopWriter();
         airspy_stop_rx(airspy_dev_obj);
         airspy_close(airspy_dev_obj);
     }
@@ -194,7 +203,7 @@ void AirspySource::drawControlUI()
         gain_type = 1;
         gain_changed = true;
     }
-    if (RImGui::RadioButton("Manual", gain_type == 22))
+    if (RImGui::RadioButton("Manual", gain_type == 2))
     {
         gain_type = 2;
         gain_changed = true;
@@ -202,8 +211,19 @@ void AirspySource::drawControlUI()
 
     if (gain_type == 2)
     {
-        gain_changed |= RImGui::SteppedSliderInt("LNA Gain", &manual_gains[0], 0, 15);
+        // A manual LNA/Mixer gain has no effect while its AGC is on
+        if (lna_agc_enabled)
+            RImGui::beginDisabled();
+        gain_changed |= RImGui::SteppedSliderInt("LNA Gain", &manual_gains[0], 0, 14);
+        if (lna_agc_enabled)
+            RImGui::endDisabled();
+
+        if (mixer_agc_enabled)
+            RImGui::beginDisabled();
         gain_changed |= RImGui::SteppedSliderInt("Mixer Gain", &manual_gains[1], 0, 15);
+        if (mixer_agc_enabled)
+            RImGui::endDisabled();
+
         gain_changed |= RImGui::SteppedSliderInt("VGA Gain", &manual_gains[2], 0, 15);
     }
     else
@@ -217,11 +237,18 @@ void AirspySource::drawControlUI()
     if (RImGui::Checkbox("Bias-Tee", &bias_enabled))
         set_bias();
 
+    // AGCs are only available in manual mode, as in libairspy
+    if (gain_type != 2)
+        RImGui::beginDisabled();
+
     if (RImGui::Checkbox("LNA AGC", &lna_agc_enabled))
         set_agcs();
 
     if (RImGui::Checkbox("Mixer AGC", &mixer_agc_enabled))
         set_agcs();
+
+    if (gain_type != 2)
+        RImGui::endDisabled();
 }
 
 void AirspySource::set_samplerate(uint64_t samplerate)
