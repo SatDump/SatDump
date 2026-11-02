@@ -99,7 +99,7 @@ General build instructions (Homebrew is required!)
 ```bash
 # Install build tools and dependencies
 brew install cmake dylibbundler libtool autoconf automake meson orc libxml2 zlib \
-   portaudio boost libusb nng volk libjpeg-turbo libtiff libomp libpng glfw3 libusb\
+   portaudio boost libusb nng volk libjpeg-turbo libtiff libomp libpng glfw libusb\
    fftw libxml2 portaudio jemalloc nng zstd armadillo hdf5 sqlite3
 
 # Clone SatDump
