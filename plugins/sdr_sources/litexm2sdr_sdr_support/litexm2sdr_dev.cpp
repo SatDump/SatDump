@@ -2,9 +2,9 @@
 #include "common/dsp/complex.h"
 #include "core/exception.h"
 #include "dsp/block.h"
+#include "m2sdr.h"
 #include "nlohmann/json.hpp"
 #include <cstdint>
-#include <libm2sdr/m2sdr.h>
 #include <logger.h>
 #include <string>
 
@@ -67,27 +67,12 @@ namespace satdump
             }
         }
 
-        void LiteXM2SDRDevBlock::set_others()
+        void LiteXM2SDRDevBlock::set_bw()
         {
             if (is_open)
             {
-                /*
-                // if (bladerf_model == 2) // TODOREWORK?
-                {
-                    //    bladerf_set_pll_enable(bladerf_dev_obj, extclock);
-                    //    logger->debug("Set BladeRF External Clock to %d", (int)extclock);
-                }
-
-                if (rx_ch_number > 0)
-                {
-                    //    bladerf_set_bias_tee(bladerf_dev_obj, BLADERF_CHANNEL_RX(0), rx_bias);
-                    //    logger->debug("Set BladeRF RX bias to %d", rx_bias);
-                }
-                if (tx_ch_number > 0)
-                {
-                    //    bladerf_set_bias_tee(bladerf_dev_obj, BLADERF_CHANNEL_TX(0), tx_bias);
-                    //    logger->debug("Set BladeRF TX bias to %d", rx_bias);
-                }*/
+                m2sdr_set_bandwidth(litexm2sdr_dev_obj, manual_bw ? bandwidth : samplerate);
+                logger->debug("Set LiteXM2SDR Bandwidth to %f", manual_bw ? bandwidth : samplerate);
             }
         }
 
@@ -95,7 +80,6 @@ namespace satdump
         {
             set_frequency();
             set_gains();
-            set_others();
         }
 
         void LiteXM2SDRDevBlock::start()
@@ -104,11 +88,14 @@ namespace satdump
                 throw satdump_exception("Could not open LiteXM2SDR '" + std::string(dev_serial) + "' device!");
             is_open = true;
 
+            is_dual_ch = rx_ch_number > 1 || tx_ch_number > 1;
+
             struct m2sdr_config cfg;
             m2sdr_config_init(&cfg);
-            cfg.channel_layout = M2SDR_CHANNEL_LAYOUT_2T2R;
+            cfg.channel_layout = is_dual_ch ? M2SDR_CHANNEL_LAYOUT_2T2R : M2SDR_CHANNEL_LAYOUT_1T1R;
             cfg.sample_rate = samplerate;
             cfg.bandwidth = samplerate;
+            cfg.clock_source = extclock ? M2SDR_CLOCK_SOURCE_EXTERNAL : M2SDR_CLOCK_SOURCE_INTERNAL;
             m2sdr_apply_config(litexm2sdr_dev_obj, &cfg);
 
             logger->debug("Set LiteXM2SDR Samplerate to %f", samplerate);

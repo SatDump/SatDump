@@ -13,6 +13,9 @@ namespace satdump
         BladeRFDevBlock::BladeRFDevBlock() : DeviceBlock("bladerf_dev_cc", {}, {{"RX", DSP_SAMPLE_TYPE_CF32}})
         {
             outputs[0].fifo = std::make_shared<DSPStream>(16); // TODOREWORK
+
+            if (bladerf_model == 1)
+                rx_ch_id = 0, tx_ch_id = 0;
         }
 
         BladeRFDevBlock::~BladeRFDevBlock() { stop(); }
@@ -377,6 +380,7 @@ namespace satdump
 
                 nlohmann::json p;
                 p["serial"] = std::string(devs_list[i].serial);
+                c["model"] = bladerf_model;
                 r.push_back({"bladerf", name, p, c});
 
                 bladerf_close(bladerf_dev_obj);

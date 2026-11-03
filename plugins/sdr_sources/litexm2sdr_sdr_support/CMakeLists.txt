@@ -19,11 +19,10 @@ if(LITEXM2SDR_LIBRARY) # OR ANDROID)
         target_link_libraries(litex_m2sdr_sdr_support PUBLIC satdump_core m2sdr usb)
         target_include_directories(litex_m2sdr_sdr_support PUBLIC ../../../android/deps/libm2sdr)
     else()
-        target_link_libraries(litex_m2sdr_sdr_support PUBLIC satdump_core ${LITEXM2SDR_LIBRARY} litepcie)
+        target_link_libraries(litex_m2sdr_sdr_support PUBLIC satdump_core ${LITEXM2SDR_LIBRARY})
         set(CMAKE_REQUIRED_LIBRARIES ${LITEXM2SDR_LIBRARY})
+        target_include_directories(litex_m2sdr_sdr_support PUBLIC /usr/include/litex_m2sdr/libm2sdr /usr/include/litex_m2sdr/kernel)
     endif()
-
-
 
     if(MSVC)
         install(TARGETS litex_m2sdr_sdr_support DESTINATION ${CMAKE_INSTALL_LIBDIR}/satdump/plugins RUNTIME_DEPENDENCY_SET satdump_deps)

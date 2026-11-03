@@ -1,6 +1,7 @@
 #include "bladerf_dev.h"
 #include "dsp/block.h"
 #include "nlohmann/json.hpp"
+#include "nlohmann/json_utils.h"
 #include <bladeRF2.h>
 #include <libbladeRF.h>
 #include <logger.h>
@@ -28,6 +29,8 @@ namespace satdump
                 set_cfg("rx_ch_number", 1);
                 set_cfg("tx_ch_number", 1);
             }
+
+            bladerf_model = getValueOrDefault(i.params["model"], 0);
         }
 
         nlohmann::ordered_json BladeRFDevBlock::get_cfg_list()
@@ -49,7 +52,7 @@ namespace satdump
                 p["serial"]["disable"] = is_started;
             }
 
-            if (devMode == MODE_NORMAL)
+            if (devMode == MODE_NORMAL && bladerf_model != 1)
             {
                 add_param_simple(p, "rx_ch_number", "uint", "RX Ch Number");
                 add_param_simple(p, "tx_ch_number", "uint", "TX Ch Number");
@@ -73,12 +76,12 @@ namespace satdump
                     add_param_simple(p, "bandwidth", "uint", "Bandwidth");
             }
 
-            if (rx_ch_number == 1)
+            if (rx_ch_number == 1 && bladerf_model != 1)
             {
                 add_param_simple(p, "rx_channel_id", "uint", "RX Channel");
                 p["rx_channel_id"]["disable"] = is_started;
             }
-            if (tx_ch_number == 1)
+            if (tx_ch_number == 1 && bladerf_model != 1)
             {
                 add_param_simple(p, "tx_channel_id", "uint", "TX Channel");
                 p["tx_channel_id"]["disable"] = is_started;
