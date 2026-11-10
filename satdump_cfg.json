@@ -343,9 +343,9 @@
     // Kepler (used to be TLE) settings
     "kepler_settings": {
         "urls_to_fetch": [
-            "http://orbicentral.net/gp.php?GROUP=active&FORMAT=omm" // Most sats
+            "http://orbicentral.net/gp.php?GROUP=active&FORMAT=tle" // Most sats
         ],
-        "url_template": "http://orbicentral.net/gp.php?CATNR=%NORAD%&FORMAT=omm",
+        "url_template": "http://orbicentral.net/gp.php?CATNR=%NORAD%&FORMAT=tle",
         "norads_to_fetch": [
             63251, // UVSQSat-NG
             6235, // NOAA-2
