@@ -2,7 +2,7 @@
     "presets": [
         {
             "name": "3.75µm IR (CIRA)",
-            "expression": "cch({3.75um}=({3.75um}, brightness_temperature, 193.15, 333.15);lut=lut(lut/cal/CIRA_IR37-80+60.png);lut(cch3b, 0, 0), lut(cch3b, 0, 1), lut(cch3b, 0, 2)"
+            "expression": "cch3b=({3.75um}, brightness_temperature, 193.15, 333.15);lut=lut(lut/cal/CIRA_IR37-80+60.png);lut(cch3b, 0, 0), lut(cch3b, 0, 1), lut(cch3b, 0, 2)"
         },
         {
             "name": "3.75µm IR (Enhanced Rainbow)",
