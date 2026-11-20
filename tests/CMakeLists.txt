@@ -50,8 +50,12 @@ target_compile_definitions(satdump_tests PRIVATE SATDUMP_TEST_SOURCE_DIR="${CMAK
 # Register every TEST_CASE with CTest. The timeout is well above the longest
 # bounded wait in the test helpers, so a hung test fails instead of stalling
 # the run for CTest's 25 minutes default.
+#
+# Catch2 exits with 4 when every test it ran was skipped. Older versions of
+# catch_discover_tests do not tell CTest about it, which then reports a
+# SKIP() as a failure.
 include(Catch)
-catch_discover_tests(satdump_tests PROPERTIES TIMEOUT 300)
+catch_discover_tests(satdump_tests PROPERTIES TIMEOUT 300 SKIP_RETURN_CODE 4)
 
 # Code coverage
 if(ENABLE_COVERAGE)
@@ -63,8 +67,20 @@ if(ENABLE_COVERAGE)
 
     # -O0 is added last so it overrides the build type's optimization level,
     # otherwise inlining and elided code skew the line counts.
+    #
+    # The counters are updated atomically where the compiler supports it : the
+    # DSP blocks run in their own threads, and racing plain increments leave
+    # inconsistent counts that gcov reports as negative hits, which gcovr
+    # rejects.
+    include(CheckCXXCompilerFlag)
+    check_cxx_compiler_flag(-fprofile-update=atomic COVERAGE_HAS_ATOMIC_PROFILE_UPDATE)
+    set(COVERAGE_COMPILE_OPTIONS --coverage -O0 -g)
+    if(COVERAGE_HAS_ATOMIC_PROFILE_UPDATE)
+        list(APPEND COVERAGE_COMPILE_OPTIONS -fprofile-update=atomic)
+    endif()
+
     foreach(target satdump_core satdump_tests)
-        target_compile_options(${target} PRIVATE --coverage -O0 -g)
+        target_compile_options(${target} PRIVATE ${COVERAGE_COMPILE_OPTIONS})
         target_link_options(${target} PRIVATE --coverage)
     endforeach()
 
