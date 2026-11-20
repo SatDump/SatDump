@@ -51,7 +51,7 @@ TEST_CASE("Random is deterministic for a given non-zero seed", "[common][dsp][ra
         CHECK(e.gasdev() == f.gasdev());
 }
 
-TEST_CASE("Random::ran1 is uniform in [0, 1)", "[common][dsp][random]")
+TEST_CASE("Random::ran1 is uniform over the half-open range 0 to 1", "[common][dsp][random]")
 {
     dsp::Random r(1);
     double mean, var;

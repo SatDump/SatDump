@@ -144,7 +144,7 @@ TEST_CASE("vincentys_inverse matches a fully converged reference on long lines",
     }
 }
 
-TEST_CASE("vincentys_inverse azimuths are normalised to [0, 2pi)", "[common][geodetic][vincenty]")
+TEST_CASE("vincentys_inverse azimuths are normalised to the half-open range 0 to 2pi", "[common][geodetic][vincenty]")
 {
     for (double lat2 = -60; lat2 <= 60; lat2 += 20)
     {

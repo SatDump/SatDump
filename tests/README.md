@@ -2,7 +2,7 @@
 
 Automated unit tests for `satdump_core` and the `satdump` CLI (`src-cli`), built on [Catch2](https://github.com/catchorg/Catch2) v3 and run through CTest.
 
-Catch2 3.16.1 or newer is required. A system install is used if it is recent enough, otherwise Catch2 is fetched and built at configure time (this needs network access on the first configure).
+Catch2 3.4.0 or newer is required. A system install is used if it is recent enough, otherwise Catch2 3.16.1 is fetched and built at configure time (this needs network access on the first configure).
 
 ## Running
 
@@ -48,6 +48,7 @@ Code is formatted with the repository's `.clang-format` (clang-format 19 or newe
 **Test cases**
 
 - Every `TEST_CASE` has tags, and the first tag is the top-level directory (`[common]`, `[dsp]`, `[image]`...).
+- Do not use an unbalanced `[` or `]` in a test name (e.g. `[0, 1)`), as the CTest discovery of older Catch2 versions then merges the following tests into one.
 - Helpers local to one file go in an anonymous namespace, as every test file is linked into the same executable.
 - Tests must pass in any order and leave no state behind. Global state (configuration, registries, working directory...) is changed through a guard that restores it, and files are only written to a `test_helpers::TempDir` / `TempFile`.
 - Test data is deterministic: use `test_helpers::Lcg` rather than `rand()` or `std::random_device`.

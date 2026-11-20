@@ -8,6 +8,10 @@ extern "C"
 #include "libs/jpeg12/jpeglib12.h"
 }
 
+// jconfig12.h defines const away, which breaks the Catch2 assertion macros
+// of some Catch2 versions (they expand to a static_cast<const bool&>)
+#undef const
+
 using satdump::image::Image;
 
 namespace

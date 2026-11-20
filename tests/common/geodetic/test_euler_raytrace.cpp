@@ -62,7 +62,7 @@ TEST_CASE("raytrace_to_earth nadir pointing hits the sub-satellite point", "[com
     }
 }
 
-TEST_CASE("raytrace_to_earth returns longitudes in (-180, 180]", "[common][geodetic][raytrace]")
+TEST_CASE("raytrace_to_earth returns longitudes above -180 and up to 180", "[common][geodetic][raytrace]")
 {
     geodetic::geodetic_coords_t out;
     REQUIRE(trace(10, -160, 800, NORTH_VEL, {0, 0, 0}, out) == 0);
