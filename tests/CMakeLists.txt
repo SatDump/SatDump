@@ -22,6 +22,9 @@ file(GLOB_RECURSE SatDump_tests_CPPS CONFIGURE_DEPENDS *.cpp)
 add_executable(satdump_tests ${SatDump_tests_CPPS})
 target_link_libraries(satdump_tests PRIVATE satdump_core Catch2::Catch2)
 
+# Lets tests load files shipped in the repository (e.g. resources/)
+target_compile_definitions(satdump_tests PRIVATE SATDUMP_TEST_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+
 # Register every TEST_CASE with CTest
 include(Catch)
 catch_discover_tests(satdump_tests)
@@ -53,9 +56,16 @@ if(ENABLE_COVERAGE)
 
         set(COVERAGE_DIR ${CMAKE_BINARY_DIR}/coverage)
 
+        # Unoptimized instrumented tests are slow, so run them in parallel
+        include(ProcessorCount)
+        ProcessorCount(COVERAGE_JOBS)
+        if(COVERAGE_JOBS EQUAL 0)
+            set(COVERAGE_JOBS 1)
+        endif()
+
         add_custom_target(coverage
             COMMAND ${CMAKE_COMMAND} -E make_directory ${COVERAGE_DIR}
-            COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+            COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -j ${COVERAGE_JOBS}
             COMMAND ${GCOVR_EXECUTABLE}
                 --root ${CMAKE_SOURCE_DIR}
                 --filter ${CMAKE_SOURCE_DIR}/src-core/
