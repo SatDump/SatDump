@@ -1,15 +1,16 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.16)
 
-# Use a system Catch2 v3 if present, otherwise fetch it
-find_package(Catch2 3 QUIET)
+# Use a system Catch2 if it is recent enough, otherwise fetch it
+set(SATDUMP_CATCH2_VERSION 3.16.1)
+find_package(Catch2 ${SATDUMP_CATCH2_VERSION} QUIET)
 
 if(NOT Catch2_FOUND)
-    message("Catch2 v3 not found, fetching it")
+    message("Catch2 >= ${SATDUMP_CATCH2_VERSION} not found, fetching it")
     include(FetchContent)
     FetchContent_Declare(
         Catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG v3.4.0
+        GIT_TAG v${SATDUMP_CATCH2_VERSION}
         GIT_SHALLOW ON
     )
     FetchContent_MakeAvailable(Catch2)

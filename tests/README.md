@@ -2,7 +2,7 @@
 
 Automated unit tests for `satdump_core`, built on [Catch2](https://github.com/catchorg/Catch2) v3 and run through CTest.
 
-A system Catch2 v3 is used if installed (`catch2` on Debian/Ubuntu, Fedora, Arch and Homebrew), otherwise it is fetched at configure time.
+Catch2 3.16.1 or newer is required. A system install is used if it is recent enough, otherwise Catch2 is fetched and built at configure time (this needs network access on the first configure).
 
 ## Running
 
