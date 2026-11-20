@@ -1,4 +1,4 @@
-#include "cli/cli_test_helpers.h"
+#include "cli_test_helpers.h"
 #include "helpers/kepler_db.h"
 #include "helpers/wait.h"
 #include "legacy/autotrack/autotrack.h"

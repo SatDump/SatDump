@@ -1,4 +1,4 @@
-#include "cli/cli_test_helpers.h"
+#include "cli_test_helpers.h"
 #include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <thread>

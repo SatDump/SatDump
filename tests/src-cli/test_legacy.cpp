@@ -1,4 +1,4 @@
-#include "cli/cli_test_helpers.h"
+#include "cli_test_helpers.h"
 #include "core/cli/cli.h"
 #include "core/plugin.h"
 #include "legacy.h"

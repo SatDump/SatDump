@@ -18,6 +18,10 @@ if(NOT Catch2_FOUND)
     list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 endif()
 
+# Tests mirror the source tree: the tests for <root>/<path> are in
+# tests/<root>/<path>. Everything else under tests/ is shared by all of them.
+set(SATDUMP_TESTED_ROOTS src-core src-cli)
+
 file(GLOB_RECURSE SatDump_tests_CPPS CONFIGURE_DEPENDS *.cpp)
 
 # The CLI is an executable, so its sources are compiled into the tests to be
@@ -28,9 +32,14 @@ list(REMOVE_ITEM SatDump_tests_cli_CPPS ${CMAKE_SOURCE_DIR}/src-cli/main.cpp)
 add_executable(satdump_tests ${SatDump_tests_CPPS} ${SatDump_tests_cli_CPPS})
 target_link_libraries(satdump_tests PRIVATE satdump_core Catch2::Catch2)
 
-# Test helpers are included relative to tests/, like src-core headers are
-# relative to src-core/ (e.g. "helpers/temp_files.h", "dsp/ndsp_test_helpers.h")
+# Shared test helpers are included relative to tests/ (e.g. "helpers/temp_files.h")
 target_include_directories(satdump_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+# Test helpers of a source root are included relative to tests/<root>/, like
+# its headers are relative to <root>/ (e.g. "dsp/ndsp_test_helpers.h")
+foreach(root ${SATDUMP_TESTED_ROOTS})
+    target_include_directories(satdump_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${root})
+endforeach()
 
 # src-cli headers are included relative to src-cli/ (e.g. "legacy/webserver.h")
 target_include_directories(satdump_tests PRIVATE ${CMAKE_SOURCE_DIR}/src-cli)

@@ -1,4 +1,4 @@
-#include "cli/cli_test_helpers.h"
+#include "cli_test_helpers.h"
 #include "helpers/wait.h"
 #include "legacy/record.h"
 #include "nlohmann/json.hpp"

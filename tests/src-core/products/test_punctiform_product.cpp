@@ -10,7 +10,7 @@ using satdump::products::PunctiformProduct;
 
 namespace
 {
-    // ISS (ZARYA) 2008-09-20 element set, as used by tests/common/tracking
+    // ISS (ZARYA) 2008-09-20 element set, as used by tests/src-core/common/tracking
     const satdump::TLE ISS_TLE = {25544, "ISS (ZARYA)", "1 25544U 98067A   08264.51782528 -.00002182  00000-0 -11606-4 0  2927",
                                   "2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.72125391563537", 0};
 

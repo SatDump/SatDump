@@ -18,7 +18,7 @@ namespace
 
 TEST_CASE("satdump_exception what() appends the throwing source location", "[core][exception]")
 {
-    CHECK(thisFile() == "tests/core/test_exception.cpp");
+    CHECK(thisFile() == "tests/src-core/core/test_exception.cpp");
 
     int line = 0;
     try

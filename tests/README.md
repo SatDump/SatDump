@@ -39,7 +39,16 @@ The `coverage` target runs the tests, prints a summary and writes an HTML report
 
 ## Adding tests
 
-Any `.cpp` file under this directory is picked up automatically. Tests mirror the layout of `src-core`: tests for `src-core/utils/string.h` live in `tests/utils/test_string.cpp`. Tests for `src-cli` live in `tests/cli`, with the same layout: `src-cli/legacy/record.cpp` is tested by `tests/cli/legacy/test_record.cpp`. The sources of `src-cli` are compiled into the test executable, except `src-cli/main.cpp` (the entry point of `satdump`), which has no test. Where a source directory holds many small related files (most of `src-core/dsp`), one test file may cover the whole directory, e.g. `tests/dsp/pll/test_pll.cpp`.
+Any `.cpp` file under this directory is picked up automatically. Tests mirror the layout of the source tree: the tests for `<root>/<path>` live in `tests/<root>/<path>`.
+
+| Source | Test |
+| --- | --- |
+| `src-core/utils/string.h` | `tests/src-core/utils/test_string.cpp` |
+| `src-cli/legacy/record.cpp` | `tests/src-cli/legacy/test_record.cpp` |
+
+Only what is shared by every source root sits directly in `tests/`: `main.cpp` and `helpers/`. To test another source root, create `tests/<root>/` and add it to `SATDUMP_TESTED_ROOTS` in `CMakeLists.txt`.
+
+The sources of `src-cli` are compiled into the test executable, except `src-cli/main.cpp` (the entry point of `satdump`), which has no test. Where a source directory holds many small related files (most of `src-core/dsp`), one test file may cover the whole directory, e.g. `tests/src-core/dsp/pll/test_pll.cpp`.
 
 ## Conventions
 
@@ -47,7 +56,7 @@ Code is formatted with the repository's `.clang-format` (clang-format 19 or newe
 
 **Test cases**
 
-- Every `TEST_CASE` has tags, and the first tag is the top-level directory (`[common]`, `[dsp]`, `[image]`...).
+- Every `TEST_CASE` has tags. For `src-core` the first tag is its top-level directory (`[common]`, `[dsp]`, `[image]`...), for `src-cli` it is `[cli]`.
 - Do not use an unbalanced `[` or `]` in a test name (e.g. `[0, 1)`), as the CTest discovery of older Catch2 versions then merges the following tests into one.
 - Helpers local to one file go in an anonymous namespace, as every test file is linked into the same executable.
 - Tests must pass in any order and leave no state behind. Global state (configuration, registries, working directory...) is changed through a guard that restores it, and files are only written to a `test_helpers::TempDir` / `TempFile`.
@@ -61,7 +70,8 @@ Code is formatted with the repository's `.clang-format` (clang-format 19 or newe
 
 - Helpers shared by the whole suite live in `tests/helpers/`, in the `test_helpers` namespace.
 - Helpers for one area live next to its tests in `<area>_test_helpers.h`, in the `<area>_test` namespace (`dsp_test`, `ndsp_test`, `image_test`, `pipeline_test`...).
-- Helper headers are included relative to `tests/`, like `src-core` headers are relative to `src-core/`: `#include "helpers/temp_files.h"`, `#include "dsp/ndsp_test_helpers.h"`. Do not use `../`.
+- Shared helpers are included relative to `tests/`: `#include "helpers/temp_files.h"`.
+- Helpers for one area are included relative to `tests/<root>/`, like the headers of `<root>` are relative to `<root>/`: `#include "dsp/ndsp_test_helpers.h"`, `#include "cli_test_helpers.h"`. Their names must therefore be unique across source roots. Do not use `../`.
 
 **Known bugs**
 

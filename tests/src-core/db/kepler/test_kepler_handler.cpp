@@ -7,7 +7,7 @@
 
 // KeplerDBHandler::init() is not called: it needs the global SatDump config and registers an
 // auto-update on the global eventBus/taskScheduler. The table is created here with the same schema,
-// as in tests/common/tracking/scheduler/test_passes.cpp. Nothing touches satdump::db_keplers.
+// as in tests/src-core/common/tracking/scheduler/test_passes.cpp. Nothing touches satdump::db_keplers.
 
 using Catch::Matchers::WithinRel;
 

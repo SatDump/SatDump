@@ -1,4 +1,4 @@
-#include "cli/cli_test_helpers.h"
+#include "cli_test_helpers.h"
 #include "init.h"
 #include "legacy/offline.h"
 #include "pipeline/pipeline_test_helpers.h"

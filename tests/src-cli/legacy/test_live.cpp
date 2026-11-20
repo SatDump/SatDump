@@ -1,4 +1,4 @@
-#include "cli/cli_test_helpers.h"
+#include "cli_test_helpers.h"
 #include "helpers/wait.h"
 #include "init.h"
 #include "legacy/live.h"
