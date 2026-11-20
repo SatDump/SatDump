@@ -26,6 +26,8 @@ project(SatDump)
 
 option(BUILD_GUI "Build the GUI" ON)
 option(BUILD_TESTING "Build the testing program" OFF)
+option(BUILD_UNIT_TESTS "Build the unit tests (run with ctest)" OFF)
+option(ENABLE_COVERAGE "Instrument satdump_core, src-cli and the unit tests for code coverage (GCC/Clang, needs BUILD_UNIT_TESTS)" OFF)
 option(BUILD_TOOLS "Build the tools programs" OFF)
 option(BUILD_ZIQ "Build support for the custom ZIQ format" ON)
 option(BUILD_ZIQ2 "Build support for the custom ZIQ2 format (Very WIP)" OFF)
@@ -288,6 +290,11 @@ endif()
 
 if(BUILD_TESTING)
     add_subdirectory(src-testing)
+endif()
+
+if(BUILD_UNIT_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
 endif()
 
 if(BUILD_TOOLS)

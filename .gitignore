@@ -1,5 +1,6 @@
 .vscode
 build
+build-coverage
 android/local.properties
 android/SatDump/.cxx
 android/.gradle
