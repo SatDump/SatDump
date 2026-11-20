@@ -1,8 +1,9 @@
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/filter/fft_filter.h"
 #include "common/dsp/filter/firdes.h"
-#include "../dsp_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cmath>
 
 using Catch::Approx;
 
@@ -14,7 +15,7 @@ namespace
         int fft = (int)(2 * pow(2.0, ceil(log(double(ntaps)) / log(2.0)))) * 100;
         return fft - ntaps + 1;
     }
-}
+} // namespace
 
 TEST_CASE("FFTFilterBlock output equals direct convolution", "[common][dsp][fft_filter]")
 {
@@ -35,8 +36,12 @@ TEST_CASE("FFTFilterBlock output equals direct convolution", "[common][dsp][fft_
 
     // Only whole blocks are output, the leftover stays buffered
     REQUIRE(r.output.size() == (size_t)(3 * block));
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < r.output.size(); i++)
-        REQUIRE(dsp_test::absDiff(r.output[i], expected[i]) < 1e-4f);
+        if (!(dsp_test::absDiff(r.output[i], expected[i]) < 1e-4f) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("FFTFilterBlock low-pass rejects an out-of-band tone", "[common][dsp][fft_filter]")

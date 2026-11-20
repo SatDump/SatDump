@@ -1,6 +1,7 @@
 #include "core/cli/cli.h"
 #include "core/config.h"
 #include "core/plugin.h"
+#include "helpers/satdump_guards.h"
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
 #include <stdexcept>
@@ -30,11 +31,7 @@ namespace
 
     // PipelineCmdHandler::reg() reads (and with operator[] may add to) the global config when
     // pipelines are registered, so keep it unchanged for other tests
-    struct ConfigGuard
-    {
-        nlohmann::ordered_json saved = satdump::satdump_cfg.main_cfg;
-        ~ConfigGuard() { satdump::satdump_cfg.main_cfg = saved; }
-    };
+    using test_helpers::ConfigGuard;
 
     int parse(satdump::cli::CommandHandler &h, std::vector<std::string> args)
     {
@@ -143,7 +140,9 @@ TEST_CASE("CommandHandler parses the CLI-only subcommands", "[core][cli]")
     }
     {
         satdump::cli::CommandHandler h(false);
-        CHECK(parse(h, {"-v", "probe", "--rx", "--params"}) == 0);
+        // -v / --verbose is not passed through CommandHandler::parse: the flag is bound to a local of the
+        // constructor (see tests/UNTESTED_ISSUES.md)
+        CHECK(parse(h, {"probe", "--rx", "--params"}) == 0);
     }
     {
         satdump::cli::CommandHandler h(false);

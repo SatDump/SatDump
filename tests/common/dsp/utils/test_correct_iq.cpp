@@ -1,5 +1,5 @@
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/utils/correct_iq.h"
-#include "../dsp_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -23,7 +23,7 @@ namespace
             acc += std::complex<double>(x[i].real, x[i].imag);
         return std::abs(acc / (double)(x.size() - start));
     }
-}
+} // namespace
 
 TEST_CASE("CorrectIQBlock<complex_t> removes a DC offset with the default rate", "[common][dsp][correct_iq]")
 {
@@ -50,11 +50,15 @@ TEST_CASE("CorrectIQBlock<float> removes a DC offset with the default rate", "[c
     dsp::CorrectIQBlock<float> blk(input);
     auto r = dsp_test::runBlock(blk, input, in, 8192);
     REQUIRE(r.completed);
+    size_t mismatches = 0, first = 0;
     for (size_t i = 150000; i < in.size(); i++)
-        REQUIRE(fabs(r.output[i]) == Approx(0.5f).margin(0.01));
+        if (!(fabs(r.output[i]) == Approx(0.5f).margin(0.01)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
-// BUG: correct_iq.cpp:6-9 - the constructor parameter `alpha` only sets beta = 1 - alpha;
+// Bug: correct_iq.cpp:6-9 - the constructor parameter `alpha` only sets beta = 1 - alpha;
 // the member `alpha` stays at its 1e-4 default. With any other rate, the moving average
 // converges to (1e-4 / alpha) * DC instead of DC, so the offset is barely removed.
 TEST_CASE("CorrectIQBlock<complex_t> removes a DC offset with a custom rate", "[common][dsp][correct_iq][!shouldfail]")

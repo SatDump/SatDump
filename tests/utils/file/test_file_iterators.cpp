@@ -1,11 +1,10 @@
+#include "helpers/temp_files.h"
 #include "libs/miniz/miniz.h"
 #include "utils/file/folder_file_iterators.h"
 #include "utils/file/zip_file_iterators.h"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
-#include <fstream>
 #include <map>
-#include <random>
 
 using satdump::utils::FilesIteratorItem;
 using satdump::utils::FolderFileIteratorItem;
@@ -14,30 +13,11 @@ using satdump::utils::ZipFilesIterator;
 
 namespace
 {
-    std::filesystem::path uniqueTempPath(const std::string &name)
-    {
-        std::mt19937 rng(std::random_device{}());
-        return std::filesystem::temp_directory_path() / ("satdump_test_file_iterators_" + std::to_string(rng()) + "_" + name);
-    }
+    using test_helpers::TempDir;
+    using test_helpers::uniqueTempPath;
+    using test_helpers::writeBytes;
 
     std::vector<uint8_t> bytes(const std::string &s) { return std::vector<uint8_t>(s.begin(), s.end()); }
-
-    void writeFile(const std::filesystem::path &p, const std::vector<uint8_t> &data)
-    {
-        std::ofstream f(p, std::ios::binary);
-        f.write((const char *)data.data(), data.size());
-    }
-
-    struct TempDir
-    {
-        std::filesystem::path path;
-        TempDir(const std::string &name) : path(uniqueTempPath(name)) { std::filesystem::create_directories(path); }
-        ~TempDir()
-        {
-            std::error_code ec;
-            std::filesystem::remove_all(path, ec);
-        }
-    };
 
     std::vector<uint8_t> patterned(size_t n)
     {
@@ -71,7 +51,11 @@ namespace
                 if (!mz_zip_add_mem_to_archive_file_in_place(path.string().c_str(), e.first.c_str(), e.second.data(), e.second.size(), nullptr, 0, MZ_DEFAULT_COMPRESSION))
                     throw std::runtime_error("Could not build test zip");
         }
-        ~TempZip() { std::filesystem::remove(path); }
+        ~TempZip()
+        {
+            std::error_code ec;
+            std::filesystem::remove(path, ec);
+        }
     };
 } // namespace
 
@@ -79,7 +63,7 @@ TEST_CASE("FolderFileIteratorItem reads the whole file and names it by filename"
 {
     TempDir dir("item");
     auto data = patterned(5000);
-    writeFile(dir.path / "payload.bin", data);
+    writeBytes(dir.path / "payload.bin", data);
 
     FolderFileIteratorItem item((dir.path / "payload.bin").string());
     CHECK(item.name == "payload.bin");
@@ -101,9 +85,9 @@ TEST_CASE("FolderFilesIterator walks files recursively", "[utils][file_iterators
 {
     TempDir dir("folder");
     std::filesystem::create_directories(dir.path / "sub" / "deeper");
-    writeFile(dir.path / "a.txt", bytes("alpha"));
-    writeFile(dir.path / "sub" / "b.dat", patterned(70000));
-    writeFile(dir.path / "sub" / "deeper" / "c", bytes("charlie"));
+    writeBytes(dir.path / "a.txt", bytes("alpha"));
+    writeBytes(dir.path / "sub" / "b.dat", patterned(70000));
+    writeBytes(dir.path / "sub" / "deeper" / "c", bytes("charlie"));
 
     FolderFilesIterator it(dir.path.string());
     int entries = 0;
@@ -196,6 +180,6 @@ TEST_CASE("ZipFilesIterator rejects invalid archives", "[utils][file_iterators]"
     CHECK_THROWS_AS(ZipFilesIterator(uniqueTempPath("missing.zip").string()), satdump::satdump_exception_t);
 
     TempDir dir("notzip");
-    writeFile(dir.path / "fake.zip", bytes("this is definitely not a zip archive"));
+    writeBytes(dir.path / "fake.zip", bytes("this is definitely not a zip archive"));
     CHECK_THROWS_AS(ZipFilesIterator((dir.path / "fake.zip").string()), satdump::satdump_exception_t);
 }

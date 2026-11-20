@@ -1,6 +1,6 @@
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/io/file_source.h"
-#include "../dsp_test_helpers.h"
-#include "io_test_helpers.h"
+#include "common/dsp/io/io_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -37,13 +37,13 @@ namespace
             v[i] = complex_t((float)i, 0.5f * i);
         return v;
     }
-}
+} // namespace
 
 TEST_CASE("FileSourceBlock streams a cf32 file", "[common][dsp][file_source]")
 {
     dsp_test_io::TempPath tmp("src_cf32");
     auto data = ramp(1000);
-    dsp_test_io::writeFile(tmp.path(), data);
+    dsp_test_io::writeBytes(tmp.path(), data);
 
     dsp::FileSourceBlock src(tmp.path(), dsp::CF_32, 256);
     CHECK(src.getFilesize() == data.size() * sizeof(complex_t));
@@ -52,11 +52,12 @@ TEST_CASE("FileSourceBlock streams a cf32 file", "[common][dsp][file_source]")
 
     auto out = runSource(src);
     REQUIRE(out.size() >= data.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < data.size(); i++)
-    {
-        REQUIRE(out[i].real == data[i].real);
-        REQUIRE(out[i].imag == data[i].imag);
-    }
+        if ((!(out[i].real == data[i].real) || !(out[i].imag == data[i].imag)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
     CHECK(src.eof());
 }
 
@@ -64,7 +65,7 @@ TEST_CASE("FileSourceBlock iq_swap exchanges I and Q", "[common][dsp][file_sourc
 {
     dsp_test_io::TempPath tmp("src_swap");
     auto data = ramp(512);
-    dsp_test_io::writeFile(tmp.path(), data);
+    dsp_test_io::writeBytes(tmp.path(), data);
 
     dsp::FileSourceBlock src(tmp.path(), dsp::CF_32, 128, true);
     auto out = runSource(src);
@@ -85,26 +86,27 @@ TEST_CASE("FileSourceBlock converts cs16 files", "[common][dsp][file_source]")
         data[2 * i] = i * 30;
         data[2 * i + 1] = -i * 30;
     }
-    dsp_test_io::writeFile(tmp.path(), data);
+    dsp_test_io::writeBytes(tmp.path(), data);
 
     dsp::FileSourceBlock src(tmp.path(), dsp::CS_16, 250);
     auto out = runSource(src);
     REQUIRE(out.size() >= 1000);
+    size_t mismatches = 0, first = 0;
     for (int i = 0; i < 1000; i++)
-    {
-        REQUIRE(out[i].real == Approx(i * 30 / 32767.0f).margin(1e-6));
-        REQUIRE(out[i].imag == Approx(-i * 30 / 32767.0f).margin(1e-6));
-    }
+        if ((!(out[i].real == Approx(i * 30 / 32767.0f).margin(1e-6)) || !(out[i].imag == Approx(-i * 30 / 32767.0f).margin(1e-6))) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
-// BUG: baseband_interface.h:233 - BasebandReader::read_samples always returns buffer_size, even
+// Bug: baseband_interface.h:233 - BasebandReader::read_samples always returns buffer_size, even
 // when the read hit EOF short (or read nothing). FileSourceBlock then emits a whole extra buffer
 // of stale samples at the end of every file.
 TEST_CASE("FileSourceBlock outputs exactly the samples in the file", "[common][dsp][file_source][!shouldfail]")
 {
     dsp_test_io::TempPath tmp("src_count");
     auto data = ramp(1000);
-    dsp_test_io::writeFile(tmp.path(), data);
+    dsp_test_io::writeBytes(tmp.path(), data);
 
     dsp::FileSourceBlock src(tmp.path(), dsp::CF_32, 256);
     auto out = runSource(src);

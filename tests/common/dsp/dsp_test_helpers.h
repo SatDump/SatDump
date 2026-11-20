@@ -19,11 +19,13 @@ Everything blocking is bounded by a timeout so a hung block fails the test.
 
 #include "common/dsp/buffer.h"
 #include "common/dsp/complex.h"
+#include "helpers/random.h"
+#include "helpers/signal.h"
+#include "helpers/wait.h"
 #include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <cmath>
-#include <complex>
 #include <cstdint>
 #include <cstring>
 #include <future>
@@ -36,26 +38,8 @@ Everything blocking is bounded by a timeout so a hung block fails the test.
 
 namespace dsp_test
 {
-    constexpr double kPi = 3.14159265358979323846;
-
-    // Generous, as other heavy jobs may run on the machine at the same time
-    constexpr std::chrono::milliseconds kTimeout(20000);
-
-    // Deterministic LCG, so failures are reproducible
-    struct Lcg
-    {
-        uint32_t state;
-        explicit Lcg(uint32_t seed = 0x12345678) : state(seed) {}
-        uint32_t next()
-        {
-            state = state * 1664525u + 1013904223u;
-            return state;
-        }
-        // Uniform in [0, 1)
-        double uniform() { return (next() >> 8) * (1.0 / 16777216.0); }
-        // Random +1 / -1
-        float sign() { return (next() >> 31) ? 1.0f : -1.0f; }
-    };
+    using test_helpers::kTimeout;
+    using test_helpers::Lcg;
 
     // Volk-aligned scratch buffer, for code that expects tree-style allocations
     template <typename T>
@@ -79,75 +63,12 @@ namespace dsp_test
     // Signal generation / analysis
     ///////////////////////////////////////////////////////////////////////////
 
-    // Complex tone, freq in radians per sample
-    inline std::vector<complex_t> complexTone(size_t n, double freq, double amp = 1.0, double phase0 = 0.0)
-    {
-        std::vector<complex_t> v(n);
-        for (size_t i = 0; i < n; i++)
-        {
-            double p = phase0 + freq * (double)i;
-            v[i] = complex_t(amp * cos(p), amp * sin(p));
-        }
-        return v;
-    }
-
-    // Real cosine, freq in radians per sample
-    inline std::vector<float> realTone(size_t n, double freq, double amp = 1.0, double phase0 = 0.0)
-    {
-        std::vector<float> v(n);
-        for (size_t i = 0; i < n; i++)
-            v[i] = amp * cos(phase0 + freq * (double)i);
-        return v;
-    }
-
-    // |H(e^jw)| of real taps
-    inline double magResponse(const std::vector<float> &taps, double w)
-    {
-        std::complex<double> acc = 0;
-        for (size_t n = 0; n < taps.size(); n++)
-            acc += (double)taps[n] * std::polar(1.0, -w * (double)n);
-        return std::abs(acc);
-    }
-
-    // |H(e^jw)| of complex taps
-    inline double magResponse(const std::vector<complex_t> &taps, double w)
-    {
-        std::complex<double> acc = 0;
-        for (size_t n = 0; n < taps.size(); n++)
-            acc += std::complex<double>(taps[n].real, taps[n].imag) * std::polar(1.0, -w * (double)n);
-        return std::abs(acc);
-    }
-
-    inline double toDb(double v) { return 20.0 * log10(v); }
-
-    // Average frequency (rad/sample) of a complex signal over [start, end)
-    inline double estimateFreq(const std::vector<complex_t> &x, size_t start, size_t end)
-    {
-        std::complex<double> acc = 0;
-        for (size_t i = start + 1; i < end; i++)
-            acc += std::complex<double>(x[i].real, x[i].imag) * std::conj(std::complex<double>(x[i - 1].real, x[i - 1].imag));
-        return std::arg(acc);
-    }
-
-    // Frequency (rad/sample) of a real tone over [start, end), from zero crossings
-    inline double estimateRealFreq(const std::vector<float> &x, size_t start, size_t end)
-    {
-        int crossings = 0;
-        size_t first = 0, last = 0;
-        for (size_t i = start + 1; i < end; i++)
-        {
-            if ((x[i - 1] < 0) != (x[i] < 0))
-            {
-                if (crossings == 0)
-                    first = i;
-                last = i;
-                crossings++;
-            }
-        }
-        if (crossings < 2)
-            return 0;
-        return kPi * (crossings - 1) / (double)(last - first);
-    }
+    using test_helpers::complexTone;
+    using test_helpers::estimateFreq;
+    using test_helpers::estimateRealFreq;
+    using test_helpers::magResponse;
+    using test_helpers::realTone;
+    using test_helpers::toDb;
 
     template <typename T>
     inline double rms(const std::vector<T> &x, size_t start, size_t end)
@@ -164,7 +85,10 @@ namespace dsp_test
     }
 
     template <typename T>
-    inline double rms(const std::vector<T> &x) { return rms(x, 0, x.size()); }
+    inline double rms(const std::vector<T> &x)
+    {
+        return rms(x, 0, x.size());
+    }
 
     // Causal convolution y[n] = sum_k taps[k] x[n-k], zero initial history, same length as x
     template <typename T>
@@ -192,8 +116,7 @@ namespace dsp_test
         return y;
     }
 
-    inline float absDiff(float a, float b) { return std::fabs(a - b); }
-    inline float absDiff(complex_t a, complex_t b) { return std::hypot(a.real - b.real, a.imag - b.imag); }
+    using test_helpers::absDiff;
 
     ///////////////////////////////////////////////////////////////////////////
     // Streaming harness
@@ -206,19 +129,21 @@ namespace dsp_test
     public:
         explicit Collector(std::shared_ptr<dsp::stream<T>> s) : stream(s)
         {
-            thread = std::thread([this]()
-                                 {
-                                     while (true)
-                                     {
-                                         int n = stream->read();
-                                         if (n < 0)
-                                             break;
-                                         {
-                                             std::lock_guard<std::mutex> lck(mtx);
-                                             data.insert(data.end(), stream->readBuf, stream->readBuf + n);
-                                         }
-                                         stream->flush();
-                                     } });
+            thread = std::thread(
+                [this]()
+                {
+                    while (true)
+                    {
+                        int n = stream->read();
+                        if (n < 0)
+                            break;
+                        {
+                            std::lock_guard<std::mutex> lck(mtx);
+                            data.insert(data.end(), stream->readBuf, stream->readBuf + n);
+                        }
+                        stream->flush();
+                    }
+                });
         }
 
         ~Collector()
@@ -279,20 +204,22 @@ namespace dsp_test
         std::future<void> fut = done.get_future();
         std::atomic<bool> aborted{false};
 
-        std::thread feeder([&]()
-                           {
-                               size_t pos = 0;
-                               bool ok = true;
-                               while (ok && pos < data.size() && !aborted)
-                               {
-                                   int n = (int)std::min<size_t>(chunk, data.size() - pos);
-                                   memcpy((void *)s->writeBuf, (const void *)&data[pos], n * sizeof(T));
-                                   ok = s->swap(n);
-                                   pos += n;
-                               }
-                               for (int i = 0; ok && i < 2 && !aborted; i++)
-                                   ok = s->swap(0);
-                               done.set_value(); });
+        std::thread feeder(
+            [&]()
+            {
+                size_t pos = 0;
+                bool ok = true;
+                while (ok && pos < data.size() && !aborted)
+                {
+                    int n = (int)std::min<size_t>(chunk, data.size() - pos);
+                    memcpy((void *)s->writeBuf, (const void *)&data[pos], n * sizeof(T));
+                    ok = s->swap(n);
+                    pos += n;
+                }
+                for (int i = 0; ok && i < 2 && !aborted; i++)
+                    ok = s->swap(0);
+                done.set_value();
+            });
 
         bool ok = fut.wait_for(timeout) == std::future_status::ready;
         if (!ok)

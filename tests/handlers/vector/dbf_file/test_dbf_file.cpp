@@ -1,10 +1,10 @@
-#include "handlers/vector/dbf_file/dbf_file.h"
-#include "../../../pipeline/pipeline_test_helpers.h"
 #include "core/exception.h"
+#include "handlers/vector/dbf_file/dbf_file.h"
+#include "pipeline/pipeline_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <cstring>
 
-using namespace pipeline_test_helpers;
+using namespace pipeline_test;
 
 namespace
 {
@@ -133,7 +133,7 @@ TEST_CASE("dbf_file::readDbfFile throws for a missing file", "[handlers][dbf_fil
     CHECK_THROWS_AS(dbf_file::readDbfFile(tmp.file("nope.dbf")), satdump::satdump_exception_t);
 }
 
-// dbf_file.cpp:29 : the field descriptor loop is bounded by header.m_uNumRecords (the number of
+// Bug: dbf_file.cpp:29 : the field descriptor loop is bounded by header.m_uNumRecords (the number of
 // rows) instead of the number of fields, so files with fewer rows than columns lose fields and the
 // remaining descriptors are then parsed as row data.
 TEST_CASE("dbf_file::readDbfFile reads all fields when there are fewer rows than fields", "[handlers][dbf_file][!shouldfail]")

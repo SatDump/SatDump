@@ -1,4 +1,4 @@
-#include "../image_test_helpers.h"
+#include "image/image_test_helpers.h"
 #include "image/io.h"
 #include "image/jpeg_utils.h"
 #include <catch2/catch_test_macros.hpp>
@@ -66,7 +66,7 @@ TEST_CASE("image::load_jpeg from a memory buffer and via load_img", "[image][io]
     std::string path = dir.file("buf.jpg");
     Image in = image_test::makeGradient(8, 20, 10, 3);
     img::save_jpeg(in, path);
-    std::vector<uint8_t> data = image_test::readFile(path);
+    std::vector<uint8_t> data = image_test::readBytes(path);
 
     Image from_file, from_buf, from_disp;
     img::load_jpeg(from_file, path);
@@ -88,7 +88,7 @@ TEST_CASE("image::load_jpeg leaves the image untouched on missing or corrupt fil
 
     std::vector<uint8_t> junk = {0xFF, 0xD8, 0xFF, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
     std::string bad = dir.file("bad.jpg");
-    image_test::writeFile(bad, junk);
+    image_test::writeBytes(bad, junk);
     img::load_jpeg(out, bad);
     CHECK(out.width() == 3);
     CHECK(out.get(0) == 9);

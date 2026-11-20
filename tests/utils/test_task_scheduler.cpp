@@ -97,7 +97,7 @@ namespace
     const auto LONG_TIMEOUT = std::chrono::milliseconds(20000);
 
     // ~TaskScheduler notifies without holding the mutex, so a notify sent right as the thread starts
-    // waiting can be lost (see report). Letting the thread settle into its wait first avoids that.
+    // waiting can be lost (see UNTESTED_ISSUES.md). Letting the thread settle into its wait first avoids that.
     void settle() { std::this_thread::sleep_for(std::chrono::milliseconds(150)); }
 } // namespace
 

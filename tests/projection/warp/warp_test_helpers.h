@@ -4,6 +4,10 @@
 #include "projection/thinplatespline.h"
 #include <vector>
 
+// CpuOnlyWarpGuard needs satdump::opencl::platform_id, a data symbol that is not
+// declared in any header and so is not exported from the Windows DLL: it, and
+// every test using it, is left out of MSVC builds.
+#ifndef _MSC_VER
 #ifdef USE_OPENCL
 namespace satdump
 {
@@ -15,9 +19,11 @@ namespace satdump
     } // namespace opencl
 } // namespace satdump
 #endif
+#endif
 
-namespace satdump_test_proj_warp
+namespace warp_test
 {
+#ifndef _MSC_VER
     // Forces ImageWarper::warp() onto its CPU path for the lifetime of the guard
     struct CpuOnlyWarpGuard
     {
@@ -32,6 +38,7 @@ namespace satdump_test_proj_warp
         CpuOnlyWarpGuard() {}
 #endif
     };
+#endif
 
     // Distinct 16-bit gradient: value = 1000 * x + 100 * y + 7 * c
     inline satdump::image::Image gradientImage(int w, int h, int channels)
@@ -62,4 +69,4 @@ namespace satdump_test_proj_warp
                 g.push_back({(double)x, (double)y, lon0 + res * x, lat0 - res * y});
         return g;
     }
-} // namespace satdump_test_proj_warp
+} // namespace warp_test

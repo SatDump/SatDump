@@ -1,14 +1,15 @@
 #include "dsp/ddc/fft_ddc.h"
-#include "../filter/ndsp_sig_test_helpers.h"
+#include "dsp/ndsp_sig_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cmath>
 
 using Catch::Approx;
 using namespace satdump::ndsp;
 
 namespace
 {
-    double hzToRadF(double hz, double fs) { return 2.0 * ndsp_sig_test::kPi * hz / fs; }
+    double hzToRadF(double hz, double fs) { return 2.0 * M_PI * hz / fs; }
 } // namespace
 
 TEST_CASE("ndsp FFTDDCBlock filters, shifts and decimates a VFO", "[dsp][ddc][fft_ddc]")
@@ -35,8 +36,8 @@ TEST_CASE("ndsp FFTDDCBlock filters, shifts and decimates a VFO", "[dsp][ddc][ff
     opt.chunk = 8192;
     auto r = ndsp_sig_test::runBlock<complex_t, complex_t>(ddc, in, opt);
     REQUIRE(r.completed);
-    auto &vfo = r.outputs[0];
-    auto &raw = r.outputs[1];
+    auto &vfo = r.outputs[0].data;
+    auto &raw = r.outputs[1].data;
 
     // The passthrough output is an exact copy
     CHECK(ndsp_sig_test::sameSamples(raw, in));

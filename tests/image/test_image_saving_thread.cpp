@@ -1,5 +1,5 @@
 #include "image/image_saving_thread.h"
-#include "image_test_helpers.h"
+#include "image/image_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 
 using satdump::image::Image;

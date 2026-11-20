@@ -1,5 +1,5 @@
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/path/splitter.h"
-#include "../dsp_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -14,7 +14,7 @@ namespace
             v[i] = complex_t((float)i, -(float)i);
         return v;
     }
-}
+} // namespace
 
 TEST_CASE("SplitterBlock output management", "[common][dsp][splitter]")
 {
@@ -82,11 +82,12 @@ TEST_CASE("SplitterBlock copies the input to main and enabled outputs", "[common
     REQUIRE(main_out.size() == in.size());
     REQUIRE(copy_out.size() == in.size());
     CHECK(dis_out.empty());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < in.size(); i++)
-    {
-        REQUIRE(main_out[i].real == in[i].real);
-        REQUIRE(copy_out[i].imag == in[i].imag);
-    }
+        if ((!(main_out[i].real == in[i].real) || !(copy_out[i].imag == in[i].imag)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("SplitterBlock VFO outputs are frequency shifted", "[common][dsp][splitter]")
@@ -122,6 +123,10 @@ TEST_CASE("SplitterBlock VFO outputs are frequency shifted", "[common][dsp][spli
 
     // A VFO at 0 Hz is a plain copy
     REQUIRE(zero.size() == in.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < in.size(); i++)
-        REQUIRE(dsp_test::absDiff(zero[i], in[i]) == 0.0f);
+        if (!(dsp_test::absDiff(zero[i], in[i]) == 0.0f) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }

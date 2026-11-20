@@ -1,9 +1,9 @@
 #include "pipeline/modules/xrit/module_s2udp_xrit_cadu_extractor.h"
-#include "../../pipeline_test_helpers.h"
+#include "pipeline/pipeline_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <random>
 
-using namespace pipeline_test_helpers;
+using namespace pipeline_test;
 namespace pl = satdump::pipeline;
 
 namespace

@@ -1,6 +1,6 @@
 #include "common/cli_utils.h"
-#include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <vector>
 
@@ -18,22 +18,15 @@ namespace
                 ptrs.push_back(s.data());
         }
 
-        nlohmann::json parse(std::map<std::string, std::optional<std::type_index>> strong = {})
-        {
-            return parse_common_flags(ptrs.size(), ptrs.data(), strong);
-        }
+        nlohmann::json parse(std::map<std::string, std::optional<std::type_index>> strong = {}) { return parse_common_flags(ptrs.size(), ptrs.data(), strong); }
     };
 } // namespace
 
-TEST_CASE("parse_common_flags with no arguments returns empty json", "[common][cli_utils]")
-{
-    CHECK(parse_common_flags(0, nullptr).empty());
-}
+TEST_CASE("parse_common_flags with no arguments returns empty json", "[common][cli_utils]") { CHECK(parse_common_flags(0, nullptr).empty()); }
 
 TEST_CASE("parse_common_flags parses integers, doubles, bools and strings", "[common][cli_utils]")
 {
-    Args args({"--int", "42", "--neg", "-7", "--dbl", "2.5", "--exp", "1e3",
-               "--yes", "true", "--no", "false", "--name", "hello"});
+    Args args({"--int", "42", "--neg", "-7", "--dbl", "2.5", "--exp", "1e3", "--yes", "true", "--no", "false", "--name", "hello"});
     nlohmann::json p = args.parse();
 
     REQUIRE(p["int"].is_number_integer());
@@ -95,7 +88,7 @@ TEST_CASE("parse_common_flags honours strong string types", "[common][cli_utils]
     CHECK(p["other"] == 123);
 }
 
-// BUG: values containing only digits, '.', 'e' and '-' are passed to std::stod,
+// Bug: cli_utils.cpp:67 values containing only digits, '.', 'e' and '-' are passed to std::stod,
 // which silently parses a prefix, so a date like "2024-01-02" becomes 2024.
 TEST_CASE("parse_common_flags keeps dash separated values as strings", "[common][cli_utils][!shouldfail]")
 {

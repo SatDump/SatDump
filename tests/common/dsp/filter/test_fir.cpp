@@ -1,6 +1,6 @@
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/filter/fir.h"
 #include "common/dsp/filter/firdes.h"
-#include "../dsp_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -35,7 +35,7 @@ namespace
         REQUIRE(r.completed);
         return r.output;
     }
-}
+} // namespace
 
 TEST_CASE("FIRBlock impulse response equals the taps", "[common][dsp][fir]")
 {
@@ -63,8 +63,12 @@ TEST_CASE("FIRBlock<float> matches direct convolution across chunk boundaries", 
         INFO("chunk = " << chunk);
         auto out = runFir(in, taps, chunk);
         REQUIRE(out.size() == in.size());
+        size_t mismatches = 0, first = 0;
         for (size_t i = 0; i < in.size(); i++)
-            REQUIRE(out[i] == Approx(expected[i]).margin(1e-5));
+            if (!(out[i] == Approx(expected[i]).margin(1e-5)) && mismatches++ == 0)
+                first = i;
+        INFO("first mismatch at sample " << first);
+        REQUIRE(mismatches == 0);
     }
 }
 
@@ -79,8 +83,12 @@ TEST_CASE("FIRBlock<complex_t> matches direct convolution across chunk boundarie
         INFO("chunk = " << chunk);
         auto out = runFir(in, taps, chunk);
         REQUIRE(out.size() == in.size());
+        size_t mismatches = 0, first = 0;
         for (size_t i = 0; i < in.size(); i++)
-            REQUIRE(dsp_test::absDiff(out[i], expected[i]) < 1e-5f);
+            if (!(dsp_test::absDiff(out[i], expected[i]) < 1e-5f) && mismatches++ == 0)
+                first = i;
+        INFO("first mismatch at sample " << first);
+        REQUIRE(mismatches == 0);
     }
 }
 
@@ -106,6 +114,10 @@ TEST_CASE("FIRBlock with a single tap is a gain", "[common][dsp][fir]")
     auto in = randomReal(5000, 3);
     auto out = runFir(in, {-2.0f}, 1024);
     REQUIRE(out.size() == in.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < in.size(); i++)
-        REQUIRE(out[i] == Approx(-2.0f * in[i]).margin(1e-6));
+        if (!(out[i] == Approx(-2.0f * in[i]).margin(1e-6)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }

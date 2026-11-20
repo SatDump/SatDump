@@ -1,5 +1,5 @@
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/utils/agc.h"
-#include "../dsp_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -18,8 +18,12 @@ TEST_CASE("AGCBlock<complex_t> converges to the reference magnitude", "[common][
         REQUIRE(r.completed);
         REQUIRE(r.output.size() == in.size());
 
+        size_t mismatches = 0, first = 0;
         for (size_t i = 30000; i < in.size(); i++)
-            REQUIRE(r.output[i].norm() == Approx(1.0f).margin(1e-3));
+            if (!(r.output[i].norm() == Approx(1.0f).margin(1e-3)) && mismatches++ == 0)
+                first = i;
+        INFO("first mismatch at sample " << first);
+        REQUIRE(mismatches == 0);
         // Gain only, no phase change
         CHECK(dsp_test::estimateFreq(r.output, 30000, in.size()) == Approx(0.1).epsilon(1e-4));
     }
@@ -36,11 +40,12 @@ TEST_CASE("AGCBlock<float> converges to the reference magnitude", "[common][dsp]
     dsp::AGCBlock<float> agc(input, 1e-2, 0.5f, 1.0f, 0);
     auto r = dsp_test::runBlock(agc, input, in, 4096);
     REQUIRE(r.completed);
+    size_t mismatches = 0, first = 0;
     for (size_t i = 10000; i < in.size(); i++)
-    {
-        REQUIRE(fabs(r.output[i]) == Approx(0.5f).margin(1e-4));
-        REQUIRE((r.output[i] > 0) == (in[i] > 0));
-    }
+        if ((!(fabs(r.output[i]) == Approx(0.5f).margin(1e-4)) || !((r.output[i] > 0) == (in[i] > 0))) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("AGCBlock limits gain to max_gain", "[common][dsp][agc]")
@@ -51,8 +56,12 @@ TEST_CASE("AGCBlock limits gain to max_gain", "[common][dsp][agc]")
     auto r = dsp_test::runBlock(agc, input, in, 4096);
     REQUIRE(r.completed);
     // Would need a gain of 1000, stuck at 50
+    size_t mismatches = 0, first = 0;
     for (size_t i = 10000; i < in.size(); i++)
-        REQUIRE(r.output[i].norm() == Approx(0.05f).epsilon(1e-3));
+        if (!(r.output[i].norm() == Approx(0.05f).epsilon(1e-3)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("AGCBlock first sample uses the initial gain", "[common][dsp][agc]")

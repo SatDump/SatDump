@@ -17,7 +17,7 @@ namespace
         for (size_t i = 0; i < w.size() / 2; i++)
             REQUIRE(w[i] == Approx(w[w.size() - 1 - i]).margin(margin));
     }
-}
+} // namespace
 
 TEST_CASE("window::rectangular is all ones", "[common][dsp][firdes][window]")
 {

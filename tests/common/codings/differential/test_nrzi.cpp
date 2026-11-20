@@ -1,20 +1,12 @@
 #include "common/codings/differential/nrzi.h"
+#include "helpers/random.h"
 #include <catch2/catch_test_macros.hpp>
 #include <cstdint>
 #include <vector>
 
 namespace
 {
-    std::vector<uint8_t> makeBits(int count, uint32_t seed)
-    {
-        std::vector<uint8_t> bits(count);
-        for (auto &b : bits)
-        {
-            seed = seed * 1664525u + 1013904223u;
-            b = seed >> 31;
-        }
-        return bits;
-    }
+    using test_helpers::randomBits;
 } // namespace
 
 TEST_CASE("NRZIDiff decode_bits: no level change is a 1, a change is a 0", "[common][codings][differential]")
@@ -28,7 +20,7 @@ TEST_CASE("NRZIDiff decode_bits: no level change is a 1, a change is a 0", "[com
 
 TEST_CASE("NRZIDiff decode_bits inverts NRZI encoding across chunked calls", "[common][codings][differential]")
 {
-    std::vector<uint8_t> data = makeBits(777, 21);
+    std::vector<uint8_t> data = randomBits(777, 21);
     std::vector<uint8_t> coded(data.size());
     uint8_t level = 0;
     for (size_t i = 0; i < data.size(); i++)

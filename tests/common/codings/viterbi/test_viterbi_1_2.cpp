@@ -1,4 +1,5 @@
 #include "common/codings/viterbi/viterbi_1_2.h"
+#include "helpers/random.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <vector>
@@ -8,26 +9,8 @@ namespace
     const int BUFFER = 8192; // soft symbols per work() call
     const float THRESHOLD = 0.17f;
 
-    struct Lcg
-    {
-        uint32_t state;
-        explicit Lcg(uint32_t seed) : state(seed) {}
-        uint32_t next()
-        {
-            state = state * 1664525u + 1013904223u;
-            return state;
-        }
-        int below(int n) { return (next() >> 8) % n; }
-    };
-
-    std::vector<uint8_t> randomBits(int count, uint32_t seed)
-    {
-        Lcg rng(seed);
-        std::vector<uint8_t> bits(count);
-        for (auto &b : bits)
-            b = rng.next() >> 31;
-        return bits;
-    }
+    using test_helpers::Lcg;
+    using test_helpers::randomBits;
 
     std::vector<int8_t> encodeSigned(const std::vector<uint8_t> &bits)
     {
@@ -66,7 +49,7 @@ namespace
         }
         return std::min(direct, inverted);
     }
-}
+} // namespace
 
 TEST_CASE("Viterbi1_2 locks and decodes a clean aligned stream", "[common][codings][viterbi]")
 {
@@ -191,7 +174,7 @@ TEST_CASE("Viterbi1_2 does not lock on noise and loses lock after max_outsync ba
     CHECK(vit.getState() == 0);
 }
 
-// BUG: the BER re-encoder (cc_encoder_ber, frame = 1024 bits) keeps its register state from the
+// Bug: the BER re-encoder (cc_encoder_ber, frame = 1024 bits) keeps its register state from the
 // previous re-encode, which is the state 1024 bits into the previous buffer rather than at its end,
 // so ber() is non-zero on a perfectly clean stream (viterbi_1_2.cpp:101).
 TEST_CASE("Viterbi1_2 ber() is zero on a clean locked stream", "[common][codings][viterbi][!shouldfail]")

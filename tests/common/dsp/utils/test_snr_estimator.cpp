@@ -1,5 +1,5 @@
-#include "common/dsp/utils/snr_estimator.h"
 #include "common/dsp/utils/random.h"
+#include "common/dsp/utils/snr_estimator.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
@@ -23,7 +23,7 @@ namespace
         }
         return v;
     }
-}
+} // namespace
 
 TEST_CASE("M2M4SNREstimator estimates the SNR of noisy QPSK", "[common][dsp][snr_estimator]")
 {

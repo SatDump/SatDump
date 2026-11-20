@@ -1,6 +1,7 @@
 #include "common/codings/deframing/bpsk_ccsds_deframer.h"
-#include <catch2/catch_test_macros.hpp>
+#include "helpers/random.h"
 #include <algorithm>
+#include <catch2/catch_test_macros.hpp>
 #include <cstdint>
 #include <vector>
 
@@ -8,11 +9,7 @@ namespace
 {
     const uint32_t CCSDS_ASM = 0x1ACFFC1D;
 
-    uint32_t nextRand(uint32_t &state)
-    {
-        state = state * 1664525u + 1013904223u;
-        return state >> 8;
-    }
+    uint32_t nextRand(uint32_t &state) { return test_helpers::lcgNext(state) >> 8; }
 
     // Frames are ASM + random payload, `frameBits` long in total
     std::vector<std::vector<uint8_t>> makeFrames(int count, int frameBits, uint32_t seed, uint32_t asmWord = CCSDS_ASM)

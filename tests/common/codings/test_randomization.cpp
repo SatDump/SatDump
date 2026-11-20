@@ -1,10 +1,13 @@
 #include "common/codings/randomization.h"
+#include "helpers/random.h"
 #include <catch2/catch_test_macros.hpp>
 #include <cstdint>
 #include <vector>
 
 namespace
 {
+    using test_helpers::randomBytes;
+
     // CCSDS 131.0-B pseudo-randomizer: h(x) = x^8 + x^7 + x^5 + x^3 + 1, all-ones seed,
     // i.e. a[n+8] = a[n+7] ^ a[n+5] ^ a[n+3] ^ a[n]
     std::vector<uint8_t> ccsdsPnBits(int count)
@@ -26,17 +29,6 @@ namespace
         std::vector<uint8_t> bytes(count, 0);
         for (int i = 0; i < count * 8; i++)
             bytes[i / 8] = bytes[i / 8] << 1 | bits[i];
-        return bytes;
-    }
-
-    std::vector<uint8_t> makeBytes(int count, uint32_t seed)
-    {
-        std::vector<uint8_t> bytes(count);
-        for (auto &b : bytes)
-        {
-            seed = seed * 1664525u + 1013904223u;
-            b = seed >> 24;
-        }
         return bytes;
     }
 } // namespace
@@ -67,7 +59,7 @@ TEST_CASE("derand_ccsds is its own inverse", "[common][codings][randomization]")
     for (int length : {0, 1, 254, 255, 256, 1020, 1279})
     {
         INFO("length " << length);
-        std::vector<uint8_t> original = makeBytes(length, length + 1);
+        std::vector<uint8_t> original = randomBytes(length, length + 1);
         std::vector<uint8_t> data = original;
         derand_ccsds(data.data(), length);
         if (length > 0)
@@ -127,7 +119,7 @@ TEST_CASE("derand_ccsds_soft inverts soft symbols where the PN bit is set", "[co
 TEST_CASE("derand_ccsds soft and hard paths agree on hard decisions", "[common][codings][randomization]")
 {
     const int bytes = 40;
-    std::vector<uint8_t> data = makeBytes(bytes, 99);
+    std::vector<uint8_t> data = randomBytes(bytes, 99);
 
     std::vector<int8_t> soft(bytes * 8);
     for (int i = 0; i < bytes * 8; i++)

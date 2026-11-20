@@ -1,21 +1,11 @@
 #include "common/repack.h"
+#include "helpers/random.h"
 #include <catch2/catch_test_macros.hpp>
 #include <vector>
 
 namespace
 {
-    // Deterministic pseudo-random bytes, so failures are reproducible
-    std::vector<uint8_t> makeBytes(int count)
-    {
-        std::vector<uint8_t> bytes(count);
-        uint32_t state = 0x12345678;
-        for (auto &b : bytes)
-        {
-            state = state * 1664525u + 1013904223u;
-            b = state >> 24;
-        }
-        return bytes;
-    }
+    using test_helpers::randomBytes;
 
     // Straightforward MSB-first repacking to compare the optimized versions against
     std::vector<uint32_t> referenceRepack(const std::vector<uint8_t> &bytes, int bits)
@@ -47,7 +37,7 @@ namespace
         {
             INFO("bits = " << bits << ", byte length = " << length);
 
-            std::vector<uint8_t> bytes = makeBytes(length);
+            std::vector<uint8_t> bytes = randomBytes(length, 0x12345678);
             std::vector<uint32_t> expected = referenceRepack(bytes, bits);
             std::vector<WordT> words(length + 1, 0);
 

@@ -1,9 +1,12 @@
 #include "common/codings/rotation.h"
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
 #include <vector>
+
+using Catch::Matchers::WithinAbs;
 
 namespace
 {
@@ -145,8 +148,8 @@ TEST_CASE("rotate_soft_arbitrary multiplies each pair by exp(j*phase)", "[common
             re = std::fmax(-127.0f, std::fmin(127.0f, re));
             im = std::fmax(-127.0f, std::fmin(127.0f, im));
             // Results are truncated, not rounded
-            REQUIRE(std::fabs(s[i] - re) < 1.0001f);
-            REQUIRE(std::fabs(s[i + 1] - im) < 1.0001f);
+            REQUIRE_THAT(s[i], WithinAbs(re, 1.0001f));
+            REQUIRE_THAT(s[i + 1], WithinAbs(im, 1.0001f));
         }
     }
 }

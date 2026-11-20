@@ -1,7 +1,7 @@
 #include "image/image.h"
+#include "image/image_test_helpers.h"
 #include "image/meta.h"
 #include "image/processing.h"
-#include "image_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <cstring>
@@ -94,7 +94,7 @@ TEST_CASE("image::Image copy constructor and assignment make deep copies", "[ima
     CHECK(c.raw_data() != a.raw_data());
 }
 
-// image.cpp:30: operator= only copies when the source has data, so assigning a
+// Bug: image.cpp:30: operator= only copies when the source has data, so assigning a
 // null image leaves the destination's old buffer in place instead of emptying it.
 TEST_CASE("image::Image assigning a null image empties the destination", "[image][image_class][!shouldfail]")
 {
@@ -275,7 +275,7 @@ TEST_CASE("image::Image to_rgba from 8-bit gray+alpha keeps alpha", "[image][ima
     }
 }
 
-// image.cpp:174: the alpha plane source offset is w*h bytes instead of
+// Bug: image.cpp:174: the alpha plane source offset is w*h bytes instead of
 // w*h*type_size bytes, so 16-bit gray+alpha images get half gray / half alpha
 // data in the new alpha channel.
 TEST_CASE("image::Image to_rgba from 16-bit gray+alpha keeps alpha", "[image][image_class][conversion][!shouldfail]")

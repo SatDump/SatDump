@@ -1,8 +1,8 @@
 #include "common/dsp/demod/constellation.h"
-#include "../dsp_test_helpers.h"
+#include "common/dsp/dsp_test_helpers.h"
+#include <algorithm>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <algorithm>
 #include <cmath>
 #include <set>
 
@@ -18,12 +18,7 @@ namespace
     };
 
     const ConstCase all_types[] = {
-        {dsp::BPSK, 1, "BPSK"},
-        {dsp::QPSK, 2, "QPSK"},
-        {dsp::OQPSK, 2, "OQPSK"},
-        {dsp::PSK8, 3, "8PSK"},
-        {dsp::APSK16, 4, "16APSK"},
-        {dsp::APSK32, 5, "32APSK"},
+        {dsp::BPSK, 1, "BPSK"}, {dsp::QPSK, 2, "QPSK"}, {dsp::OQPSK, 2, "OQPSK"}, {dsp::PSK8, 3, "8PSK"}, {dsp::APSK16, 4, "16APSK"}, {dsp::APSK32, 5, "32APSK"},
     };
 
     // Soft bits are output MSB first, positive meaning 1
@@ -36,7 +31,7 @@ namespace
     }
 
     complex_t rotate(complex_t c, float a) { return c * complex_t(cosf(a), sinf(a)); }
-}
+} // namespace
 
 TEST_CASE("constellation_t bit counts", "[common][dsp][constellation]")
 {
@@ -48,10 +43,7 @@ TEST_CASE("constellation_t bit counts", "[common][dsp][constellation]")
     }
 }
 
-TEST_CASE("constellation_t rejects unknown types", "[common][dsp][constellation]")
-{
-    CHECK_THROWS(dsp::constellation_t((dsp::constellation_type_t)42));
-}
+TEST_CASE("constellation_t rejects unknown types", "[common][dsp][constellation]") { CHECK_THROWS(dsp::constellation_t((dsp::constellation_type_t)42)); }
 
 TEST_CASE("constellation_t points are distinct", "[common][dsp][constellation]")
 {

@@ -1,6 +1,6 @@
 #include "image/image.h"
+#include "image/image_test_helpers.h"
 #include "image/processing.h"
-#include "image_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
@@ -150,10 +150,13 @@ TEST_CASE("image::equalize output is monotonic in the input", "[image][processin
     Image im = image_test::makePattern(8, 16, 16, 1);
     Image orig = im;
     img::equalize(im);
+    size_t mismatches = 0, first_i = 0, first_j = 0;
     for (size_t i = 0; i < im.size(); i++)
         for (size_t j = 0; j < im.size(); j++)
-            if (orig.get(i) < orig.get(j))
-                REQUIRE(im.get(i) <= im.get(j));
+            if (orig.get(i) < orig.get(j) && !(im.get(i) <= im.get(j)) && mismatches++ == 0)
+                first_i = i, first_j = j;
+    INFO("first mismatch at samples " << first_i << " and " << first_j);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("image::white_balance stretches each channel between percentiles", "[image][processing]")
@@ -281,7 +284,7 @@ TEST_CASE("image::simple_despeckle below the threshold does nothing", "[image][p
     CHECK(im.get(0, 2, 1) == 15);
 }
 
-// processing.cpp:266-268: out-of-image neighbours are treated as 0, so the
+// Bug: processing.cpp:266-268: out-of-image neighbours are treated as 0, so the
 // bottom-right pixel of a perfectly uniform image looks like a speckle
 // (current - right and current - below exceed the threshold) and is halved.
 TEST_CASE("image::simple_despeckle leaves a uniform image unchanged", "[image][processing][!shouldfail]")

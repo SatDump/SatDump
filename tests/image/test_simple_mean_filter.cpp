@@ -1,5 +1,5 @@
+#include "image/image_test_helpers.h"
 #include "image/simple_mean_filter.h"
-#include "image_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
@@ -76,7 +76,7 @@ TEST_CASE("image::simple_mean_filter EDGE responds to a ramp", "[image][simple_m
         CHECK(std::abs(im.get(0, x, 0) - 10) <= 1);
 }
 
-// simple_mean_filter.cpp:10-13: the averaging window is [x - r, x + r) and
+// Bug: simple_mean_filter.cpp:10-13: the averaging window is [x - r, x + r) and
 // [y - r, y + r), so it is not centred on the pixel. Smoothing a single spike
 // shifts it towards +x/+y instead of spreading it symmetrically.
 TEST_CASE("image::simple_mean_filter SMOOTH is symmetric around the pixel", "[image][simple_mean_filter][!shouldfail]")

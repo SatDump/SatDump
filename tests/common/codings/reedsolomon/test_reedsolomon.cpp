@@ -1,40 +1,29 @@
 #include "common/codings/reedsolomon/reedsolomon.h"
+#include "helpers/random.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <cstring>
 #include <set>
 #include <vector>
 
+// The dual basis tables are data symbols of satdump_core that no header declares, so they are
+// not exported from the Windows DLL: the tests that use them are skipped with MSVC
+#ifndef _MSC_VER
 namespace reedsolomon
 {
     // Defined (non-static) in reedsolomon.cpp but not declared in the header
     extern unsigned char ToDualBasis[256];
     extern unsigned char FromDualBasis[256];
-}
+} // namespace reedsolomon
+#endif
 
 namespace
 {
-    struct Lcg
-    {
-        uint32_t state;
-        explicit Lcg(uint32_t seed) : state(seed) {}
-        uint32_t next()
-        {
-            state = state * 1664525u + 1013904223u;
-            return state;
-        }
-        uint8_t byte() { return next() >> 24; }
-        int below(int n) { return (next() >> 8) % n; }
-    };
+    using test_helpers::Lcg;
+    using test_helpers::randomBytes;
 
-    std::vector<uint8_t> randomBytes(int count, uint32_t seed)
-    {
-        Lcg rng(seed);
-        std::vector<uint8_t> v(count);
-        for (auto &b : v)
-            b = rng.byte();
-        return v;
-    }
+#ifndef _MSC_VER
+    // Only used by the dual basis tests (see above)
 
     // Independent GF(2^8) arithmetic with the CCSDS field polynomial x^8+x^7+x^2+x+1 (0x187)
     struct GF256
@@ -93,6 +82,7 @@ namespace
                 out ^= tal[7 - k];
         return out;
     }
+#endif
 
     int dataLength(reedsolomon::RS_TYPE type) { return type == reedsolomon::RS223 ? 223 : 239; }
 
@@ -121,8 +111,9 @@ namespace
         rs.encode(cw.data(), ccsds);
         return cw;
     }
-}
+} // namespace
 
+#ifndef _MSC_VER // needs the dual basis tables (see above)
 TEST_CASE("ReedSolomon dual basis tables match the CCSDS transformation and are inverses", "[common][codings][reedsolomon]")
 {
     std::set<int> seen;
@@ -158,6 +149,7 @@ TEST_CASE("ReedSolomon::encode produces valid CCSDS codewords", "[common][coding
         CHECK(syndromesAreZero(conv.data(), 255 - k));
     }
 }
+#endif
 
 TEST_CASE("ReedSolomon::encode of all-zero message gives all-zero codeword", "[common][codings][reedsolomon]")
 {
@@ -255,6 +247,7 @@ TEST_CASE("ReedSolomon deinterleave/interleave use symbol-interleaved layout", "
     CHECK(rebuilt == frame);
 }
 
+#ifndef _MSC_VER // needs the dual basis tables (see above)
 TEST_CASE("ReedSolomon interleaved encode/decode round-trip with per-codeword error counts", "[common][codings][reedsolomon]")
 {
     auto type = GENERATE(reedsolomon::RS223, reedsolomon::RS239);
@@ -312,10 +305,15 @@ TEST_CASE("ReedSolomon interleaved encode/decode round-trip with per-codeword er
     rs.decode_interlaved(rx.data(), ccsds, depth, errors.data());
     CHECK(errors == expected);
 
+    size_t mismatches = 0, first = 0;
     for (int pos = 0; pos < (depth > 1 ? depth - 1 : depth); pos++)
         for (int s = 0; s < k; s++)
-            REQUIRE(rx[s * depth + pos] == frame[s * depth + pos]);
+            if (!(rx[s * depth + pos] == frame[s * depth + pos]) && mismatches++ == 0)
+                first = s * depth + pos;
+    INFO("first mismatch at byte " << first);
+    REQUIRE(mismatches == 0);
 }
+#endif
 
 TEST_CASE("ReedSolomon shortened (fill bytes) decode corrects errors at the start of the data", "[common][codings][reedsolomon]")
 {
@@ -348,7 +346,7 @@ TEST_CASE("ReedSolomon shortened (fill bytes) decode corrects errors at the star
     CHECK(std::equal(tx.begin(), tx.begin() + (k - fill), rx.begin()));
 }
 
-// BUG: reedsolomon.cpp copies back only (d_coded_bits - fill_bytes) corrected bytes starting at offset 0
+// Bug: reedsolomon.cpp copies back only (d_coded_bits - fill_bytes) corrected bytes starting at offset 0
 // of the depunctured buffer (which begins with fill_bytes virtual zeros), so the last fill_bytes data
 // symbols of a shortened codeword are returned uncorrected even though the error count includes them
 // (reedsolomon.cpp:104).
@@ -372,7 +370,7 @@ TEST_CASE("ReedSolomon shortened decode corrects errors in the last data symbols
     CHECK(rx[lastData] == tx[lastData]);
 }
 
-// BUG: encode()/encode_interlaved() ignore fill_bytes: the de-interleaved 255 - fill symbols are
+// Bug: encode()/encode_interlaved() ignore fill_bytes: the de-interleaved 255 - fill symbols are
 // encoded as if they were an unshortened codeword (data in the first 223 positions) and only the first
 // 255 - fill symbols are interleaved back, so the parity is truncated and the result cannot be decoded
 // by decode_interlaved() with the same fill (reedsolomon.cpp:118-142).

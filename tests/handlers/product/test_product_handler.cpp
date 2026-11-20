@@ -1,10 +1,10 @@
-#include "handlers/product/product_handler.h"
-#include "../../pipeline/pipeline_test_helpers.h"
 #include "core/exception.h"
+#include "handlers/product/product_handler.h"
+#include "pipeline/pipeline_test_helpers.h"
 #include "utils/time.h"
 #include <catch2/catch_test_macros.hpp>
 
-using namespace pipeline_test_helpers;
+using namespace pipeline_test;
 using satdump::handlers::ProductHandler;
 
 namespace
@@ -143,7 +143,7 @@ TEST_CASE("ProductHandler::saveResult is not implemented by default", "[handlers
 TEST_CASE("ProductHandler::generateFileName expands the filename template", "[handlers][product_handler]")
 {
     ResourcesEnv env;
-    MainConfigGuard cfg;
+    ConfigGuard cfg;
     TempDir out("handlers_prod_out");
     satdump::satdump_cfg.main_cfg["satdump_directories"]["default_image_output_directory"]["value"] = out.str();
 
@@ -165,7 +165,7 @@ TEST_CASE("ProductHandler::generateFileName expands the filename template", "[ha
 TEST_CASE("ProductHandler::generateFileName avoids existing files and defaults", "[handlers][product_handler]")
 {
     ResourcesEnv env;
-    MainConfigGuard cfg;
+    ConfigGuard cfg;
     TempDir out("handlers_prod_out");
     satdump::satdump_cfg.main_cfg["satdump_directories"]["default_image_output_directory"]["value"] = out.str();
     satdump::satdump_cfg.main_cfg["satdump_directories"]["image_filename_template"]["value"] = "img_$o_$y";

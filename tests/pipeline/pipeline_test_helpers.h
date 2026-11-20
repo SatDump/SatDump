@@ -1,25 +1,23 @@
 #pragma once
 
 // Shared helpers for the pipeline/ and handlers/ tests. Everything lives in
-// the pipeline_test_helpers namespace and is inline, so including this header
+// the pipeline_test namespace and is inline, so including this header
 // from several translation units is fine.
 
 #include "core/config.h"
 #include "core/plugin.h"
+#include "helpers/file_io.h"
+#include "helpers/guards.h"
+#include "helpers/satdump_guards.h"
+#include "helpers/temp_files.h"
+#include "helpers/wait.h"
 #include "init.h"
 #include "pipeline/module.h"
 #include "pipeline/pipeline.h"
-#include <atomic>
-#include <chrono>
 #include <cstdint>
 #include <filesystem>
-#include <fstream>
-#include <functional>
-#include <iterator>
 #include <mutex>
-#include <random>
 #include <string>
-#include <thread>
 #include <vector>
 
 // Internal (non-header) symbols of pipeline.cpp that are exported from the core library
@@ -29,64 +27,23 @@ namespace satdump
     {
         void loadPipeline(std::string filepath);
         void parsePipelines();
+#ifndef _MSC_VER
+        // A data symbol: not exported from the Windows DLL, so not available with MSVC
         extern std::string user_cfg_path;
+#endif
     } // namespace pipeline
 } // namespace satdump
 
-namespace pipeline_test_helpers
+namespace pipeline_test
 {
-    // Unique, self-removing temporary directory
-    struct TempDir
-    {
-        std::filesystem::path path;
-
-        explicit TempDir(const std::string &tag)
-        {
-            static std::atomic<int> counter{0};
-            std::mt19937_64 rng(std::random_device{}());
-            path = std::filesystem::temp_directory_path() / ("satdump_test_" + tag + "_" + std::to_string(rng()) + "_" + std::to_string(counter++));
-            std::filesystem::create_directories(path);
-        }
-
-        ~TempDir()
-        {
-            std::error_code ec;
-            std::filesystem::remove_all(path, ec);
-        }
-
-        TempDir(const TempDir &) = delete;
-        TempDir &operator=(const TempDir &) = delete;
-
-        std::string str() const { return path.string(); }
-        std::string file(const std::string &name) const { return (path / name).string(); }
-    };
-
-    inline void writeFile(const std::string &path, const std::string &content)
-    {
-        std::filesystem::path p(path);
-        if (p.has_parent_path())
-            std::filesystem::create_directories(p.parent_path());
-        std::ofstream f(path, std::ios::binary);
-        f.write(content.data(), content.size());
-    }
-
-    inline void writeBytes(const std::string &path, const std::vector<uint8_t> &content)
-    {
-        std::ofstream f(path, std::ios::binary);
-        f.write((const char *)content.data(), content.size());
-    }
-
-    inline std::string readFile(const std::string &path)
-    {
-        std::ifstream f(path, std::ios::binary);
-        return std::string((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
-    }
-
-    inline std::vector<uint8_t> readBytes(const std::string &path)
-    {
-        std::string s = readFile(path);
-        return std::vector<uint8_t>(s.begin(), s.end());
-    }
+    using test_helpers::ConfigGuard;
+    using test_helpers::CwdGuard;
+    using test_helpers::EventBusGuard;
+    using test_helpers::readBytes;
+    using test_helpers::readFile;
+    using test_helpers::TempDir;
+    using test_helpers::writeBytes;
+    using test_helpers::writeFile;
 
     // Saves the module registry, optionally clears it, and restores it afterwards
     struct ModuleRegistryGuard
@@ -102,17 +59,22 @@ namespace pipeline_test_helpers
         ~ModuleRegistryGuard() { satdump::pipeline::modules_registry = saved; }
     };
 
-    // Saves all global pipeline state, starts from an empty state, and restores it afterwards
+    // Saves all global pipeline state, starts from an empty state, and restores it afterwards.
+    // With MSVC user_cfg_path is not restored, as it is not exported from the DLL
+    // (harmless: loadPipelines() always sets it before it is used).
     struct PipelinesStateGuard
     {
         std::vector<satdump::pipeline::Pipeline> saved_pipelines;
         nlohmann::ordered_json saved_json, saved_system_json;
+#ifndef _MSC_VER
         std::string saved_user_cfg_path;
+#endif
 
-        PipelinesStateGuard()
-            : saved_pipelines(satdump::pipeline::pipelines), saved_json(satdump::pipeline::pipelines_json), saved_system_json(satdump::pipeline::pipelines_system_json),
-              saved_user_cfg_path(satdump::pipeline::user_cfg_path)
+        PipelinesStateGuard() : saved_pipelines(satdump::pipeline::pipelines), saved_json(satdump::pipeline::pipelines_json), saved_system_json(satdump::pipeline::pipelines_system_json)
         {
+#ifndef _MSC_VER
+            saved_user_cfg_path = satdump::pipeline::user_cfg_path;
+#endif
             satdump::pipeline::pipelines.clear();
             satdump::pipeline::pipelines_json = nlohmann::ordered_json::object();
             satdump::pipeline::pipelines_system_json = nlohmann::ordered_json::object();
@@ -123,18 +85,9 @@ namespace pipeline_test_helpers
             satdump::pipeline::pipelines = saved_pipelines;
             satdump::pipeline::pipelines_json = saved_json;
             satdump::pipeline::pipelines_system_json = saved_system_json;
+#ifndef _MSC_VER
             satdump::pipeline::user_cfg_path = saved_user_cfg_path;
-        }
-    };
-
-    struct CwdGuard
-    {
-        std::filesystem::path saved;
-        explicit CwdGuard(const std::filesystem::path &p) : saved(std::filesystem::current_path()) { std::filesystem::current_path(p); }
-        ~CwdGuard()
-        {
-            std::error_code ec;
-            std::filesystem::current_path(saved, ec);
+#endif
         }
     };
 
@@ -144,34 +97,6 @@ namespace pipeline_test_helpers
         explicit UserPathGuard(const std::string &p) : saved(satdump::user_path) { satdump::user_path = p; }
         ~UserPathGuard() { satdump::user_path = saved; }
     };
-
-    // Replaces the global event bus with a fresh one (there is no way to unregister handlers)
-    struct EventBusGuard
-    {
-        std::shared_ptr<satdump::EventBus> saved;
-        EventBusGuard() : saved(satdump::eventBus) { satdump::eventBus = std::make_shared<satdump::EventBus>(); }
-        ~EventBusGuard() { satdump::eventBus = saved; }
-    };
-
-    struct MainConfigGuard
-    {
-        nlohmann::ordered_json saved;
-        MainConfigGuard() : saved(satdump::satdump_cfg.main_cfg) {}
-        ~MainConfigGuard() { satdump::satdump_cfg.main_cfg = saved; }
-    };
-
-    // Waits (with a generous deadline) for a condition to become true
-    inline bool waitFor(const std::function<bool()> &cond, std::chrono::seconds timeout = std::chrono::seconds(30))
-    {
-        auto deadline = std::chrono::steady_clock::now() + timeout;
-        while (!cond())
-        {
-            if (std::chrono::steady_clock::now() > deadline)
-                return false;
-            std::this_thread::sleep_for(std::chrono::milliseconds(2));
-        }
-        return true;
-    }
 
     ///////////////////////////////////////////////////////////
     // Recording file-to-file module used to exercise Pipeline::run
@@ -299,4 +224,4 @@ namespace pipeline_test_helpers
                                               [id, stream_in, stream_out](std::string in, std::string hint, nlohmann::json params) -> std::shared_ptr<satdump::pipeline::ProcessingModule>
                                               { return std::make_shared<RecordingModule>(id, in, hint, params, stream_in, stream_out); }};
     }
-} // namespace pipeline_test_helpers
+} // namespace pipeline_test

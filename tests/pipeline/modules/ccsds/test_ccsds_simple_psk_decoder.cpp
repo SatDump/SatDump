@@ -1,10 +1,10 @@
-#include "pipeline/modules/ccsds/module_ccsds_simple_psk_decoder.h"
-#include "../../pipeline_test_helpers.h"
 #include "core/exception.h"
+#include "pipeline/modules/ccsds/module_ccsds_simple_psk_decoder.h"
+#include "pipeline/pipeline_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <random>
 
-using namespace pipeline_test_helpers;
+using namespace pipeline_test;
 namespace pl = satdump::pipeline;
 
 namespace
@@ -71,10 +71,7 @@ namespace
         return out;
     }
 
-    nlohmann::json bpskParams()
-    {
-        return {{"constellation", "bpsk"}, {"cadu_size", CADU_BITS}, {"rs_i", 0}, {"derandomize", false}};
-    }
+    nlohmann::json bpskParams() { return {{"constellation", "bpsk"}, {"cadu_size", CADU_BITS}, {"rs_i", 0}, {"derandomize", false}}; }
 
     std::shared_ptr<pl::ProcessingModule> runDecoder(const std::string &input, const std::string &hint, nlohmann::json params)
     {
@@ -230,7 +227,7 @@ TEST_CASE("CCSDSSimplePSKDecoderModule outputs nothing without a sync marker", "
     CHECK(std::filesystem::file_size(m->getOutput()) == 0);
 }
 
-// module_ccsds_simple_psk_decoder.cpp:135-140 : the loop runs while !data_in.eof(); when the input
+// Bug: module_ccsds_simple_psk_decoder.cpp:135-140 : the loop runs while !data_in.eof(); when the input
 // length is an exact multiple of the read size, the final read returns nothing but the previous
 // (stale) buffer is processed again, so the last CADU is emitted twice.
 TEST_CASE("CCSDSSimplePSKDecoderModule emits each CADU once for frame-aligned input", "[pipeline][modules][ccsds_simple_psk_decoder][!shouldfail]")

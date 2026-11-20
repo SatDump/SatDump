@@ -1,29 +1,14 @@
 #include "core/exception.h"
 #include "db/db_handler.h"
+#include "helpers/temp_files.h"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
-#include <random>
 
 // Uses in-memory databases or files under the temp directory; never the global satdump::db.
 
 namespace
 {
-    std::filesystem::path uniqueTempPath(const std::string &name)
-    {
-        std::mt19937 rng(std::random_device{}());
-        return std::filesystem::temp_directory_path() / ("satdump_test_db_" + std::to_string(rng()) + "_" + name);
-    }
-
-    struct TempDir
-    {
-        std::filesystem::path path;
-        TempDir(const std::string &name) : path(uniqueTempPath(name)) {}
-        ~TempDir()
-        {
-            std::error_code ec;
-            std::filesystem::remove_all(path, ec);
-        }
-    };
+    using test_helpers::TempDir;
 
     std::shared_ptr<satdump::DBHandler> memoryDb()
     {
@@ -198,7 +183,6 @@ TEST_CASE("DBHandler file databases create their folder and persist", "[db][db_h
 TEST_CASE("DBHandler throws when the database cannot be opened", "[db][db_handler]")
 {
     TempDir dir("unopenable");
-    std::filesystem::create_directories(dir.path);
     // A directory cannot be opened as a database file
     CHECK_THROWS_AS(satdump::DBHandler(dir.path.string()), satdump::satdump_exception_t);
 }

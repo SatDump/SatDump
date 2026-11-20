@@ -1,6 +1,6 @@
 #include "image/expression.h"
+#include "image/image_test_helpers.h"
 #include "image/meta.h"
-#include "image_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 

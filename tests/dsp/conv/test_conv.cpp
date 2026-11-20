@@ -1,4 +1,3 @@
-#include "../ndsp_test_helpers.h"
 #include "dsp/conv/char_to_float.h"
 #include "dsp/conv/complex_conjugate.h"
 #include "dsp/conv/complex_to_float.h"
@@ -13,8 +12,11 @@
 #include "dsp/conv/real_to_complex.h"
 #include "dsp/conv/short_to_float.h"
 #include "dsp/conv/uchar_to_float.h"
+#include "dsp/ndsp_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
+using Catch::Matchers::WithinAbs;
 using namespace satdump::ndsp;
 
 namespace
@@ -62,11 +64,12 @@ TEST_CASE("ndsp ComplexToRealBlock and ComplexToImagBlock extract components", "
     REQUIRE(r2.completed);
     REQUIRE(r1.out().size() == in.size());
     REQUIRE(r2.out().size() == in.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < in.size(); i++)
-    {
-        REQUIRE(r1.out()[i] == in[i].real);
-        REQUIRE(r2.out()[i] == in[i].imag);
-    }
+        if ((!(r1.out()[i] == in[i].real) || !(r2.out()[i] == in[i].imag)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
     checkIdentity<ComplexToRealBlock>("complex_to_real_cf", {DSP_SAMPLE_TYPE_CF32}, {DSP_SAMPLE_TYPE_F32});
     checkIdentity<ComplexToImagBlock>("complex_to_imag_cf", {DSP_SAMPLE_TYPE_CF32}, {DSP_SAMPLE_TYPE_F32});
 }
@@ -79,11 +82,12 @@ TEST_CASE("ndsp ComplexToFloatBlock splits into two outputs", "[dsp][conv][compl
     REQUIRE(r.outputs.size() == 2);
     REQUIRE(r.outputs[0].data.size() == in.size());
     REQUIRE(r.outputs[1].data.size() == in.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < in.size(); i++)
-    {
-        REQUIRE(r.outputs[0].data[i] == in[i].real);
-        REQUIRE(r.outputs[1].data[i] == in[i].imag);
-    }
+        if ((!(r.outputs[0].data[i] == in[i].real) || !(r.outputs[1].data[i] == in[i].imag)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
     CHECK(r.outputs[0].propagating_terminators == 1);
     CHECK(r.outputs[1].propagating_terminators == 1);
     checkIdentity<ComplexToFloatBlock>("complex_to_float_cf", {DSP_SAMPLE_TYPE_CF32}, {DSP_SAMPLE_TYPE_F32, DSP_SAMPLE_TYPE_F32});
@@ -96,11 +100,12 @@ TEST_CASE("ndsp FloatToComplexBlock merges real and imag", "[dsp][conv][float_to
     auto r = ndsp_test::runBlock<float, complex_t>(std::make_shared<FloatToComplexBlock>(), {re, im}, 300);
     REQUIRE(r.completed);
     REQUIRE(r.out().size() == re.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < re.size(); i++)
-    {
-        REQUIRE(r.out()[i].real == re[i]);
-        REQUIRE(r.out()[i].imag == im[i]);
-    }
+        if ((!(r.out()[i].real == re[i]) || !(r.out()[i].imag == im[i])) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
     checkIdentity<FloatToComplexBlock>("float_to_complex_fc", {DSP_SAMPLE_TYPE_F32, DSP_SAMPLE_TYPE_F32}, {DSP_SAMPLE_TYPE_CF32});
 }
 
@@ -177,8 +182,12 @@ TEST_CASE("ndsp ComplexToIFloatBlock and IFloatToComplexBlock round-trip", "[dsp
     auto r2 = ndsp_test::runSimple<float, complex_t>(std::make_shared<IFloatToComplexBlock>(), r1.out(), 333);
     REQUIRE(r2.completed);
     REQUIRE(r2.out().size() == in.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < in.size(); i++)
-        REQUIRE(ndsp_test::sameBits(r2.out()[i], in[i]));
+        if (!ndsp_test::sameBits(r2.out()[i], in[i]) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -197,8 +206,12 @@ TEST_CASE("ndsp ComplexToMagBlock computes the magnitude", "[dsp][conv][complex_
     CHECK(r.out()[1] == 0.0f);
     CHECK(r.out()[2] == 13.0f);
     CHECK(r.out()[3] == 2.0f);
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < in.size(); i++)
-        REQUIRE(std::fabs(r.out()[i] - std::hypot(in[i].real, in[i].imag)) < 1e-5f * std::max(1.0f, r.out()[i]));
+        if (!(std::fabs(r.out()[i] - std::hypot(in[i].real, in[i].imag)) < 1e-5f * std::max(1.0f, r.out()[i])) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
     checkIdentity<ComplexToMagBlock>("complex_to_mag_cf", {DSP_SAMPLE_TYPE_CF32}, {DSP_SAMPLE_TYPE_F32});
 }
 
@@ -210,11 +223,15 @@ TEST_CASE("ndsp ComplexToMagSquaredBlock computes the power", "[dsp][conv][compl
     REQUIRE(r.completed);
     REQUIRE(r.out().size() == in.size());
     CHECK(r.out()[0] == 25.0f);
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < in.size(); i++)
     {
         float e = in[i].real * in[i].real + in[i].imag * in[i].imag;
-        REQUIRE(std::fabs(r.out()[i] - e) < 1e-5f * std::max(1.0f, e));
+        if (!(std::fabs(r.out()[i] - e) < 1e-5f * std::max(1.0f, e)) && mismatches++ == 0)
+            first = i;
     }
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
     checkIdentity<ComplexToMagSquaredBlock>("complex_to_mag_squared_cf", {DSP_SAMPLE_TYPE_CF32}, {DSP_SAMPLE_TYPE_F32});
 }
 
@@ -224,11 +241,12 @@ TEST_CASE("ndsp ComplexConjugateBlock negates the imaginary part", "[dsp][conv][
     auto r = ndsp_test::runSimple<complex_t, complex_t>(std::make_shared<ComplexConjugateBlock>(), in, 512);
     REQUIRE(r.completed);
     REQUIRE(r.out().size() == in.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < in.size(); i++)
-    {
-        REQUIRE(r.out()[i].real == in[i].real);
-        REQUIRE(r.out()[i].imag == -in[i].imag);
-    }
+        if ((!(r.out()[i].real == in[i].real) || !(r.out()[i].imag == -in[i].imag)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
     checkIdentity<ComplexConjugateBlock>("complex_conjugate_cc", {DSP_SAMPLE_TYPE_CF32}, {DSP_SAMPLE_TYPE_CF32});
 }
 
@@ -255,7 +273,7 @@ TEST_CASE("ndsp CharToFloatBlock divides by scale", "[dsp][conv][char_to_float]"
     REQUIRE(r2.completed);
     REQUIRE(r2.out().size() == in.size());
     for (size_t i = 0; i < in.size(); i++)
-        REQUIRE(std::fabs(r2.out()[i] - in[i] / 128.0f) < 1e-7f);
+        REQUIRE_THAT(r2.out()[i], WithinAbs(in[i] / 128.0f, 1e-7f));
     CHECK(r2.out().front() == -1.0f);
 
     checkIdentity<CharToFloatBlock>("char_to_float_hf", {DSP_SAMPLE_TYPE_S8}, {DSP_SAMPLE_TYPE_F32});
@@ -271,7 +289,7 @@ TEST_CASE("ndsp ShortToFloatBlock divides by scale", "[dsp][conv][short_to_float
     REQUIRE(r.completed);
     REQUIRE(r.out().size() == in.size());
     for (size_t i = 0; i < in.size(); i++)
-        REQUIRE(std::fabs(r.out()[i] - in[i] / 32768.0f) < 1e-7f);
+        REQUIRE_THAT(r.out()[i], WithinAbs(in[i] / 32768.0f, 1e-7f));
     CHECK(r.out()[0] == -1.0f);
 
     // The id uses "h" (int8) although the input is int16 ("s")
@@ -310,7 +328,7 @@ TEST_CASE("ndsp FloatToCharBlock scales, rounds and clips", "[dsp][conv][float_t
         float v = std::max(-128.0f, std::min(127.0f, in[i] * 127.0f));
         INFO("in = " << in[i]);
         // Rounding mode differs between VOLK kernels, allow one LSB
-        REQUIRE(std::fabs((float)r.out()[i] - v) <= 1.0f);
+        REQUIRE_THAT((float)r.out()[i], WithinAbs(v, 1.0f));
     }
     CHECK(r.out()[0] == 0);
     CHECK(r.out()[6] == 127);

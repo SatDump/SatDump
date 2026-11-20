@@ -48,7 +48,7 @@ TEST_CASE("image::meta metadata is deep copied with the image", "[image][meta]")
     CHECK(img::has_metadata(same));
 }
 
-// image.cpp:36 / meta.cpp:9: copy_meta only copies when the source has
+// Bug: image.cpp:36 / meta.cpp:9: copy_meta only copies when the source has
 // metadata, so assigning an image without metadata keeps the destination's
 // stale metadata.
 TEST_CASE("image::meta assigning an image without metadata clears it", "[image][meta][!shouldfail]")

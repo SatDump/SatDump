@@ -1,5 +1,6 @@
-#include "common/codings/ldpc/labrador/encoder.h"
 #include "common/codings/ldpc/labrador/codes/parity.h"
+#include "common/codings/ldpc/labrador/encoder.h"
+#include "helpers/random.h"
 #include <catch2/catch_test_macros.hpp>
 #include <vector>
 
@@ -7,17 +8,7 @@ namespace
 {
     using namespace satdump::labrador;
 
-    std::vector<uint8_t> randomBytes(int count, uint32_t seed)
-    {
-        std::vector<uint8_t> v(count);
-        uint32_t state = seed;
-        for (auto &b : v)
-        {
-            state = state * 1664525u + 1013904223u;
-            b = state >> 24;
-        }
-        return v;
-    }
+    using test_helpers::randomBytes;
 
     int bitAt(const std::vector<uint8_t> &bytes, uint64_t i) { return (bytes[i / 8] >> (7 - i % 8)) & 1; }
 
@@ -36,7 +27,7 @@ namespace
                 return false;
         return true;
     }
-}
+} // namespace
 
 TEST_CASE("labrador encode_parity_u8 produces valid systematic TC codewords", "[common][codings][ldpc][labrador]")
 {

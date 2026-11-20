@@ -1,11 +1,12 @@
 #include "common/dsp/filter/firdes.h"
+#include "dsp/ndsp_sig_test_helpers.h"
 #include "dsp/pll/costas.h"
 #include "dsp/pll/costas_fast.h"
 #include "dsp/pll/fll_band_edge.h"
 #include "dsp/pll/pll_carrier_tracking.h"
-#include "../filter/ndsp_sig_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cmath>
 
 using Catch::Approx;
 using namespace satdump::ndsp;
@@ -52,7 +53,7 @@ namespace
         for (size_t i = n - 20000; i < n; i++)
         {
             auto v = ndsp_sig_test::toStd(out[i]);
-            auto s = ndsp_sig_test::toStd(syms[i]) * std::polar(1.0, -2.0 * ndsp_sig_test::kPi * m.rot / order);
+            auto s = ndsp_sig_test::toStd(syms[i]) * std::polar(1.0, -2.0 * M_PI * m.rot / order);
             err += std::abs(v * std::conj(s) / std::abs(v * std::conj(s)) - 1.0);
         }
         CHECK(err / 20000.0 < (noise_sigma > 0 ? 0.15 : 0.02));
@@ -119,7 +120,7 @@ TEST_CASE("ndsp CostasBlock and CostasFastBlock clamp the frequency to freq_limi
                 acc += ndsp_sig_test::toStd(sq[i]);
             // BPSK, so the phase is only known modulo pi
             double measured = std::arg(acc) / 2.0;
-            CHECK(std::fabs(std::remainder(std::fabs(measured) - theta, ndsp_sig_test::kPi)) < 0.02);
+            CHECK(std::fabs(std::remainder(std::fabs(measured) - theta, M_PI)) < 0.02);
         }
         else
         {
@@ -215,7 +216,7 @@ TEST_CASE("ndsp FLLBandEdgeBlock configuration round-trip", "[dsp][pll]")
 TEST_CASE("ndsp PLLCarrierTrackingBlock default configuration", "[dsp][pll]")
 {
     // Only the getters are exercised : the loop state itself is never initialized
-    // from the parameters (see the report), so running it is undefined behaviour
+    // from the parameters (see UNTESTED_ISSUES.md), so running it is undefined behaviour
     PLLCarrierTrackingBlock pll;
     CHECK(pll.d_id == "pll_carrier_tracking_cc");
     CHECK(pll.get_cfg("loop_bw").get<float>() == Approx(0.01));

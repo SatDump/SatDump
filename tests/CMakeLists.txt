@@ -22,12 +22,18 @@ file(GLOB_RECURSE SatDump_tests_CPPS CONFIGURE_DEPENDS *.cpp)
 add_executable(satdump_tests ${SatDump_tests_CPPS})
 target_link_libraries(satdump_tests PRIVATE satdump_core Catch2::Catch2)
 
+# Test helpers are included relative to tests/, like src-core headers are
+# relative to src-core/ (e.g. "helpers/temp_files.h", "dsp/ndsp_test_helpers.h")
+target_include_directories(satdump_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
 # Lets tests load files shipped in the repository (e.g. resources/)
 target_compile_definitions(satdump_tests PRIVATE SATDUMP_TEST_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 
-# Register every TEST_CASE with CTest
+# Register every TEST_CASE with CTest. The timeout is well above the longest
+# bounded wait in the test helpers, so a hung test fails instead of stalling
+# the run for CTest's 25 minutes default.
 include(Catch)
-catch_discover_tests(satdump_tests)
+catch_discover_tests(satdump_tests PROPERTIES TIMEOUT 300)
 
 # Code coverage
 if(ENABLE_COVERAGE)
@@ -79,7 +85,7 @@ if(ENABLE_COVERAGE)
                 --print-summary
                 --xml ${COVERAGE_DIR}/coverage.xml
                 --html-details ${COVERAGE_DIR}/index.html
-                -j 8
+                -j ${COVERAGE_JOBS}
                 ${CMAKE_BINARY_DIR}
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
             DEPENDS satdump_tests

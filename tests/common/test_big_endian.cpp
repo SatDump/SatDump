@@ -62,7 +62,7 @@ TEST_CASE("be_uint48_t decodes six big endian bytes", "[common][big_endian]")
     CHECK(v.value() == 0xFFFFFFFFFFFFULL);
 }
 
-// BUG: be_uint64_t uses htonl/ntohl, which operate on 32-bit values, so the
+// Bug: big_endian.h:113,115 be_uint64_t uses htonl/ntohl, which operate on 32-bit values, so the
 // upper 32 bits are dropped and the in-memory layout is not big endian.
 TEST_CASE("be_uint64_t stores big endian and converts back", "[common][big_endian][!shouldfail]")
 {

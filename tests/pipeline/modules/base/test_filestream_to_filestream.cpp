@@ -1,9 +1,9 @@
 #include "pipeline/modules/base/filestream_to_filestream.h"
-#include "../../pipeline_test_helpers.h"
+#include "pipeline/pipeline_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
-using namespace pipeline_test_helpers;
+using namespace pipeline_test;
 namespace pl = satdump::pipeline;
 
 namespace
@@ -102,7 +102,7 @@ TEST_CASE("FileStreamToFileStreamModule without output does not create a file", 
     CHECK_FALSE(std::filesystem::exists(tmp.file("result.bin")));
 }
 
-// filestream_to_filestream.cpp:53 : once the input is exhausted, the last read fails and
+// Bug: filestream_to_filestream.cpp:53 : once the input is exhausted, the last read fails and
 // data_in.tellg() returns -1, which is stored in the unsigned `progress`, so the final stats
 // report an astronomically large percentage instead of 100%.
 TEST_CASE("FileStreamToFileStreamModule reports 100% progress after processing a whole file", "[pipeline][modules][filestream_to_filestream][!shouldfail]")
@@ -138,7 +138,7 @@ TEST_CASE("FileStreamToFileStreamModule streams FIFO input to FIFO output", "[pi
     std::string payload = "0123456789abcdef";
     m.input_fifo->write((uint8_t *)payload.data(), payload.size());
 
-    bool got = waitFor([&]() { return m.output_fifo->getReadable() >= 16; });
+    bool got = test_helpers::waitUntil([&]() { return m.output_fifo->getReadable() >= 16; }, std::chrono::seconds(30));
 
     m.input_active = false;
     m.input_fifo->stopReader();

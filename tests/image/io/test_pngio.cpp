@@ -1,4 +1,4 @@
-#include "../image_test_helpers.h"
+#include "image/image_test_helpers.h"
 #include "image/io.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -73,7 +73,7 @@ TEST_CASE("image::load_png from a memory buffer", "[image][io][png]")
     std::string path = dir.file("buf.png");
     Image in = image_test::makePattern(depth, 9, 5, channels);
     img::save_png(in, path);
-    std::vector<uint8_t> data = image_test::readFile(path);
+    std::vector<uint8_t> data = image_test::readBytes(path);
 
     Image out;
     img::load_png(out, data.data(), data.size());
@@ -128,7 +128,7 @@ TEST_CASE("image::load_png expands palettes unless indexing is disabled", "[imag
     CHECK(idx.get(2) == 1);
 }
 
-// pngio.cpp:44-50: save_png has no colour type for 2 channels, so gray+alpha
+// Bug: pngio.cpp:44-50: save_png has no colour type for 2 channels, so gray+alpha
 // images are written as plain grayscale (with interleaved gray/alpha bytes as
 // pixel data) and the alpha channel is lost.
 TEST_CASE("image::save_png round-trips gray+alpha images", "[image][io][png][!shouldfail]")
@@ -166,7 +166,7 @@ TEST_CASE("image::load_png leaves the image untouched on missing or corrupt file
     std::vector<uint8_t> junk = {0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 13, 'I', 'H', 'D', 'R'};
     junk.resize(junk.size() + 13 + 4, 0);
     std::string bad = dir.file("bad.png");
-    image_test::writeFile(bad, junk);
+    image_test::writeBytes(bad, junk);
     img::load_png(out, bad);
     CHECK(out.width() == 2);
     CHECK(out.get(0) == 5);

@@ -11,10 +11,7 @@ using satdump::projection::Projection;
 namespace
 {
     // 360x180 full-globe equirectangular image, 1 degree per pixel, (0,0) = 180W 90N
-    nlohmann::json globeCfg()
-    {
-        return {{"type", "equirec"}, {"offset_x", -180.0}, {"offset_y", 90.0}, {"scalar_x", 1.0}, {"scalar_y", -1.0}, {"width", 360}, {"height", 180}};
-    }
+    nlohmann::json globeCfg() { return {{"type", "equirec"}, {"offset_x", -180.0}, {"offset_y", 90.0}, {"scalar_x", 1.0}, {"scalar_y", -1.0}, {"width", 360}, {"height", 180}}; }
 
     // Two-line synthetic GCP raytracer: line y has GCPs at x=0 (lon 10) and x=10 (lon 20), lat = y
     nlohmann::json gcpLineCfg(int lines)
@@ -77,7 +74,7 @@ TEST_CASE("Projection with a standard config is standard in both directions", "[
 
 TEST_CASE("Projection forward/inverse round-trip on a geostationary config", "[projection][projection_class]")
 {
-    nlohmann::json cfg = {{"type", "geos"},        {"altitude", 35786023.0}, {"lon0", 0.0},  {"scalar_x", 4000.0}, {"scalar_y", -4000.0},
+    nlohmann::json cfg = {{"type", "geos"},         {"altitude", 35786023.0}, {"lon0", 0.0},   {"scalar_x", 4000.0}, {"scalar_y", -4000.0},
                           {"offset_x", -5424000.0}, {"offset_y", 5424000.0},  {"width", 2712}, {"height", 2712}};
     Projection p;
     p.from_json(cfg);

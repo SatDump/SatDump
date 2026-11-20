@@ -1,14 +1,16 @@
-#include "../products_test_helpers.h"
 #include "image/meta.h"
 #include "products/image/image_calibrator.h"
 #include "products/image/product_expression.h"
+#include "products/products_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <cstdlib>
 
+using Catch::Matchers::WithinAbs;
+using products_test::EventBusGuard;
 using satdump::products::check_expression_product_composite;
 using satdump::products::generate_expression_product_composite;
 using satdump::products::ImageProduct;
-using satdump_test_products::EventBusGuard;
 
 namespace
 {
@@ -174,7 +176,7 @@ TEST_CASE("generate_expression_product_composite uses calibrated channel definit
     REQUIRE(out.channels() == 1);
     for (int y = 0; y < H; y++)
         for (int x = 0; x < W; x++)
-            CHECK(std::abs(out.getf(0, x, y) - std::min(1.0, v1(x, y) / 1000.0 / 10.0)) < 1e-4);
+            CHECK_THAT(out.getf(0, x, y), WithinAbs(std::min(1.0, v1(x, y) / 1000.0 / 10.0), 1e-4));
 }
 
 TEST_CASE("generate_expression_product_composite attaches the reference channel projection", "[products][product_expression]")
@@ -194,10 +196,10 @@ TEST_CASE("generate_expression_product_composite rejects invalid expressions", "
 {
     ImageProduct p;
     buildProduct(p);
-    CHECK_THROWS(generate_expression_product_composite(&p, "ch9"));               // Missing channel
-    CHECK_THROWS(generate_expression_product_composite(&p, "foo + ch1"));         // Unknown token
-    CHECK_THROWS(generate_expression_product_composite(&p, "ch1 +"));             // Syntax error
-    CHECK_THROWS(generate_expression_product_composite(&p, "0.5"));               // No channel at all
+    CHECK_THROWS(generate_expression_product_composite(&p, "ch9"));                 // Missing channel
+    CHECK_THROWS(generate_expression_product_composite(&p, "foo + ch1"));           // Unknown token
+    CHECK_THROWS(generate_expression_product_composite(&p, "ch1 +"));               // Syntax error
+    CHECK_THROWS(generate_expression_product_composite(&p, "0.5"));                 // No channel at all
     CHECK_THROWS(generate_expression_product_composite(&p, "ch1,ch1,ch1,ch1,ch1")); // Over 4 outputs
 }
 

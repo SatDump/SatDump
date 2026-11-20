@@ -1,4 +1,6 @@
 #include "common/codings/viterbi/viterbi_punc.h"
+#include "helpers/prefilled.h"
+#include "helpers/random.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <string>
@@ -28,17 +30,15 @@ namespace
         return std::make_shared<Depunc78>();
     }
 
-    std::vector<uint8_t> randomBits(int count, uint32_t seed)
+    // The lock search decodes past the end of the depunctured test data, into the never written tail of a
+    // member buffer (see UNTESTED_ISSUES.md), so which branch locks depends on leftover memory. Build the
+    // decoder over memory filled with erasures (128) to make that tail neutral and deterministic.
+    test_helpers::Prefilled<viterbi::Viterbi_Depunc> makeViterbi(const std::string &rate, int max_outsync, uint8_t fill = 128)
     {
-        std::vector<uint8_t> bits(count);
-        uint32_t state = seed;
-        for (auto &b : bits)
-        {
-            state = state * 1664525u + 1013904223u;
-            b = state >> 31;
-        }
-        return bits;
+        return test_helpers::makePrefilled<viterbi::Viterbi_Depunc>(fill, makeDepunc(rate), THRESHOLD, max_outsync, BUFFER);
     }
+
+    using test_helpers::randomBits;
 
     std::vector<int8_t> encodePunctured(const std::vector<uint8_t> &bits, const Rate &rate)
     {
@@ -77,12 +77,11 @@ namespace
             e += decoded[i] != (bits[i + delay] ^ polarity);
         return e;
     }
-}
+} // namespace
 
 TEST_CASE("Viterbi_Depunc locks onto and decodes every DVB-S punctured rate", "[common][codings][viterbi]")
 {
-    auto rate = GENERATE(Rate{"2/3", "10", "11", 2.0 / 3.0}, Rate{"3/4", "101", "110", 3.0 / 4.0},
-                         Rate{"5/6", "10101", "11010", 5.0 / 6.0}, Rate{"7/8", "1000101", "1111010", 7.0 / 8.0});
+    auto rate = GENERATE(Rate{"2/3", "10", "11", 2.0 / 3.0}, Rate{"3/4", "101", "110", 3.0 / 4.0}, Rate{"5/6", "10101", "11010", 5.0 / 6.0}, Rate{"7/8", "1000101", "1111010", 7.0 / 8.0});
     int offset = GENERATE(0, 1, 2);
     INFO("rate " << rate.name << ", offset " << offset);
 
@@ -90,7 +89,8 @@ TEST_CASE("Viterbi_Depunc locks onto and decodes every DVB-S punctured rate", "[
     std::vector<uint8_t> bits = randomBits(BUFFER * buffers, 1);
     std::vector<int8_t> stream = encodePunctured(bits, rate);
 
-    viterbi::Viterbi_Depunc vit(makeDepunc(rate.name), THRESHOLD, 5, BUFFER);
+    auto vitp = makeViterbi(rate.name, 5);
+    viterbi::Viterbi_Depunc &vit = *vitp;
     std::vector<uint8_t> decoded = run(vit, stream, offset, buffers);
 
     CHECK(vit.getState() == 1);
@@ -127,7 +127,8 @@ TEST_CASE("Viterbi_Depunc resolves a 90 degree rotation", "[common][codings][vit
     std::vector<int8_t> stream = encodePunctured(bits, rate);
     rotate_soft(stream.data(), stream.size(), PHASE_270, false);
 
-    viterbi::Viterbi_Depunc vit(makeDepunc(rate.name), THRESHOLD, 5, BUFFER);
+    auto vitp = makeViterbi(rate.name, 5);
+    viterbi::Viterbi_Depunc &vit = *vitp;
     std::vector<uint8_t> decoded = run(vit, stream, 0, buffers);
 
     CHECK(vit.getState() == 1);
@@ -144,7 +145,8 @@ TEST_CASE("Viterbi_Depunc does not lock on noise and loses lock after max_outsyn
     for (size_t i = 0; i < junk.size(); i++)
         noise[i] = junk[i] ? 100 : -100;
 
-    viterbi::Viterbi_Depunc vit(makeDepunc(rate.name), THRESHOLD, maxOutsync, BUFFER);
+    auto vitp = makeViterbi(rate.name, maxOutsync);
+    viterbi::Viterbi_Depunc &vit = *vitp;
     std::vector<uint8_t> out(BUFFER * 8);
 
     std::vector<int8_t> in(noise.begin(), noise.begin() + BUFFER);

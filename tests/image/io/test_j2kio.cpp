@@ -1,4 +1,4 @@
-#include "../image_test_helpers.h"
+#include "image/image_test_helpers.h"
 #include "image/io.h"
 #include "image/j2k_utils.h"
 #include <catch2/catch_test_macros.hpp>
@@ -24,7 +24,7 @@ TEST_CASE("image::save_j2k / load_j2k round-trip losslessly", "[image][io][j2k]"
     CHECK(image_test::samePixels(out, in));
 }
 
-// j2kio.cpp:31,85: the encoder always uses 5 resolution levels, which OpenJPEG
+// Bug: j2kio.cpp:31,85: the encoder always uses 5 resolution levels, which OpenJPEG
 // rejects for images smaller than 16 pixels in either dimension. The return
 // value of opj_setup_encoder is ignored, so an empty file is written silently.
 TEST_CASE("image::save_j2k / load_j2k round-trip small images", "[image][io][j2k][!shouldfail]")
@@ -49,7 +49,7 @@ TEST_CASE("image::load_j2k leaves the image untouched on missing or corrupt file
     CHECK(out.width() == 2);
 
     std::string bad = dir.file("bad.j2k");
-    image_test::writeFile(bad, {0xFF, 0x4F, 0xFF, 0x51, 0x00, 0x02, 0x00, 0x00});
+    image_test::writeBytes(bad, {0xFF, 0x4F, 0xFF, 0x51, 0x00, 0x02, 0x00, 0x00});
     img::load_j2k(out, bad);
     CHECK(out.width() == 2);
     CHECK(out.get(0) == 7);
@@ -69,7 +69,7 @@ TEST_CASE("image::decompress_j2k_openjp2 decodes a codestream from memory", "[im
     std::string path = dir.file("mem.j2k");
     Image in = image_test::makePattern(16, 33, 17, 1);
     img::save_j2k(in, path);
-    std::vector<uint8_t> data = image_test::readFile(path);
+    std::vector<uint8_t> data = image_test::readBytes(path);
 
     Image out = img::decompress_j2k_openjp2(data.data(), data.size());
     REQUIRE(out.depth() == 16);
@@ -86,7 +86,7 @@ TEST_CASE("image::decompress_j2k_openjp2 keeps raw sample values of 8-bit stream
     std::string path = dir.file("mem8.j2k");
     Image in = image_test::makePattern(8, 16, 16, 1);
     img::save_j2k(in, path);
-    std::vector<uint8_t> data = image_test::readFile(path);
+    std::vector<uint8_t> data = image_test::readBytes(path);
 
     Image out = img::decompress_j2k_openjp2(data.data(), data.size());
     REQUIRE(out.depth() == 16);

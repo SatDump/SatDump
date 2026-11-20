@@ -2,9 +2,10 @@
 #include "common/dsp/window/window.h"
 #include "dsp/fft/fft_helper.h"
 #include "dsp/fft/fft_pan.h"
-#include "../filter/ndsp_sig_test_helpers.h"
+#include "dsp/ndsp_sig_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cmath>
 
 using Catch::Approx;
 using namespace satdump::ndsp;
@@ -23,7 +24,7 @@ namespace
         auto pan = std::make_shared<FFTPanBlock>();
         pan->set_fft_settings(size, samplerate, rate);
         REQUIRE(pan->set_cfg("avg_num", 1.0) == Block::RES_OK);
-        // The averaging buffer is never initialized by the block (see the report), clear it
+        // The averaging buffer is never initialized by the block (see UNTESTED_ISSUES.md), clear it
         std::fill(pan->output_fft_buff, pan->output_fft_buff + dsp::STREAM_BUFFER_SIZE, 0.0f);
         pan->on_fft = [cap](float *v, size_t n)
         {
@@ -51,7 +52,7 @@ TEST_CASE("ndsp FFTPanBlock spectrum of a tone peaks in the expected (centered) 
         INFO("bin " << k);
         auto cap = std::make_shared<FFTCapture>();
         auto pan = makePan(N, N * 8, 8, cap); // One FFT every N samples
-        auto in = ndsp_sig_test::complexTone(N * 20, 2 * ndsp_sig_test::kPi * k / N, 1.0);
+        auto in = ndsp_sig_test::complexTone(N * 20, 2 * M_PI * k / N, 1.0);
         auto r = ndsp_sig_test::runBlock<complex_t, float>(pan, in, sinkOptions(4096));
         REQUIRE(r.completed);
 
@@ -80,7 +81,7 @@ TEST_CASE("ndsp FFTPanBlock skips samples when the FFT rate is lower than sample
     auto cap = std::make_shared<FFTCapture>();
     // One FFT every 4096 samples, of the first 512 of them
     auto pan = makePan(N, 4096 * 10, 10, cap);
-    auto in = ndsp_sig_test::complexTone(4096 * 12, 2 * ndsp_sig_test::kPi * 50 / N, 1.0);
+    auto in = ndsp_sig_test::complexTone(4096 * 12, 2 * M_PI * 50 / N, 1.0);
     auto r = ndsp_sig_test::runBlock<complex_t, float>(pan, in, sinkOptions(4096));
     REQUIRE(r.completed);
     CHECK(cap->count >= 10);
@@ -122,7 +123,7 @@ TEST_CASE("ndsp FFTHelper forward and backward transforms", "[dsp][fft]")
     FFTHelper<complex_t> fwd(N, true);
     FFTHelper<complex_t> bwd(N, false);
     for (int i = 0; i < N; i++)
-        fwd.fft_in[i] = ndsp_sig_test::fromStd(std::polar(1.0, 2 * ndsp_sig_test::kPi * 5 * i / N));
+        fwd.fft_in[i] = ndsp_sig_test::fromStd(std::polar(1.0, 2 * M_PI * 5 * i / N));
     fwd.execute();
     for (int i = 0; i < N; i++)
     {
@@ -139,7 +140,7 @@ TEST_CASE("ndsp FFTHelper forward and backward transforms", "[dsp][fft]")
     bwd.execute();
     for (int i = 0; i < N; i++)
     {
-        auto expected = std::polar((double)N, 2 * ndsp_sig_test::kPi * 5 * i / N);
+        auto expected = std::polar((double)N, 2 * M_PI * 5 * i / N);
         CHECK(bwd.fft_out[i].real == Approx(expected.real()).margin(1e-2));
         CHECK(bwd.fft_out[i].imag == Approx(expected.imag()).margin(1e-2));
     }

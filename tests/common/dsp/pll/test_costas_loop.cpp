@@ -1,7 +1,8 @@
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/pll/costas_loop.h"
-#include "../dsp_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cmath>
 
 using Catch::Approx;
 
@@ -75,7 +76,7 @@ namespace
         REQUIRE(r.output.size() == in.size());
         return {r.output, costas.getFreq()};
     }
-}
+} // namespace
 
 TEST_CASE("CostasLoopBlock order 2 locks onto BPSK with a frequency offset", "[common][dsp][costas]")
 {
@@ -146,6 +147,10 @@ TEST_CASE("CostasLoopBlock preserves amplitude", "[common][dsp][costas]")
     for (auto &v : in)
         v *= 0.25f;
     auto r = runCostas(in, 0.01f, 2);
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < in.size(); i++)
-        REQUIRE(r.out[i].norm() == Approx(0.25f).epsilon(1e-4));
+        if (!(r.out[i].norm() == Approx(0.25f).epsilon(1e-4)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }

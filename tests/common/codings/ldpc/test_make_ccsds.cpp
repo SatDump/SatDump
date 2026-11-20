@@ -1,5 +1,5 @@
-#include "common/codings/ldpc/make_ccsds.h"
 #include "common/codings/ldpc/labrador/codes/parity.h"
+#include "common/codings/ldpc/make_ccsds.h"
 #include <catch2/catch_test_macros.hpp>
 #include <map>
 #include <set>
@@ -14,19 +14,15 @@ namespace
         ccsds_ar4ja::ar4ja_rate_t rate;
         ccsds_ar4ja::ar4ja_blocksize_t block;
         int k;
-        int m;          // circulant size from CCSDS 131.0-B table 7-3
-        int colBlocks;  // 5 for r=1/2, 7 for 2/3, 11 for 4/5
+        int m;         // circulant size from CCSDS 131.0-B table 7-3
+        int colBlocks; // 5 for r=1/2, 7 for 2/3, 11 for 4/5
     };
 
     const Ar4jaCase AR4JA_CASES[] = {
-        {ccsds_ar4ja::AR4JA_RATE_1_2, ccsds_ar4ja::AR4JA_BLOCK_1024, 1024, 512, 5},
-        {ccsds_ar4ja::AR4JA_RATE_2_3, ccsds_ar4ja::AR4JA_BLOCK_1024, 1024, 256, 7},
-        {ccsds_ar4ja::AR4JA_RATE_4_5, ccsds_ar4ja::AR4JA_BLOCK_1024, 1024, 128, 11},
-        {ccsds_ar4ja::AR4JA_RATE_1_2, ccsds_ar4ja::AR4JA_BLOCK_4096, 4096, 2048, 5},
-        {ccsds_ar4ja::AR4JA_RATE_2_3, ccsds_ar4ja::AR4JA_BLOCK_4096, 4096, 1024, 7},
-        {ccsds_ar4ja::AR4JA_RATE_4_5, ccsds_ar4ja::AR4JA_BLOCK_4096, 4096, 512, 11},
-        {ccsds_ar4ja::AR4JA_RATE_1_2, ccsds_ar4ja::AR4JA_BLOCK_16384, 16384, 8192, 5},
-        {ccsds_ar4ja::AR4JA_RATE_2_3, ccsds_ar4ja::AR4JA_BLOCK_16384, 16384, 4096, 7},
+        {ccsds_ar4ja::AR4JA_RATE_1_2, ccsds_ar4ja::AR4JA_BLOCK_1024, 1024, 512, 5},     {ccsds_ar4ja::AR4JA_RATE_2_3, ccsds_ar4ja::AR4JA_BLOCK_1024, 1024, 256, 7},
+        {ccsds_ar4ja::AR4JA_RATE_4_5, ccsds_ar4ja::AR4JA_BLOCK_1024, 1024, 128, 11},    {ccsds_ar4ja::AR4JA_RATE_1_2, ccsds_ar4ja::AR4JA_BLOCK_4096, 4096, 2048, 5},
+        {ccsds_ar4ja::AR4JA_RATE_2_3, ccsds_ar4ja::AR4JA_BLOCK_4096, 4096, 1024, 7},    {ccsds_ar4ja::AR4JA_RATE_4_5, ccsds_ar4ja::AR4JA_BLOCK_4096, 4096, 512, 11},
+        {ccsds_ar4ja::AR4JA_RATE_1_2, ccsds_ar4ja::AR4JA_BLOCK_16384, 16384, 8192, 5},  {ccsds_ar4ja::AR4JA_RATE_2_3, ccsds_ar4ja::AR4JA_BLOCK_16384, 16384, 4096, 7},
         {ccsds_ar4ja::AR4JA_RATE_4_5, ccsds_ar4ja::AR4JA_BLOCK_16384, 16384, 2048, 11},
     };
 
@@ -54,7 +50,7 @@ namespace
                 edges.insert({r, c});
         return edges;
     }
-}
+} // namespace
 
 TEST_CASE("make_ar4ja_code dimensions and circulant size for every rate and block size", "[common][codings][ldpc]")
 {
@@ -92,12 +88,9 @@ TEST_CASE("make_ar4ja_code matches the labrador parity check iterator for TM cod
         ccsds_ar4ja::ar4ja_rate_t rate;
         ccsds_ar4ja::ar4ja_blocksize_t block;
     } cases[] = {
-        {satdump::labrador::TM2048, ccsds_ar4ja::AR4JA_RATE_1_2, ccsds_ar4ja::AR4JA_BLOCK_1024},
-        {satdump::labrador::TM1536, ccsds_ar4ja::AR4JA_RATE_2_3, ccsds_ar4ja::AR4JA_BLOCK_1024},
-        {satdump::labrador::TM1280, ccsds_ar4ja::AR4JA_RATE_4_5, ccsds_ar4ja::AR4JA_BLOCK_1024},
-        {satdump::labrador::TM8192, ccsds_ar4ja::AR4JA_RATE_1_2, ccsds_ar4ja::AR4JA_BLOCK_4096},
-        {satdump::labrador::TM6144, ccsds_ar4ja::AR4JA_RATE_2_3, ccsds_ar4ja::AR4JA_BLOCK_4096},
-        {satdump::labrador::TM5120, ccsds_ar4ja::AR4JA_RATE_4_5, ccsds_ar4ja::AR4JA_BLOCK_4096},
+        {satdump::labrador::TM2048, ccsds_ar4ja::AR4JA_RATE_1_2, ccsds_ar4ja::AR4JA_BLOCK_1024}, {satdump::labrador::TM1536, ccsds_ar4ja::AR4JA_RATE_2_3, ccsds_ar4ja::AR4JA_BLOCK_1024},
+        {satdump::labrador::TM1280, ccsds_ar4ja::AR4JA_RATE_4_5, ccsds_ar4ja::AR4JA_BLOCK_1024}, {satdump::labrador::TM8192, ccsds_ar4ja::AR4JA_RATE_1_2, ccsds_ar4ja::AR4JA_BLOCK_4096},
+        {satdump::labrador::TM6144, ccsds_ar4ja::AR4JA_RATE_2_3, ccsds_ar4ja::AR4JA_BLOCK_4096}, {satdump::labrador::TM5120, ccsds_ar4ja::AR4JA_RATE_4_5, ccsds_ar4ja::AR4JA_BLOCK_4096},
     };
 
     for (auto &tc : cases)
@@ -118,10 +111,22 @@ TEST_CASE("make_r78_code builds the CCSDS (8176,7154) quasi-cyclic matrix", "[co
     CHECK(h.get_n_connections() == 1022 * 32);
     CHECK(h.get_rows_max_degree() == 32);
     CHECK(h.get_cols_max_degree() == 4);
-    for (size_t r = 0; r < h.get_n_rows(); r++)
-        REQUIRE(h.get_cols_from_row(r).size() == 32);
-    for (size_t c = 0; c < h.get_n_cols(); c++)
-        REQUIRE(h.get_rows_from_col(c).size() == 4);
+    {
+        size_t mismatches = 0, first = 0;
+        for (size_t r = 0; r < h.get_n_rows(); r++)
+            if (!(h.get_cols_from_row(r).size() == 32) && mismatches++ == 0)
+                first = r;
+        INFO("first mismatch at row " << first);
+        REQUIRE(mismatches == 0);
+    }
+    {
+        size_t mismatches = 0, first = 0;
+        for (size_t c = 0; c < h.get_n_cols(); c++)
+            if (!(h.get_rows_from_col(c).size() == 4) && mismatches++ == 0)
+                first = c;
+        INFO("first mismatch at column " << first);
+        REQUIRE(mismatches == 0);
+    }
 
     // Quasi-cyclic: shifting a row by one inside each circulant gives the next row
     for (size_t r = 0; r + 1 < 511; r += 50)

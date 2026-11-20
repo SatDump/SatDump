@@ -1,5 +1,5 @@
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/pll/pll_carrier_tracking.h"
-#include "../dsp_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -20,13 +20,14 @@ TEST_CASE("PLLCarrierTrackingBlock locks onto a carrier and brings it to DC", "[
 
         CHECK(pll.getFreq() == Approx(f).margin(1e-4));
 
-        // Locked: output is a constant at the carrier amplitude, on the real axis
+        // Locked: output is a constant at the carrier amplitude, on the real axis.
+        // The VCO uses fast_cos / fast_sin, so it is only unit-magnitude to ~0.1 %
+        size_t mismatches = 0, first = 0;
         for (size_t i = in.size() / 2; i < in.size(); i++)
-        {
-            REQUIRE(fabs(atan2(r.output[i].imag, r.output[i].real)) < 0.01);
-            // The VCO uses fast_cos / fast_sin, so it is only unit-magnitude to ~0.1 %
-            REQUIRE(r.output[i].norm() == Approx(0.8f).epsilon(5e-3));
-        }
+            if ((!(fabs(atan2(r.output[i].imag, r.output[i].real)) < 0.01) || !(r.output[i].norm() == Approx(0.8f).epsilon(5e-3))) && mismatches++ == 0)
+                first = i;
+        INFO("first mismatch at sample " << first);
+        REQUIRE(mismatches == 0);
     }
 }
 

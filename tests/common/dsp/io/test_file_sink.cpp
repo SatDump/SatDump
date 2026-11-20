@@ -1,7 +1,7 @@
-#include "common/dsp/io/file_sink.h"
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/io/baseband_interface.h"
-#include "../dsp_test_helpers.h"
-#include "io_test_helpers.h"
+#include "common/dsp/io/file_sink.h"
+#include "common/dsp/io/io_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -42,7 +42,7 @@ namespace
         rd.close();
         return out;
     }
-}
+} // namespace
 
 TEST_CASE("FileSinkBlock names the file after the sample format", "[common][dsp][file_sink]")
 {
@@ -73,8 +73,12 @@ TEST_CASE("FileSinkBlock records cf32 exactly", "[common][dsp][file_sink]")
     CHECK(written == sig.size() * sizeof(complex_t));
     CHECK(std::filesystem::file_size(path) == sig.size() * sizeof(complex_t));
     auto back = readBack(path, dsp::CF_32, sig.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < sig.size(); i++)
-        REQUIRE(dsp_test::absDiff(back[i], sig[i]) == 0.0f);
+        if (!(dsp_test::absDiff(back[i], sig[i]) == 0.0f) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("FileSinkBlock integer formats round trip within quantization", "[common][dsp][file_sink]")
@@ -97,11 +101,12 @@ TEST_CASE("FileSinkBlock integer formats round trip within quantization", "[comm
         CHECK(written == sig.size() * c.bytes_per_sample);
         CHECK(std::filesystem::file_size(path) == sig.size() * c.bytes_per_sample);
         auto back = readBack(path, type, sig.size());
+        size_t mismatches = 0, first = 0;
         for (size_t i = 0; i < sig.size(); i++)
-        {
-            REQUIRE(fabs(back[i].real - sig[i].real) <= c.tolerance);
-            REQUIRE(fabs(back[i].imag - sig[i].imag) <= c.tolerance);
-        }
+            if ((!(fabs(back[i].real - sig[i].real) <= c.tolerance) || !(fabs(back[i].imag - sig[i].imag) <= c.tolerance)) && mismatches++ == 0)
+                first = i;
+        INFO("first mismatch at sample " << first);
+        REQUIRE(mismatches == 0);
     }
 }
 
@@ -113,7 +118,7 @@ TEST_CASE("FileSinkBlock writes a valid WAV file", "[common][dsp][file_sink]")
     auto path = record(tmp, dsp::WAV_16, sig, written);
     CHECK(written == sig.size() * 4);
 
-    auto b = dsp_test_io::readFile(path);
+    auto b = dsp_test_io::readBytes(path);
     REQUIRE(b.size() == 44 + sig.size() * 4);
     CHECK(memcmp(&b[0], "RIFF", 4) == 0);
     CHECK(readLE<uint32_t>(b, 24) == 48000);
@@ -122,8 +127,12 @@ TEST_CASE("FileSinkBlock writes a valid WAV file", "[common][dsp][file_sink]")
     CHECK(readLE<uint32_t>(b, 4) == sig.size() * 4 + 36);
 
     auto back = readBack(path, dsp::WAV_16, sig.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < sig.size(); i++)
-        REQUIRE(dsp_test::absDiff(back[i], sig[i]) < 2.0f / 32767);
+        if (!(dsp_test::absDiff(back[i], sig[i]) < 2.0f / 32767) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("FileSinkBlock ignores samples when not recording", "[common][dsp][file_sink]")

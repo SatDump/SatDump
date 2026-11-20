@@ -1,4 +1,4 @@
-#include "../image_test_helpers.h"
+#include "image/image_test_helpers.h"
 #include "image/io.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -31,7 +31,7 @@ TEST_CASE("image::save_pbm writes a standard binary header", "[image][io][pbm]")
     for (int i = 0; i < 6; i++)
         in.set(i, i * 40);
     img::save_pbm(in, path);
-    std::vector<uint8_t> data = image_test::readFile(path);
+    std::vector<uint8_t> data = image_test::readBytes(path);
     std::string header = "P5 3 2 255\n";
     REQUIRE(data.size() == header.size() + 6);
     CHECK(std::string(data.begin(), data.begin() + header.size()) == header);
@@ -43,7 +43,7 @@ TEST_CASE("image::save_pbm writes a standard binary header", "[image][io][pbm]")
     in16.set(0, 0x1234);
     std::string path16 = dir.file("hdr16.pgm");
     img::save_pbm(in16, path16);
-    std::vector<uint8_t> d16 = image_test::readFile(path16);
+    std::vector<uint8_t> d16 = image_test::readBytes(path16);
     std::string header16 = "P5 1 1 65535\n";
     REQUIRE(d16.size() == header16.size() + 2);
     CHECK(d16[header16.size()] == 0x12);
@@ -100,7 +100,7 @@ TEST_CASE("image::load_pbm leaves the image untouched on missing or invalid file
 
     std::string bad = dir.file("bad.pgm");
     std::string text = "P3 2 2 255\n1 2 3 4\n"; // ASCII format, unsupported
-    image_test::writeFile(bad, std::vector<uint8_t>(text.begin(), text.end()));
+    image_test::writeBytes(bad, std::vector<uint8_t>(text.begin(), text.end()));
     img::load_pbm(out, bad);
     CHECK(out.width() == 2);
     CHECK(out.get(0) == 3);

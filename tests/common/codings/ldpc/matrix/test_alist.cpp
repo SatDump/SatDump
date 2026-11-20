@@ -1,5 +1,5 @@
-#include "common/codings/ldpc/matrix/alist.h"
 #include "common/codings/ldpc/make_ccsds.h"
+#include "common/codings/ldpc/matrix/alist.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <sstream>
@@ -34,7 +34,7 @@ namespace
         m.add_connection(2, 2);
         return m;
     }
-}
+} // namespace
 
 TEST_CASE("AList write/read round-trips with and without zero padding", "[common][codings][ldpc]")
 {

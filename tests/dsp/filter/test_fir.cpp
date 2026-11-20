@@ -5,9 +5,10 @@
 #include "dsp/filter/hpf.h"
 #include "dsp/filter/lpf.h"
 #include "dsp/filter/rrc.h"
-#include "ndsp_sig_test_helpers.h"
+#include "dsp/ndsp_sig_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cmath>
 
 using Catch::Approx;
 using namespace satdump::ndsp;
@@ -35,19 +36,19 @@ namespace
     template <typename T>
     void checkMatches(const std::vector<T> &out, const std::vector<std::complex<double>> &ref, double tol)
     {
+        size_t mismatches = 0, first = 0;
         for (size_t i = 0; i < out.size(); i++)
         {
-            INFO("sample " << i);
+            bool ok;
             if constexpr (std::is_same_v<T, complex_t>)
-            {
-                REQUIRE(out[i].real == Approx(ref[i].real()).margin(tol));
-                REQUIRE(out[i].imag == Approx(ref[i].imag()).margin(tol));
-            }
+                ok = out[i].real == Approx(ref[i].real()).margin(tol) && out[i].imag == Approx(ref[i].imag()).margin(tol);
             else
-            {
-                REQUIRE(out[i] == Approx(ref[i].real()).margin(tol));
-            }
+                ok = out[i] == Approx(ref[i].real()).margin(tol);
+            if (!ok && mismatches++ == 0)
+                first = i;
         }
+        INFO("first mismatch at sample " << first);
+        REQUIRE(mismatches == 0);
     }
 } // namespace
 
@@ -159,7 +160,7 @@ TEST_CASE("ndsp LPF_Block designs a low-pass filter and filters tones", "[dsp][f
 
     // In-band tone keeps its amplitude (x2), out of band tone is gone
     const size_t n = 40000;
-    double w_in = 2 * ndsp_sig_test::kPi * 30e3 / fs, w_out = 2 * ndsp_sig_test::kPi * 250e3 / fs;
+    double w_in = 2 * M_PI * 30e3 / fs, w_out = 2 * M_PI * 250e3 / fs;
     auto in = ndsp_sig_test::complexTone(n, w_in, 0.5);
     auto noise = ndsp_sig_test::complexTone(n, w_out, 0.5);
     for (size_t i = 0; i < n; i++)
@@ -182,10 +183,10 @@ TEST_CASE("ndsp HPF_Block rejects DC and passes high frequencies", "[dsp][filter
     REQUIRE(ndsp_sig_test::setAll(*hpf, {{"samplerate", fs}, {"cutoff", 6000}, {"transition_width", 2000}}) == Block::RES_OK);
     auto taps = hpf->get_cfg("taps").get<std::vector<float>>();
     CHECK(ndsp_sig_test::magResponse(taps, 0.0) < 1e-2);
-    CHECK(ndsp_sig_test::magResponse(taps, ndsp_sig_test::kPi) == Approx(1.0).epsilon(0.01));
+    CHECK(ndsp_sig_test::magResponse(taps, M_PI) == Approx(1.0).epsilon(0.01));
 
     const size_t n = 30000;
-    double w_hi = 2 * ndsp_sig_test::kPi * 15000 / fs;
+    double w_hi = 2 * M_PI * 15000 / fs;
     auto in = ndsp_sig_test::realTone(n, w_hi, 0.7);
     for (auto &v : in)
         v += 3.0f; // DC
@@ -247,13 +248,17 @@ TEST_CASE("ndsp Gaussian_Block designs normalized gaussian taps", "[dsp][filter]
     auto r = ndsp_sig_test::runBlock<float, float>(g, in);
     REQUIRE(r.completed);
     REQUIRE(r.output().size() == 1000 - 25);
-    for (float v : r.output())
-        REQUIRE(v == Approx(3.0f).epsilon(1e-4));
+    size_t mismatches = 0, first = 0;
+    for (size_t i = 0; i < r.output().size(); i++)
+        if (!(r.output()[i] == Approx(3.0f).epsilon(1e-4)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 
     CHECK(ndsp_sig_test::getAll(*g) == nlohmann::json({{"gain", 3.0}, {"symbolrate", 4.0}, {"alpha", 0.5}, {"ntaps", 25}}));
 }
 
-// Bug : decimating_fir.cpp:100 (and :120, :138) resets decim_pos to 1 right before
+// Bug: decimating_fir.cpp:100 (and :120, :138) resets decim_pos to 1 right before
 // incrementing it, so the next output comes after decimation - 1 inputs instead of
 // decimation. Decimation 2 does not decimate at all, and decimation 1 (the default)
 // outputs a single sample and then nothing, ever.
@@ -271,6 +276,7 @@ TEST_CASE("ndsp DecimatingFIRBlock with decimation 1 behaves like FIRBlock", "[d
     checkMatches(r.output(), ref, 1e-4);
 }
 
+// Bug: decimating_fir.cpp:100 (and :120, :138), same decim_pos reset as above.
 TEST_CASE("ndsp DecimatingFIRBlock decimates by the configured factor", "[dsp][filter][!shouldfail]")
 {
     auto taps = randomTaps(15, 22);

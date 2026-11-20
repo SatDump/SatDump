@@ -1,6 +1,6 @@
 #include "common/codings/ldpc/matrix/sparse_matrix.h"
-#include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <sstream>
 #include <stdexcept>
 
@@ -37,7 +37,7 @@ namespace
         }
         return s;
     }
-}
+} // namespace
 
 TEST_CASE("Sparse_matrix add_connection and degrees", "[common][codings][ldpc]")
 {

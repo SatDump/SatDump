@@ -4,13 +4,13 @@
 TEST_CASE("mpeg_ts::MPEHeader parses a DSM-CC datagram section header", "[common][mpeg_ts][dvb_mpe]")
 {
     uint8_t frm[12] = {
-        0x3E,       // table_id
-        0b10110001, // SSI=1, private=0, reserved, length high nibble = 1
-        0x23,       // length low
-        0x66, 0x55, // MAC 6, 5
-        0b11100111, // reserved, payload scrambling=0b10, address scrambling=0b01, LLC=1, current_next=1
-        0x02, 0x03, // section numbers
-        0x44, 0x33, 0x22, 0x11, // MAC 4..1
+        0x3E,                         // table_id
+        0b10110001,                   // SSI=1, private=0, reserved, length high nibble = 1
+        0x23,                         // length low
+        0x66,       0x55,             // MAC 6, 5
+        0b11100111,                   // reserved, payload scrambling=0b10, address scrambling=0b01, LLC=1, current_next=1
+        0x02,       0x03,             // section numbers
+        0x44,       0x33, 0x22, 0x11, // MAC 4..1
     };
     mpeg_ts::MPEHeader h;
     h.parse(frm);
@@ -37,8 +37,7 @@ namespace
 {
     // Standard 20 byte IPv4 header (plus padding, the parser reads byte 22)
     // 45 00 0054 1c46 4000 40 01 b1e6 c0a80001 c0a800c7
-    uint8_t ipv4_frame[24] = {0x45, 0x00, 0x00, 0x54, 0x1c, 0x46, 0x40, 0x00, 0x40, 0x01, 0xb1, 0xe6,
-                              0xc0, 0xa8, 0x00, 0x01, 0xc0, 0xa8, 0x00, 0xc7, 0x00, 0x00, 0x00, 0x00};
+    uint8_t ipv4_frame[24] = {0x45, 0x00, 0x00, 0x54, 0x1c, 0x46, 0x40, 0x00, 0x40, 0x01, 0xb1, 0xe6, 0xc0, 0xa8, 0x00, 0x01, 0xc0, 0xa8, 0x00, 0xc7, 0x00, 0x00, 0x00, 0x00};
 } // namespace
 
 TEST_CASE("mpeg_ts::IPv4Header parses version and addresses", "[common][mpeg_ts][dvb_mpe]")
@@ -57,7 +56,7 @@ TEST_CASE("mpeg_ts::IPv4Header parses version and addresses", "[common][mpeg_ts]
     CHECK(h.target_ip_4 == 199);
 }
 
-// BUG: dvb_mpe.cpp:28-38 - IPv4Header::parse reads IHL..protocol one byte too
+// Bug: dvb_mpe.cpp:28-38 - IPv4Header::parse reads IHL..protocol one byte too
 // late (e.g. IHL from byte 1, total length from bytes 3-4) and the checksum
 // from bytes 22 and 11 instead of bytes 10-11.
 TEST_CASE("mpeg_ts::IPv4Header parses the remaining header fields", "[common][mpeg_ts][dvb_mpe][!shouldfail]")

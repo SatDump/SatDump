@@ -1,7 +1,8 @@
 #include "common/codings/turbo/ccsds_turbo.h"
+#include "helpers/random.h"
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
-#include <algorithm>
 #include <cmath>
 #include <string>
 #include <vector>
@@ -29,14 +30,7 @@ namespace
         }
     };
 
-    std::vector<uint8_t> randomBytes(int count, uint32_t seed)
-    {
-        Lcg rng(seed);
-        std::vector<uint8_t> v(count);
-        for (auto &b : v)
-            b = rng.next() >> 24;
-        return v;
-    }
+    using test_helpers::randomBytes;
 
     // CCSDS 131.0-B section 6 turbo interleaver (k1 = 8, k2 = info bytes)
     std::vector<int> ccsdsPermutation(int k2)
@@ -158,7 +152,7 @@ namespace
             out[i] = bits[i] ? 1.0f : -1.0f;
         return out;
     }
-}
+} // namespace
 
 TEST_CASE("CCSDSTurbo frame and codeword lengths for all bases and rates", "[common][codings][turbo]")
 {
@@ -256,7 +250,7 @@ TEST_CASE("CCSDSTurbo decodes through AWGN", "[common][codings][turbo]")
     CHECK(decoded == frame);
 }
 
-// BUG: encode() only clears codeword_length()/8 bytes, so when the codeword length is not a multiple
+// Bug: encode() only clears codeword_length()/8 bytes, so when the codeword length is not a multiple
 // of 8 (every rate 1/3 base: 3 * (k + 4) bits) the last partial byte keeps stale bits from the caller's
 // buffer shifted into its upper half (ccsds_turbo.cpp:150).
 TEST_CASE("CCSDSTurbo::encode output does not depend on the previous buffer contents", "[common][codings][turbo][!shouldfail]")

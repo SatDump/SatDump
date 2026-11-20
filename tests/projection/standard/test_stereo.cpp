@@ -1,10 +1,10 @@
-#include "proj_test_helpers.h"
+#include "projection/standard/proj_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 using Catch::Matchers::WithinAbs;
-using satdump_test_proj_standard::lonDiff;
-using satdump_test_proj_standard::ScopedProj;
+using proj_test::lonDiff;
+using proj_test::ScopedProj;
 
 namespace
 {

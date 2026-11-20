@@ -1,32 +1,17 @@
 #include "common/colormaps.h"
+#include "helpers/temp_files.h"
 #include <catch2/catch_test_macros.hpp>
-#include <filesystem>
-#include <fstream>
-#include <random>
 
 namespace
 {
-    // Writes a file in the temp directory, removed when the object goes away
-    struct TempFile
-    {
-        std::filesystem::path path;
-
-        TempFile(const std::string &content)
-        {
-            std::mt19937 rng(std::random_device{}());
-            path = std::filesystem::temp_directory_path() / ("satdump_test_colormap_" + std::to_string(rng()) + ".json");
-            std::ofstream(path) << content;
-        }
-
-        ~TempFile() { std::filesystem::remove(path); }
-    };
+    using test_helpers::TempFile;
 
     uint32_t abgr(uint8_t r, uint8_t g, uint8_t b) { return 0xFF000000u | (uint32_t(b) << 16) | (uint32_t(g) << 8) | r; }
 } // namespace
 
 TEST_CASE("colormaps::loadMap reads name, author and hex colors", "[common][colormaps]")
 {
-    TempFile f(R"({"name": "Test", "author": "Unit", "map": ["#000000", "#FF8040", "#0a0B0c"]})");
+    TempFile f("colormap.json", R"({"name": "Test", "author": "Unit", "map": ["#000000", "#FF8040", "#0a0B0c"]})");
 
     colormaps::Map map = colormaps::loadMap(f.path.string());
 
@@ -43,7 +28,7 @@ TEST_CASE("colormaps::loadMap reads name, author and hex colors", "[common][colo
 
 TEST_CASE("colormaps::loadMap returns an empty map when keys are missing", "[common][colormaps]")
 {
-    TempFile f(R"({"name": "Test"})");
+    TempFile f("colormap.json", R"({"name": "Test"})");
 
     colormaps::Map map = colormaps::loadMap(f.path.string());
 
@@ -53,7 +38,7 @@ TEST_CASE("colormaps::loadMap returns an empty map when keys are missing", "[com
 
 TEST_CASE("colormaps::loadMap throws on invalid JSON", "[common][colormaps]")
 {
-    TempFile f("this is not json");
+    TempFile f("colormap.json", "this is not json");
     CHECK_THROWS(colormaps::loadMap(f.path.string()));
 }
 

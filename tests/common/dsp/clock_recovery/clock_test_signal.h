@@ -6,7 +6,7 @@ Raised-cosine shaped symbols evaluated at arbitrary (fractional) samples per sym
 so the recovered samples are ISI free when sampled at the right instant.
 */
 
-#include "../dsp_test_helpers.h"
+#include "common/dsp/dsp_test_helpers.h"
 #include <cmath>
 #include <vector>
 
@@ -17,10 +17,10 @@ namespace dsp_test_clock
         if (fabs(t) < 1e-9)
             return 1.0;
         double d = 1.0 - (2 * beta * t) * (2 * beta * t);
-        double s = sin(dsp_test::kPi * t) / (dsp_test::kPi * t);
+        double s = sin(M_PI * t) / (M_PI * t);
         if (fabs(d) < 1e-9)
-            return (dsp_test::kPi / 4.0) * s; // Limit at t = +-1/(2 beta)
-        return s * cos(dsp_test::kPi * beta * t) / d;
+            return (M_PI / 4.0) * s; // Limit at t = +-1/(2 beta)
+        return s * cos(M_PI * beta * t) / d;
     }
 
     inline std::vector<float> randomSymbols(size_t n, uint32_t seed)
@@ -71,4 +71,4 @@ namespace dsp_test_clock
         }
         return best;
     }
-}
+} // namespace dsp_test_clock

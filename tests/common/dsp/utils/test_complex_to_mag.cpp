@@ -1,5 +1,5 @@
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/utils/complex_to_mag.h"
-#include "../dsp_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -24,8 +24,12 @@ TEST_CASE("ComplexToMagBlock outputs |z|", "[common][dsp][complex_to_mag]")
     CHECK(r.output[0] == Approx(5.0f));
     CHECK(r.output[1] == 0.0f);
     CHECK(r.output[2] == Approx(13.0f));
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < in.size(); i++)
-        REQUIRE(r.output[i] == Approx(std::hypot(in[i].real, in[i].imag)).epsilon(1e-5));
+        if (!(r.output[i] == Approx(std::hypot(in[i].real, in[i].imag)).epsilon(1e-5)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("ComplexToMagBlock demodulates AM", "[common][dsp][complex_to_mag]")
@@ -42,6 +46,10 @@ TEST_CASE("ComplexToMagBlock demodulates AM", "[common][dsp][complex_to_mag]")
     dsp::ComplexToMagBlock blk(input);
     auto r = dsp_test::runBlock(blk, input, in, 2048);
     REQUIRE(r.completed);
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < n; i++)
-        REQUIRE(r.output[i] == Approx(1 + 0.5 * cos(0.01 * i)).margin(1e-5));
+        if (!(r.output[i] == Approx(1 + 0.5 * cos(0.01 * i)).margin(1e-5)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }

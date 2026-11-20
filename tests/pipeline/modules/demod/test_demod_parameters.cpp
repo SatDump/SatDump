@@ -1,9 +1,9 @@
-#include "pipeline/modules/demod/module_demod_base.h"
-#include "../../pipeline_test_helpers.h"
 #include "core/exception.h"
+#include "pipeline/modules/demod/module_demod_base.h"
+#include "pipeline/pipeline_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 
-using namespace pipeline_test_helpers;
+using namespace pipeline_test;
 namespace pl = satdump::pipeline;
 
 // Only constructor-level parameter validation is covered: actually running a demodulator needs
@@ -13,7 +13,7 @@ TEST_CASE("Demodulator modules require a samplerate parameter", "[pipeline][modu
 {
     ModuleRegistryGuard reg;
     EventBusGuard bus;
-    MainConfigGuard cfg;
+    ConfigGuard cfg;
     pl::registerModules();
 
     for (std::string id : {"psk_demod", "fsk_demod", "pm_demod", "sdpsk_demod", "xfsk_burst_demod"})
@@ -38,16 +38,13 @@ TEST_CASE("PSK demodulator validates its constellation parameter", "[pipeline][m
 {
     ModuleRegistryGuard reg;
     EventBusGuard bus;
-    MainConfigGuard cfg;
+    ConfigGuard cfg;
     pl::registerModules();
     satdump::satdump_cfg.main_cfg["user_interface"]["show_waterfall_demod_fft"]["value"] = false;
 
     nlohmann::json params = {{"samplerate", 48000}, {"symbolrate", 1200}, {"rrc_alpha", 0.5}, {"pll_bw", 0.01}};
 
-    SECTION("missing constellation")
-    {
-        CHECK_THROWS_AS(pl::getModuleInstance("psk_demod", "in.cf32", "out", params), satdump::satdump_exception_t);
-    }
+    SECTION("missing constellation") { CHECK_THROWS_AS(pl::getModuleInstance("psk_demod", "in.cf32", "out", params), satdump::satdump_exception_t); }
 
     SECTION("valid parameters")
     {

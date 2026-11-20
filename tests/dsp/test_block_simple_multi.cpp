@@ -1,5 +1,5 @@
 #include "dsp/block_simple_multi.h"
-#include "ndsp_test_helpers.h"
+#include "dsp/ndsp_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 
 using namespace satdump::ndsp;
@@ -10,9 +10,7 @@ namespace
     class SumDiff : public BlockSimpleMulti<float, float, 2, 2>
     {
     public:
-        SumDiff()
-            : BlockSimpleMulti<float, float, 2, 2>("sumdiff_ff", {{"a", DSP_SAMPLE_TYPE_F32}, {"b", DSP_SAMPLE_TYPE_F32}},
-                                                   {{"sum", DSP_SAMPLE_TYPE_F32}, {"diff", DSP_SAMPLE_TYPE_F32}})
+        SumDiff() : BlockSimpleMulti<float, float, 2, 2>("sumdiff_ff", {{"a", DSP_SAMPLE_TYPE_F32}, {"b", DSP_SAMPLE_TYPE_F32}}, {{"sum", DSP_SAMPLE_TYPE_F32}, {"diff", DSP_SAMPLE_TYPE_F32}})
         {
             output_buffer_size_ratio[1] = 0.5;
         }

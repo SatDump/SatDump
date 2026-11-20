@@ -1,5 +1,5 @@
 #include "dsp/block.h"
-#include "ndsp_test_helpers.h"
+#include "dsp/ndsp_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <stdexcept>
 

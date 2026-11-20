@@ -1,11 +1,11 @@
-#include "handlers/vector/shapefile_handler.h"
-#include "../../pipeline/pipeline_test_helpers.h"
 #include "db/db_handler.h"
+#include "handlers/vector/shapefile_handler.h"
 #include "init.h"
+#include "pipeline/pipeline_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
-using namespace pipeline_test_helpers;
+using namespace pipeline_test;
 using satdump::handlers::ShapefileHandler;
 
 namespace

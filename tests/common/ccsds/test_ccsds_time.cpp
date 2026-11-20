@@ -8,9 +8,7 @@ namespace
     // CCSDS Day Segmented (CDS) time code: 16-bit day, 32-bit ms of day, 16-bit us of ms
     std::vector<uint8_t> makeCds(uint16_t days, uint32_t ms, uint16_t us)
     {
-        return {(uint8_t)(days >> 8), (uint8_t)days,
-                (uint8_t)(ms >> 24), (uint8_t)(ms >> 16), (uint8_t)(ms >> 8), (uint8_t)ms,
-                (uint8_t)(us >> 8), (uint8_t)us};
+        return {(uint8_t)(days >> 8), (uint8_t)days, (uint8_t)(ms >> 24), (uint8_t)(ms >> 16), (uint8_t)(ms >> 8), (uint8_t)ms, (uint8_t)(us >> 8), (uint8_t)us};
     }
 
     ccsds::CCSDSPacket packetWithPayload(const std::vector<uint8_t> &payload)
@@ -99,8 +97,7 @@ TEST_CASE("parseCCSDSTimeFullRaw matches parseCCSDSTimeFull on the same bytes", 
 
     CHECK(ccsds::parseCCSDSTimeFullRaw(raw.data(), EPOCH_1958_TO_UNIX) == ccsds::parseCCSDSTimeFull(pkt, EPOCH_1958_TO_UNIX));
     CHECK(ccsds::parseCCSDSTimeFullRaw(raw.data(), 0) == Catch::Approx(21000 * 86400.0 + 86399.999999).margin(1e-6));
-    CHECK(ccsds::parseCCSDSTimeFullRaw(raw.data(), 0, 100, 10000) ==
-          Catch::Approx(21000 * 86400.0 + 863999.99 + 0.0999).margin(1e-6));
+    CHECK(ccsds::parseCCSDSTimeFullRaw(raw.data(), 0, 100, 10000) == Catch::Approx(21000 * 86400.0 + 863999.99 + 0.0999).margin(1e-6));
 }
 
 TEST_CASE("parseCCSDSTimeFullRawUnsegmented subtracts the leap second field", "[common][ccsds][time]")
@@ -116,10 +113,7 @@ TEST_CASE("parseCCSDSTimeFullRawUnsegmented subtracts the leap second field", "[
         CHECK(ccsds::parseCCSDSTimeFullRawUnsegmented(other, 0, 1.0 / 65536.0) == t);
     }
 
-    SECTION("offset is in days")
-    {
-        CHECK(ccsds::parseCCSDSTimeFullRawUnsegmented(data, 2, 1.0 / 65536.0) == Catch::Approx(t + 2 * 86400.0));
-    }
+    SECTION("offset is in days") { CHECK(ccsds::parseCCSDSTimeFullRawUnsegmented(data, 2, 1.0 / 65536.0) == Catch::Approx(t + 2 * 86400.0)); }
 
     SECTION("zero")
     {

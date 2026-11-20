@@ -1,39 +1,23 @@
+#include "helpers/temp_files.h"
 #include "utils/file.h"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
-#include <fstream>
-#include <random>
 
 namespace
 {
-    std::filesystem::path uniqueTempPath(const std::string &name)
-    {
-        std::mt19937 rng(std::random_device{}());
-        return std::filesystem::temp_directory_path() / ("satdump_test_file_" + std::to_string(rng()) + "_" + name);
-    }
-
-    struct TempFile
-    {
-        std::filesystem::path path;
-        TempFile(const std::string &name, size_t size) : path(uniqueTempPath(name))
-        {
-            std::ofstream f(path, std::ios::binary);
-            std::string data(size, 'z');
-            f.write(data.data(), data.size());
-        }
-        ~TempFile() { std::filesystem::remove(path); }
-    };
+    using test_helpers::TempFile;
+    using test_helpers::uniqueTempPath;
 } // namespace
 
 TEST_CASE("satdump::getFilesize returns the size in bytes", "[utils][file]")
 {
-    TempFile small("small.bin", 17);
+    TempFile small("small.bin", std::string(17, 'z'));
     CHECK(satdump::getFilesize(small.path.string()) == 17);
 
-    TempFile big("big.bin", 3 * 1024 * 1024 + 5);
+    TempFile big("big.bin", std::string(3 * 1024 * 1024 + 5, 'z'));
     CHECK(satdump::getFilesize(big.path.string()) == 3 * 1024 * 1024 + 5);
 
-    TempFile empty("empty.bin", 0);
+    TempFile empty("empty.bin", std::string(0, 'z'));
     CHECK(satdump::getFilesize(empty.path.string()) == 0);
 }
 

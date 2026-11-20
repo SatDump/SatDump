@@ -1,12 +1,14 @@
-#include "../ndsp_test_helpers.h"
 #include "dsp/block_helpers.h"
+#include "dsp/ndsp_test_helpers.h"
 #include "dsp/utils/psk_snr_estimator.h"
 #include "dsp/utils/reshape_buffer.h"
 #include "dsp/utils/samplerate_meter.h"
 #include "dsp/utils/throttle.h"
 #include "dsp/utils/zero_fill.h"
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
+using Catch::Matchers::WithinAbs;
 using namespace satdump::ndsp;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -44,9 +46,9 @@ TEST_CASE("ndsp PSKSnrEstimatorBlock estimates the SNR of noisy BPSK", "[dsp][ut
 
         // get_cfg() reads snr first, which also updates signal / noise
         nlohmann::json st = ((Block &)*b).get_cfg();
-        CHECK(std::fabs(st["snr"].get<float>() - snr_db) < 1.5);
+        CHECK_THAT(st["snr"].get<float>(), WithinAbs(snr_db, 1.5));
         CHECK(std::fabs(st["signal"].get<float>()) < 0.5);
-        CHECK(std::fabs(st["noise"].get<float>() - 10 * log10(2 * sigma * sigma)) < 1.5);
+        CHECK_THAT(st["noise"].get<float>(), WithinAbs(10 * log10(2 * sigma * sigma), 1.5));
     }
 }
 
@@ -90,7 +92,7 @@ namespace
 {
     // The reshape block has a second thread writing to the output, which is
     // only safe while the work thread itself is idle. So wait for all expected
-    // output before sending the terminator (see report).
+    // output before sending the terminator (see UNTESTED_ISSUES.md).
     template <typename T>
     std::vector<uint32_t> runReshape(int bufsize, const std::vector<T> &in, size_t chunk, size_t expected_out, std::vector<T> &out)
     {
@@ -99,7 +101,7 @@ namespace
         auto is = std::make_shared<DSPStream>(4);
         b->set_input({"in", getTypeSampleType<T>(), is}, 0);
         ndsp_test::Collector<T> col(b->get_output(0, 4).fifo);
-        // Workaround for the start() race (see report) : initialize the ring
+        // Workaround for the start() race (see UNTESTED_ISSUES.md) : initialize the ring
         // buffer before start() launches the second thread. start() runs
         // init() again, leaking the first ring allocation.
         b->init();
@@ -137,8 +139,12 @@ TEST_CASE("ndsp ReshapeBufferBlock merges small buffers into larger ones", "[dsp
     auto sizes = runReshape<complex_t>(512, in, 16, 2048, out);
     CHECK(sizes == std::vector<uint32_t>(4, 512));
     REQUIRE(out.size() == in.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < in.size(); i++)
-        REQUIRE(ndsp_test::sameBits(out[i], in[i]));
+        if (!ndsp_test::sameBits(out[i], in[i]) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("ndsp ReshapeBufferBlock keeps an incomplete last buffer", "[dsp][utils][reshape_buffer]")
@@ -278,8 +284,12 @@ TEST_CASE("ndsp ThrottleBlock passes complex samples unchanged", "[dsp][utils][t
     auto r = ndsp_test::runSimple<complex_t, complex_t>(b, in, 1000);
     REQUIRE(r.completed);
     REQUIRE(r.out().size() == in.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < in.size(); i++)
-        REQUIRE(ndsp_test::sameBits(r.out()[i], in[i]));
+        if (!ndsp_test::sameBits(r.out()[i], in[i]) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("ndsp ThrottleBlock ids and config", "[dsp][utils][throttle]")
@@ -307,8 +317,12 @@ TEST_CASE("ndsp SamplerateMeterBlock passes samples through", "[dsp][utils][samp
     auto r = ndsp_test::runSimple<complex_t, complex_t>(b, in, 512);
     REQUIRE(r.completed);
     REQUIRE(r.out().size() == in.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < in.size(); i++)
-        REQUIRE(ndsp_test::sameBits(r.out()[i], in[i]));
+        if (!ndsp_test::sameBits(r.out()[i], in[i]) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
     CHECK(r.outputs[0].propagating_terminators == 1);
 }
 

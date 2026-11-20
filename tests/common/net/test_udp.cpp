@@ -1,8 +1,16 @@
+// These tests need POSIX sockets
 #include "common/net/udp.h"
 #include <catch2/catch_test_macros.hpp>
+#include <exception>
 #include <memory>
-#include <netinet/in.h>
+#include <stdexcept>
 #include <string>
+
+#ifndef _WIN32
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 namespace
 {
@@ -128,3 +136,4 @@ TEST_CASE("net::UDPServer fails to bind a port already in use", "[common][net][u
     REQUIRE(server != nullptr);
     CHECK_THROWS_AS(net::UDPServer(port), std::runtime_error);
 }
+#endif

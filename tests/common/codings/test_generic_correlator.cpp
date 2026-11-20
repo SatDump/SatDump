@@ -1,5 +1,6 @@
 #include "common/codings/generic_correlator.h"
 #include "common/codings/rotation.h"
+#include "helpers/random.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -16,16 +17,7 @@ namespace
         return bits;
     }
 
-    std::vector<uint8_t> randomBits(int count, uint32_t seed)
-    {
-        std::vector<uint8_t> bits(count);
-        for (auto &b : bits)
-        {
-            seed = seed * 1664525u + 1013904223u;
-            b = seed >> 31;
-        }
-        return bits;
-    }
+    using test_helpers::randomBits;
 
     std::vector<int8_t> softOf(const std::vector<uint8_t> &bits)
     {

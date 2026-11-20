@@ -1,4 +1,7 @@
-#include <algorithm> // interpolator.h uses std::sort without including it
+// interpolator.h uses std::sort without including <algorithm>, so it has to come first.
+// It is in its own block to keep clang-format from moving it.
+#include <algorithm>
+
 #include "common/tracking/interpolator.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
@@ -74,7 +77,7 @@ TEST_CASE("LinearInterpolator interpolates inside the last segment", "[common][t
     CHECK_THAT(interp.interpolate(2.5), WithinAbs(2, 1e-12));
 }
 
-// interpolator.h:63-77: start_pos ends up at the first node >= x and the segment used is
+// Bug: interpolator.h:63-77: start_pos ends up at the first node >= x and the segment used is
 // [start_pos, start_pos + 1], i.e. the segment *after* x. Only the last segment (clamped by the
 // "start_pos + 1 == size" branch) is right; elsewhere the value is extrapolated from the wrong
 // pair of nodes. SatelliteTracker uses this for ephemeris-based positions.

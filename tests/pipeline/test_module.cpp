@@ -1,10 +1,10 @@
 #include "core/exception.h"
 #include "pipeline/module.h"
-#include "pipeline_test_helpers.h"
+#include "pipeline/pipeline_test_helpers.h"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
-using namespace pipeline_test_helpers;
+using namespace pipeline_test;
 namespace pl = satdump::pipeline;
 
 namespace

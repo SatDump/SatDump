@@ -1,5 +1,5 @@
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/utils/real_to_complex.h"
-#include "../dsp_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("RealToComplexBlock puts the input on the real axis", "[common][dsp][real_to_complex]")
@@ -13,9 +13,10 @@ TEST_CASE("RealToComplexBlock puts the input on the real axis", "[common][dsp][r
     auto r = dsp_test::runBlock(blk, input, in, 1234);
     REQUIRE(r.completed);
     REQUIRE(r.output.size() == in.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < in.size(); i++)
-    {
-        REQUIRE(r.output[i].real == in[i]);
-        REQUIRE(r.output[i].imag == 0.0f);
-    }
+        if ((!(r.output[i].real == in[i]) || !(r.output[i].imag == 0.0f)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }

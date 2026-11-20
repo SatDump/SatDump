@@ -1,5 +1,5 @@
-#include "../image_test_helpers.h"
 #include "image/geotiff/geotiff.h"
+#include "image/image_test_helpers.h"
 #include "image/io.h"
 #include "image/meta.h"
 #include "projection/standard/proj_json.h"

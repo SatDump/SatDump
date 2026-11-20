@@ -1,14 +1,15 @@
 #include "dsp/ddc/ddc.h"
-#include "../filter/ndsp_sig_test_helpers.h"
+#include "dsp/ndsp_sig_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cmath>
 
 using Catch::Approx;
 using namespace satdump::ndsp;
 
 namespace
 {
-    double hzToRad(double hz, double fs) { return 2.0 * ndsp_sig_test::kPi * hz / fs; }
+    double hzToRad(double hz, double fs) { return 2.0 * M_PI * hz / fs; }
 
     std::vector<complex_t> sumTones(size_t n, const std::vector<std::pair<double, double>> &tones /* rad, amp */)
     {
@@ -43,8 +44,8 @@ namespace
         opt.out_indices = {0, 1};
         auto r = ndsp_sig_test::runBlock<complex_t, complex_t>(ddc, in, opt);
         REQUIRE(r.completed);
-        auto &a = r.outputs[0];
-        auto &b = r.outputs[1];
+        auto &a = r.outputs[0].data;
+        auto &b = r.outputs[1].data;
         REQUIRE(a.size() == n);
         REQUIRE(b.size() == n / 4);
 
@@ -62,13 +63,10 @@ TEST_CASE("ndsp DDC_Block shifts each VFO to baseband and decimates", "[dsp][ddc
     checkTwoVfos(true);
 }
 
-// Bug : DDC_Block::add_output (ddc.h:251-259) never calls recalc_freq() / recalc_bw() on
+// Bug: DDC_Block::add_output (ddc.h:251-259) never calls recalc_freq() / recalc_bw() on
 // the new VFO (unlike FFTDDCBlock::add_output), so its NCO phase and phase increment stay 0
 // and the rotator outputs NaNs until frequency / samplerate / the VFO frequency is set again.
-TEST_CASE("ndsp DDC_Block VFOs work right after add_output", "[dsp][ddc][!shouldfail]")
-{
-    checkTwoVfos(false);
-}
+TEST_CASE("ndsp DDC_Block VFOs work right after add_output", "[dsp][ddc][!shouldfail]") { checkTwoVfos(false); }
 
 TEST_CASE("ndsp DDC_Block decimation without frequency shift picks every Nth sample", "[dsp][ddc]")
 {
@@ -105,7 +103,7 @@ TEST_CASE("ndsp DDC_Block VFO frequency can be changed through the config", "[ds
     CHECK(ndsp_sig_test::estimateFreq(r.output(), 0, r.output().size()) == Approx(hzToRad(20e3, fs)).epsilon(1e-4));
 }
 
-// Bug : the DDC_Block filter path relies on DecimatingFIRBlock, which does not decimate
+// Bug: the DDC_Block filter path relies on DecimatingFIRBlock, which does not decimate
 // correctly (decimating_fir.cpp:120, see the filter tests), so a VFO with a bandwidth
 // does not output samples at samplerate / decimation.
 TEST_CASE("ndsp DDC_Block with a bandwidth filters and decimates", "[dsp][ddc][!shouldfail]")
@@ -127,7 +125,7 @@ TEST_CASE("ndsp DDC_Block with a bandwidth filters and decimates", "[dsp][ddc][!
     CHECK(ndsp_sig_test::toneAmplitude(out, hzToRad(20e3, fs / 4), 1000, out.size()) == Approx(1.0).epsilon(0.02));
 }
 
-// Bug : ddc.h:56 sizes the taps vector with len * sizeof(double) instead of len,
+// Bug: ddc.h:56 sizes the taps vector with len * sizeof(double) instead of len,
 // so a 601-taps filter ends up 4808 taps long (zero padded), 8x the work.
 TEST_CASE("ndsp DDC_Block VFO filter has 2M+1 taps", "[dsp][ddc][!shouldfail]")
 {
@@ -171,8 +169,8 @@ TEST_CASE("ndsp DDC_Block configuration and VFO management", "[dsp][ddc]")
         CHECK(list.contains(k));
     CHECK(list["noutputs"]["disable"] == false);
 
-    nlohmann::json cfg = {{"frequency", 137e6},      {"samplerate", 2.4e6}, {"noutputs", 2},       {"output_0_freq", 137.1e6}, {"output_0_bw", 0.0},
-                          {"output_0_dec", 2},       {"output_1_freq", 136.9e6}, {"output_1_bw", 0.0}, {"output_1_dec", 5}};
+    nlohmann::json cfg = {{"frequency", 137e6}, {"samplerate", 2.4e6},      {"noutputs", 2},      {"output_0_freq", 137.1e6}, {"output_0_bw", 0.0},
+                          {"output_0_dec", 2},  {"output_1_freq", 136.9e6}, {"output_1_bw", 0.0}, {"output_1_dec", 5}};
     ndsp_sig_test::setAll(ddc, cfg);
     CHECK(ndsp_sig_test::getAll(ddc) == cfg);
 

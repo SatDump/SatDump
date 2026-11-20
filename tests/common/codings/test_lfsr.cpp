@@ -1,4 +1,5 @@
 #include "common/codings/lfsr.h"
+#include "helpers/random.h"
 #include <catch2/catch_test_macros.hpp>
 #include <cstdint>
 #include <stdexcept>
@@ -100,13 +101,7 @@ TEST_CASE("lfsr descrambler inverts the multiplicative scrambler", "[common][cod
     const uint8_t len = 16;
     const int delay = len + 1; // the scrambler output is taken from the register LSB
 
-    std::vector<uint8_t> input(2000);
-    uint32_t state = 12345;
-    for (auto &b : input)
-    {
-        state = state * 1664525u + 1013904223u;
-        b = state >> 31;
-    }
+    std::vector<uint8_t> input = test_helpers::randomBits(2000, 12345);
 
     common::lfsr scrambler(mask, 0, len);
     std::vector<uint8_t> scrambled(input.size());
@@ -119,8 +114,12 @@ TEST_CASE("lfsr descrambler inverts the multiplicative scrambler", "[common][cod
         std::vector<uint8_t> out(input.size());
         for (size_t i = 0; i < input.size(); i++)
             out[i] = descrambler.next_bit_descramble(scrambled[i]);
+        size_t mismatches = 0, first = 0;
         for (size_t i = 2 * delay; i < input.size(); i++)
-            REQUIRE(out[i] == input[i - delay]);
+            if (!(out[i] == input[i - delay]) && mismatches++ == 0)
+                first = i;
+        INFO("first mismatch at bit " << first);
+        REQUIRE(mismatches == 0);
     }
 
     SECTION("self-synchronising even with a wrong seed")
@@ -129,8 +128,12 @@ TEST_CASE("lfsr descrambler inverts the multiplicative scrambler", "[common][cod
         std::vector<uint8_t> out(input.size());
         for (size_t i = 0; i < input.size(); i++)
             out[i] = descrambler.next_bit_descramble(scrambled[i]);
+        size_t mismatches = 0, first = 0;
         for (size_t i = 2 * delay + 1; i < input.size(); i++)
-            REQUIRE(out[i] == input[i - delay]);
+            if (!(out[i] == input[i - delay]) && mismatches++ == 0)
+                first = i;
+        INFO("first mismatch at bit " << first);
+        REQUIRE(mismatches == 0);
     }
 
     SECTION("scrambling changes the data")

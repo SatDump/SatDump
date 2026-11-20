@@ -11,14 +11,12 @@ namespace
 
         FakeSinkRegistry()
         {
-            dsp::dsp_sinks_registry[FAKE_SINK] = {
-                [this](dsp::SinkDescriptor d) -> std::shared_ptr<dsp::DSPSampleSink>
-                {
-                    created.push_back(d);
-                    return nullptr;
-                },
-                []()
-                { return std::vector<dsp::SinkDescriptor>{{FAKE_SINK, "Fake Sink", "sink_0"}}; }};
+            dsp::dsp_sinks_registry[FAKE_SINK] = {[this](dsp::SinkDescriptor d) -> std::shared_ptr<dsp::DSPSampleSink>
+                                                  {
+                                                      created.push_back(d);
+                                                      return nullptr;
+                                                  },
+                                                  []() { return std::vector<dsp::SinkDescriptor>{{FAKE_SINK, "Fake Sink", "sink_0"}}; }};
         }
 
         ~FakeSinkRegistry() { dsp::dsp_sinks_registry.erase(FAKE_SINK); }

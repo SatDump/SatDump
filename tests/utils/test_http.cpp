@@ -1,18 +1,22 @@
+#include "helpers/sockets.h"
 #include "satdump_vars.h"
 #include "utils/http.h"
-#include <arpa/inet.h>
-#include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <cstdlib>
 #include <cstring>
 #include <curl/curl.h>
-#include <netinet/in.h>
 #include <optional>
-#include <poll.h>
 #include <string>
-#include <sys/socket.h>
 #include <thread>
+
+#ifndef _WIN32
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <poll.h>
+#include <sys/socket.h>
 #include <unistd.h>
+#endif
 
 // Not declared in http.h, but exported by satdump_core
 namespace satdump
@@ -21,9 +25,14 @@ namespace satdump
 }
 
 // Requests only ever go to a one-shot HTTP server on 127.0.0.1 started by the test itself.
+// That server uses POSIX sockets (and EnvGuard setenv/unsetenv), so the tests needing it are
+// POSIX only.
 
+#ifndef _WIN32
 namespace
 {
+    using test_helpers::closedPort;
+
     // Sets or unsets an environment variable, restoring the previous value afterwards
     struct EnvGuard
     {
@@ -151,22 +160,9 @@ namespace
         std::string url(const std::string &path) { return "http://127.0.0.1:" + std::to_string(port) + path; }
     };
 
-    // A loopback port with nothing listening on it
-    int closedPort()
-    {
-        int fd = socket(AF_INET, SOCK_STREAM, 0);
-        sockaddr_in addr{};
-        addr.sin_family = AF_INET;
-        addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-        socklen_t len = sizeof(addr);
-        bind(fd, (sockaddr *)&addr, sizeof(addr));
-        getsockname(fd, (sockaddr *)&addr, &len);
-        close(fd);
-        return ntohs(addr.sin_port);
-    }
-
     bool contains(const std::string &haystack, const std::string &needle) { return haystack.find(needle) != std::string::npos; }
 } // namespace
+#endif
 
 TEST_CASE("curl_write_std_string appends the chunk and reports its size", "[utils][http]")
 {
@@ -197,6 +193,7 @@ TEST_CASE("curl_float_progress_func reports download, then upload, progress", "[
     CHECK(p == 0.5f);
 }
 
+#ifndef _WIN32
 TEST_CASE("perform_http_request fetches a body over loopback", "[utils][http]")
 {
     NoProxy np;
@@ -244,6 +241,8 @@ TEST_CASE("perform_http_request fails on a refused connection", "[utils][http]")
     CHECK(result.empty());
 }
 
+#endif
+
 TEST_CASE("perform_http_request fails on an unsupported URL scheme", "[utils][http]")
 {
     std::string result;
@@ -251,6 +250,7 @@ TEST_CASE("perform_http_request fails on an unsupported URL scheme", "[utils][ht
     CHECK(result.empty());
 }
 
+#ifndef _WIN32
 TEST_CASE("perform_http_request_post sends the payload and headers", "[utils][http]")
 {
     NoProxy np;
@@ -275,3 +275,4 @@ TEST_CASE("perform_http_request_post fails on a refused connection", "[utils][ht
     CHECK(satdump::perform_http_request_post("http://127.0.0.1:" + std::to_string(closedPort()) + "/", result, "x=1") == 1);
     CHECK(result.empty());
 }
+#endif

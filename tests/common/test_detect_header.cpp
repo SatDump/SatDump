@@ -1,35 +1,21 @@
 #include "common/detect_header.h"
 #include "common/wav.h"
+#include "helpers/temp_files.h"
 #include <catch2/catch_test_macros.hpp>
 #include <cstring>
-#include <filesystem>
-#include <fstream>
-#include <random>
+#include <string>
+#include <vector>
 
 namespace
 {
-    std::filesystem::path uniqueTempDir()
+    using test_helpers::TempDir;
+
+    std::string writeIn(const test_helpers::TempDir &dir, const std::string &name, const std::vector<uint8_t> &data)
     {
-        std::mt19937 rng(std::random_device{}());
-        auto p = std::filesystem::temp_directory_path() / ("satdump_test_detect_header_" + std::to_string(rng()));
-        std::filesystem::create_directories(p);
+        std::string p = dir.file(name);
+        test_helpers::writeBytes(p, data);
         return p;
     }
-
-    // Temp directory removed with its contents at the end of each test
-    struct TempDir
-    {
-        std::filesystem::path path = uniqueTempDir();
-        ~TempDir() { std::filesystem::remove_all(path); }
-
-        std::string write(const std::string &name, const std::vector<uint8_t> &data)
-        {
-            auto p = path / name;
-            std::ofstream f(p, std::ios::binary);
-            f.write((const char *)data.data(), data.size());
-            return p.string();
-        }
-    };
 
     std::vector<uint8_t> wavFile(uint16_t format, uint16_t bits, uint32_t samplerate)
     {
@@ -87,7 +73,7 @@ TEST_CASE("try_parse_header detects WAV sample formats", "[common][detect_header
     };
     for (Case c : {Case{1, 8, "cu8"}, Case{1, 16, "cs16"}, Case{1, 32, "cs32"}, Case{3, 32, "cf32"}})
     {
-        HeaderInfo info = try_parse_header(dir.write("test_" + c.type + ".wav", wavFile(c.format, c.bits, 48000)));
+        HeaderInfo info = try_parse_header(writeIn(dir, "test_" + c.type + ".wav", wavFile(c.format, c.bits, 48000)));
         INFO(c.type);
         CHECK(info.valid);
         CHECK(info.type == c.type);
@@ -98,31 +84,31 @@ TEST_CASE("try_parse_header detects WAV sample formats", "[common][detect_header
 TEST_CASE("try_parse_header rejects unsupported WAV formats", "[common][detect_header]")
 {
     TempDir dir;
-    CHECK_FALSE(try_parse_header(dir.write("pcm24.wav", wavFile(1, 24, 48000))).valid);
-    CHECK_FALSE(try_parse_header(dir.write("float64.wav", wavFile(3, 64, 48000))).valid);
+    CHECK_FALSE(try_parse_header(writeIn(dir, "pcm24.wav", wavFile(1, 24, 48000))).valid);
+    CHECK_FALSE(try_parse_header(writeIn(dir, "float64.wav", wavFile(3, 64, 48000))).valid);
 }
 
 TEST_CASE("try_parse_header detects RF64 sample formats", "[common][detect_header]")
 {
     TempDir dir;
 
-    HeaderInfo info = try_parse_header(dir.write("big.wav", rf64File(1, 16, 6000000)));
+    HeaderInfo info = try_parse_header(writeIn(dir, "big.wav", rf64File(1, 16, 6000000)));
     CHECK(info.valid);
     CHECK(info.type == "cs16");
     CHECK(info.samplerate == 6000000);
 
-    info = try_parse_header(dir.write("bigf.wav", rf64File(3, 32, 10000000)));
+    info = try_parse_header(writeIn(dir, "bigf.wav", rf64File(3, 32, 10000000)));
     CHECK(info.valid);
     CHECK(info.type == "cf32");
     CHECK(info.samplerate == 10000000);
 
-    CHECK_FALSE(try_parse_header(dir.write("bad.wav", rf64File(1, 12, 1000))).valid);
+    CHECK_FALSE(try_parse_header(writeIn(dir, "bad.wav", rf64File(1, 12, 1000))).valid);
 }
 
 TEST_CASE("try_parse_header detects ZIQ files", "[common][detect_header]")
 {
     TempDir dir;
-    HeaderInfo info = try_parse_header(dir.write("rec.ziq", ziqFile(3000000)));
+    HeaderInfo info = try_parse_header(writeIn(dir, "rec.ziq", ziqFile(3000000)));
     CHECK(info.valid);
     CHECK(info.type == "ziq");
     CHECK(info.samplerate == 3000000);
@@ -131,7 +117,7 @@ TEST_CASE("try_parse_header detects ZIQ files", "[common][detect_header]")
 TEST_CASE("try_parse_header on raw data is invalid", "[common][detect_header]")
 {
     TempDir dir;
-    HeaderInfo info = try_parse_header(dir.write("raw.cf32", std::vector<uint8_t>(256, 0x11)));
+    HeaderInfo info = try_parse_header(writeIn(dir, "raw.cf32", std::vector<uint8_t>(256, 0x11)));
     CHECK_FALSE(info.valid);
     CHECK(info.samplerate == 0);
     CHECK(info.type == "");
@@ -140,7 +126,7 @@ TEST_CASE("try_parse_header on raw data is invalid", "[common][detect_header]")
 TEST_CASE("try_get_params_from_input_file fills parameters from the header", "[common][detect_header]")
 {
     TempDir dir;
-    std::string path = dir.write("capture.wav", wavFile(1, 16, 250000));
+    std::string path = writeIn(dir, "capture.wav", wavFile(1, 16, 250000));
 
     nlohmann::json params;
     try_get_params_from_input_file(params, path);
@@ -159,7 +145,7 @@ TEST_CASE("try_get_params_from_input_file fills parameters from the header", "[c
 TEST_CASE("try_get_params_from_input_file falls back to filename metadata", "[common][detect_header]")
 {
     TempDir dir;
-    std::string path = dir.write("2024-01-02_03-04-05_2400000SPS_137100000Hz.cs8", std::vector<uint8_t>(256, 0));
+    std::string path = writeIn(dir, "2024-01-02_03-04-05_2400000SPS_137100000Hz.cs8", std::vector<uint8_t>(256, 0));
 
     nlohmann::json params;
     try_get_params_from_input_file(params, path);

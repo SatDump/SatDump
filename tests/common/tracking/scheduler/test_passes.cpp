@@ -101,10 +101,7 @@ namespace
     // Paris
     const double QTH_LAT = 48.85, QTH_LON = 2.35;
 
-    double elevationAt(satdump::SatelliteTracker &tracker, double t)
-    {
-        return tracker.get_observed_position(t, QTH_LAT, QTH_LON, 0).elevation * RAD_TO_DEG;
-    }
+    double elevationAt(satdump::SatelliteTracker &tracker, double t) { return tracker.get_observed_position(t, QTH_LAT, QTH_LON, 0).elevation * RAD_TO_DEG; }
 
     satdump::SatellitePass pass(int norad, double aos, double los, float el) { return {norad, aos, los, el}; }
 } // namespace
@@ -266,8 +263,7 @@ TEST_CASE("selectPassesForAutotrack resolves overlaps in favour of the higher pa
     SECTION("chain of overlaps")
     {
         // 2 beats 1 and 3; 5 beats 4
-        std::vector<satdump::SatellitePass> passes = {pass(1, 1000, 1500, 10), pass(2, 1400, 2000, 50), pass(3, 1900, 2300, 20),
-                                                      pass(4, 2600, 3000, 40), pass(5, 2900, 3100, 45)};
+        std::vector<satdump::SatellitePass> passes = {pass(1, 1000, 1500, 10), pass(2, 1400, 2000, 50), pass(3, 1900, 2300, 20), pass(4, 2600, 3000, 40), pass(5, 2900, 3100, 45)};
         auto sel = satdump::selectPassesForAutotrack(passes);
         REQUIRE(sel.size() == 2);
         CHECK(sel[0].norad == 2);
@@ -275,7 +271,4 @@ TEST_CASE("selectPassesForAutotrack resolves overlaps in favour of the higher pa
     }
 }
 
-TEST_CASE("selectPassesForAutotrack of nothing is nothing", "[common][tracking][passes]")
-{
-    CHECK(satdump::selectPassesForAutotrack({}).empty());
-}
+TEST_CASE("selectPassesForAutotrack of nothing is nothing", "[common][tracking][passes]") { CHECK(satdump::selectPassesForAutotrack({}).empty()); }

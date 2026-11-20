@@ -1,4 +1,5 @@
 #include "common/calibration.h"
+#include "common/utils.h" // timegm on MSVC
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
@@ -58,7 +59,7 @@ TEST_CASE("freq_to_wavenumber and wavenumber_to_freq convert between Hz and cm^-
         CHECK(freq_to_wavenumber(wavenumber_to_freq(wn)) == Catch::Approx(wn).epsilon(1e-12));
 }
 
-// BUG: calibration.cpp:15 has a misplaced parenthesis in the inverse Planck
+// Bug: calibration.cpp:15 has a misplaced parenthesis in the inverse Planck
 // function: log(c_1 / (lambda^5 * L + 1)) instead of log(c_1 / (lambda^5 * L) + 1),
 // which biases the computed brightness temperature.
 TEST_CASE("spectral_radiance_to_radiance converts per-um radiance to per-cm^-1 radiance", "[common][calibration][!shouldfail]")

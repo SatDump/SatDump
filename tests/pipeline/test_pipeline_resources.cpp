@@ -1,11 +1,11 @@
 #include "pipeline/pipeline.h"
-#include "pipeline_test_helpers.h"
+#include "pipeline/pipeline_test_helpers.h"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <map>
 #include <set>
 
-using namespace pipeline_test_helpers;
+using namespace pipeline_test;
 namespace pl = satdump::pipeline;
 
 namespace
@@ -188,7 +188,7 @@ TEST_CASE("resources/pipelines: live configurations reference existing steps", "
     CHECK(live_count > 100);
 }
 
-// resources/pipelines/GOES.json:211 : the "goes_grb" client configuration is [3, 0], and step 0 is
+// Bug: resources/pipelines/GOES.json:211 : the "goes_grb" client configuration is [3, 0], and step 0 is
 // the "baseband" input level which has no module, so LivePipeline::start_client() would fail with
 // "Could not find module".
 TEST_CASE("resources/pipelines: server and client live steps all have modules", "[pipeline][resources][!shouldfail]")
@@ -279,7 +279,7 @@ TEST_CASE("resources/pipelines: typed parameters have a value of the declared ty
     CHECK(typed > 100);
 }
 
-// resources/pipelines/Others.json:20 : "sstv_decoder" declares "sstv_mode" with the default value
+// Bug: resources/pipelines/Others.json:20 : "sstv_decoder" declares "sstv_mode" with the default value
 // "M2-2" (copied from the METEOR pipelines), which is not one of its options BW8/FAX480/Robot36/PD120.
 TEST_CASE("resources/pipelines: option parameter defaults are one of their options", "[pipeline][resources][!shouldfail]")
 {
@@ -297,7 +297,7 @@ TEST_CASE("resources/pipelines: option parameter defaults are one of their optio
         }
 }
 
-// resources/pipelines/Work-In-Progress.json:213 : the "cfosat1_dump" "soft" step uses the key
+// Bug: resources/pipelines/Work-In-Progress.json:213 : the "cfosat1_dump" "soft" step uses the key
 // "psk_demod" instead of "module": "psk_demod", so the step silently has no module.
 TEST_CASE("resources/pipelines: steps only use the 'module' and 'parameters' keys", "[pipeline][resources][!shouldfail]")
 {

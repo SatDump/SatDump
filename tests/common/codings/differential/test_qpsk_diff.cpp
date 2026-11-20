@@ -116,8 +116,12 @@ TEST_CASE("QPSKDiff round-trips an encoded stream, rotated or not", "[common][co
         std::vector<uint8_t> out(rx.size() * 2, 0xFF);
         dec.work(rx.data(), rx.size(), out.data());
 
+        size_t mismatches = 0, first = 0;
         for (size_t i = 0; i < data.size(); i++)
-            REQUIRE((out[i * 2] << 1 | out[i * 2 + 1]) == data[i]);
+            if (!((out[i * 2] << 1 | out[i * 2 + 1]) == data[i]) && mismatches++ == 0)
+                first = i;
+        INFO("first mismatch at symbol " << first);
+        REQUIRE(mismatches == 0);
         CHECK(out[data.size() * 2] == 0xFF); // nothing written past len - 2 symbols
     }
 }

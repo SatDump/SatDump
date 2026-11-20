@@ -3,7 +3,7 @@
 #include "dsp/clock_recovery/clock_recovery_mm_fast.h"
 #include "dsp/clock_recovery/simple_gardner_recovery.h"
 #include "dsp/clock_recovery/simple_zc_recovery.h"
-#include "../filter/ndsp_sig_test_helpers.h"
+#include "dsp/ndsp_sig_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 

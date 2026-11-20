@@ -30,10 +30,12 @@ When one of these is fixed, add a regular test for it and remove the entry.
 | `common/dsp/filter/deemphasis.cpp:39-73` | The block is unusable: `d_nsamples` is 0 so its loop never advances, and it indexes empty vectors. | Hang or crash as soon as it runs. |
 | `common/dsp/resamp/power_decim.cpp:16` | The check is `id > plans_len` and should be `>=`. A decimation of 16384 reads `plans[13]`. | Out-of-bounds read. |
 | `common/dsp/clock_recovery/clock_recovery_mm.cpp`, `clock_recovery_gardner.cpp` | The history buffer holds `STREAM_BUFFER_SIZE` samples, but input is copied in at an offset of `ntaps - 1`. | Buffer overflow for input chunks close to `STREAM_BUFFER_SIZE`. |
+| `common/dsp/clock_recovery/clock_recovery_mm.h:30`, `clock_recovery_gardner.h:29` | `last_sample` is never initialised, and the float versions use it in the first phase error (`clock_recovery_mm.cpp:82`, `clock_recovery_gardner.cpp:78`). | Uninitialised read (seen for MM): leftover bytes that read as a NaN make omega and mu NaN, `inc` stays at 0 and every input buffer gives `STREAM_BUFFER_SIZE` outputs. The tests build these blocks over zeroed memory (`helpers/prefilled.h`) so that their results are repeatable. |
 | `common/dsp/path/splitter_vfo.cpp` `reset_vfo` | Replaces the stream the splitter writes to while the `FreqShiftBlock` keeps reading the old one. | The splitter blocks forever once that VFO is re-enabled. |
 | `common/dsp/buffer.h` (`RingBuffer` `stopReader` / `stopWriter`) | The stop flag is set without holding the mutex. | A wakeup can be lost, leaving a blocked thread hung. |
 | `common/codings/reedsolomon/reedsolomon.cpp:147`, `:153` | With `fill_bytes = -1` (the default in some pipeline modules) `deinterleave` and `interleave` loop 256 times. | Writes `buff[255]` out of bounds and one byte past each interleaved codeword. |
 | `common/codings/viterbi/viterbi_punc.cpp:80`, `:158` | `d_bers[2][12][2]` is indexed with a shift of up to 15, and with the phase in the last dimension. | Out-of-bounds read in `ber()` when `check_iq_swap` is true. |
+| `common/codings/viterbi/viterbi_punc.cpp:75`, `common/codings/viterbi/cc_decoder.cpp:303-312` | The lock search calls the deprecated `CCDecoder::work(in, out, size)`, which ignores `size` and decodes a full 2054-bit frame (4108 symbols) of `ber_depunc_buffer`, while `depunc_static` only wrote 2340 to 3072 of them. The rest of that member array is never written. | Uninitialised read (seen): the lock picks a wrong phase or shift depending on leftover memory, e.g. a clean stream decoded inverted. The tests build the decoder over memory filled with erasures (`helpers/prefilled.h`) so that their results are repeatable. |
 
 ## image
 
@@ -96,6 +98,7 @@ When one of these is fixed, add a regular test for it and remove the entry.
 
 | Location | Problem | Effect |
 |---|---|---|
+| `core/cli/cli.cpp:43-44` | The `-v,--verbose` flag is bound to `verbose`, a local variable of the `CommandHandler` constructor. `parse()` runs after the constructor has returned, so passing `-v` makes CLI11 write through a dangling reference. | Stack corruption ("stack smashing detected" seen). |
 | `core/plugin.cpp:153` | The retry loop calls `pl->getID()` without a null check. If a plugin fails `dlopen` first, then loads on retry with a missing or mismatched ABI, `loadPlugin` returns null. | Null dereference. |
 | `utils/task_queue.cpp:17-39` | `thread_exited = true` is set after the queue lock is released. A `push()` in that window sees the worker as still running. | The task is stranded and never runs. |
 | `utils/task_scheduler.cpp` | `running` and `needs_update` are plain bools, and the destructor notifies without the mutex. | Lost wakeup; the destructor can block until the next due time. |
@@ -140,6 +143,7 @@ These were reported alongside the entries above. They do not crash, but they als
 **Other**
 
 - `dsp/channel_model`: `ChannelModelLEO::get_channel_model_settings` is declared but never defined.
+- `projection/reprojector.cpp:104`: `reproject()` only adds the source `width` / `height` to the projection config at `:225`, in the raytraced branch. Before that, assigning the config to a `Projection` (`:97`) fails in `Projection::init` (`projection.cpp:28`, "Image width must be present!"), and the error is caught, but `src_proj.init(true, false)` is then called again outside the `try` and throws out of `reproject()`. Only `reprojectImage()` works, because it adds the width and height first.
 - `dsp/resampling`: `RationalResamplerBlock::needs_reinit` is set but never read, so changes only apply on `start()`.
 - `core/opencl`: `platform_id` defaults to 0, so `useCL()` returns true when OpenCL was never initialised.
 - `common/tracking/interpolator.h`, `common/dsp/io/wav_writer.h`, `common/codings/ldpc/matrix/general_utils.h`: missing standard includes, so the headers do not compile on their own.

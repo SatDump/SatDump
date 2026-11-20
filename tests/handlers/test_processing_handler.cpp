@@ -1,10 +1,10 @@
 #include "handlers/processing_handler.h"
-#include "../pipeline/pipeline_test_helpers.h"
+#include "pipeline/pipeline_test_helpers.h"
 #include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <condition_variable>
 
-using namespace pipeline_test_helpers;
+using namespace pipeline_test;
 
 namespace
 {
@@ -90,7 +90,7 @@ TEST_CASE("ProcessingHandler::asyncProcess runs in a background thread", "[handl
     p.closeGate();
 
     p.asyncProcess();
-    REQUIRE(waitFor([&]() { return p.entered.load(); }));
+    REQUIRE(test_helpers::waitUntil([&]() { return p.entered.load(); }, std::chrono::seconds(30)));
     CHECK(p.get_is_processing());
     CHECK(p.runs == 0);
 
@@ -111,7 +111,7 @@ TEST_CASE("ProcessingHandler::asyncProcess ignores requests while already proces
     p.closeGate();
 
     p.asyncProcess();
-    REQUIRE(waitFor([&]() { return p.entered.load(); }));
+    REQUIRE(test_helpers::waitUntil([&]() { return p.entered.load(); }, std::chrono::seconds(30)));
 
     p.asyncProcess(); // rejected (prints a warning to stdout)
 

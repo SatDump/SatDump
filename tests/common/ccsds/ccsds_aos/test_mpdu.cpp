@@ -23,10 +23,7 @@ TEST_CASE("ccsds_aos parseMPDU reads the 11-bit first header pointer after the p
         CHECK(ccsds::ccsds_aos::parseMPDU(cadu.data()).first_header_pointer == 2047);
     }
 
-    SECTION("zero")
-    {
-        CHECK(ccsds::ccsds_aos::parseMPDU(cadu.data()).first_header_pointer == 0);
-    }
+    SECTION("zero") { CHECK(ccsds::ccsds_aos::parseMPDU(cadu.data()).first_header_pointer == 0); }
 }
 
 TEST_CASE("ccsds_aos parseMPDU skips the insert zone when present", "[common][ccsds][aos]")

@@ -1,13 +1,13 @@
 #include "image/meta.h"
 #include "products/image/image_calibrator.h"
-#include "../products_test_helpers.h"
+#include "products/products_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 using Catch::Matchers::WithinAbs;
+using products_test::EventBusGuard;
 using satdump::products::ImageCalibrator;
 using satdump::products::ImageProduct;
-using satdump_test_products::EventBusGuard;
 
 namespace
 {
@@ -58,7 +58,7 @@ TEST_CASE("get_calibrator_from_product falls back to raw values without calibrat
     REQUIRE(cal);
     CHECK(cal->compute(0, 3, 2) == (32 >> 2));
     CHECK(cal->compute(0, 4, 0) == (40 >> 2));
-    CHECK(cal->compute(0, 5, 0) == CALIBRATION_INVALID_VALUE);  // Out of the image
+    CHECK(cal->compute(0, 5, 0) == CALIBRATION_INVALID_VALUE); // Out of the image
     CHECK(cal->compute(0, -1, 0) == CALIBRATION_INVALID_VALUE);
     CHECK(cal->compute(0, 0, 3) == CALIBRATION_INVALID_VALUE);
 }

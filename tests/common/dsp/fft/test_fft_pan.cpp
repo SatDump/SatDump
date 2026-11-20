@@ -1,8 +1,9 @@
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/fft/fft_pan.h"
-#include "../dsp_test_helpers.h"
 #include <algorithm>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cmath>
 #include <mutex>
 
 using Catch::Approx;
@@ -36,7 +37,7 @@ namespace
     }
 
     int argmax(const std::vector<float> &v) { return std::max_element(v.begin(), v.end()) - v.begin(); }
-}
+} // namespace
 
 TEST_CASE("FFTPanBlock peak bin follows the tone frequency, DC centered", "[common][dsp][fft_pan]")
 {
@@ -66,9 +67,12 @@ TEST_CASE("FFTPanBlock output is in dB and rejects off-peak bins", "[common][dsp
     int peak = argmax(cap.last);
     CHECK(peak == N / 2 + 200);
     // Nuttall window sidelobes are very low: far bins are > 80 dB down
+    size_t mismatches = 0, first = 0;
     for (int i = 0; i < N; i++)
-        if (abs(i - peak) > 10)
-            REQUIRE(cap.last[i] < cap.last[peak] - 80.0f);
+        if (abs(i - peak) > 10 && !(cap.last[i] < cap.last[peak] - 80.0f) && mismatches++ == 0)
+            first = i;
+    INFO("first bin above the sidelobe limit " << first);
+    REQUIRE(mismatches == 0);
 
     // 6 dB per doubling of amplitude
     PanCapture cap2;

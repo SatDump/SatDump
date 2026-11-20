@@ -5,6 +5,7 @@
 // First Header Pointer computed the way the CCSDS standards define it.
 
 #include "common/ccsds/ccsds.h"
+#include "helpers/random.h"
 #include <catch2/catch_test_macros.hpp>
 #include <cstdint>
 #include <cstring>
@@ -29,17 +30,12 @@ namespace
         std::vector<StreamPacket> packets;
     };
 
-    uint32_t nextRand(uint32_t &state)
-    {
-        state = state * 1664525u + 1013904223u;
-        return state >> 8;
-    }
+    uint32_t nextRand(uint32_t &state) { return test_helpers::lcgNext(state) >> 8; }
 
     // Appends one packet. payloadSize is the number of bytes that follow the
     // 6-byte primary header. extraLength is subtracted from the length field
     // (used for the "secondary header extends packet" mode).
-    void appendPacket(PacketStream &stream, uint16_t apid, uint16_t count, size_t payloadSize, uint32_t &rng,
-                      bool secondaryHeader = false, int extraLength = 0)
+    void appendPacket(PacketStream &stream, uint16_t apid, uint16_t count, size_t payloadSize, uint32_t &rng, bool secondaryHeader = false, int extraLength = 0)
     {
         StreamPacket sp;
         sp.pkt.header.version = 0;
@@ -97,8 +93,7 @@ namespace
 
     bool samePacket(const ccsds::CCSDSPacket &a, const ccsds::CCSDSPacket &b)
     {
-        return std::memcmp(a.header.raw, b.header.raw, 6) == 0 && a.header.apid == b.header.apid &&
-               a.header.packet_sequence_count == b.header.packet_sequence_count &&
+        return std::memcmp(a.header.raw, b.header.raw, 6) == 0 && a.header.apid == b.header.apid && a.header.packet_sequence_count == b.header.packet_sequence_count &&
                a.header.packet_length == b.header.packet_length && a.payload == b.payload;
     }
 

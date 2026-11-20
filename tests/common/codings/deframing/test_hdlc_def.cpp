@@ -1,10 +1,13 @@
 #include "common/codings/deframing/hdlc_def.h"
+#include "helpers/random.h"
 #include <catch2/catch_test_macros.hpp>
 #include <cstdint>
 #include <vector>
 
 namespace
 {
+    using test_helpers::randomBytes;
+
     // CRC-16/X-25 (the HDLC FCS), bit by bit
     uint16_t hdlcFcs(const std::vector<uint8_t> &data)
     {
@@ -50,22 +53,11 @@ namespace
             }
         }
     }
-
-    std::vector<uint8_t> makeBytes(int count, uint32_t seed)
-    {
-        std::vector<uint8_t> bytes(count);
-        for (auto &b : bytes)
-        {
-            seed = seed * 1664525u + 1013904223u;
-            b = seed >> 24;
-        }
-        return bytes;
-    }
 } // namespace
 
 TEST_CASE("HDLCDeframer extracts a single frame between flags", "[common][codings][deframing][hdlc]")
 {
-    std::vector<uint8_t> data = makeBytes(20, 1);
+    std::vector<uint8_t> data = randomBytes(20, 1);
     std::vector<uint8_t> bits;
     appendFlag(bits);
     appendFlag(bits);
@@ -85,7 +77,7 @@ TEST_CASE("HDLCDeframer handles shared and repeated flags between frames", "[com
     appendFlag(bits);
     for (int i = 0; i < 10; i++)
     {
-        sent.push_back(makeBytes(10 + i * 7, 100 + i));
+        sent.push_back(randomBytes(10 + i * 7, 100 + i));
         appendFrame(bits, sent.back());
         for (int f = 0; f < 1 + i % 3; f++) // one shared flag, or several
             appendFlag(bits);
@@ -112,7 +104,7 @@ TEST_CASE("HDLCDeframer removes stuffed bits from data full of ones and flag byt
 
 TEST_CASE("HDLCDeframer drops frames with a bad FCS and keeps going", "[common][codings][deframing][hdlc]")
 {
-    std::vector<uint8_t> good1 = makeBytes(30, 5), bad = makeBytes(30, 6), good2 = makeBytes(30, 7);
+    std::vector<uint8_t> good1 = randomBytes(30, 5), bad = randomBytes(30, 6), good2 = randomBytes(30, 7);
     std::vector<uint8_t> bits;
     appendFlag(bits);
     appendFrame(bits, good1);
@@ -132,7 +124,7 @@ TEST_CASE("HDLCDeframer drops frames with a bad FCS and keeps going", "[common][
 TEST_CASE("HDLCDeframer drops frames shorter than the minimum length", "[common][codings][deframing][hdlc]")
 {
     // The minimum length counts the 2 FCS bytes
-    std::vector<uint8_t> shortFrame = makeBytes(3, 8), okFrame = makeBytes(4, 9);
+    std::vector<uint8_t> shortFrame = randomBytes(3, 8), okFrame = randomBytes(4, 9);
     std::vector<uint8_t> bits;
     appendFlag(bits);
     appendFrame(bits, shortFrame);
@@ -153,7 +145,7 @@ TEST_CASE("HDLCDeframer keeps state across calls, even one bit at a time", "[com
     appendFlag(bits);
     for (int i = 0; i < 5; i++)
     {
-        sent.push_back(makeBytes(40, 200 + i));
+        sent.push_back(randomBytes(40, 200 + i));
         appendFrame(bits, sent.back());
         appendFlag(bits);
     }
@@ -171,7 +163,7 @@ TEST_CASE("HDLCDeframer outputs nothing for flags only or an unterminated frame"
     std::vector<uint8_t> bits;
     for (int i = 0; i < 20; i++)
         appendFlag(bits);
-    appendFrame(bits, makeBytes(25, 10)); // no closing flag
+    appendFrame(bits, randomBytes(25, 10)); // no closing flag
 
     ax25::HDLCDeframer def(4, 400);
     CHECK(def.work(bits.data(), bits.size()).empty());

@@ -1,5 +1,5 @@
 #include "common/ccsds/ccsds_aos/demuxer.h"
-#include "../ccsds_stream_helpers.h"
+#include "common/ccsds/ccsds_stream_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <cstring>
@@ -94,11 +94,11 @@ TEST_CASE("ccsds_aos Demuxer handles a primary header split at every position ac
 
     PacketStream stream;
     uint32_t rng = 7 + split;
-    appendPacket(stream, 1, 0, D - split - 6, rng);            // ends where packet 2 starts
-    appendPacket(stream, 2, 1, 10, rng);                       // header straddles the boundary
-    appendPacket(stream, 3, 2, D - (16 - split) - 6, rng);     // fills the second zone exactly
+    appendPacket(stream, 1, 0, D - split - 6, rng);        // ends where packet 2 starts
+    appendPacket(stream, 2, 1, 10, rng);                   // header straddles the boundary
+    appendPacket(stream, 3, 2, D - (16 - split) - 6, rng); // fills the second zone exactly
     appendPacket(stream, 4, 3, 5, rng);
-    appendPacket(stream, APID_IDLE, 4, D - 11 - 6, rng);       // fills the third zone exactly
+    appendPacket(stream, APID_IDLE, 4, D - 11 - 6, rng); // fills the third zone exactly
     REQUIRE(stream.bytes.size() == (size_t)3 * D);
     REQUIRE(firstHeaderPointer(stream, 1, D) == 16 - split);
 

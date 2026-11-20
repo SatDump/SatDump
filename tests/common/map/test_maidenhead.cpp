@@ -117,7 +117,7 @@ TEST_CASE("get_mh then mh2lon/mh2lat round-trips to within one 10-character cell
     }
 }
 
-// complete_mh (maidenhead.c:80) memcpy's the short locator into a static buffer that is never
+// Bug: complete_mh (maidenhead.c:80) memcpy's the short locator into a static buffer that is never
 // reset to "LL55LL55LL", so characters from a previously decoded longer locator leak into the
 // padding of the next short one.
 TEST_CASE("mh2lon of a short locator does not depend on previous calls", "[common][map][maidenhead][!shouldfail]")

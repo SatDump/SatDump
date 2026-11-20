@@ -1,6 +1,6 @@
 #include "image/image_background.h"
+#include "image/image_test_helpers.h"
 #include "image/meta.h"
-#include "image_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 
 using satdump::image::Image;
@@ -32,13 +32,8 @@ TEST_CASE("image::remove_background clears off-disk pixels of a geostationary vi
     const int N = 40;
     Image im(8, N, N, 1);
     im.fill(200);
-    img::set_metadata_proj_cfg(im, {{"type", "geos"},
-                                    {"altitude", 35786023.0},
-                                    {"sweep_x", false},
-                                    {"offset_x", -6000000.0},
-                                    {"offset_y", 6000000.0},
-                                    {"scalar_x", 12000000.0 / N},
-                                    {"scalar_y", -12000000.0 / N}});
+    img::set_metadata_proj_cfg(
+        im, {{"type", "geos"}, {"altitude", 35786023.0}, {"sweep_x", false}, {"offset_x", -6000000.0}, {"offset_y", 6000000.0}, {"scalar_x", 12000000.0 / N}, {"scalar_y", -12000000.0 / N}});
     float progress = -1;
     img::remove_background(im, &progress);
 

@@ -1,5 +1,5 @@
 #include "common/dsp/demod/pm_to_bpsk.h"
-#include "../dsp_test_helpers.h"
+#include "common/dsp/dsp_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -23,12 +23,16 @@ TEST_CASE("PMToBPSK keeps only Q and shifts it down by the symbol rate", "[commo
     REQUIRE(r.output.size() == in.size());
 
     // out[n] = j * Q[n] * exp(-j w n)
+    size_t mismatches = 0, first = 0;
     for (size_t n = 0; n < in.size(); n++)
     {
         double p = -w * (double)n;
         complex_t e(-in[n].imag * sin(p), in[n].imag * cos(p));
-        REQUIRE(dsp_test::absDiff(r.output[n], e) < 2e-3f);
+        if (!(dsp_test::absDiff(r.output[n], e) < 2e-3f) && mismatches++ == 0)
+            first = n;
     }
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("PMToBPSK brings a Q-channel subcarrier at the symbol rate to DC", "[common][dsp][pm_to_bpsk]")

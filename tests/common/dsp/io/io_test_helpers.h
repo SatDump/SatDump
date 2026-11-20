@@ -1,11 +1,10 @@
 #pragma once
 
-#include <atomic>
+#include "helpers/file_io.h"
+#include "helpers/temp_files.h"
 #include <cstdint>
 #include <filesystem>
-#include <fstream>
 #include <string>
-#include <unistd.h>
 #include <vector>
 
 namespace dsp_test_io
@@ -14,13 +13,7 @@ namespace dsp_test_io
     class TempPath
     {
     public:
-        explicit TempPath(const std::string &tag)
-        {
-            static std::atomic<int> counter{0};
-            base = (std::filesystem::temp_directory_path() /
-                    ("satdump_dsp_test_" + tag + "_" + std::to_string(getpid()) + "_" + std::to_string(counter++)))
-                       .string();
-        }
+        explicit TempPath(const std::string &tag) : base(test_helpers::uniqueTempPath("dsp_" + tag).string()) {}
 
         ~TempPath()
         {
@@ -48,18 +41,8 @@ namespace dsp_test_io
         std::vector<std::string> created;
     };
 
-    template <typename T>
-    inline void writeFile(const std::string &path, const std::vector<T> &data)
-    {
-        std::ofstream f(path, std::ios::binary);
-        f.write((const char *)data.data(), data.size() * sizeof(T));
-    }
-
-    inline std::vector<uint8_t> readFile(const std::string &path)
-    {
-        std::ifstream f(path, std::ios::binary);
-        return std::vector<uint8_t>((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
-    }
+    using test_helpers::readBytes;
+    using test_helpers::writeBytes;
 
     template <typename T>
     inline T readLE(const std::vector<uint8_t> &b, size_t off)
@@ -69,4 +52,4 @@ namespace dsp_test_io
             v |= (T)b[off + i] << (8 * i);
         return v;
     }
-}
+} // namespace dsp_test_io

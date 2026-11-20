@@ -1,10 +1,10 @@
 #include "core/exception.h"
 #include "nlohmann/json_utils.h"
 #include "pipeline/pipeline.h"
-#include "pipeline_test_helpers.h"
+#include "pipeline/pipeline_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 
-using namespace pipeline_test_helpers;
+using namespace pipeline_test;
 namespace pl = satdump::pipeline;
 
 namespace
@@ -325,8 +325,10 @@ TEST_CASE("pipeline::loadPipelines loads all .json files recursively", "[pipelin
     CHECK_FALSE(pl::pipelines_system_json.contains("unit_txt"));
     CHECK_FALSE(pl::pipelines_system_json.contains("unit_inc"));
 
+#ifndef _MSC_VER // user_cfg_path is not exported from the Windows DLL
     // Without a user file, saving would go to the user path
     CHECK(pl::user_cfg_path == env.user.str() + "/pipelines.json");
+#endif
 }
 
 TEST_CASE("pipeline::loadPipelines lets later files (by path order) override earlier ids", "[pipeline][pipeline][load]")
@@ -388,7 +390,9 @@ TEST_CASE("pipeline::loadPipelines merges user pipeline diffs from the user path
 
     pl::loadPipelines(env.root.str());
 
+#ifndef _MSC_VER // user_cfg_path is not exported from the Windows DLL
     CHECK(pl::user_cfg_path == env.user.str() + "/pipelines.json");
+#endif
     CHECK(pl::pipelines_system_json.size() == 3);
     CHECK(pl::pipelines_system_json["unit_rename"]["name"] == "Old Name");
 
@@ -409,7 +413,9 @@ TEST_CASE("pipeline::loadPipelines prefers pipelines.json in the current directo
 
     pl::loadPipelines(env.root.str());
 
+#ifndef _MSC_VER // user_cfg_path is not exported from the Windows DLL
     CHECK(pl::user_cfg_path == "pipelines.json");
+#endif
     REQUIRE(pl::pipelines.size() == 1);
     CHECK(pl::pipelines[0].name == "From Cwd");
 }

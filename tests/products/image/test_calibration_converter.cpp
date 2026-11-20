@@ -21,8 +21,7 @@ namespace
 
     nlohmann::json globeCfgAt(double timestamp)
     {
-        return {{"type", "equirec"}, {"offset_x", -180.0}, {"offset_y", 90.0}, {"scalar_x", 1.0},
-                {"scalar_y", -1.0},  {"width", 360},       {"height", 180},    {"proj_timestamp", timestamp}};
+        return {{"type", "equirec"}, {"offset_x", -180.0}, {"offset_y", 90.0}, {"scalar_x", 1.0}, {"scalar_y", -1.0}, {"width", 360}, {"height", 180}, {"proj_timestamp", timestamp}};
     }
 
     bool contains(const std::vector<std::string> &v, const std::string &s) { return std::find(v.begin(), v.end(), s) != v.end(); }

@@ -1,4 +1,5 @@
 #include "common/codings/dvb-s2/bbframe_ts_parser.h"
+#include "helpers/random.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <vector>
@@ -27,15 +28,12 @@ namespace
     std::vector<std::vector<uint8_t>> makePackets(int count, uint32_t seed)
     {
         std::vector<std::vector<uint8_t>> pkts(count, std::vector<uint8_t>(TS_SIZE));
-        uint32_t state = seed;
+        test_helpers::Lcg rng(seed);
         for (int p = 0; p < count; p++)
         {
             pkts[p][0] = 0x47;
             for (int i = 1; i < TS_SIZE; i++)
-            {
-                state = state * 1664525u + 1013904223u;
-                pkts[p][i] = state >> 24;
-            }
+                pkts[p][i] = rng.byte();
             pkts[p][1] &= 0x1F; // TEI and flags clear, PID high bits
         }
         return pkts;
@@ -110,7 +108,7 @@ namespace
             v.insert(v.end(), pkts[i].begin(), pkts[i].end());
         return v;
     }
-}
+} // namespace
 
 TEST_CASE("BBHeader parses the DVB-S2 baseband header fields", "[common][codings][dvbs2]")
 {
@@ -135,7 +133,7 @@ TEST_CASE("BBHeader parses the DVB-S2 baseband header fields", "[common][codings
     CHECK(dvbs2::BBHeader(bbf).isi == 0);
 }
 
-// BUG: BBHeader::ro is a bool, but the roll-off field is 2 bits (0.35/0.25/0.20/reserved), so the
+// Bug: BBHeader::ro is a bool, but the roll-off field is 2 bits (0.35/0.25/0.20/reserved), so the
 // values 1, 2 and 3 all collapse to true (bbframe_ts_parser.h:41 and :55).
 TEST_CASE("BBHeader keeps the full 2-bit roll-off field", "[common][codings][dvbs2][!shouldfail]")
 {
@@ -279,7 +277,7 @@ TEST_CASE("BBFrameTSParser stops writing at buffer_outsize", "[common][codings][
     CHECK(out[2 * TS_SIZE] == 0xEE);
 }
 
-// BUG: work() never resets its read offset (in_p) between BBFrames, so with cnt > 1 every frame after
+// Bug: work() never resets its read offset (in_p) between BBFrames, so with cnt > 1 every frame after
 // the first is read from the wrong position (bbframe_ts_parser.cpp:100, in_p is declared outside the
 // per-frame loop). The in-tree caller only ever passes cnt = 1.
 TEST_CASE("BBFrameTSParser with several frames per call matches one frame per call", "[common][codings][dvbs2][!shouldfail]")
@@ -304,7 +302,7 @@ TEST_CASE("BBFrameTSParser with several frames per call matches one frame per ca
     CHECK(std::equal(expected.begin(), expected.end(), out.begin()));
 }
 
-// BUG: a packet written directly to the output whose CRC-8 byte only arrives in the next BBFrame
+// Bug: a packet written directly to the output whose CRC-8 byte only arrives in the next BBFrame
 // cannot be flagged any more: on the next call tei_p is 0, so the TEI bit is ORed into tsframes[0]
 // (which is then overwritten by the next 0x47) and the corrupted packet was already returned with
 // TEI clear (bbframe_ts_parser.cpp:189 and :213).

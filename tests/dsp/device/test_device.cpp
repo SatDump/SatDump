@@ -1,7 +1,7 @@
-#include "../ndsp_test_helpers.h"
 #include "dsp/device/dev.h"
 #include "dsp/device/options_displayer.h"
 #include "dsp/device/options_displayer_warper.h"
+#include "dsp/ndsp_test_helpers.h"
 #include "dsp/utils/multiply_const.h"
 #include <catch2/catch_test_macros.hpp>
 
@@ -71,7 +71,7 @@ TEST_CASE("ndsp DeviceInfo equality detects differences", "[dsp][device][dev]")
     CHECK_FALSE(a == b);
 }
 
-// Bug : dev.h:18 compares name with b.type instead of b.name, so two
+// Bug: dev.h:18 compares name with b.type instead of b.name, so two
 // identical DeviceInfo compare unequal (unless name happens to equal type)
 TEST_CASE("ndsp DeviceInfo equality holds for identical infos", "[dsp][device][dev][!shouldfail]")
 {
@@ -177,7 +177,7 @@ TEST_CASE("ndsp OptionsDisplayer option parsing", "[dsp][device][options_display
     CHECK(d.get_values().is_null());
 
     // Options without a type are rejected. This throws with the internal mutex
-    // still locked (see report), so this instance is never used nor destroyed
+    // still locked (see UNTESTED_ISSUES.md), so this instance is never used nor destroyed
     // afterwards (destroying a locked std::mutex is undefined).
     OptionsDisplayer *d2 = new OptionsDisplayer();
     nlohmann::ordered_json bad;

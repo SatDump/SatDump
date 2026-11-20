@@ -1,23 +1,31 @@
 #include "core/exception.h"
+#include "helpers/sockets.h"
 #include "utils/mqtt_client.h"
-#include <arpa/inet.h>
 #include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <condition_variable>
 #include <mutex>
+#include <string>
+#include <thread>
+
+#ifndef _WIN32
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <poll.h>
-#include <string>
 #include <sys/socket.h>
-#include <thread>
 #include <unistd.h>
+#endif
 
 // The only broker used here is a minimal fake on 127.0.0.1 run by the test itself. It answers the
 // CONNECT with a CONNACK, records everything the client sends, and can push packets to the client.
+// It uses POSIX sockets, so the tests needing it (or a closed port) are POSIX only.
 
+#ifndef _WIN32
 namespace
 {
+    using test_helpers::closedPort;
+
     const auto TIMEOUT = std::chrono::seconds(15);
 
     class FakeBroker
@@ -122,19 +130,6 @@ namespace
         }
     };
 
-    int closedPort()
-    {
-        int fd = socket(AF_INET, SOCK_STREAM, 0);
-        sockaddr_in addr{};
-        addr.sin_family = AF_INET;
-        addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-        socklen_t len = sizeof(addr);
-        bind(fd, (sockaddr *)&addr, sizeof(addr));
-        getsockname(fd, (sockaddr *)&addr, &len);
-        close(fd);
-        return ntohs(addr.sin_port);
-    }
-
     std::string bin(std::initializer_list<int> v)
     {
         std::string s;
@@ -149,12 +144,15 @@ TEST_CASE("MQTTClient throws when the broker refuses the connection", "[utils][m
     CHECK_THROWS_AS(satdump::MQTTClient("127.0.0.1", std::to_string(closedPort()), 1024), satdump::satdump_exception_t);
 }
 
+#endif
+
 TEST_CASE("MQTTClient throws on an unresolvable service", "[utils][mqtt]")
 {
     // getaddrinfo() rejects the non-numeric, unknown port without any network lookup
     CHECK_THROWS_AS(satdump::MQTTClient("127.0.0.1", "satdump-no-such-service", 1024), satdump::satdump_exception_t);
 }
 
+#ifndef _WIN32
 TEST_CASE("MQTTClient connects, publishes, subscribes and receives over loopback", "[utils][mqtt]")
 {
     FakeBroker broker;
@@ -209,3 +207,4 @@ TEST_CASE("MQTTClient destructor closes the broker connection", "[utils][mqtt][!
     }
     CHECK(broker.waitClosed(std::chrono::milliseconds(1000)));
 }
+#endif

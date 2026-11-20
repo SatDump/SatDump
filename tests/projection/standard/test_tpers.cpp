@@ -1,10 +1,10 @@
-#include "proj_test_helpers.h"
+#include "projection/standard/proj_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 using Catch::Matchers::WithinAbs;
-using satdump_test_proj_standard::lonDiff;
-using satdump_test_proj_standard::ScopedProj;
+using proj_test::lonDiff;
+using proj_test::ScopedProj;
 
 namespace
 {
@@ -124,8 +124,7 @@ TEST_CASE("projection_tpers forward/inverse round-trip in every aspect", "[proje
 TEST_CASE("projection_tpers image config centers the view on the middle pixel", "[projection][standard][tpers]")
 {
     // center_lon/center_lat/scale/width/height are expanded by proj_json.h into lon0/lat0/scalars/offsets
-    nlohmann::json cfg = {{"type", "tpers"}, {"altitude", 30000000.0}, {"center_lon", 10.0}, {"center_lat", 40.0}, {"tilt", 0.0},
-                          {"azimuth", 0.0},  {"scale", 8000.0},        {"width", 800},       {"height", 600}};
+    nlohmann::json cfg = {{"type", "tpers"}, {"altitude", 30000000.0}, {"center_lon", 10.0}, {"center_lat", 40.0}, {"tilt", 0.0}, {"azimuth", 0.0}, {"scale", 8000.0}, {"width", 800}, {"height", 600}};
     ScopedProj sp(cfg);
     REQUIRE(sp.setup());
 

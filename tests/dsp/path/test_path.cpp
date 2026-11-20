@@ -1,4 +1,4 @@
-#include "../ndsp_test_helpers.h"
+#include "dsp/ndsp_test_helpers.h"
 #include "dsp/path/selector.h"
 #include "dsp/path/splitter.h"
 #include "dsp/path/switch.h"

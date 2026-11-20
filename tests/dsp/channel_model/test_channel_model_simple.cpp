@@ -1,7 +1,8 @@
 #include "dsp/channel_model/channel_model_simple.h"
-#include "../filter/ndsp_sig_test_helpers.h"
+#include "dsp/ndsp_sig_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cmath>
 
 using Catch::Approx;
 using namespace satdump::ndsp;
@@ -33,8 +34,8 @@ TEST_CASE("ndsp ChannelModelSimpleBlock applies the frequency shift", "[dsp][cha
         INFO("shift " << shift);
         // signal_level -26.5 gives unity gain (see below), negligible noise
         auto out = runModel(in, -26.5, -300, shift, fs);
-        CHECK(ndsp_sig_test::estimateFreq(out, 1000, out.size()) == Approx(2 * ndsp_sig_test::kPi * shift / fs).epsilon(1e-4));
-        CHECK(ndsp_sig_test::toneAmplitude(out, 2 * ndsp_sig_test::kPi * shift / fs, 1000, out.size()) == Approx(1.0).epsilon(1e-3));
+        CHECK(ndsp_sig_test::estimateFreq(out, 1000, out.size()) == Approx(2 * M_PI * shift / fs).epsilon(1e-4));
+        CHECK(ndsp_sig_test::toneAmplitude(out, 2 * M_PI * shift / fs, 1000, out.size()) == Approx(1.0).epsilon(1e-3));
     }
 }
 
@@ -44,7 +45,7 @@ TEST_CASE("ndsp ChannelModelSimpleBlock frequency shift ramps up smoothly", "[ds
     std::vector<complex_t> in(200, complex_t(1, 0));
     const double fs = 1e6, shift = 50e3;
     auto out = runModel(in, -26.5, -300, shift, fs);
-    double target = 2 * ndsp_sig_test::kPi * shift / fs;
+    double target = 2 * M_PI * shift / fs;
     double f = 0;
     for (size_t i = 1; i < 60; i++)
     {
@@ -106,9 +107,14 @@ TEST_CASE("ndsp ChannelModelSimpleBlock signal and noise levels", "[dsp][channel
     SECTION("SNR")
     {
         auto out = runModel(ones, -100, -120, 0);
-        double total = ndsp_sig_test::meanPower(out, 0, n);
         double sig = std::pow(10, (-100 + 26.5) / 10);
-        double snr_db = 10 * log10(sig / (total - sig));
+        // Noise power around the expected signal. Taking total - sig instead leaves the signal x noise
+        // cross term, about 0.09 dB rms here, which the clock-seeded noise exceeded now and then
+        double noise = 0;
+        for (auto &v : out)
+            noise += std::norm(ndsp_sig_test::toStd(v) - std::sqrt(sig));
+        noise /= n;
+        double snr_db = 10 * log10(sig / noise);
         CHECK(snr_db == Approx(-100 - -120 - 3.5).margin(0.2));
     }
 }
@@ -136,7 +142,7 @@ TEST_CASE("ndsp ChannelModelSimpleBlock configuration getters", "[dsp][channel_m
     CHECK_THROWS(blk.set_cfg("x", 1));
 }
 
-// Bug : channel_model_simple.h:43 declares the parameter as "d_alpha" in get_cfg_list(),
+// Bug: channel_model_simple.h:43 declares the parameter as "d_alpha" in get_cfg_list(),
 // while get_cfg() / set_cfg() only know "alpha", so getting all the parameters throws.
 TEST_CASE("ndsp ChannelModelSimpleBlock get_cfg returns every listed parameter", "[dsp][channel_model][!shouldfail]")
 {

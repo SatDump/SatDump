@@ -1,6 +1,7 @@
 #include "common/geodetic/vincentys_calculations.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <cmath>
 
 using Catch::Matchers::WithinAbs;
 
@@ -75,10 +76,12 @@ TEST_CASE("vincentys_inverse is symmetric when swapping endpoints", "[common][ge
     CHECK(angleDiffDeg(ab.reverse_azimuth, ba.azimuth) < 1e-7);
 }
 
-// vincentys_calculations.cpp:230 (and :84 in vincentys_forward) call the C int abs() on a
+// Bug: vincentys_calculations.cpp:230 (and :84 in vincentys_forward) call the C int abs() on a
 // double, so the convergence test truncates to 0 and the iteration always stops after 3 rounds.
 // Equatorial lines converge with ratio f per round, leaving ~f^3 relative error (~0.4 m here).
-TEST_CASE("vincentys_inverse along the equator is a * delta-lon", "[common][geodetic][vincenty][!shouldfail]")
+// The unqualified abs() only resolves to the integer ::abs with some standard library headers: it
+// does with libstdc++, but most likely not with libc++ or MSVC, where this test passes.
+TEST_CASE("vincentys_inverse along the equator is a * delta-lon", "[common][geodetic][vincenty][!mayfail]")
 {
     geodetic::geodetic_curve_t c = geodetic::vincentys_inverse({0, 0, 0}, {0, 90, 0}).toDegs();
     CHECK_THAT(c.distance, WithinAbs(6378.137 * M_PI / 2, 1e-6));
@@ -115,9 +118,10 @@ TEST_CASE("vincentys_inverse of identical points is zero distance", "[common][ge
     CHECK_THAT(c.distance, WithinAbs(0, 1e-9));
 }
 
-// Same premature termination as above (int abs() at vincentys_calculations.cpp:230):
-// long lines end up several decimetres to half a metre off.
-TEST_CASE("vincentys_inverse matches a fully converged reference on long lines", "[common][geodetic][vincenty][!shouldfail]")
+// Bug: Same premature termination as above (int abs() at vincentys_calculations.cpp:230):
+// long lines end up several decimetres to half a metre off. As above, this only shows where abs()
+// resolves to the integer ::abs (libstdc++, most likely not libc++ or MSVC).
+TEST_CASE("vincentys_inverse matches a fully converged reference on long lines", "[common][geodetic][vincenty][!mayfail]")
 {
     struct Line
     {
@@ -161,7 +165,7 @@ TEST_CASE("vincentys_inverse azimuths are normalised to [0, 2pi)", "[common][geo
     }
 }
 
-// vincentys_calculations.cpp:38 converts the distance with "s = distance * 1000" (km to m)
+// Bug: vincentys_calculations.cpp:38 converts the distance with "s = distance * 1000" (km to m)
 // but the WGS84 axes it divides by are in kilometres, so any distance ends up 1000x too long.
 // (It also stops iterating after one round because of the int abs() at line 84.)
 TEST_CASE("vincentys_forward reproduces the Flinders Peak - Buninyong test line", "[common][geodetic][vincenty][!shouldfail]")
@@ -189,7 +193,7 @@ TEST_CASE("vincentys_forward with zero distance stays put", "[common][geodetic][
     CHECK_THAT(final_bearing, WithinAbs(1.0, 1e-12));
 }
 
-// Same unit bug as above (vincentys_calculations.cpp:38): direct then inverse does not
+// Bug: Same unit bug as above (vincentys_calculations.cpp:38): direct then inverse does not
 // return the requested distance.
 TEST_CASE("vincentys_forward then vincentys_inverse round-trips distance and bearing", "[common][geodetic][vincenty][!shouldfail]")
 {

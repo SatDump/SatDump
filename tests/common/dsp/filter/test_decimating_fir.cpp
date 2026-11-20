@@ -1,6 +1,6 @@
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/filter/decimating_fir.h"
 #include "common/dsp/filter/firdes.h"
-#include "../dsp_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -32,7 +32,7 @@ namespace
             x = complex_t(rng.uniform() * 2 - 1, rng.uniform() * 2 - 1);
         return v;
     }
-}
+} // namespace
 
 TEST_CASE("DecimatingFIRBlock::process equals filtering then keeping every Dth sample", "[common][dsp][decimating_fir]")
 {
@@ -50,8 +50,12 @@ TEST_CASE("DecimatingFIRBlock::process equals filtering then keeping every Dth s
 
             // Output index k corresponds to input index k * decim
             REQUIRE(out.size() == (in.size() + decim - 1) / decim);
+            size_t mismatches = 0, first = 0;
             for (size_t k = 0; k < out.size(); k++)
-                REQUIRE(dsp_test::absDiff(out[k], full[k * decim]) < 1e-5f);
+                if (!(dsp_test::absDiff(out[k], full[k * decim]) < 1e-5f) && mismatches++ == 0)
+                    first = k;
+            INFO("first mismatch at sample " << first);
+            REQUIRE(mismatches == 0);
         }
     }
 }
@@ -66,8 +70,12 @@ TEST_CASE("DecimatingFIRBlock<float> decimation ratio and DC gain", "[common][ds
     REQUIRE(out.size() == 10000);
 
     // Constant input settles to DC gain * value
+    size_t mismatches = 0, first = 0;
     for (size_t k = taps.size(); k < out.size(); k++)
-        REQUIRE(out[k] == Approx(0.75f).margin(1e-4));
+        if (!(out[k] == Approx(0.75f).margin(1e-4)) && mismatches++ == 0)
+            first = k;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("DecimatingFIRBlock preserves in-band tone frequency in Hz", "[common][dsp][decimating_fir]")
@@ -109,6 +117,10 @@ TEST_CASE("DecimatingFIRBlock as a streaming block", "[common][dsp][decimating_f
     auto r = dsp_test::runBlock(fir, input, in, 1001);
     REQUIRE(r.completed);
     REQUIRE(r.output.size() == 10000);
+    size_t mismatches = 0, first = 0;
     for (size_t k = 0; k < r.output.size(); k++)
-        REQUIRE(dsp_test::absDiff(r.output[k], full[k * 3]) < 1e-5f);
+        if (!(dsp_test::absDiff(r.output[k], full[k * 3]) < 1e-5f) && mismatches++ == 0)
+            first = k;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }

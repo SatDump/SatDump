@@ -1,5 +1,5 @@
 #include "common/dsp/buffer.h"
-#include "dsp_test_helpers.h"
+#include "common/dsp/dsp_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <cstdint>
 #include <future>
@@ -69,12 +69,14 @@ TEST_CASE("stream swap waits for the reader to flush", "[common][dsp][buffer]")
 
     // Second swap has to wait until the first buffer was consumed
     std::atomic<bool> second_done{false};
-    auto writer = std::async(std::launch::async, [&]()
+    auto writer = std::async(std::launch::async,
+                             [&]()
                              {
                                  s.writeBuf[0] = 2;
                                  bool r = s.swap(1);
                                  second_done = true;
-                                 return r; });
+                                 return r;
+                             });
 
     REQUIRE(s.read() == 1);
     CHECK(s.readBuf[0] == 1);
@@ -106,8 +108,7 @@ TEST_CASE("stream stopReader makes read return -1", "[common][dsp][buffer]")
 TEST_CASE("stream stopReader wakes a blocked reader", "[common][dsp][buffer]")
 {
     dsp::stream<float> s(8);
-    auto reader = std::async(std::launch::async, [&]()
-                             { return s.read(); });
+    auto reader = std::async(std::launch::async, [&]() { return s.read(); });
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
     s.stopReader();
     REQUIRE(reader.wait_for(dsp_test::kTimeout) == std::future_status::ready);
@@ -119,8 +120,7 @@ TEST_CASE("stream stopWriter aborts a pending swap", "[common][dsp][buffer]")
     dsp::stream<float> s(8);
     REQUIRE(s.swap(1)); // Fills the only slot, nobody reads it
 
-    auto writer = std::async(std::launch::async, [&]()
-                             { return s.swap(1); });
+    auto writer = std::async(std::launch::async, [&]() { return s.swap(1); });
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
     s.stopWriter();
     REQUIRE(writer.wait_for(dsp_test::kTimeout) == std::future_status::ready);
@@ -239,7 +239,8 @@ TEST_CASE("RingBuffer streams data between a producer and a consumer", "[common]
     dsp::RingBuffer<int32_t> rb(4096);
     const int total = 200000;
 
-    auto producer = std::async(std::launch::async, [&]()
+    auto producer = std::async(std::launch::async,
+                               [&]()
                                {
                                    std::vector<int32_t> buf(1000);
                                    for (int pos = 0; pos < total; pos += 1000)
@@ -248,7 +249,8 @@ TEST_CASE("RingBuffer streams data between a producer and a consumer", "[common]
                                        if (rb.write(buf.data(), 1000) != 1000)
                                            return false;
                                    }
-                                   return true; });
+                                   return true;
+                               });
 
     std::vector<int32_t> out(total);
     for (int pos = 0; pos < total; pos += 1500)
@@ -259,6 +261,10 @@ TEST_CASE("RingBuffer streams data between a producer and a consumer", "[common]
 
     REQUIRE(producer.wait_for(dsp_test::kTimeout) == std::future_status::ready);
     CHECK(producer.get());
+    size_t mismatches = 0, first = 0;
     for (int i = 0; i < total; i++)
-        REQUIRE(out[i] == i);
+        if (!(out[i] == i) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }

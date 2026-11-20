@@ -1,7 +1,8 @@
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/utils/freq_shift.h"
-#include "../dsp_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cmath>
 
 using Catch::Approx;
 
@@ -26,8 +27,12 @@ TEST_CASE("FreqShiftBlock shifts a tone by the requested frequency", "[common][d
         CHECK(dsp_test::estimateFreq(r.output, 0, r.output.size()) == Approx(expected).margin(1e-5));
 
         // Pure rotation, amplitude unchanged; starts at phase 0
+        size_t mismatches = 0, first = 0;
         for (size_t i = 0; i < in.size(); i++)
-            REQUIRE(r.output[i].norm() == Approx(0.7f).epsilon(1e-4));
+            if (!(r.output[i].norm() == Approx(0.7f).epsilon(1e-4)) && mismatches++ == 0)
+                first = i;
+        INFO("first mismatch at sample " << first);
+        REQUIRE(mismatches == 0);
         CHECK(dsp_test::absDiff(r.output[0], in[0]) < 1e-6f);
     }
 }
@@ -40,11 +45,15 @@ TEST_CASE("FreqShiftBlock phase is continuous across buffers", "[common][dsp][fr
     dsp::FreqShiftBlock blk(input, 1.0, 0.01);
     auto r = dsp_test::runBlock(blk, input, in, 777);
     REQUIRE(r.completed);
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < in.size(); i++)
     {
         double p = 2 * M_PI * 0.01 * i;
-        REQUIRE(dsp_test::absDiff(r.output[i], complex_t(cos(p), sin(p))) < 1e-3f);
+        if (!(dsp_test::absDiff(r.output[i], complex_t(cos(p), sin(p))) < 1e-3f) && mismatches++ == 0)
+            first = i;
     }
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("FreqShiftBlock set_freq and set_freq_raw change the shift", "[common][dsp][freq_shift]")

@@ -1,5 +1,5 @@
+#include "image/image_test_helpers.h"
 #include "image/image_utils.h"
-#include "image_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <cstdlib>
@@ -21,12 +21,14 @@ TEST_CASE("image::make_manyimg_composite tiles images row by row", "[image][imag
 {
     auto depth = GENERATE(8, 16);
     int calls = 0;
-    Image out = img::make_manyimg_composite(2, 2, 3, [&](int i)
+    Image out = img::make_manyimg_composite(2, 2, 3,
+                                            [&](int i)
                                             {
                                                 calls++;
                                                 Image im(depth, 3, 2, 1);
                                                 im.fill(i + 1);
-                                                return im; });
+                                                return im;
+                                            });
     REQUIRE(out.width() == 6);
     REQUIRE(out.height() == 4);
     REQUIRE(out.depth() == depth);
@@ -44,12 +46,14 @@ TEST_CASE("image::make_manyimg_composite tiles images row by row", "[image][imag
 
 TEST_CASE("image::make_manyimg_composite with colour images", "[image][image_utils]")
 {
-    Image out = img::make_manyimg_composite(3, 1, 3, [](int i)
+    Image out = img::make_manyimg_composite(3, 1, 3,
+                                            [](int i)
                                             {
                                                 Image im(8, 1, 1, 3);
                                                 for (int c = 0; c < 3; c++)
                                                     im.set(c, 0, 10 * i + c);
-                                                return im; });
+                                                return im;
+                                            });
     REQUIRE(out.width() == 3);
     REQUIRE(out.height() == 1);
     for (int i = 0; i < 3; i++)
@@ -172,7 +176,7 @@ TEST_CASE("image::merge_images_opacity uses the smallest size and requires 16-bi
     CHECK_THROWS(img::merge_images_opacity(a, b8, 0.5f));
 }
 
-// image_utils.cpp:122-128: pixels are addressed by a linear index computed for
+// Bug: image_utils.cpp:122-128: pixels are addressed by a linear index computed for
 // the output (minimum) size, so when the inputs have different widths the rows
 // of the wider image are misaligned in the result.
 TEST_CASE("image::merge_images_opacity keeps rows aligned for inputs of different widths", "[image][image_utils][!shouldfail]")
@@ -191,7 +195,7 @@ TEST_CASE("image::merge_images_opacity keeps rows aligned for inputs of differen
     }
 }
 
-// image_utils.cpp:72-88: same linear-index issue as merge_images_opacity, rows
+// Bug: image_utils.cpp:72-88: same linear-index issue as merge_images_opacity, rows
 // of wider layers are misaligned when layers differ in width.
 TEST_CASE("image::blend_images keeps rows aligned for layers of different widths", "[image][image_utils][!shouldfail]")
 {

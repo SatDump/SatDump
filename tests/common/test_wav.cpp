@@ -1,28 +1,14 @@
+#include "common/utils.h" // timegm on MSVC
 #include "common/wav.h"
+#include "helpers/temp_files.h"
 #include <catch2/catch_test_macros.hpp>
 #include <cstring>
-#include <filesystem>
-#include <fstream>
-#include <random>
+#include <ctime>
 
 namespace
 {
-    std::filesystem::path uniqueTempPath(const std::string &name)
-    {
-        std::mt19937 rng(std::random_device{}());
-        return std::filesystem::temp_directory_path() / ("satdump_test_wav_" + std::to_string(rng()) + "_" + name);
-    }
-
-    struct TempFile
-    {
-        std::filesystem::path path;
-        TempFile(const std::string &name, const void *data, size_t size) : path(uniqueTempPath(name))
-        {
-            std::ofstream f(path, std::ios::binary);
-            f.write((const char *)data, size);
-        }
-        ~TempFile() { std::filesystem::remove(path); }
-    };
+    using test_helpers::TempFile;
+    using test_helpers::uniqueTempPath;
 
     wav::WavHeader makeWavHeader(uint16_t format, uint16_t bits, uint32_t samplerate)
     {
@@ -168,7 +154,7 @@ TEST_CASE("wav::tryParseFilenameMetadata parses SatDump baseband names", "[commo
     }
 }
 
-// BUG: wav.cpp:309 - the millisecond-precision branch omits ".cs32" (and ".s32"),
+// Bug: wav.cpp:309 - the millisecond-precision branch omits ".cs32" (and ".s32"),
 // which the plain SatDump branch accepts, so the format is lost.
 TEST_CASE("wav::tryParseFilenameMetadata handles cs32 names with milliseconds", "[common][wav][!shouldfail]")
 {

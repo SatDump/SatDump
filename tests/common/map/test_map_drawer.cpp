@@ -1,19 +1,14 @@
 #include "common/map/map_drawer.h"
+#include "helpers/temp_files.h"
 #include <catch2/catch_test_macros.hpp>
 #include <cstring>
-#include <filesystem>
-#include <fstream>
-#include <random>
 #include <string>
 
 namespace
 {
     // Equirectangular projection onto a 361 x 181 image: x = lon + 180, y = 90 - lat,
     // so every whole degree is a pixel and the far edges stay inside the image.
-    std::pair<int, int> plateCarree(double lat, double lon, int height, int width)
-    {
-        return {(int)((lon + 180.0) / 360.0 * (width - 1)), (int)((90.0 - lat) / 180.0 * (height - 1))};
-    }
+    std::pair<int, int> plateCarree(double lat, double lon, int height, int width) { return {(int)((lon + 180.0) / 360.0 * (width - 1)), (int)((90.0 - lat) / 180.0 * (height - 1))}; }
 
     bool isSet(image::Image &img, double lat, double lon)
     {
@@ -29,23 +24,7 @@ namespace
         return n;
     }
 
-    // Temporary file removed on scope exit
-    struct TempFile
-    {
-        std::filesystem::path path;
-        TempFile(const std::string &ext, const std::string &content)
-        {
-            std::random_device rd;
-            path = std::filesystem::temp_directory_path() / ("satdump_test_map_" + std::to_string(rd()) + "_" + std::to_string(rd()) + ext);
-            std::ofstream f(path, std::ios::binary);
-            f << content;
-        }
-        ~TempFile()
-        {
-            std::error_code ec;
-            std::filesystem::remove(path, ec);
-        }
-    };
+    using test_helpers::TempFile;
 
     std::string feature(const std::string &type, const std::string &coords)
     {
@@ -121,10 +100,10 @@ TEST_CASE("map::drawProjectedMapGeoJson draws polygon edges including the closin
     map::drawProjectedMapGeoJson({f.path.string()}, img, {1.0}, plateCarree);
 
     // GeoJSON is [lon, lat]
-    CHECK(isSet(img, 0, 10));  // bottom edge
-    CHECK(isSet(img, 5, 20));  // right edge
-    CHECK(isSet(img, 10, 10)); // top edge
-    CHECK(isSet(img, 5, 0));   // left edge
+    CHECK(isSet(img, 0, 10));       // bottom edge
+    CHECK(isSet(img, 5, 20));       // right edge
+    CHECK(isSet(img, 10, 10));      // top edge
+    CHECK(isSet(img, 5, 0));        // left edge
     CHECK_FALSE(isSet(img, 5, 10)); // interior stays empty
     CHECK(img.get(0, 180 + 10, 90) == 255);
 }
@@ -141,8 +120,7 @@ TEST_CASE("map::drawProjectedMapGeoJson draws multipolygons", "[common][map][map
 
 TEST_CASE("map::drawProjectedMapGeoJson draws points and ignores non-features", "[common][map][map_drawer]")
 {
-    TempFile f(".json", collection(feature("Point", "[-74, 40]") + "," +
-                                   R"({"type": "NotAFeature", "geometry": {"type": "Point", "coordinates": [10, 10]}})"));
+    TempFile f(".json", collection(feature("Point", "[-74, 40]") + "," + R"({"type": "NotAFeature", "geometry": {"type": "Point", "coordinates": [10, 10]}})"));
     image::Image img(8, 361, 181, 1);
     map::drawProjectedMapGeoJson({f.path.string()}, img, {1.0}, plateCarree);
     CHECK(isSet(img, 40, -74));
@@ -168,7 +146,7 @@ TEST_CASE("map::drawProjectedMapGeoJson skips points the projection rejects", "[
     CHECK(countSet(img) == 0);
 }
 
-// map_drawer.cpp:127-140 always draws a segment from the last LineString vertex back to the
+// Bug: map_drawer.cpp:127-140 always draws a segment from the last LineString vertex back to the
 // first, which turns open lines (rivers, borders) into closed loops.
 TEST_CASE("map::drawProjectedMapGeoJson does not close LineStrings", "[common][map][map_drawer][!shouldfail]")
 {
@@ -188,7 +166,7 @@ TEST_CASE("map::drawProjectedMapShapefile draws point records", "[common][map][m
     CHECK(isSet(img, -40, 50));
 }
 
-// Two off-by-ones drop the end of every polyline: shapefile.cpp:120 loses the last vertex when
+// Bug: Two off-by-ones drop the end of every polyline: shapefile.cpp:120 loses the last vertex when
 // parsing, and the drawing loop at map_drawer.cpp:214 stops at size() - 1. A 3-vertex line ends
 // up drawing nothing at all.
 TEST_CASE("map::drawProjectedMapShapefile draws every polyline segment", "[common][map][map_drawer][!shouldfail]")

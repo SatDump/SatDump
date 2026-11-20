@@ -29,14 +29,26 @@ TEST_CASE("SoftSymbolReader reads soft symbols straight from a file stream", "[c
 
     std::vector<int8_t> buf(1000);
     reader.readSoftSymbols(buf.data(), 1000);
-    for (int i = 0; i < 1000; i++)
-        REQUIRE(buf[i] == (int8_t)content[i]);
+    {
+        size_t mismatches = 0, first = 0;
+        for (int i = 0; i < 1000; i++)
+            if (!(buf[i] == (int8_t)content[i]) && mismatches++ == 0)
+                first = i;
+        INFO("first mismatch at symbol " << first);
+        REQUIRE(mismatches == 0);
+    }
 
     // Reads continue where the last one stopped
     std::vector<int8_t> buf2(2000);
     reader.readSoftSymbols(buf2.data(), 2000);
-    for (int i = 0; i < 2000; i++)
-        REQUIRE(buf2[i] == (int8_t)content[1000 + i]);
+    {
+        size_t mismatches = 0, first = 0;
+        for (int i = 0; i < 2000; i++)
+            if (!(buf2[i] == (int8_t)content[1000 + i]) && mismatches++ == 0)
+                first = i;
+        INFO("first mismatch at symbol " << first);
+        REQUIRE(mismatches == 0);
+    }
     CHECK(in.tellg() == 3000);
 }
 

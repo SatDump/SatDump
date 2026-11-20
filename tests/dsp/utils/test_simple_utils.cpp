@@ -1,4 +1,4 @@
-#include "../ndsp_test_helpers.h"
+#include "dsp/ndsp_test_helpers.h"
 #include "dsp/utils/blanker.h"
 #include "dsp/utils/correct_iq.h"
 #include "dsp/utils/cyclostationary_analysis.h"
@@ -6,8 +6,10 @@
 #include "dsp/utils/exponentiate.h"
 #include "dsp/utils/repeat.h"
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <complex>
 
+using Catch::Matchers::WithinAbs;
 using namespace satdump::ndsp;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -32,11 +34,12 @@ TEST_CASE("ndsp BlankerBlock outputs zeros when blanking", "[dsp][utils][blanker
     auto r = ndsp_test::runSimple<complex_t, complex_t>(b, in, 512);
     REQUIRE(r.completed);
     REQUIRE(r.out().size() == in.size());
-    for (auto &v : r.out())
-    {
-        REQUIRE(v.real == 0.0f);
-        REQUIRE(v.imag == 0.0f);
-    }
+    size_t mismatches = 0, first = 0;
+    for (size_t i = 0; i < r.out().size(); i++)
+        if ((!(r.out()[i].real == 0.0f) || !(r.out()[i].imag == 0.0f)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("ndsp BlankerBlock ids and config round-trip", "[dsp][utils][blanker]")
@@ -71,8 +74,8 @@ TEST_CASE("ndsp CorrectIQBlock follows the single-pole DC estimator", "[dsp][uti
     {
         double k = pow(1.0 - a, (double)n + 1);
         INFO("n = " << n);
-        CHECK(std::fabs(r.out()[n].real - 1.0 * k) < 2e-4);
-        CHECK(std::fabs(r.out()[n].imag + 0.5 * k) < 2e-4);
+        CHECK_THAT(r.out()[n].real, WithinAbs(1.0 * k, 2e-4));
+        CHECK_THAT(r.out()[n].imag, WithinAbs(-0.5 * k, 2e-4));
     }
 }
 
@@ -96,7 +99,7 @@ TEST_CASE("ndsp CorrectIQBlock removes a DC offset and keeps the signal", "[dsp]
     CHECK(std::fabs(mean) < 0.01);
     // The tone itself goes through (alpha is tiny, so the error is mostly the residual DC)
     for (size_t i = n - 100; i < n; i++)
-        REQUIRE(std::fabs(r.out()[i] - tone[i]) < 0.01);
+        REQUIRE_THAT(r.out()[i], WithinAbs(tone[i], 0.01));
 }
 
 TEST_CASE("ndsp CorrectIQBlock ids and config", "[dsp][utils][correct_iq]")
@@ -123,11 +126,15 @@ TEST_CASE("ndsp CyclostationaryAnalysis outputs |conj(x) * x|", "[dsp][utils][cy
     auto r = ndsp_test::runSimple<complex_t, float>(b, in, 1000);
     REQUIRE(r.completed);
     REQUIRE(r.out().size() == in.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < in.size(); i++)
     {
         float expected = in[i].real * in[i].real + in[i].imag * in[i].imag;
-        REQUIRE(std::fabs(r.out()[i] - expected) <= 1e-5f * std::max(1.0f, expected));
+        if (!(std::fabs(r.out()[i] - expected) <= 1e-5f * std::max(1.0f, expected)) && mismatches++ == 0)
+            first = i;
     }
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
     // Output buffers are allocated twice as large as needed, in floats
     CHECK(r.outputs[0].max_sizes == std::vector<uint32_t>{2000, 2000, 2000});
     CHECK(r.outputs[0].propagating_terminators == 1);
@@ -156,12 +163,13 @@ TEST_CASE("ndsp DelayOneImagBlock delays the imaginary part by one sample", "[ds
     REQUIRE(r.completed);
     REQUIRE(r.out().size() == in.size());
     CHECK(r.out()[0].real == in[0].real);
-    // out[0].imag comes from the uninitialized history value (see report), not asserted
+    // out[0].imag comes from the uninitialized history value (see UNTESTED_ISSUES.md), not asserted
+    size_t mismatches = 0, first = 0;
     for (size_t i = 1; i < in.size(); i++)
-    {
-        REQUIRE(r.out()[i].real == in[i].real);
-        REQUIRE(r.out()[i].imag == in[i - 1].imag);
-    }
+        if ((!(r.out()[i].real == in[i].real) || !(r.out()[i].imag == in[i - 1].imag)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("ndsp DelayOneImagBlock id and config", "[dsp][utils][delay_one_imag]")
@@ -191,12 +199,15 @@ namespace
     void checkPow(const std::vector<complex_t> &in, const std::vector<complex_t> &out, int expo)
     {
         REQUIRE(out.size() == in.size());
+        size_t mismatches = 0, first = 0;
         for (size_t i = 0; i < in.size(); i++)
         {
             std::complex<double> e = std::pow(std::complex<double>(in[i].real, in[i].imag), expo);
-            REQUIRE(std::fabs(out[i].real - e.real()) < 1e-4 * std::max(1.0, std::abs(e)));
-            REQUIRE(std::fabs(out[i].imag - e.imag()) < 1e-4 * std::max(1.0, std::abs(e)));
+            if ((!(std::fabs(out[i].real - e.real()) < 1e-4 * std::max(1.0, std::abs(e))) || !(std::fabs(out[i].imag - e.imag()) < 1e-4 * std::max(1.0, std::abs(e)))) && mismatches++ == 0)
+                first = i;
         }
+        INFO("first mismatch at sample " << first);
+        REQUIRE(mismatches == 0);
     }
 } // namespace
 
@@ -221,12 +232,12 @@ TEST_CASE("ndsp ExponentiateBlock removes QPSK modulation at power 4", "[dsp][ut
     REQUIRE(out.size() == in.size());
     for (auto &v : out)
     {
-        REQUIRE(std::fabs(v.real + 1.0f) < 1e-5);
+        REQUIRE_THAT(v.real, WithinAbs(-1.0f, 1e-5));
         REQUIRE(std::fabs(v.imag) < 1e-5);
     }
 }
 
-// Bug : exponentiate.cpp:24-25 always squares first and multiplies from i = 2,
+// Bug: exponentiate.cpp:24-25 always squares first and multiplies from i = 2,
 // so expo = 1 (and 0) still produce x^2 instead of x (and 1)
 TEST_CASE("ndsp ExponentiateBlock with expo 1 is the identity", "[dsp][utils][exponentiate][!shouldfail]")
 {

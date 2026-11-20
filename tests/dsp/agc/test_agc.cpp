@@ -1,9 +1,10 @@
 #include "dsp/agc/agc.h"
 #include "dsp/agc/agc_bias.h"
 #include "dsp/agc/agc_fast.h"
-#include "../filter/ndsp_sig_test_helpers.h"
+#include "dsp/ndsp_sig_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cmath>
 
 using Catch::Approx;
 using namespace satdump::ndsp;
@@ -31,8 +32,12 @@ TEST_CASE("ndsp AGCBlock<complex_t> converges to the reference magnitude", "[dsp
         auto &out = r.output();
         REQUIRE(out.size() == in.size());
 
+        size_t mismatches = 0, first = 0;
         for (size_t i = 30000; i < out.size(); i++)
-            REQUIRE(std::abs(ndsp_sig_test::toStd(out[i])) == Approx(1.0).margin(1e-3));
+            if (!(std::abs(ndsp_sig_test::toStd(out[i])) == Approx(1.0).margin(1e-3)) && mismatches++ == 0)
+                first = i;
+        INFO("first mismatch at sample " << first);
+        REQUIRE(mismatches == 0);
         // Gain only, no phase change
         CHECK(ndsp_sig_test::estimateFreq(out, 30000, out.size()) == Approx(0.1).epsilon(1e-4));
     }
@@ -49,11 +54,12 @@ TEST_CASE("ndsp AGCBlock<float> converges to the reference magnitude", "[dsp][ag
     auto r = ndsp_sig_test::runBlock<float, float>(agc, in, ndsp_sig_test::chunked(1000));
     REQUIRE(r.completed);
     REQUIRE(r.output().size() == in.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 10000; i < in.size(); i++)
-    {
-        REQUIRE(std::fabs(r.output()[i]) == Approx(0.5f).margin(1e-4));
-        REQUIRE((r.output()[i] > 0) == (in[i] > 0));
-    }
+        if ((!(std::fabs(r.output()[i]) == Approx(0.5f).margin(1e-4)) || !((r.output()[i] > 0) == (in[i] > 0))) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("ndsp AGCBlock limits the gain to max_gain", "[dsp][agc]")
@@ -64,8 +70,12 @@ TEST_CASE("ndsp AGCBlock limits the gain to max_gain", "[dsp][agc]")
     auto r = ndsp_sig_test::runBlock<complex_t, complex_t>(agc, in);
     REQUIRE(r.completed);
     // Would need a gain of 1000, stuck at 50
+    size_t mismatches = 0, first = 0;
     for (size_t i = 10000; i < in.size(); i++)
-        REQUIRE(std::abs(ndsp_sig_test::toStd(r.output()[i])) == Approx(0.05).epsilon(1e-3));
+        if (!(std::abs(ndsp_sig_test::toStd(r.output()[i])) == Approx(0.05).epsilon(1e-3)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("ndsp AGCBlock first sample uses the initial gain, and restarts reset the state", "[dsp][agc]")
@@ -125,7 +135,7 @@ TEST_CASE("ndsp AGCFastBlock<complex_t> matches AGCBlock and converges", "[dsp][
     ndsp_sig_test::Lcg rng(7);
     std::vector<complex_t> in(30000);
     for (size_t i = 0; i < in.size(); i++)
-        in[i] = ndsp_sig_test::fromStd(std::polar(0.3 + 0.05 * rng.uniform(), 2 * ndsp_sig_test::kPi * rng.uniform()));
+        in[i] = ndsp_sig_test::fromStd(std::polar(0.3 + 0.05 * rng.uniform(), 2 * M_PI * rng.uniform()));
 
     auto slow = std::make_shared<AGCBlock<complex_t>>();
     auto fast = std::make_shared<AGCFastBlock<complex_t>>();
@@ -138,11 +148,12 @@ TEST_CASE("ndsp AGCFastBlock<complex_t> matches AGCBlock and converges", "[dsp][
     REQUIRE(rf.output().size() == in.size());
 
     // Same update rule, so the outputs are the same up to float rounding
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < in.size(); i++)
-    {
-        REQUIRE(rf.output()[i].real == Approx(rs.output()[i].real).margin(1e-3));
-        REQUIRE(rf.output()[i].imag == Approx(rs.output()[i].imag).margin(1e-3));
-    }
+        if ((!(rf.output()[i].real == Approx(rs.output()[i].real).margin(1e-3)) || !(rf.output()[i].imag == Approx(rs.output()[i].imag).margin(1e-3))) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
     // Average magnitude converges to the reference
     double avg = 0;
     for (size_t i = 20000; i < in.size(); i++)
@@ -150,7 +161,7 @@ TEST_CASE("ndsp AGCFastBlock<complex_t> matches AGCBlock and converges", "[dsp][
     CHECK(avg / 10000.0 == Approx(1.0).margin(0.02));
 }
 
-// Bug : agc_fast.cpp:39 computes the magnitudes of the float variant from out[i]
+// Bug: agc_fast.cpp:39 computes the magnitudes of the float variant from out[i]
 // (the not-yet-written output buffer) instead of in[i]. With a zeroed output buffer
 // the AGC sees a zero magnitude and the gain runs away to max_gain.
 TEST_CASE("ndsp AGCFastBlock<float> converges to the reference magnitude", "[dsp][agc][!shouldfail]")
@@ -167,8 +178,12 @@ TEST_CASE("ndsp AGCFastBlock<float> converges to the reference magnitude", "[dsp
     volk::vector<float> ibuf(in.begin(), in.end());
     volk::vector<float> obuf(in.size(), 0.0f);
     REQUIRE(agc.process(ibuf.data(), in.size(), obuf.data()) == in.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 10000; i < in.size(); i++)
-        REQUIRE(std::fabs(obuf[i]) == Approx(0.5f).margin(1e-3));
+        if (!(std::fabs(obuf[i]) == Approx(0.5f).margin(1e-3)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("ndsp AGCFastBlock configuration round-trip", "[dsp][agc]")
@@ -195,8 +210,12 @@ TEST_CASE("ndsp AGCFastBlock limits the gain to max_gain", "[dsp][agc]")
     configureAgc(*agc, 1e-1, 1.0f, 1.0f, 50.0f);
     auto r = ndsp_sig_test::runBlock<complex_t, complex_t>(agc, in);
     REQUIRE(r.completed);
+    size_t mismatches = 0, first = 0;
     for (size_t i = 10000; i < in.size(); i++)
-        REQUIRE(std::abs(ndsp_sig_test::toStd(r.output()[i])) == Approx(0.05).epsilon(1e-3));
+        if (!(std::abs(ndsp_sig_test::toStd(r.output()[i])) == Approx(0.05).epsilon(1e-3)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 namespace
@@ -234,7 +253,7 @@ TEST_CASE("ndsp AGCBiasBlock normalizes the mean magnitude to the target", "[dsp
     CHECK(ndsp_sig_test::toneAmplitude(out, 0.05, kBiasStart, kBiasN) > 0.5);
 }
 
-// Bug : agc_bias.cpp:28 updates the bias estimate with the already de-biased sample
+// Bug: agc_bias.cpp:28 updates the bias estimate with the already de-biased sample
 // (bias = bias * (1 - p) + (x - bias) * p), which converges to half of the DC offset,
 // so only half of the DC bias is ever removed.
 TEST_CASE("ndsp AGCBiasBlock removes the DC bias", "[dsp][agc][!shouldfail]")
@@ -247,7 +266,7 @@ TEST_CASE("ndsp AGCBiasBlock removes the DC bias", "[dsp][agc][!shouldfail]")
     CHECK(std::fabs(mean) < 0.05);
 }
 
-// Bug : agc_bias.cpp:25-26 returns 0 (drops the whole output buffer, including the
+// Bug: agc_bias.cpp:25-26 returns 0 (drops the whole output buffer, including the
 // already processed samples) as soon as a single input sample is exactly 0.
 TEST_CASE("ndsp AGCBiasBlock keeps processing buffers that contain a zero sample", "[dsp][agc][!shouldfail]")
 {

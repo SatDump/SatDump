@@ -9,7 +9,7 @@
 
 // Every test holds back the worker with a gate task until all tasks are pushed. TaskQueue::push only
 // starts a worker when the previous one has exited, and the exit flag is set after the queue lock is
-// released (see the race noted in the report), so pushing while the worker drains could strand a task.
+// released (see the race noted in UNTESTED_ISSUES.md), so pushing while the worker drains could strand a task.
 
 namespace
 {

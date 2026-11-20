@@ -1,8 +1,8 @@
 #include "handlers/image/image_handler.h"
-#include "../../pipeline/pipeline_test_helpers.h"
+#include "pipeline/pipeline_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 
-using namespace pipeline_test_helpers;
+using namespace pipeline_test;
 using satdump::handlers::ImageHandler;
 
 namespace
@@ -119,7 +119,7 @@ TEST_CASE("ImageHandler rotates the processed image by 180 degrees", "[handlers]
             CHECK(cur.get(0, x, y) == img.get(0, 3 - x, 2 - y));
 }
 
-// image_handler.cpp:518 : setConfig() reads the rotation from p["rotate180"] while getConfig()
+// Bug: image_handler.cpp:518 : setConfig() reads the rotation from p["rotate180"] while getConfig()
 // (image_handler.cpp:537) stores it as "rotate", so a saved configuration loses its rotation.
 TEST_CASE("ImageHandler::setConfig accepts what getConfig returns", "[handlers][image_handler][!shouldfail]")
 {

@@ -1,7 +1,7 @@
-#include "../ndsp_test_helpers.h"
 #include "dsp/legacy/module_wrapper.h"
 #include "dsp/legacy/new2old.h"
 #include "dsp/legacy/old2new.h"
+#include "dsp/ndsp_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 
 using namespace satdump::ndsp;
@@ -176,7 +176,7 @@ TEST_CASE("ndsp ModuleWrapperBlock config round-trip", "[dsp][legacy][module_wra
     CHECK_THROWS(b.set_cfg("x", 1));
 }
 
-// Bug : module_wrapper.h:49 declares the stat parameter as "status", but
+// Bug: module_wrapper.h:49 declares the stat parameter as "status", but
 // get_cfg (module_wrapper.h:61) and set_cfg only know "stat", so the generic
 // Block::get_cfg() (used by flowgraph saving and the options UI) throws.
 TEST_CASE("ndsp ModuleWrapperBlock get_cfg returns every listed parameter", "[dsp][legacy][module_wrapper][!shouldfail]")

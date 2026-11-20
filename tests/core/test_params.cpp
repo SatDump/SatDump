@@ -1,13 +1,13 @@
 #include "core/exception.h"
 #include "core/params.h"
-#include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 // Only construction and value handling are tested; draw() needs an ImGui context.
 // Note: the EditableParameter constructor calls rand() for its ImGui id.
 
-using satdump::params::EditableParameter;
 using nlohmann::json;
+using satdump::params::EditableParameter;
 
 TEST_CASE("EditableParameter string and password values", "[core][params]")
 {

@@ -9,15 +9,9 @@ TEST_CASE("timestamp_to_string formats UTC timestamps", "[utils][time]")
     CHECK(timestamp_to_string(1700000000) == "2023/11/14 22:13:20");
     CHECK(timestamp_to_string(951782400) == "2000/02/29 00:00:00");
 
-    SECTION("fractional seconds are truncated")
-    {
-        CHECK(timestamp_to_string(1700000000.999) == "2023/11/14 22:13:20");
-    }
+    SECTION("fractional seconds are truncated") { CHECK(timestamp_to_string(1700000000.999) == "2023/11/14 22:13:20"); }
 
-    SECTION("negative timestamps clamp to the epoch")
-    {
-        CHECK(timestamp_to_string(-100) == "1970/01/01 00:00:00");
-    }
+    SECTION("negative timestamps clamp to the epoch") { CHECK(timestamp_to_string(-100) == "1970/01/01 00:00:00"); }
 }
 
 TEST_CASE("timestamp_to_string appends a timezone for local time", "[utils][time]")

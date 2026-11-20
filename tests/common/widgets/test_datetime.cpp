@@ -47,7 +47,7 @@ TEST_CASE("DateTimePicker uses -1 for automatic time", "[common][widgets][dateti
     CHECK(picker.get() == -1.0);
 }
 
-// BUG: datetime.cpp:37-48 stores the fraction as the integer digits after the
+// Bug: datetime.cpp:37-48 stores the fraction as the integer digits after the
 // decimal point and rescales by its digit count, dropping leading zeros, so
 // .05 comes back as .5 (and .001 as .1).
 TEST_CASE("DateTimePicker keeps fractional seconds with leading zeros", "[common][widgets][datetime][!shouldfail]")

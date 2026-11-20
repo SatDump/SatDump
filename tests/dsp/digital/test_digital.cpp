@@ -5,7 +5,7 @@
 #include "dsp/digital/cadu_derand.h"
 #include "dsp/digital/differential_decoder.h"
 #include "dsp/digital/unpack_bits.h"
-#include "../filter/ndsp_sig_test_helpers.h"
+#include "dsp/ndsp_sig_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 
 using namespace satdump::ndsp;
@@ -73,8 +73,7 @@ TEST_CASE("ndsp BitToFloatBlock maps bits to +-1", "[dsp][digital]")
 TEST_CASE("ndsp BitToFloatBlock then BinarySlicerBlock round-trips bits", "[dsp][digital]")
 {
     auto bits = randomBits(50000, 1);
-    auto r = ndsp_sig_test::runChain<int8_t, int8_t>({std::make_shared<BitToFloatBlock>(), std::make_shared<BinarySlicerBlock>()}, bits,
-                                                     ndsp_sig_test::chunked(3001));
+    auto r = ndsp_sig_test::runChain<int8_t, int8_t>({std::make_shared<BitToFloatBlock>(), std::make_shared<BinarySlicerBlock>()}, bits, ndsp_sig_test::chunked(3001));
     REQUIRE(r.completed);
     CHECK(r.output() == bits);
 }
@@ -101,9 +100,13 @@ TEST_CASE("ndsp UnpackBitsBlock produces 8 bits per byte on large buffers", "[ds
     auto r = ndsp_sig_test::runBlock<int8_t, int8_t>(std::make_shared<UnpackBitsBlock>(), bytes, ndsp_sig_test::chunked(8192));
     REQUIRE(r.completed);
     REQUIRE(r.output().size() == bytes.size() * 8);
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < bytes.size(); i++)
         for (int b = 0; b < 8; b++)
-            REQUIRE(r.output()[i * 8 + b] == (((uint8_t)bytes[i] >> (7 - b)) & 1));
+            if (!(r.output()[i * 8 + b] == (((uint8_t)bytes[i] >> (7 - b)) & 1)) && mismatches++ == 0)
+                first = i * 8 + b;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("ndsp BitsRepackBlock packs bits MSB first and carries partial bytes across buffers", "[dsp][digital]")
@@ -252,7 +255,7 @@ TEST_CASE("ndsp CADUDeframerBlock extracts CADUs from a bit stream", "[dsp][digi
     REQUIRE(r.completed);
     CHECK(r.output() == frames);
     // Outputs whole frames only
-    for (auto s : r.buffer_sizes[0])
+    for (auto s : r.outputs[0].sizes)
         CHECK(s % 1024 == 0);
     // Now synced
     CHECK(blk->get_cfg("state") == 12);

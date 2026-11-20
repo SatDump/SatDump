@@ -1,5 +1,6 @@
 #include "common/codings/correlator32.h"
 #include "common/codings/rotation.h"
+#include "helpers/random.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <cstdint>
@@ -7,19 +8,10 @@
 
 namespace
 {
+    using test_helpers::randomBits;
+
     const uint32_t ASM32 = 0x1ACFFC1D;
     const int HARD_BUF_BYTES_32 = 8192 * 20;
-
-    std::vector<uint8_t> makeBits32(int count, uint32_t seed)
-    {
-        std::vector<uint8_t> bits(count);
-        for (auto &b : bits)
-        {
-            seed = seed * 1664525u + 1013904223u;
-            b = seed >> 31;
-        }
-        return bits;
-    }
 
     void placeWord32(std::vector<uint8_t> &bits, int offset, uint32_t word)
     {
@@ -71,7 +63,7 @@ TEST_CASE("Correlator32 BPSK finds the ASM at any bit offset, normal or inverted
     Correlator32 corr(BPSK, ASM32);
     prime32(corr, ASM32);
 
-    std::vector<uint8_t> bits = makeBits32(L, offset * 2 + inverted);
+    std::vector<uint8_t> bits = randomBits(L, offset * 2 + inverted);
     placeWord32(bits, offset, ASM32);
     std::vector<int8_t> soft = toSoft32(bits);
     if (inverted)
@@ -101,7 +93,7 @@ TEST_CASE("Correlator32 BPSK tolerates bit errors", "[common][codings][correlato
         for (int offset : {0, 411})
         {
             INFO("errors " << errors << ", offset " << offset);
-            std::vector<uint8_t> bits = makeBits32(L, errors * 10 + offset);
+            std::vector<uint8_t> bits = randomBits(L, errors * 10 + offset);
             placeWord32(bits, offset, ASM32);
             for (int e = 0; e < errors; e++)
                 bits[offset + e * 7] ^= 1;
@@ -122,7 +114,7 @@ TEST_CASE("Correlator32 treats a zero soft symbol as a 1", "[common][codings][co
     Correlator32 corr(BPSK, ASM32);
     prime32(corr, ASM32);
 
-    std::vector<uint8_t> bits = makeBits32(L, 3);
+    std::vector<uint8_t> bits = randomBits(L, 3);
     placeWord32(bits, 200, ASM32);
     std::vector<int8_t> soft = toSoft32(bits);
     for (int i = 200; i < 232; i++)
@@ -146,7 +138,7 @@ TEST_CASE("Correlator32 QPSK finds and corrects all four rotations", "[common][c
     Correlator32 corr(QPSK, ASM32);
     prime32(corr, ASM32);
 
-    std::vector<uint8_t> bits = makeBits32(L, offset + 17 * rotation);
+    std::vector<uint8_t> bits = randomBits(L, offset + 17 * rotation);
     placeWord32(bits, offset, ~ASM32); // complement of the constructor word is the unrotated pattern
     std::vector<int8_t> tx = toSoft32(bits);
     std::vector<int8_t> rx = tx;
@@ -164,7 +156,7 @@ TEST_CASE("Correlator32 QPSK finds and corrects all four rotations", "[common][c
     CHECK(rx == tx);
 }
 
-// BUG: correlator32.cpp:152 the QPSK scan loops `i < length - 8` over bytes although only
+// Bug: correlator32.cpp:152 the QPSK scan loops `i < length - 8` over bytes although only
 // length / 8 bytes were packed, so stale buffer contents from earlier calls (or
 // uninitialised memory) are searched and a position beyond the input can be returned.
 TEST_CASE("Correlator32 QPSK never reports a position outside the input", "[common][codings][correlator][!shouldfail]")
@@ -173,7 +165,7 @@ TEST_CASE("Correlator32 QPSK never reports a position outside the input", "[comm
     Correlator32 corr(QPSK, ASM32);
     prime32(corr, ASM32, 12000);
 
-    std::vector<int8_t> soft = toSoft32(makeBits32(L, 55));
+    std::vector<int8_t> soft = toSoft32(randomBits(L, 55));
     phase_t phase;
     bool swap;
     int cor;
@@ -182,7 +174,7 @@ TEST_CASE("Correlator32 QPSK never reports a position outside the input", "[comm
     CHECK(cor < 32);
 }
 
-// BUG: same as Correlator (correlator32.cpp:54-62): for two of the four IQ-swapped
+// Bug: same as Correlator (correlator32.cpp:54-62): for two of the four IQ-swapped
 // orientations, rotate_soft(phase, swap) leaves the stream rotated by 180 degrees.
 TEST_CASE("Correlator32 QPSK corrections for IQ-swapped input restore the stream", "[common][codings][correlator][!shouldfail]")
 {
@@ -190,7 +182,7 @@ TEST_CASE("Correlator32 QPSK corrections for IQ-swapped input restore the stream
     Correlator32 corr(QPSK, ASM32);
     prime32(corr, ASM32);
 
-    std::vector<uint8_t> bits = makeBits32(L, 999);
+    std::vector<uint8_t> bits = randomBits(L, 999);
     placeWord32(bits, 300, ~ASM32);
     std::vector<int8_t> tx = toSoft32(bits);
 

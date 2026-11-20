@@ -1,7 +1,8 @@
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/hier/gfsk_mod.h"
-#include "../dsp_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cmath>
 
 using Catch::Approx;
 
@@ -23,7 +24,7 @@ namespace
         REQUIRE(r.completed);
         return r.output;
     }
-}
+} // namespace
 
 TEST_CASE("GFSKMod produces a constant envelope at 2 samples per symbol", "[common][dsp][gfsk_mod]")
 {
@@ -34,8 +35,12 @@ TEST_CASE("GFSKMod produces a constant envelope at 2 samples per symbol", "[comm
 
     auto out = runGfsk(sym, M_PI / 4, 0.5f);
     REQUIRE(out.size() == 2 * sym.size());
-    for (const auto &v : out)
-        REQUIRE(hypotf(v.real, v.imag) == Approx(1.0f).epsilon(1e-5));
+    size_t mismatches = 0, first = 0;
+    for (size_t i = 0; i < out.size(); i++)
+        if (!(hypotf(out[i].real, out[i].imag) == Approx(1.0f).epsilon(1e-5)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("GFSKMod frequency follows the symbols", "[common][dsp][gfsk_mod]")

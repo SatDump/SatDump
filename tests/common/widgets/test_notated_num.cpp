@@ -27,13 +27,8 @@ TEST_CASE("NotatedNum::parse_input understands SI suffixes and units", "[common]
         uint64_t value;
         std::string display;
     };
-    for (Case c : {Case{"137.1M", 137100000, "137.1 MHz"},
-                   Case{"137.1 MHz", 137100000, "137.1 MHz"},
-                   Case{"1.7 ghz", 1700000000, "1.7 GHz"},
-                   Case{"250k", 250000, "250 kHz"},
-                   Case{"  42  ", 42, "42 Hz"},
-                   Case{"5.5T", 5500000000000ULL, "5.5 THz"},
-                   Case{"2P", 2000000000000000ULL, "2 PHz"}})
+    for (Case c : {Case{"137.1M", 137100000, "137.1 MHz"}, Case{"137.1 MHz", 137100000, "137.1 MHz"}, Case{"1.7 ghz", 1700000000, "1.7 GHz"}, Case{"250k", 250000, "250 kHz"},
+                   Case{"  42  ", 42, "42 Hz"}, Case{"5.5T", 5500000000000ULL, "5.5 THz"}, Case{"2P", 2000000000000000ULL, "2 PHz"}})
     {
         num.display_val = c.input;
         num.parse_input();

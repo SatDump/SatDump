@@ -1,4 +1,5 @@
 #include "common/codings/crc/crc_generic.h"
+#include "helpers/random.h"
 #include <catch2/catch_test_macros.hpp>
 #include <cstdint>
 #include <cstring>
@@ -92,13 +93,7 @@ TEST_CASE("GenericCRC matches the catalogue check value for standard models", "[
 
 TEST_CASE("GenericCRC matches a bitwise reference on random data of many lengths", "[common][codings][crc]")
 {
-    std::vector<uint8_t> data(300);
-    uint32_t state = 0xC0FFEE;
-    for (auto &b : data)
-    {
-        state = state * 1664525u + 1013904223u;
-        b = state >> 24;
-    }
+    std::vector<uint8_t> data = test_helpers::randomBytes(300, 0xC0FFEE);
 
     for (const CrcModel &m : CRC_MODELS)
     {

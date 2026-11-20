@@ -1,7 +1,8 @@
 #include "common/dsp/block.h"
-#include "dsp_test_helpers.h"
+#include "common/dsp/dsp_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cmath>
 
 using Catch::Approx;
 
@@ -35,7 +36,7 @@ namespace
             output_stream->swap(nsamples);
         }
     };
-}
+} // namespace
 
 TEST_CASE("branchless_clip and branched_clip agree and saturate", "[common][dsp][block]")
 {
@@ -75,8 +76,12 @@ TEST_CASE("Block lifecycle: start, process, stop and join", "[common][dsp][block
     auto r = dsp_test::runBlock(blk, input, data, 999);
     REQUIRE(r.completed);
     REQUIRE(r.output.size() == data.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < data.size(); i++)
-        REQUIRE(r.output[i] == 2.0f * data[i]);
+        if (!(r.output[i] == 2.0f * data[i]) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("Block stop without start is safe", "[common][dsp][block]")
@@ -95,8 +100,7 @@ TEST_CASE("Block stop unblocks a worker waiting for input", "[common][dsp][block
 
     // Nothing is fed: the worker sits in read() until stop() wakes it up
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    auto fut = std::async(std::launch::async, [&]()
-                          { blk.stop(); });
+    auto fut = std::async(std::launch::async, [&]() { blk.stop(); });
     REQUIRE(fut.wait_for(dsp_test::kTimeout) == std::future_status::ready);
 }
 
@@ -134,6 +138,10 @@ TEST_CASE("Block chains pass data through every stage", "[common][dsp][block]")
     REQUIRE(fed);
     REQUIRE(got);
     REQUIRE(out.size() == data.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < data.size(); i++)
-        REQUIRE(out[i] == -6.0f * data[i]);
+        if (!(out[i] == -6.0f * data[i]) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }

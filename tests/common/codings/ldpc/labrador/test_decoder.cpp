@@ -1,7 +1,8 @@
+#include "common/codings/ldpc/ccsds_ldpc.h"
+#include "common/codings/ldpc/labrador/codes/parity.h"
 #include "common/codings/ldpc/labrador/decoder.h"
 #include "common/codings/ldpc/labrador/encoder.h"
-#include "common/codings/ldpc/labrador/codes/parity.h"
-#include "common/codings/ldpc/ccsds_ldpc.h"
+#include "helpers/random.h"
 #include <catch2/catch_test_macros.hpp>
 #include <set>
 #include <vector>
@@ -10,17 +11,7 @@ namespace
 {
     using namespace satdump::labrador;
 
-    struct Lcg
-    {
-        uint32_t state;
-        explicit Lcg(uint32_t seed) : state(seed) {}
-        uint32_t next()
-        {
-            state = state * 1664525u + 1013904223u;
-            return state;
-        }
-        int below(int n) { return (next() >> 8) % n; }
-    };
+    using test_helpers::Lcg;
 
     int bitAt(const std::vector<uint8_t> &bytes, uint64_t i) { return (bytes[i / 8] >> (7 - i % 8)) & 1; }
 
@@ -53,15 +44,9 @@ namespace
         std::vector<uint8_t> output;
         uint64_t iters = 12345;
 
-        explicit Decoder(ldpc_code_t code)
-            : c(get_code_params(code)), working(c.decode_ms_working_len), workingU8(c.decode_ms_working_u8_len), output(c.output_len)
-        {
-        }
+        explicit Decoder(ldpc_code_t code) : c(get_code_params(code)), working(c.decode_ms_working_len), workingU8(c.decode_ms_working_u8_len), output(c.output_len) {}
 
-        bool run(std::vector<T> llrs, uint64_t maxiters)
-        {
-            return decode_ms<T>(c, llrs.data(), output.data(), working.data(), workingU8.data(), maxiters, &iters);
-        }
+        bool run(std::vector<T> llrs, uint64_t maxiters) { return decode_ms<T>(c, llrs.data(), output.data(), working.data(), workingU8.data(), maxiters, &iters); }
     };
 
     // Full (n + punctured) output satisfies every parity check
@@ -120,16 +105,13 @@ namespace
             CHECK(dec.iters == 5);
         }
     }
-}
+} // namespace
 
 TEST_CASE("labrador decode_ms<int8_t> corrects TC and TM codewords", "[common][codings][ldpc][labrador]")
 {
     for (ldpc_code_t code : {TC128, TC512, TM1280, TM1536, TM2048})
     {
-        DYNAMIC_SECTION("code " << int(code))
-        {
-            checkCorrection<int8_t>(code, 16, 2);
-        }
+        DYNAMIC_SECTION("code " << int(code)) { checkCorrection<int8_t>(code, 16, 2); }
     }
 }
 
@@ -137,10 +119,7 @@ TEST_CASE("labrador decode_ms<int16_t> corrects TC and TM codewords", "[common][
 {
     for (ldpc_code_t code : {TC256, TM2048, TM5120})
     {
-        DYNAMIC_SECTION("code " << int(code))
-        {
-            checkCorrection<int16_t>(code, 400, 50);
-        }
+        DYNAMIC_SECTION("code " << int(code)) { checkCorrection<int16_t>(code, 400, 50); }
     }
 }
 
@@ -161,6 +140,10 @@ TEST_CASE("labrador TM2048 codewords decode with CCSDSLDPC rate 1/2 k=1024", "[c
 
     std::vector<uint8_t> out(c.n);
     ldpc.decode(soft.data(), out.data(), 20);
+    size_t mismatches = 0, first = 0;
     for (uint64_t i = 0; i < c.n; i++)
-        REQUIRE(out[i] == bitAt(cw, i));
+        if (!(out[i] == bitAt(cw, i)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at bit " << first);
+    REQUIRE(mismatches == 0);
 }

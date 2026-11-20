@@ -1,5 +1,5 @@
 #include "common/dsp/demod/delay_one_imag.h"
-#include "../dsp_test_helpers.h"
+#include "common/dsp/dsp_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("DelayOneImagBlock delays Q by one sample across buffers", "[common][dsp][delay_one_imag]")
@@ -20,10 +20,11 @@ TEST_CASE("DelayOneImagBlock delays Q by one sample across buffers", "[common][d
         // I untouched, Q from the previous sample (0 before the first one)
         CHECK(r.output[0].real == 0.0f);
         CHECK(r.output[0].imag == 0.0f);
+        size_t mismatches = 0, first = 0;
         for (size_t i = 1; i < in.size(); i++)
-        {
-            REQUIRE(r.output[i].real == in[i].real);
-            REQUIRE(r.output[i].imag == in[i - 1].imag);
-        }
+            if ((!(r.output[i].real == in[i].real) || !(r.output[i].imag == in[i - 1].imag)) && mismatches++ == 0)
+                first = i;
+        INFO("first mismatch at sample " << first);
+        REQUIRE(mismatches == 0);
     }
 }

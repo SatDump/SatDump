@@ -1,14 +1,14 @@
 #include "common/calibration.h"
 #include "products/image_product.h"
-#include "products_test_helpers.h"
+#include "products/products_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 using Catch::Matchers::WithinAbs;
 using Catch::Matchers::WithinRel;
+using products_test::ConfigGuard;
+using products_test::TempDir;
 using satdump::products::ImageProduct;
-using satdump_test_products::ConfigGuard;
-using satdump_test_products::TempDir;
 
 namespace
 {
@@ -148,10 +148,10 @@ TEST_CASE("ImageProduct get_channel_image_by_specifications picks the closest ch
     p.images.push_back(holder(9, "nowl", patternImage(8, 1, 1, 9))); // No wavenumber: never matched
 
     CHECK(p.get_channel_image_by_specifications(wnFromUm(10.8)).channel_name == "3");
-    CHECK(p.get_channel_image_by_specifications(wnFromUm(11.0)).channel_name == "3");  // 1.8% off
-    CHECK(p.get_channel_image_by_specifications(wnFromUm(11.6)).channel_name == "4");  // Closer to 12.0
+    CHECK(p.get_channel_image_by_specifications(wnFromUm(11.0)).channel_name == "3"); // 1.8% off
+    CHECK(p.get_channel_image_by_specifications(wnFromUm(11.6)).channel_name == "4"); // Closer to 12.0
     CHECK(p.get_channel_image_by_specifications(wnFromUm(0.65)).channel_name == "1");
-    CHECK_THROWS(p.get_channel_image_by_specifications(wnFromUm(6.7)));               // Nothing within 5%
+    CHECK_THROWS(p.get_channel_image_by_specifications(wnFromUm(6.7)));                                             // Nothing within 5%
     CHECK(p.get_channel_image_by_specifications(wnFromUm(6.7), ImageProduct::POL_ANY, -1, 50).channel_name == "3"); // Wider tolerance
 }
 
@@ -213,14 +213,14 @@ TEST_CASE("ImageProduct get_channel_image_by_unitstr parses wavelength, frequenc
     CHECK(p.get_channel_image_by_unitstr("89.5GHz,V,6GHz").channel_name == "mwV");
     CHECK(p.get_channel_image_by_unitstr("89GHz,*,2GHz").channel_name == "mwH");
     CHECK(p.get_channel_image_by_unitstr("89GHz,*,-1").channel_name != "");
-    CHECK(p.get_channel_image_by_unitstr("95GHz,V,-1,10").channel_name == "mwV"); // 6.7% off, 10% tolerance
-    CHECK_THROWS(p.get_channel_image_by_unitstr("95GHz,V"));                      // 5% default tolerance
+    CHECK(p.get_channel_image_by_unitstr("95GHz,V,-1,10").channel_name == "mwV");     // 6.7% off, 10% tolerance
+    CHECK_THROWS(p.get_channel_image_by_unitstr("95GHz,V"));                          // 5% default tolerance
     CHECK(p.get_channel_image_by_unitstr("89GHz,V,4GHz,5,60").channel_name == "mwV"); // 50% bandwidth tolerance needed
 
-    CHECK_THROWS(p.get_channel_image_by_unitstr("10.8"));          // No unit
-    CHECK_THROWS(p.get_channel_image_by_unitstr("89GHz,X"));       // Bad polarization
+    CHECK_THROWS(p.get_channel_image_by_unitstr("10.8"));           // No unit
+    CHECK_THROWS(p.get_channel_image_by_unitstr("89GHz,X"));        // Bad polarization
     CHECK_THROWS(p.get_channel_image_by_unitstr("89GHz,V,banana")); // Bad bandwidth
-    CHECK_THROWS(p.get_channel_image_by_unitstr("89GHz,L"));       // No such channel
+    CHECK_THROWS(p.get_channel_image_by_unitstr("89GHz,L"));        // No such channel
 }
 
 TEST_CASE("ImageProduct projection config helpers", "[products][image_product]")
@@ -286,7 +286,7 @@ TEST_CASE("ImageProduct calibration config helpers", "[products][image_product]"
 TEST_CASE("ImageProduct save/load round-trips images and channel metadata", "[products][image_product]")
 {
     ConfigGuard cfg;
-    cfg.setProductFormat("png");
+    products_test::setProductFormat("png");
     TempDir dir("image_product");
 
     ImageProduct p;
@@ -340,7 +340,7 @@ TEST_CASE("ImageProduct save/load round-trips images and channel metadata", "[pr
 TEST_CASE("ImageProduct save/load as a single matrix image", "[products][image_product]")
 {
     ConfigGuard cfg;
-    cfg.setProductFormat("png");
+    products_test::setProductFormat("png");
     TempDir dir("image_matrix");
 
     ImageProduct p;
@@ -366,7 +366,7 @@ TEST_CASE("ImageProduct save/load as a single matrix image", "[products][image_p
 TEST_CASE("ImageProduct d_no_not_save_images / d_no_not_load_images skip image files", "[products][image_product]")
 {
     ConfigGuard cfg;
-    cfg.setProductFormat("png");
+    products_test::setProductFormat("png");
     TempDir dir("image_noimg");
 
     ImageProduct p;

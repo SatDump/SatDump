@@ -1,4 +1,4 @@
-#include "../image_test_helpers.h"
+#include "image/image_test_helpers.h"
 #include "image/io.h"
 #include "image/meta.h"
 #include <catch2/catch_test_macros.hpp>
@@ -99,7 +99,7 @@ TEST_CASE("image::load_tiff leaves the image untouched on missing or corrupt fil
     CHECK(out.width() == 3);
 
     std::string bad = dir.file("bad.tif");
-    image_test::writeFile(bad, {'I', 'I', '*', 0, 0xFF, 0xFF, 0xFF, 0x7F, 1, 2, 3});
+    image_test::writeBytes(bad, {'I', 'I', '*', 0, 0xFF, 0xFF, 0xFF, 0x7F, 1, 2, 3});
     img::load_tiff(out, bad);
     CHECK(out.width() == 3);
     CHECK(out.get(0) == 6);

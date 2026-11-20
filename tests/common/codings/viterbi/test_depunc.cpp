@@ -1,6 +1,6 @@
-#include "common/codings/viterbi/depunc.h"
 #include "common/codings/viterbi/cc_decoder.h"
 #include "common/codings/viterbi/cc_encoder.h"
+#include "common/codings/viterbi/depunc.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <memory>
@@ -14,8 +14,8 @@ namespace
     {
         std::string name;
         std::string x, y;
-        int states;   // received symbols per period
-        float scale;  // get_berscale()
+        int states;  // received symbols per period
+        float scale; // get_berscale()
         std::shared_ptr<viterbi::puncturing::GenericDepunc> (*make)();
     };
 
@@ -80,7 +80,7 @@ namespace
         out.resize(n);
         return out;
     }
-}
+} // namespace
 
 TEST_CASE("GenericDepunc implementations report their period and BER scale", "[common][codings][viterbi]")
 {

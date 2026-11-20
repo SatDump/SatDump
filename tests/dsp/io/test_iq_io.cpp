@@ -1,9 +1,11 @@
-#include "../ndsp_test_helpers.h"
 #include "dsp/io/iq_sink.h"
 #include "dsp/io/iq_source.h"
 #include "dsp/io/iq_types.h"
+#include "dsp/ndsp_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
+using Catch::Matchers::WithinAbs;
 using namespace satdump::ndsp;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -56,11 +58,11 @@ namespace
     {
         ndsp_test::TempFile tf;
         auto b = std::make_shared<IQSinkBlock>();
-        REQUIRE(ndsp_test::configure(*b, {{"file", tf.path()}, {"type", type}}) == Block::RES_OK);
+        REQUIRE(ndsp_test::configure(*b, {{"file", tf.str()}, {"type", type}}) == Block::RES_OK);
         auto r = ndsp_test::runSimple<complex_t, complex_t>(b, data, 100);
         REQUIRE(r.completed);
         raw = b->total_written_raw;
-        return ndsp_test::readFile<uint8_t>(tf.path());
+        return ndsp_test::readBytes<uint8_t>(tf.str());
     }
 } // namespace
 
@@ -131,8 +133,7 @@ TEST_CASE("ndsp IQSinkBlock config round-trip", "[dsp][io][iq_sink]")
     Block &bb = b;
     CHECK(b.d_id == "iq_sink_c");
     CHECK(b.get_outputs().empty());
-    REQUIRE(bb.set_cfg(nlohmann::json{
-                {"file", "/a/b"}, {"type", "cs8"}, {"buffer_size", 4096}, {"autogen", true}, {"samplerate", 2.4e6}, {"frequency", 137.1e6}, {"timestamp", 1700000000.5}}) ==
+    REQUIRE(bb.set_cfg(nlohmann::json{{"file", "/a/b"}, {"type", "cs8"}, {"buffer_size", 4096}, {"autogen", true}, {"samplerate", 2.4e6}, {"frequency", 137.1e6}, {"timestamp", 1700000000.5}}) ==
             Block::RES_OK);
     nlohmann::json all = bb.get_cfg();
     CHECK(all.size() == 7);
@@ -175,40 +176,44 @@ TEST_CASE("ndsp IQSourceBlock reads cf32 files", "[dsp][io][iq_source]")
 {
     ndsp_test::TempFile tf;
     auto data = ndsp_test::randomComplex(1000, 64);
-    ndsp_test::writeFile(tf.path(), data);
-    auto out = runIQSource(tf.path(), "cf32", 250);
+    ndsp_test::writeBytes(tf.str(), data);
+    auto out = runIQSource(tf.str(), "cf32", 250);
     // As in FileSourceBlock, extra stale samples follow (see the bug test below)
     REQUIRE(out.size() >= data.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < data.size(); i++)
-        REQUIRE(ndsp_test::sameBits(out[i], data[i]));
+        if (!ndsp_test::sameBits(out[i], data[i]) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("ndsp IQSourceBlock converts cs16 and cs8 files", "[dsp][io][iq_source]")
 {
     ndsp_test::TempFile t16, t8;
-    ndsp_test::writeFile(t16.path(), std::vector<int16_t>{32767, -32767, 0, 16384});
-    ndsp_test::writeFile(t8.path(), std::vector<int8_t>{127, -127, 0, 64});
+    ndsp_test::writeBytes(t16.str(), std::vector<int16_t>{32767, -32767, 0, 16384});
+    ndsp_test::writeBytes(t8.str(), std::vector<int8_t>{127, -127, 0, 64});
 
-    auto o16 = runIQSource(t16.path(), "cs16", 2);
+    auto o16 = runIQSource(t16.str(), "cs16", 2);
     REQUIRE(o16.size() >= 2);
     CHECK(o16[0].real == 1.0f);
     CHECK(o16[0].imag == -1.0f);
     CHECK(o16[1].real == 0.0f);
-    CHECK(std::fabs(o16[1].imag - 16384 / 32767.0f) < 1e-6);
+    CHECK_THAT(o16[1].imag, WithinAbs(16384 / 32767.0f, 1e-6));
 
-    auto o8 = runIQSource(t8.path(), "cs8", 2);
+    auto o8 = runIQSource(t8.str(), "cs8", 2);
     REQUIRE(o8.size() >= 2);
     CHECK(o8[0].real == 1.0f);
     CHECK(o8[0].imag == -1.0f);
-    CHECK(std::fabs(o8[1].imag - 64 / 127.0f) < 1e-6);
+    CHECK_THAT(o8[1].imag, WithinAbs(64 / 127.0f, 1e-6));
 }
 
 TEST_CASE("ndsp IQSourceBlock swaps I and Q when asked", "[dsp][io][iq_source]")
 {
     ndsp_test::TempFile tf;
     std::vector<complex_t> data = {{1, 2}, {3, 4}};
-    ndsp_test::writeFile(tf.path(), data);
-    auto out = runIQSource(tf.path(), "cf32", 2, true);
+    ndsp_test::writeBytes(tf.str(), data);
+    auto out = runIQSource(tf.str(), "cf32", 2, true);
     REQUIRE(out.size() >= 2);
     CHECK(out[0].real == 2.0f);
     CHECK(out[0].imag == 1.0f);
@@ -219,18 +224,18 @@ TEST_CASE("ndsp IQSourceBlock swaps I and Q when asked", "[dsp][io][iq_source]")
 TEST_CASE("ndsp IQSourceBlock with a missing file only sends a terminator", "[dsp][io][iq_source]")
 {
     ndsp_test::TempFile tf;
-    auto out = runIQSource(tf.path(), "cs16", 64);
+    auto out = runIQSource(tf.str(), "cs16", 64);
     CHECK(out.empty());
 }
 
-// Bug : iq_source.cpp:24 uses the count returned by
+// Bug: iq_source.cpp:24 uses the count returned by
 // BasebandReader::read_samples (common/dsp/io/baseband_interface.h:233), which
 // is always the requested size, so short reads at EOF output stale samples.
 TEST_CASE("ndsp IQSourceBlock outputs exactly the samples in the file", "[dsp][io][iq_source][!shouldfail]")
 {
     ndsp_test::TempFile tf;
-    ndsp_test::writeFile(tf.path(), ndsp_test::randomComplex(10, 65));
-    auto out = runIQSource(tf.path(), "cf32", 4);
+    ndsp_test::writeBytes(tf.str(), ndsp_test::randomComplex(10, 65));
+    auto out = runIQSource(tf.str(), "cf32", 4);
     CHECK(out.size() == 10);
 }
 

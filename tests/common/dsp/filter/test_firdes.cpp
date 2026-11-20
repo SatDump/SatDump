@@ -1,9 +1,9 @@
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/filter/firdes.h"
-#include "../dsp_test_helpers.h"
+#include <algorithm>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
-#include <algorithm>
 #include <cmath>
 #include <numeric>
 #include <stdexcept>
@@ -24,7 +24,7 @@ namespace
         for (size_t i = 0; i < taps.size() / 2; i++)
             REQUIRE(taps[i] == Approx(taps[taps.size() - 1 - i]).margin(margin));
     }
-}
+} // namespace
 
 TEST_CASE("firdes::convolve computes the full linear convolution", "[common][dsp][firdes]")
 {

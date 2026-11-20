@@ -1,21 +1,12 @@
 #include "common/codings/viterbi/cc_encoder.h"
+#include "helpers/random.h"
 #include <catch2/catch_test_macros.hpp>
 #include <stdexcept>
 #include <vector>
 
 namespace
 {
-    std::vector<uint8_t> randomBits(int count, uint32_t seed)
-    {
-        std::vector<uint8_t> bits(count);
-        uint32_t state = seed;
-        for (auto &b : bits)
-        {
-            state = state * 1664525u + 1013904223u;
-            b = state >> 31;
-        }
-        return bits;
-    }
+    using test_helpers::randomBits;
 
     // CCSDS 131.0-B k=7 r=1/2 code written from the standard: G1 = 171 (octal), G2 = 133 (octal),
     // leftmost tap = current input, then delays 1..6. No output inversion.
@@ -33,7 +24,7 @@ namespace
         }
         return out;
     }
-}
+} // namespace
 
 TEST_CASE("CCEncoder matches the CCSDS k=7 r=1/2 reference encoder", "[common][codings][viterbi]")
 {
@@ -78,11 +69,12 @@ TEST_CASE("CCEncoder negative polynomials invert that output", "[common][codings
     std::vector<uint8_t> a(1024), b(1024);
     normal.work(bits.data(), a.data());
     inverted.work(bits.data(), b.data());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < a.size(); i++)
-    {
-        INFO("symbol " << i);
-        REQUIRE(b[i] == (i % 2 ? (a[i] ^ 1) : a[i]));
-    }
+        if (!(b[i] == (i % 2 ? (a[i] ^ 1) : a[i])) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at symbol " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("CCEncoder keeps the shift register state across work() calls", "[common][codings][viterbi]")
@@ -158,12 +150,12 @@ TEST_CASE("CCEncoder rate() returns the inverse rate", "[common][codings][viterb
 
 TEST_CASE("CCEncoder rejects invalid parameters", "[common][codings][viterbi]")
 {
-    CHECK_THROWS_AS(viterbi::CCEncoder(10, 7, 2, {79}), std::runtime_error);         // poly count != rate
-    CHECK_THROWS_AS(viterbi::CCEncoder(10, 7, 1, {79}), std::runtime_error);         // rate < 2
-    CHECK_THROWS_AS(viterbi::CCEncoder(10, 1, 2, {79, 109}), std::runtime_error);    // k too small
-    CHECK_THROWS_AS(viterbi::CCEncoder(10, 32, 2, {79, 109}), std::runtime_error);   // k too large
+    CHECK_THROWS_AS(viterbi::CCEncoder(10, 7, 2, {79}), std::runtime_error);          // poly count != rate
+    CHECK_THROWS_AS(viterbi::CCEncoder(10, 7, 1, {79}), std::runtime_error);          // rate < 2
+    CHECK_THROWS_AS(viterbi::CCEncoder(10, 1, 2, {79, 109}), std::runtime_error);     // k too small
+    CHECK_THROWS_AS(viterbi::CCEncoder(10, 32, 2, {79, 109}), std::runtime_error);    // k too large
     CHECK_THROWS_AS(viterbi::CCEncoder(10, 7, 2, {79, 109}, 64), std::runtime_error); // start state >= 2^(k-1)
-    CHECK_THROWS_AS(viterbi::CCEncoder(0, 7, 2, {79, 109}), std::runtime_error);     // empty frame
+    CHECK_THROWS_AS(viterbi::CCEncoder(0, 7, 2, {79, 109}), std::runtime_error);      // empty frame
     CHECK_NOTHROW(viterbi::CCEncoder(10, 7, 2, {79, 109}, 63));
     CHECK_NOTHROW(viterbi::CCEncoder(10, 3, 3, {7, 5, 3}));
 }

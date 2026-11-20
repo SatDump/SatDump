@@ -1,8 +1,8 @@
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/window/window.h"
-#include "../dsp_test_helpers.h"
+#include <algorithm>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <algorithm>
 #include <cmath>
 #include <numeric>
 
@@ -84,8 +84,7 @@ TEST_CASE("windowed_sinc norm scales the taps linearly", "[common][dsp][window]"
         CHECK(b[i] == Approx(3.0 * a[i]).margin(1e-7));
 
     // A custom window is used as-is: a constant window gives the plain truncated sinc
-    auto rect = dsp::windowed_sinc(64, M_PI / 4, [](double, double)
-                                   { return 1.0; });
+    auto rect = dsp::windowed_sinc(64, M_PI / 4, [](double, double) { return 1.0; });
     for (int i = 0; i < 64; i++)
     {
         double t = i - 32 + 0.5;

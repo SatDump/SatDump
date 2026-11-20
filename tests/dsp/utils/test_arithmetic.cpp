@@ -1,4 +1,4 @@
-#include "../ndsp_test_helpers.h"
+#include "dsp/ndsp_test_helpers.h"
 #include "dsp/utils/add.h"
 #include "dsp/utils/multiply.h"
 #include "dsp/utils/multiply_const.h"
@@ -78,8 +78,12 @@ TEST_CASE("ndsp AddBlock sums two complex streams", "[dsp][utils][add]")
     REQUIRE(r.completed);
     auto expected = elementwise(a, c, 0);
     REQUIRE(r.out().size() == expected.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < expected.size(); i++)
-        REQUIRE(ndsp_test::sameBits(r.out()[i], expected[i]));
+        if (!ndsp_test::sameBits(r.out()[i], expected[i]) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("ndsp AddBlock ids, IO and config", "[dsp][utils][add]")
@@ -95,10 +99,7 @@ TEST_CASE("ndsp AddBlock ids, IO and config", "[dsp][utils][add]")
     checkNoConfig<AddBlock<float>>();
 }
 
-TEST_CASE("ndsp AddBlock outputs an empty buffer for mismatched sizes", "[dsp][utils][add]")
-{
-    checkMismatchedSizes<AddBlock<float>>();
-}
+TEST_CASE("ndsp AddBlock outputs an empty buffer for mismatched sizes", "[dsp][utils][add]") { checkMismatchedSizes<AddBlock<float>>(); }
 
 TEST_CASE("ndsp SubtractBlock computes in1 - in2", "[dsp][utils][subtract]")
 {
@@ -170,8 +171,12 @@ TEST_CASE("ndsp MultiplyConstBlock scales by the constant", "[dsp][utils][multip
     auto r = ndsp_test::runSimple<float, float>(b, in, 1024);
     REQUIRE(r.completed);
     REQUIRE(r.out().size() == in.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < in.size(); i++)
-        REQUIRE(r.out()[i] == in[i] * -2.5f);
+        if (!(r.out()[i] == in[i] * -2.5f) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("ndsp MultiplyConstBlock scales complex samples by a real constant", "[dsp][utils][multiply_const]")

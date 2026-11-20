@@ -1,6 +1,6 @@
 #include "projection/warp/warp.h"
 #include "projection/warp/warp_bkd.h"
-#include "warp_test_helpers.h"
+#include "projection/warp/warp_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <cmath>
@@ -8,9 +8,8 @@
 
 using Catch::Matchers::WithinAbs;
 using satdump::projection::GCP;
-using satdump_test_proj_warp::affineGcps;
-using satdump_test_proj_warp::CpuOnlyWarpGuard;
-using satdump_test_proj_warp::gradientImage;
+using warp_test::affineGcps;
+using warp_test::gradientImage;
 
 namespace satdump
 {
@@ -95,6 +94,11 @@ TEST_CASE("warp computeGCPCenter averages on the sphere", "[projection][warp]")
     CHECK(lat < 40.5);
 }
 
+// The ImageWarper tests and their helpers need CpuOnlyWarpGuard, which uses a data symbol
+// of satdump_core that is not exported from the Windows DLL (see warp_test_helpers.h)
+#ifndef _MSC_VER
+using warp_test::CpuOnlyWarpGuard;
+
 namespace
 {
     // The synthetic input: 20x10 pixels of 0.5 degrees, with pixel (x, y) at
@@ -146,6 +150,7 @@ namespace
         CHECK(covered == IW * IH);
     }
 } // namespace
+#endif
 
 TEST_CASE("warp choseCropArea covers the GCPs with whole-degree bounds", "[projection][warp]")
 {
@@ -192,6 +197,7 @@ TEST_CASE("warp choseCropArea never crops away GCPs", "[projection][warp][!shoul
     CHECK(c.y_max == 80);
 }
 
+#ifndef _MSC_VER // Uses CpuOnlyWarpGuard, see above
 TEST_CASE("ImageWarper warps an image through an affine GCP grid", "[projection][warp]")
 {
     CpuOnlyWarpGuard cpu_only;
@@ -267,6 +273,8 @@ TEST_CASE("performSmartWarp matches the single-segment ImageWarper result", "[pr
     CHECK(res.output_image.height() == 12);
     checkWarpedGradient(res, 3, true);
 }
+
+#endif
 
 TEST_CASE("performSmartWarp rejects an empty image", "[projection][warp][smart_warp]")
 {

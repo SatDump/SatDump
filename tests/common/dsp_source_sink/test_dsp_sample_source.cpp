@@ -14,19 +14,14 @@ namespace
 
         FakeRegistry()
         {
-            dsp::dsp_sources_registry[FAKE_TYPE] = {
-                [this](dsp::SourceDescriptor d) -> std::shared_ptr<dsp::DSPSampleSource>
-                {
-                    created.push_back(d);
-                    return nullptr;
-                },
-                []()
-                {
-                    return std::vector<dsp::SourceDescriptor>{{FAKE_TYPE, "Fake A", "fake_a"}, {FAKE_TYPE, "Fake B", "fake_b"}};
-                }};
-            dsp::dsp_sources_registry[THROWING_TYPE] = {
-                [](dsp::SourceDescriptor) -> std::shared_ptr<dsp::DSPSampleSource> { return nullptr; },
-                []() -> std::vector<dsp::SourceDescriptor> { throw std::runtime_error("device enumeration failed"); }};
+            dsp::dsp_sources_registry[FAKE_TYPE] = {[this](dsp::SourceDescriptor d) -> std::shared_ptr<dsp::DSPSampleSource>
+                                                    {
+                                                        created.push_back(d);
+                                                        return nullptr;
+                                                    },
+                                                    []() { return std::vector<dsp::SourceDescriptor>{{FAKE_TYPE, "Fake A", "fake_a"}, {FAKE_TYPE, "Fake B", "fake_b"}}; }};
+            dsp::dsp_sources_registry[THROWING_TYPE] = {[](dsp::SourceDescriptor) -> std::shared_ptr<dsp::DSPSampleSource> { return nullptr; },
+                                                        []() -> std::vector<dsp::SourceDescriptor> { throw std::runtime_error("device enumeration failed"); }};
         }
 
         ~FakeRegistry()

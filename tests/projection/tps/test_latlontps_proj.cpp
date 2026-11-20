@@ -1,3 +1,4 @@
+#include "projection/proj_test_helpers.h"
 #include "projection/tps/latlontps_proj.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
@@ -8,6 +9,8 @@ using satdump::projection::GCP;
 
 namespace
 {
+    using proj_test::lonDiff;
+
     // Regular grid where pixel (x, y) is at lon = lon0 + 0.5x, lat = lat0 - 0.5y
     std::vector<GCP> gridGcps(double lon0, double lat0)
     {
@@ -16,16 +19,6 @@ namespace
             for (int x = 0; x <= 20; x += 5)
                 g.push_back({(double)x, (double)y, lon0 + 0.5 * x, lat0 - 0.5 * y});
         return g;
-    }
-
-    double lonDiff(double a, double b)
-    {
-        double d = std::fmod(a - b, 360.0);
-        if (d > 180)
-            d -= 360;
-        if (d < -180)
-            d += 360;
-        return d;
     }
 } // namespace
 

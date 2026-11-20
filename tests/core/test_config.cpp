@@ -1,45 +1,20 @@
 #include "core/config.h"
+#include "helpers/guards.h"
+#include "helpers/temp_files.h"
 #include "nlohmann/json_utils.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <filesystem>
 #include <fstream>
-#include <random>
 
 // Every test uses its own SatDumpConfigHandler, never the global satdump::satdump_cfg. loadUser()
 // looks for ./settings.json first, so tests run from an empty temporary directory (restored after).
 
 namespace
 {
-    std::filesystem::path uniqueTempPath(const std::string &name)
-    {
-        std::mt19937 rng(std::random_device{}());
-        return std::filesystem::temp_directory_path() / ("satdump_test_config_" + std::to_string(rng()) + "_" + name);
-    }
-
-    struct TempDir
-    {
-        std::filesystem::path path;
-        TempDir(const std::string &name) : path(uniqueTempPath(name)) { std::filesystem::create_directories(path); }
-        ~TempDir()
-        {
-            std::error_code ec;
-            std::filesystem::remove_all(path, ec);
-        }
-    };
-
-    struct CwdGuard
-    {
-        std::filesystem::path old = std::filesystem::current_path();
-        CwdGuard(const std::filesystem::path &p) { std::filesystem::current_path(p); }
-        ~CwdGuard() { std::filesystem::current_path(old); }
-    };
-
-    void writeText(const std::filesystem::path &p, const std::string &s)
-    {
-        std::ofstream f(p);
-        f << s;
-    }
+    using test_helpers::CwdGuard;
+    using test_helpers::TempDir;
+    using test_helpers::writeFile;
 
     nlohmann::ordered_json readJson(const std::filesystem::path &p)
     {
@@ -79,7 +54,7 @@ namespace
         {
             std::filesystem::create_directories(cwd);
             std::filesystem::create_directories(user);
-            writeText(defaults_file, defaults().dump(4));
+            writeFile(defaults_file, defaults().dump(4));
             cg = std::make_unique<CwdGuard>(cwd);
         }
     };
@@ -99,7 +74,7 @@ TEST_CASE("SatDumpConfigHandler load without user settings keeps the defaults", 
 TEST_CASE("SatDumpConfigHandler load applies the user settings diff", "[core][config]")
 {
     ConfigEnv env;
-    writeText(env.user / "settings.json", R"({
+    writeFile(env.user / "settings.json", R"({
         "satdump_general": {"buffer": {"value": 4096}, "new_key": {"value": "x"}},
         "plugin_settings": {"a": null}
     })");
@@ -122,8 +97,8 @@ TEST_CASE("SatDumpConfigHandler load applies the user settings diff", "[core][co
 TEST_CASE("SatDumpConfigHandler prefers settings.json in the current directory", "[core][config]")
 {
     ConfigEnv env;
-    writeText(env.user / "settings.json", R"({"user_interface": {"theme": {"value": "FromUserDir"}}})");
-    writeText(env.cwd / "settings.json", R"({"user_interface": {"theme": {"value": "FromCwd"}}})");
+    writeFile(env.user / "settings.json", R"({"user_interface": {"theme": {"value": "FromUserDir"}}})");
+    writeFile(env.cwd / "settings.json", R"({"user_interface": {"theme": {"value": "FromCwd"}}})");
 
     satdump::SatDumpConfigHandler cfg;
     cfg.load(env.defaults_file.string(), env.user.string());
@@ -182,7 +157,7 @@ TEST_CASE("SatDumpConfigHandler saveUser without changes round-trips to the defa
 TEST_CASE("SatDumpConfigHandler loadUser with malformed settings throws", "[core][config]")
 {
     ConfigEnv env;
-    writeText(env.user / "settings.json", "{ this is not json");
+    writeFile(env.user / "settings.json", "{ this is not json");
     satdump::SatDumpConfigHandler cfg;
     // The parse error propagates (initSatDump catches it and exits)
     CHECK_THROWS_AS(cfg.load(env.defaults_file.string(), env.user.string()), nlohmann::json::parse_error);

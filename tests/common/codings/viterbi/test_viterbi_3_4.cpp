@@ -1,4 +1,5 @@
 #include "common/codings/viterbi/viterbi_3_4.h"
+#include "helpers/random.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <vector>
@@ -8,26 +9,8 @@ namespace
     const int BUFFER = 8192; // punctured soft symbols per work() call, multiple of 4
     const float THRESHOLD = 0.17f;
 
-    struct Lcg
-    {
-        uint32_t state;
-        explicit Lcg(uint32_t seed) : state(seed) {}
-        uint32_t next()
-        {
-            state = state * 1664525u + 1013904223u;
-            return state;
-        }
-        int below(int n) { return (next() >> 8) % n; }
-    };
-
-    std::vector<uint8_t> randomBits(int count, uint32_t seed)
-    {
-        Lcg rng(seed);
-        std::vector<uint8_t> bits(count);
-        for (auto &b : bits)
-            b = rng.next() >> 31;
-        return bits;
-    }
+    using test_helpers::Lcg;
+    using test_helpers::randomBits;
 
     // Rate 3/4 puncturing: every 3 input bits (X1 Y1 X2 Y2 X3 Y3) keep 4 symbols.
     // FengYun uses the standard order X1 Y1 Y2 X3, MetOp transmits X1 Y1 X3 Y2.
@@ -68,7 +51,7 @@ namespace
             e += decoded[i] != bits[i + delay];
         return e;
     }
-}
+} // namespace
 
 TEST_CASE("Viterbi3_4 locks and decodes clean punctured streams", "[common][codings][viterbi]")
 {

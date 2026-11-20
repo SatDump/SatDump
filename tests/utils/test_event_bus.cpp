@@ -42,7 +42,12 @@ TEST_CASE("EventBus ignores handlers of other event types", "[utils][event_bus]"
     int pings = 0, pongs = 0;
     std::string last;
     bus.register_handler<PingEvent>([&](PingEvent) { pings++; });
-    bus.register_handler<PongEvent>([&](PongEvent e) { pongs++; last = e.text; });
+    bus.register_handler<PongEvent>(
+        [&](PongEvent e)
+        {
+            pongs++;
+            last = e.text;
+        });
 
     bus.fire_event<PongEvent>({"hello"});
     CHECK(pings == 0);

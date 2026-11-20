@@ -1,5 +1,6 @@
 #include "common/geodetic/vincentys_calculations.h"
 #include "common/tracking/tracking.h"
+#include "projection/proj_test_helpers.h"
 #include "projection/raytrace/satellite_raytracer.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
@@ -9,6 +10,8 @@ using satdump::projection::get_satellite_raytracer;
 
 namespace
 {
+    using proj_test::lonDiff;
+
     // ISS (ZARYA) 2008-09-20 element set, as used by tests/common/tracking
     const satdump::TLE ISS_TLE = {25544, "ISS (ZARYA)", "1 25544U 98067A   08264.51782528 -.00002182  00000-0 -11606-4 0  2927",
                                   "2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.72125391563537", 0};
@@ -31,16 +34,6 @@ namespace
     nlohmann::json normalLineCfg(const std::string &type = "normal_single_line")
     {
         return {{"type", type}, {"tle", tleJson()}, {"timestamps", lineTimestamps(5)}, {"image_width", 100}, {"scan_angle", 110.0}};
-    }
-
-    double lonDiff(double a, double b)
-    {
-        double d = std::fmod(a - b, 360.0);
-        if (d > 180)
-            d -= 360;
-        if (d < -180)
-            d += 360;
-        return d;
     }
 
     geodetic::geodetic_coords_t subSatellitePoint(double t)

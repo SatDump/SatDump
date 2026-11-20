@@ -1,21 +1,12 @@
 #include "common/codings/viterbi/viterbi27.h"
-#include <catch2/catch_test_macros.hpp>
+#include "helpers/random.h"
 #include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <vector>
 
 namespace
 {
-    std::vector<uint8_t> randomBits(int count, uint32_t seed)
-    {
-        std::vector<uint8_t> bits(count);
-        uint32_t state = seed;
-        for (auto &b : bits)
-        {
-            state = state * 1664525u + 1013904223u;
-            b = state >> 31;
-        }
-        return bits;
-    }
+    using test_helpers::randomBits;
 
     std::vector<uint8_t> encode(const std::vector<uint8_t> &bits)
     {
@@ -41,7 +32,7 @@ namespace
             bytes[i / 8] |= bits[i] << (7 - (i % 8));
         return bytes;
     }
-}
+} // namespace
 
 TEST_CASE("Viterbi27 decodes clean frames into MSB-first packed bytes", "[common][codings][viterbi]")
 {
@@ -119,7 +110,7 @@ TEST_CASE("Viterbi27 ber() on a clean first frame is zero, on random data it is 
     CHECK(b.ber() > 0.5f);
 }
 
-// BUG: the BER re-encoder (cc_encoder_in, frame = ber_test_size/2) keeps its shift register from the
+// Bug: the BER re-encoder (cc_encoder_in, frame = ber_test_size/2) keeps its shift register from the
 // previous call, i.e. the state after bit 511 of the previous frame rather than the end of it.
 // The first re-encoded symbols of every frame after the first are therefore wrong and ber() is
 // non-zero on a perfectly clean stream (viterbi27.cpp:58).

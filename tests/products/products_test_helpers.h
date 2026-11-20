@@ -1,35 +1,20 @@
 #pragma once
 
 #include "core/config.h"
-#include "core/plugin.h"
+#include "helpers/satdump_guards.h"
+#include "helpers/temp_files.h"
 #include "products/product.h"
-#include <filesystem>
-#include <random>
+#include <map>
 #include <string>
 
-namespace satdump_test_products
+namespace products_test
 {
-    // Unique temporary directory, removed with its contents on scope exit
-    struct TempDir
-    {
-        std::filesystem::path path;
+    using test_helpers::ConfigGuard;
+    using test_helpers::EventBusGuard;
+    using test_helpers::TempDir;
 
-        explicit TempDir(const std::string &tag)
-        {
-            std::mt19937_64 rng(std::random_device{}());
-            path = std::filesystem::temp_directory_path() / ("satdump_test_products_" + tag + "_" + std::to_string(rng()));
-            std::filesystem::create_directories(path);
-        }
-        TempDir(const TempDir &) = delete;
-        TempDir &operator=(const TempDir &) = delete;
-        ~TempDir()
-        {
-            std::error_code ec;
-            std::filesystem::remove_all(path, ec);
-        }
-
-        std::string str() const { return path.string(); }
-    };
+    // Sets the product format the save functions use. Call with a ConfigGuard alive
+    inline void setProductFormat(const std::string &fmt) { satdump::satdump_cfg.main_cfg["satdump_general"]["product_format"]["value"] = fmt; }
 
     // Saves and restores the global product loader registry
     struct ProductLoadersGuard
@@ -40,27 +25,4 @@ namespace satdump_test_products
         ProductLoadersGuard &operator=(const ProductLoadersGuard &) = delete;
         ~ProductLoadersGuard() { satdump::products::product_loaders = saved; }
     };
-
-    // Saves and restores the global SatDump config. Several product functions read it with
-    // operator[], which inserts null keys, so even "read-only" use has to be undone.
-    struct ConfigGuard
-    {
-        nlohmann::ordered_json saved;
-        ConfigGuard() : saved(satdump::satdump_cfg.main_cfg) {}
-        ConfigGuard(const ConfigGuard &) = delete;
-        ConfigGuard &operator=(const ConfigGuard &) = delete;
-        ~ConfigGuard() { satdump::satdump_cfg.main_cfg = saved; }
-
-        void setProductFormat(const std::string &fmt) { satdump::satdump_cfg.main_cfg["satdump_general"]["product_format"]["value"] = fmt; }
-    };
-
-    // Swaps in a fresh event bus so handlers registered by a test disappear afterwards
-    struct EventBusGuard
-    {
-        std::shared_ptr<satdump::EventBus> saved;
-        EventBusGuard() : saved(satdump::eventBus) { satdump::eventBus = std::make_shared<satdump::EventBus>(); }
-        EventBusGuard(const EventBusGuard &) = delete;
-        EventBusGuard &operator=(const EventBusGuard &) = delete;
-        ~EventBusGuard() { satdump::eventBus = saved; }
-    };
-} // namespace satdump_test_products
+} // namespace products_test

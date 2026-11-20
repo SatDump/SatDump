@@ -15,17 +15,10 @@ namespace
 
     // CCSDS 231.0-B (TC) and 131.0-B (TM AR4JA) code sizes
     const Expected CODES[] = {
-        {TC128, 128, 64, 0},
-        {TC256, 256, 128, 0},
-        {TC512, 512, 256, 0},
-        {TM1280, 1280, 1024, 128},
-        {TM1536, 1536, 1024, 256},
-        {TM2048, 2048, 1024, 512},
-        {TM5120, 5120, 4096, 512},
-        {TM6144, 6144, 4096, 1024},
-        {TM8192, 8192, 4096, 2048},
+        {TC128, 128, 64, 0},       {TC256, 256, 128, 0},      {TC512, 512, 256, 0},       {TM1280, 1280, 1024, 128},  {TM1536, 1536, 1024, 256},
+        {TM2048, 2048, 1024, 512}, {TM5120, 5120, 4096, 512}, {TM6144, 6144, 4096, 1024}, {TM8192, 8192, 4096, 2048},
     };
-}
+} // namespace
 
 TEST_CASE("labrador get_code_params sizes and derived lengths", "[common][codings][ldpc][labrador]")
 {
@@ -51,10 +44,7 @@ TEST_CASE("labrador get_code_params sizes and derived lengths", "[common][coding
     }
 }
 
-TEST_CASE("labrador get_code_params rejects unknown codes", "[common][codings][ldpc][labrador]")
-{
-    CHECK_THROWS(get_code_params(ldpc_code_t(42)));
-}
+TEST_CASE("labrador get_code_params rejects unknown codes", "[common][codings][ldpc][labrador]") { CHECK_THROWS(get_code_params(ldpc_code_t(42))); }
 
 TEST_CASE("labrador parity_iter yields paritycheck_sum in-range edges", "[common][codings][ldpc][labrador]")
 {
@@ -78,9 +68,21 @@ TEST_CASE("labrador parity_iter yields paritycheck_sum in-range edges", "[common
         }
         CHECK(edges == c.paritycheck_sum);
         // Every check and every variable is connected
-        for (int d : checkDegree)
-            REQUIRE(d > 0);
-        for (int d : varDegree)
-            REQUIRE(d > 0);
+        {
+            size_t unconnected = 0, first = 0;
+            for (size_t i = 0; i < checkDegree.size(); i++)
+                if (!(checkDegree[i] > 0) && unconnected++ == 0)
+                    first = i;
+            INFO("first unconnected check " << first);
+            REQUIRE(unconnected == 0);
+        }
+        {
+            size_t unconnected = 0, first = 0;
+            for (size_t i = 0; i < varDegree.size(); i++)
+                if (!(varDegree[i] > 0) && unconnected++ == 0)
+                    first = i;
+            INFO("first unconnected variable " << first);
+            REQUIRE(unconnected == 0);
+        }
     }
 }

@@ -38,7 +38,7 @@ TEST_CASE("RotctlHandler keeps current settings for missing or invalid fields", 
     CHECK(h.get_settings()["port"] == 4533);
 }
 
-// rotcl_handler.cpp:76 memcpy's the new address over the old one without copying the
+// Bug: rotcl_handler.cpp:76 memcpy's the new address over the old one without copying the
 // terminating NUL, so an address shorter than the previous one keeps the old tail
 // ("127.0.0.1" -> "10.0.0.1" becomes "10.0.0.11").
 TEST_CASE("RotctlHandler accepts an address shorter than the previous one", "[common][tracking][rotator][!shouldfail]")

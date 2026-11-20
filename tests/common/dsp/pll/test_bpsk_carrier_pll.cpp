@@ -1,5 +1,5 @@
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/pll/bpsk_carrier_pll.h"
-#include "../dsp_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -19,8 +19,12 @@ TEST_CASE("BPSKCarrierPLLBlock output goes to zero on an unmodulated carrier", "
         REQUIRE(r.output.size() == in.size());
 
         // Output is the quadrature component of the carrier-removed signal: 0 when locked
+        size_t mismatches = 0, first = 0;
         for (size_t i = in.size() / 2; i < in.size(); i++)
-            REQUIRE(fabs(r.output[i]) < 0.01f);
+            if (!(fabs(r.output[i]) < 0.01f) && mismatches++ == 0)
+                first = i;
+        INFO("first mismatch at sample " << first);
+        REQUIRE(mismatches == 0);
     }
 }
 

@@ -1,7 +1,8 @@
+#include "dsp/ndsp_sig_test_helpers.h"
 #include "dsp/resampling/rational_resampler.h"
-#include "../filter/ndsp_sig_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cmath>
 
 using Catch::Approx;
 using namespace satdump::ndsp;
@@ -31,7 +32,7 @@ TEST_CASE("ndsp RationalResamplerBlock<complex_t> output rate, tone frequency an
 
         // Tone at 0.05 cycles per output sample, well inside the passband
         const size_t n = 60000;
-        double w_out = 2 * ndsp_sig_test::kPi * 0.05;
+        double w_out = 2 * M_PI * 0.05;
         double w_in = w_out * ratio;
         auto in = ndsp_sig_test::complexTone(n, w_in, 0.8);
 
@@ -55,7 +56,7 @@ TEST_CASE("ndsp RationalResamplerBlock<float> decimation keeps a DC level and re
 {
     // DC + a tone that would alias after decimation by 4
     const size_t n = 80000;
-    auto in = ndsp_sig_test::realTone(n, 2 * ndsp_sig_test::kPi * 0.3, 1.0);
+    auto in = ndsp_sig_test::realTone(n, 2 * M_PI * 0.3, 1.0);
     for (auto &v : in)
         v += 0.5f;
     auto res = makeResampler<float>(1, 4);
@@ -71,7 +72,7 @@ TEST_CASE("ndsp RationalResamplerBlock<float> decimation keeps a DC level and re
         mean += out[i];
     mean /= (double)(out.size() - skip);
     CHECK(mean == Approx(0.5).epsilon(0.01));
-    CHECK(ndsp_sig_test::toDb(ndsp_sig_test::toneAmplitude(out, 2 * ndsp_sig_test::kPi * 0.2, skip, out.size())) < -40);
+    CHECK(ndsp_sig_test::toDb(ndsp_sig_test::toneAmplitude(out, 2 * M_PI * 0.2, skip, out.size())) < -40);
 }
 
 TEST_CASE("ndsp RationalResamplerBlock with custom single tap passes samples through", "[dsp][resampling]")
@@ -86,8 +87,12 @@ TEST_CASE("ndsp RationalResamplerBlock with custom single tap passes samples thr
     auto &out = r.output();
     // One sample is always held back, waiting for the next buffer
     REQUIRE(out.size() == in.size() - 1);
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < out.size(); i++)
-        REQUIRE(out[i] == in[i]);
+        if (!(out[i] == in[i]) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("ndsp RationalResamplerBlock custom taps implement an interpolator", "[dsp][resampling]")

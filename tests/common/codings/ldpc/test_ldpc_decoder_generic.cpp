@@ -1,6 +1,7 @@
-#include "common/codings/ldpc/ldpc_decoder_generic.h"
 #include "common/codings/ldpc/labrador/codes/parity.h"
 #include "common/codings/ldpc/labrador/encoder.h"
+#include "common/codings/ldpc/ldpc_decoder_generic.h"
+#include "helpers/random.h"
 #include <catch2/catch_test_macros.hpp>
 #include <map>
 #include <set>
@@ -11,24 +12,12 @@ namespace
     using codings::ldpc::LDPCDecoderGeneric;
     using codings::ldpc::Sparse_matrix;
 
-    struct Lcg
-    {
-        uint32_t state;
-        explicit Lcg(uint32_t seed) : state(seed) {}
-        uint32_t next()
-        {
-            state = state * 1664525u + 1013904223u;
-            return state;
-        }
-        int below(int n) { return (next() >> 8) % n; }
-    };
+    using test_helpers::Lcg;
 
     // Hamming (7,4): parity bits at the end so the first n - m columns are the data bits
     Sparse_matrix hamming74()
     {
-        const int h[3][7] = {{1, 1, 0, 1, 1, 0, 0},
-                             {1, 0, 1, 1, 0, 1, 0},
-                             {0, 1, 1, 1, 0, 0, 1}};
+        const int h[3][7] = {{1, 1, 0, 1, 1, 0, 0}, {1, 0, 1, 1, 0, 1, 0}, {0, 1, 1, 1, 0, 0, 1}};
         Sparse_matrix m(3, 7);
         for (int r = 0; r < 3; r++)
             for (int c = 0; c < 7; c++)
@@ -66,7 +55,7 @@ namespace
             soft[i] = bits[i] ? amplitude : -amplitude;
         return soft;
     }
-}
+} // namespace
 
 TEST_CASE("LDPCDecoderGeneric decodes every Hamming(7,4) codeword and corrects one weak error", "[common][codings][ldpc]")
 {

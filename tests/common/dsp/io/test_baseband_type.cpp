@@ -17,12 +17,7 @@ TEST_CASE("BasebandType string round trip", "[common][dsp][baseband_type]")
         const char *name;
     };
     const Case cases[] = {
-        {dsp::CF_32, "cf32"},
-        {dsp::CS_32, "cs32"},
-        {dsp::CS_16, "cs16"},
-        {dsp::CS_8, "cs8"},
-        {dsp::CU_8, "cu8"},
-        {dsp::WAV_16, "wav"},
+        {dsp::CF_32, "cf32"}, {dsp::CS_32, "cs32"}, {dsp::CS_16, "cs16"}, {dsp::CS_8, "cs8"}, {dsp::CU_8, "cu8"}, {dsp::WAV_16, "wav"},
 #ifdef BUILD_ZIQ
         {dsp::ZIQ, "ziq"},
 #endif

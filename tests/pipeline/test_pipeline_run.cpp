@@ -1,9 +1,9 @@
 #include "core/exception.h"
 #include "pipeline/pipeline.h"
-#include "pipeline_test_helpers.h"
+#include "pipeline/pipeline_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 
-using namespace pipeline_test_helpers;
+using namespace pipeline_test;
 namespace pl = satdump::pipeline;
 
 namespace
@@ -14,7 +14,7 @@ namespace
         ModuleRegistryGuard reg;
         EventBusGuard bus;
         CallsGuard calls;
-        MainConfigGuard cfg;
+        ConfigGuard cfg;
         TempDir dir;
         std::string input;
         std::string out;
@@ -163,9 +163,8 @@ TEST_CASE("Pipeline::run passes merged parameters and honours input_override", "
 
     writeFile(env.out + "/side_input.bin", "SIDE");
 
-    auto p = makePipeline("unit_params", {{"baseband", "", {}, ""},
-                                          {"soft", "unit_a", {{"symbolrate", 1000}, {"alpha", 0.5}}, ""},
-                                          {"frames", "unit_b", {{"input_override", "side_input.bin"}}, "side_input.bin"}});
+    auto p = makePipeline("unit_params",
+                          {{"baseband", "", {}, ""}, {"soft", "unit_a", {{"symbolrate", 1000}, {"alpha", 0.5}}, ""}, {"frames", "unit_b", {{"input_override", "side_input.bin"}}, "side_input.bin"}});
 
     std::string final_file;
     p.run(env.input, env.out, {{"alpha", 0.25}, {"user", "x"}, {"disable_multi_modules", true}}, "baseband", false, nullptr, nullptr, &final_file);
@@ -309,7 +308,7 @@ TEST_CASE("Pipeline::run processes a dataset.json input directly", "[pipeline][p
     CHECK(proc[0].input == dataset);
 }
 
-// pipeline_run.cpp:137 : levels without a module (e.g. the trailing "products": {} placeholder used
+// Bug: pipeline_run.cpp:137 : levels without a module (e.g. the trailing "products": {} placeholder used
 // by many shipped pipelines such as "adityal1_tlm_link") are not skipped, so run() throws
 // "Module  is not registered" after the real work is done, and never sets final_file.
 TEST_CASE("Pipeline::run tolerates a trailing level without a module", "[pipeline][pipeline_run][!shouldfail]")

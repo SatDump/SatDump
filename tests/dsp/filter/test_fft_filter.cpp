@@ -2,9 +2,10 @@
 #include "dsp/filter/fft.h"
 #include "dsp/filter/lpf.h"
 #include "dsp/filter/notch_bank.h"
-#include "ndsp_sig_test_helpers.h"
+#include "dsp/ndsp_sig_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cmath>
 
 using Catch::Approx;
 using namespace satdump::ndsp;
@@ -47,21 +48,23 @@ namespace
         auto &out = r.output();
 
         // Output comes in blocks of a fixed size, the remainder is kept internally
-        REQUIRE(!r.buffer_sizes[0].empty());
-        size_t bs = r.buffer_sizes[0][0];
-        for (auto s : r.buffer_sizes[0])
+        REQUIRE(!r.outputs[0].sizes.empty());
+        size_t bs = r.outputs[0].sizes[0];
+        for (auto s : r.outputs[0].sizes)
             REQUIRE(s == bs);
         CHECK(bs >= taps.size());
         CHECK(in.size() - out.size() <= bs);
 
         // Overlap-add, so exactly a linear convolution
+        size_t mismatches = 0, first = 0;
         for (size_t i = 0; i < out.size(); i += 7)
         {
-            INFO("sample " << i);
             auto ref = causalConv(in, taps, i);
-            REQUIRE(out[i].real == Approx(ref.real()).margin(1e-3));
-            REQUIRE(out[i].imag == Approx(ref.imag()).margin(1e-3));
+            if ((!(out[i].real == Approx(ref.real()).margin(1e-3)) || !(out[i].imag == Approx(ref.imag()).margin(1e-3))) && mismatches++ == 0)
+                first = i;
         }
+        INFO("first mismatch at sample " << first);
+        REQUIRE(mismatches == 0);
     }
 } // namespace
 
@@ -74,10 +77,7 @@ TEST_CASE("ndsp FFTFilterBlock<complex_t> matches a causal convolution", "[dsp][
     checkFFTFilter(taps, randomComplex(30000, 2), 4096);
 }
 
-TEST_CASE("ndsp FFTFilterBlock<complex_t, complex_t> matches a causal convolution", "[dsp][filter][fft_filter]")
-{
-    checkFFTFilter(randomComplex(40, 3), randomComplex(40000, 4), 3000);
-}
+TEST_CASE("ndsp FFTFilterBlock<complex_t, complex_t> matches a causal convolution", "[dsp][filter][fft_filter]") { checkFFTFilter(randomComplex(40, 3), randomComplex(40000, 4), 3000); }
 
 TEST_CASE("ndsp FFTFilterBlock as LPF_Block filters tones", "[dsp][filter][fft_filter]")
 {
@@ -87,7 +87,7 @@ TEST_CASE("ndsp FFTFilterBlock as LPF_Block filters tones", "[dsp][filter][fft_f
     CHECK(lpf->d_id == "lpffft_filter__cc");
 
     const size_t n = 60000;
-    double w_in = 2 * ndsp_sig_test::kPi * -40e3 / fs, w_out = 2 * ndsp_sig_test::kPi * 300e3 / fs;
+    double w_in = 2 * M_PI * -40e3 / fs, w_out = 2 * M_PI * 300e3 / fs;
     auto a = ndsp_sig_test::complexTone(n, w_in, 1.0);
     auto b = ndsp_sig_test::complexTone(n, w_out, 1.0);
     for (size_t i = 0; i < n; i++)
@@ -138,7 +138,7 @@ TEST_CASE("ndsp NotchBankBlock removes tones at the notch frequencies only", "[d
     // Notches at +20 kHz and -30 kHz relative to the 100 MHz center
     auto nb = makeNotch({100.02e6, 99.97e6}, fs);
 
-    auto w = [&](double hz) { return 2 * ndsp_sig_test::kPi * hz / fs; };
+    auto w = [&](double hz) { return 2 * M_PI * hz / fs; };
     const size_t n = 180000;
     std::vector<complex_t> in(n, complex_t(0, 0));
     for (double f : {20e3, -30e3, 10e3, -45e3})

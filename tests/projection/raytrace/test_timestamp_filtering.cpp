@@ -5,10 +5,7 @@ using satdump::timestamp_filtering::filter_timestamps_width_cfg;
 
 namespace
 {
-    nlohmann::json simpleFilter(double scan_time, double max_diff)
-    {
-        return {{"type", "simple"}, {"scan_time", scan_time}, {"max_diff", max_diff}};
-    }
+    nlohmann::json simpleFilter(double scan_time, double max_diff) { return {{"type", "simple"}, {"scan_time", scan_time}, {"max_diff", max_diff}}; }
 
     std::vector<double> ramp(int n, double start = 1000, double step = 1)
     {
@@ -28,8 +25,8 @@ TEST_CASE("filter_timestamps_width_cfg passes timestamps through for unknown fil
 TEST_CASE("filter_timestamps_width_cfg simple filter removes outliers far from the median", "[projection][raytrace][timestamp_filtering]")
 {
     auto t = ramp(10);
-    t[4] = 99999;   // Far outside 10 * 1s * (0.5 + 1.5) around the median
-    t[7] = -50000;  // Same, below
+    t[4] = 99999;  // Far outside 10 * 1s * (0.5 + 1.5) around the median
+    t[7] = -50000; // Same, below
     auto f = filter_timestamps_width_cfg(t, simpleFilter(1, 3));
     REQUIRE(f.size() == t.size());
     CHECK(f[4] == -1);
@@ -56,10 +53,12 @@ TEST_CASE("filter_timestamps_width_cfg simple filter removes backwards steps and
     CHECK(f[7] == t[7]); // The next line is compared against the dropped one, which is close
 }
 
-// Bug: timestamp_filtering.cpp:21 and :28 call unqualified abs() on doubles, which resolves
+// Bug: projection/raytrace/timestamp_filtering.cpp:21 and :28 call unqualified abs() on doubles, which resolves
 // to the integer ::abs here, so differences are truncated: a 3.5s gap counts as 3s and
 // passes max_diff = 3, and the median-distance check is truncated the same way.
-TEST_CASE("filter_timestamps_width_cfg simple filter compares fractional gaps exactly", "[projection][raytrace][timestamp_filtering][!shouldfail]")
+// Whether the double overload is visible depends on the standard library headers: the integer
+// ::abs is picked with libstdc++, but most likely not with libc++ or MSVC, where the test passes.
+TEST_CASE("filter_timestamps_width_cfg simple filter compares fractional gaps exactly", "[projection][raytrace][timestamp_filtering][!mayfail]")
 {
     auto t = ramp(10);
     for (int i = 6; i < 10; i++)

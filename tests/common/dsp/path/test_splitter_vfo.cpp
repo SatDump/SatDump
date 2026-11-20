@@ -1,5 +1,5 @@
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/path/splitter_vfo.h"
-#include "../dsp_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -52,8 +52,12 @@ TEST_CASE("VFOSplitterBlock feeds main and shifted VFO outputs", "[common][dsp][
     REQUIRE(fed);
     REQUIRE(got);
     REQUIRE(main_out.size() == in.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < in.size(); i++)
-        REQUIRE(dsp_test::absDiff(main_out[i], in[i]) == 0.0f);
+        if (!(dsp_test::absDiff(main_out[i], in[i]) == 0.0f) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 
     REQUIRE(vfo.size() == in.size());
     CHECK(dsp::rad_to_hz(dsp_test::estimateFreq(vfo, 0, vfo.size()), fs) == Approx(-50e3).epsilon(1e-5));

@@ -26,7 +26,9 @@ TEST_CASE("satdump_vars getSatDumpVersionName includes version and optional tag"
 // C++ does not order dynamic initialisation across translation units, and in this build they are
 // read before being constructed, so RESPATH and LIBPATH end up empty (static initialisation order
 // fiasco). Resources and system plugins are then only found relative to the working directory.
-TEST_CASE("satdump_vars RESPATH and LIBPATH default to the configured install paths", "[satdump_vars][!shouldfail]")
+// The initialisation order is up to the compiler and linker (it follows link order with GCC and
+// ld here), so another toolchain or link order may happen to initialise them correctly.
+TEST_CASE("satdump_vars RESPATH and LIBPATH default to the configured install paths", "[satdump_vars][!mayfail]")
 {
     // On Linux, nothing is searched relative to the executable
     CHECK(satdump::RESPATH == satdump::RESOURCES_PATH);

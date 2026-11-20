@@ -1,5 +1,6 @@
 #include "common/codings/ldpc/ccsds_ldpc.h"
 #include "common/codings/ldpc/make_ccsds.h"
+#include "helpers/random.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <set>
@@ -10,17 +11,7 @@ namespace
 {
     using namespace codings::ldpc;
 
-    struct Lcg
-    {
-        uint32_t state;
-        explicit Lcg(uint32_t seed) : state(seed) {}
-        uint32_t next()
-        {
-            state = state * 1664525u + 1013904223u;
-            return state;
-        }
-        int below(int n) { return (next() >> 8) % n; }
-    };
+    using test_helpers::Lcg;
 
     // Systematic GF(2) encoder derived from a parity check matrix by Gauss-Jordan elimination.
     // Pivots are searched from the last column backwards, so parity ends up at the end of the codeword.
@@ -128,7 +119,7 @@ namespace
             soft[i] = cw[offset + i] ? amplitude : -amplitude;
         return soft;
     }
-}
+} // namespace
 
 TEST_CASE("ldpc_rate_from_string parses CCSDS LDPC rates", "[common][codings][ldpc]")
 {
@@ -171,7 +162,7 @@ TEST_CASE("CCSDSLDPC frame and codeword lengths", "[common][codings][ldpc]")
     CHECK(r12.simd() == 1);
 }
 
-// BUG: data_length() is computed as n_rows - M = 2M, which is only k for rate 1/2. For AR4JA rate
+// Bug: data_length() is computed as n_rows - M = 2M, which is only k for rate 1/2. For AR4JA rate
 // 2/3 and 4/5 the information length is n_cols - n_rows = 1024 here (ccsds_ldpc.cpp:54).
 TEST_CASE("CCSDSLDPC data_length is the information block size for every AR4JA rate", "[common][codings][ldpc][!shouldfail]")
 {
@@ -205,8 +196,12 @@ TEST_CASE("CCSDSLDPC decodes clean and corrupted codewords", "[common][codings][
         std::vector<int8_t> soft = transmit(tc, cw, frameSize, 40);
         std::vector<uint8_t> out(frameSize, 0xEE);
         CHECK(ldpc.decode(soft.data(), out.data(), 10) == 0);
+        size_t mismatches = 0, first = 0;
         for (int i = 0; i < transmitted; i++)
-            REQUIRE(out[i] == cw[zeroPrefix + i]);
+            if (!(out[i] == cw[zeroPrefix + i]) && mismatches++ == 0)
+                first = i;
+        INFO("first mismatch at bit " << first);
+        REQUIRE(mismatches == 0);
     }
 
     SECTION("with weak sign errors")
@@ -245,6 +240,10 @@ TEST_CASE("CCSDSLDPC decode with zero iterations returns hard decisions", "[comm
         s = (rng.next() >> 31) ? 20 : -20;
     std::vector<uint8_t> out(ldpc.frame_length(), 0xEE);
     CHECK(ldpc.decode(soft.data(), out.data(), 0) == 0);
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < soft.size(); i++)
-        REQUIRE(out[i] == (soft[i] > 0 ? 1 : 0));
+        if (!(out[i] == (soft[i] > 0 ? 1 : 0)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at bit " << first);
+    REQUIRE(mismatches == 0);
 }

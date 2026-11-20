@@ -59,8 +59,8 @@ TEST_CASE("compute_gcps samples a raytracer on the spacing grid plus the last ro
 
 TEST_CASE("compute_gcps works on standard projections", "[projection][raytrace][gcp_compute]")
 {
-    nlohmann::json cfg = {{"type", "equirec"}, {"offset_x", -180.0}, {"offset_y", 90.0}, {"scalar_x", 1.0}, {"scalar_y", -1.0},
-                          {"width", 360},      {"height", 180},     {"gcp_spacing_x", 90}, {"gcp_spacing_y", 60}};
+    nlohmann::json cfg = {{"type", "equirec"}, {"offset_x", -180.0}, {"offset_y", 90.0},    {"scalar_x", 1.0},    {"scalar_y", -1.0},
+                          {"width", 360},      {"height", 180},      {"gcp_spacing_x", 90}, {"gcp_spacing_y", 60}};
     auto gcps = compute_gcps(cfg);
     // x in {0, 90, 180, 270, 359}, y in {0, 60, 120, 179}
     CHECK(gcps.size() == 5 * 4);
@@ -74,8 +74,8 @@ TEST_CASE("compute_gcps works on standard projections", "[projection][raytrace][
 TEST_CASE("compute_gcps skips pixels that do not hit the Earth", "[projection][raytrace][gcp_compute]")
 {
     // 100x100 geostationary image wider than the Earth disk: corners are in space
-    nlohmann::json cfg = {{"type", "geos"},      {"altitude", 35786023.0}, {"scalar_x", 120000.0}, {"scalar_y", -120000.0}, {"offset_x", -6.0e6},
-                          {"offset_y", 6.0e6},   {"width", 101},           {"height", 101},         {"gcp_spacing_x", 10},    {"gcp_spacing_y", 10}};
+    nlohmann::json cfg = {{"type", "geos"},    {"altitude", 35786023.0}, {"scalar_x", 120000.0}, {"scalar_y", -120000.0}, {"offset_x", -6.0e6},
+                          {"offset_y", 6.0e6}, {"width", 101},           {"height", 101},        {"gcp_spacing_x", 10},   {"gcp_spacing_y", 10}};
     auto gcps = compute_gcps(cfg);
     REQUIRE_FALSE(gcps.empty());
     CHECK(gcps.size() < 12 * 11); // Not every grid point survived

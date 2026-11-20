@@ -1,4 +1,3 @@
-#include "../ndsp_test_helpers.h"
 #include "dsp/flowgraph/dsp_flowgraph_register.h"
 #include "dsp/flowgraph/flowgraph.h"
 #include "dsp/flowgraph/missing_node.h"
@@ -6,11 +5,15 @@
 #include "dsp/io/file_sink.h"
 #include "dsp/io/file_source.h"
 #include "dsp/io/waveform.h"
+#include "dsp/ndsp_test_helpers.h"
 #include "dsp/utils/add.h"
 #include "dsp/utils/multiply_const.h"
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <cmath>
 #include <set>
 
+using Catch::Matchers::WithinAbs;
 using namespace satdump::ndsp;
 using namespace satdump::ndsp::flowgraph;
 
@@ -247,7 +250,7 @@ TEST_CASE("ndsp NodeMissing is errored and stores raw parameters", "[dsp][flowgr
     CHECK_FALSE(n.render());
 }
 
-// Bug : missing_node.h:23, DummyBlock resizes inputs twice (the second call
+// Bug: missing_node.h:23, DummyBlock resizes inputs twice (the second call
 // should be outputs.resize), so a placeholder block never has outputs and
 // gets max(ni, no) inputs instead.
 TEST_CASE("ndsp DummyBlock has the requested inputs and outputs", "[dsp][flowgraph][missing_node][!shouldfail]")
@@ -288,13 +291,13 @@ TEST_CASE("ndsp Flowgraph runs a file to file chain", "[dsp][flowgraph][run]")
     std::vector<float> data(4096);
     for (size_t i = 0; i < data.size(); i++)
         data[i] = (float)i - 2000.0f;
-    ndsp_test::writeFile(in_file.path(), data);
+    ndsp_test::writeBytes(in_file.str(), data);
 
     auto fg = std::make_shared<Flowgraph>();
     registerTestNodes(*fg);
-    addBlock(*fg, "file_source_f", {{"file", in_file.path()}, {"buffer_size", 1024}});
+    addBlock(*fg, "file_source_f", {{"file", in_file.str()}, {"buffer_size", 1024}});
     addBlock(*fg, "multiply_constf", {{"const", -0.5}});
-    addBlock(*fg, "file_sink_f", {{"file", out_file.path()}});
+    addBlock(*fg, "file_sink_f", {{"file", out_file.str()}});
     nlohmann::json j = fg->getJSON();
     j["links"] = {link(0, ioIds(j["nodes"][0], true)[0], ioIds(j["nodes"][1], false)[0]), //
                   link(1, ioIds(j["nodes"][1], true)[0], ioIds(j["nodes"][2], false)[0])};
@@ -304,29 +307,33 @@ TEST_CASE("ndsp Flowgraph runs a file to file chain", "[dsp][flowgraph][run]")
     REQUIRE(runFlowgraph(fg));
     CHECK_FALSE(fg->isRunning());
 
-    auto out = ndsp_test::readFile<float>(out_file.path());
+    auto out = ndsp_test::readBytes<float>(out_file.str());
     // FileSourceBlock pads the end with stale samples (see its bug test), check the prefix
     REQUIRE(out.size() >= data.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < data.size(); i++)
-        REQUIRE(out[i] == data[i] * -0.5f);
+        if (!(out[i] == data[i] * -0.5f) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 
     // It can run again
-    std::filesystem::remove(out_file.path());
+    std::filesystem::remove(out_file.str());
     REQUIRE(runFlowgraph(fg));
-    CHECK(ndsp_test::readFile<float>(out_file.path()).size() >= data.size());
+    CHECK(ndsp_test::readBytes<float>(out_file.str()).size() >= data.size());
 }
 
 TEST_CASE("ndsp Flowgraph inserts a splitter for outputs with several links", "[dsp][flowgraph][run]")
 {
     ndsp_test::TempFile in_file, out1, out2;
     auto data = ndsp_test::randomFloats(2048, 91);
-    ndsp_test::writeFile(in_file.path(), data);
+    ndsp_test::writeBytes(in_file.str(), data);
 
     auto fg = std::make_shared<Flowgraph>();
     registerTestNodes(*fg);
-    addBlock(*fg, "file_source_f", {{"file", in_file.path()}, {"buffer_size", 256}});
-    addBlock(*fg, "file_sink_f", {{"file", out1.path()}});
-    addBlock(*fg, "file_sink_f", {{"file", out2.path()}});
+    addBlock(*fg, "file_source_f", {{"file", in_file.str()}, {"buffer_size", 256}});
+    addBlock(*fg, "file_sink_f", {{"file", out1.str()}});
+    addBlock(*fg, "file_sink_f", {{"file", out2.str()}});
     nlohmann::json j = fg->getJSON();
     int src = ioIds(j["nodes"][0], true)[0];
     // Links can be drawn in either direction
@@ -336,7 +343,7 @@ TEST_CASE("ndsp Flowgraph inserts a splitter for outputs with several links", "[
 
     for (auto *f : {&out1, &out2})
     {
-        auto out = ndsp_test::readFile<float>(f->path());
+        auto out = ndsp_test::readBytes<float>(f->str());
         REQUIRE(out.size() >= data.size());
         CHECK(std::vector<float>(out.begin(), out.begin() + data.size()) == data);
     }
@@ -349,10 +356,10 @@ TEST_CASE("ndsp Flowgraph refuses to run with unconnected IOs", "[dsp][flowgraph
     registerTestNodes(*fg);
 
     // Unconnected input : the sink is never started, so its file is never created
-    addBlock(*fg, "file_sink_f", {{"file", out_file.path()}});
+    addBlock(*fg, "file_sink_f", {{"file", out_file.str()}});
     REQUIRE(runFlowgraph(fg));
     CHECK_FALSE(fg->isRunning());
-    CHECK_FALSE(std::filesystem::exists(out_file.path()));
+    CHECK_FALSE(std::filesystem::exists(out_file.str()));
 
     // Unconnected output
     auto fg2 = std::make_shared<Flowgraph>();
@@ -367,7 +374,7 @@ TEST_CASE("ndsp Flowgraph does not run graphs with missing nodes", "[dsp][flowgr
     ndsp_test::TempFile out_file;
     auto fg = std::make_shared<Flowgraph>();
     registerTestNodes(*fg);
-    addBlock(*fg, "file_sink_f", {{"file", out_file.path()}});
+    addBlock(*fg, "file_sink_f", {{"file", out_file.str()}});
     nlohmann::json j = fg->getJSON();
     j["nodes"][1] = j["nodes"][0];
     j["nodes"][1]["id"] = 1;
@@ -377,25 +384,25 @@ TEST_CASE("ndsp Flowgraph does not run graphs with missing nodes", "[dsp][flowgr
     j["links"] = {link(0, 100, j["nodes"][0]["io"][0]["id"].get<int>())};
     fg->setJSON(j);
     REQUIRE(runFlowgraph(fg));
-    CHECK_FALSE(std::filesystem::exists(out_file.path()));
+    CHECK_FALSE(std::filesystem::exists(out_file.str()));
 }
 
 TEST_CASE("ndsp Flowgraph ignores disabled nodes", "[dsp][flowgraph][run]")
 {
     ndsp_test::TempFile in_file, out_file, unused;
-    ndsp_test::writeFile(in_file.path(), std::vector<float>(512, 3.0f));
+    ndsp_test::writeBytes(in_file.str(), std::vector<float>(512, 3.0f));
     auto fg = std::make_shared<Flowgraph>();
     registerTestNodes(*fg);
-    addBlock(*fg, "file_source_f", {{"file", in_file.path()}, {"buffer_size", 512}});
-    addBlock(*fg, "file_sink_f", {{"file", out_file.path()}});
-    addBlock(*fg, "file_sink_f", {{"file", unused.path()}}); // Unconnected, but disabled
+    addBlock(*fg, "file_source_f", {{"file", in_file.str()}, {"buffer_size", 512}});
+    addBlock(*fg, "file_sink_f", {{"file", out_file.str()}});
+    addBlock(*fg, "file_sink_f", {{"file", unused.str()}}); // Unconnected, but disabled
     nlohmann::json j = fg->getJSON();
     j["links"] = {link(0, ioIds(j["nodes"][0], true)[0], ioIds(j["nodes"][1], false)[0])};
     j["nodes"][2]["disabled"] = true;
     fg->setJSON(j);
     REQUIRE(runFlowgraph(fg));
-    CHECK(ndsp_test::readFile<float>(out_file.path()).size() >= 512);
-    CHECK_FALSE(std::filesystem::exists(unused.path()));
+    CHECK(ndsp_test::readBytes<float>(out_file.str()).size() >= 512);
+    CHECK_FALSE(std::filesystem::exists(unused.str()));
 }
 
 TEST_CASE("ndsp Flowgraph stop ends a graph driven by an endless source", "[dsp][flowgraph][run]")
@@ -404,7 +411,7 @@ TEST_CASE("ndsp Flowgraph stop ends a graph driven by an endless source", "[dsp]
     auto fg = std::make_shared<Flowgraph>();
     registerTestNodes(*fg);
     addBlock(*fg, "waveform_f", {{"freq", 100.0}, {"samprate", 1000.0}});
-    addBlock(*fg, "file_sink_f", {{"file", out_file.path()}});
+    addBlock(*fg, "file_sink_f", {{"file", out_file.str()}});
     nlohmann::json j = fg->getJSON();
     j["links"] = {link(0, ioIds(j["nodes"][0], true)[0], ioIds(j["nodes"][1], false)[0])};
     fg->setJSON(j);
@@ -417,7 +424,7 @@ TEST_CASE("ndsp Flowgraph stop ends a graph driven by an endless source", "[dsp]
                                  [&]()
                                  {
                                      std::error_code ec;
-                                     return std::filesystem::file_size(out_file.path(), ec) >= 8192 * sizeof(float) && !ec;
+                                     return std::filesystem::file_size(out_file.str(), ec) >= 8192 * sizeof(float) && !ec;
                                  });
                              // Only stop once the flowgraph is really running
                              ndsp_test::waitUntil([&]() { return fg->isRunning(); });
@@ -425,11 +432,11 @@ TEST_CASE("ndsp Flowgraph stop ends a graph driven by an endless source", "[dsp]
                          }));
     CHECK(saw_data);
     CHECK_FALSE(fg->isRunning());
-    auto out = ndsp_test::readFile<float>(out_file.path());
+    auto out = ndsp_test::readBytes<float>(out_file.str());
     REQUIRE(out.size() >= 8192);
     // 100 Hz at 1 kHz : period of 10 samples
     for (size_t i = 0; i < 100; i++)
-        REQUIRE(std::fabs(out[i] - cos(2 * ndsp_test::kPi * 0.1 * i)) < 1e-3);
+        REQUIRE_THAT(out[i], WithinAbs(cos(2 * M_PI * 0.1 * i), 1e-3));
 }
 
 TEST_CASE("ndsp Flowgraph registry gets one entry per IO type of a block", "[dsp][flowgraph][register]")

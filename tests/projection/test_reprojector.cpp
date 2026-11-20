@@ -1,13 +1,12 @@
 #include "image/meta.h"
 #include "projection/reproject_img.h"
 #include "projection/reprojector.h"
-#include "warp/warp_test_helpers.h"
+#include "projection/warp/warp_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <cstdlib>
 
 using satdump::projection::ReprojectionOperation;
-using satdump_test_proj_warp::CpuOnlyWarpGuard;
-using satdump_test_proj_warp::gradientImage;
+using warp_test::gradientImage;
 
 namespace
 {
@@ -57,17 +56,22 @@ TEST_CASE("reproject between two equirectangular grids resamples the image", "[p
     REQUIRE(out.depth() == 16);
 
     // Target pixel (x, y) is source pixel (x / 2, y / 2)
+    size_t mismatches = 0;
+    int first_x = 0, first_y = 0;
     for (int y = 0; y < 34; y++)
     {
         for (int x = 0; x < 70; x++)
         {
-            INFO("x=" << x << " y=" << y);
             const double expected = 1000 * (x / 2.0) + 100 * (y / 2.0);
+            bool ok = out.get(3, x, y) == 65535;
             for (int c = 0; c < 3; c++)
-                CHECK(std::abs(out.get(c, x, y) - expected) <= 1);
-            CHECK(out.get(3, x, y) == 65535);
+                ok &= std::abs(out.get(c, x, y) - expected) <= 1;
+            if (!ok && mismatches++ == 0)
+                first_x = x, first_y = y;
         }
     }
+    INFO("first mismatch at x=" << first_x << " y=" << first_y);
+    CHECK(mismatches == 0);
 
     // The target projection is attached to the output
     REQUIRE(satdump::image::has_metadata_proj_cfg(out));
@@ -120,8 +124,7 @@ TEST_CASE("reproject into a geostationary view leaves space empty", "[projection
 {
     auto img = globeImage();
     // 50x50 view of the full disk, 250 km pixels in projection units, centered on 0E
-    nlohmann::json geos = {{"type", "geos"},       {"altitude", 35786023.0}, {"scalar_x", 250000.0}, {"scalar_y", -250000.0},
-                           {"offset_x", -6.25e6}, {"offset_y", 6.25e6},     {"width", 50},           {"height", 50}};
+    nlohmann::json geos = {{"type", "geos"}, {"altitude", 35786023.0}, {"scalar_x", 250000.0}, {"scalar_y", -250000.0}, {"offset_x", -6.25e6}, {"offset_y", 6.25e6}, {"width", 50}, {"height", 50}};
     ReprojectionOperation op;
     op.img = &img;
     op.output_width = 50;
@@ -178,6 +181,11 @@ TEST_CASE("reproject on a source projection without size throws", "[projection][
     CHECK_THROWS(satdump::projection::reproject(op));
 }
 
+// Needs CpuOnlyWarpGuard, which uses a data symbol of satdump_core that is not
+// exported from the Windows DLL (see warp_test_helpers.h)
+#ifndef _MSC_VER
+using warp_test::CpuOnlyWarpGuard;
+
 TEST_CASE("reproject warps a raytraced (GCP) source through the smart warper", "[projection][reprojector][warp]")
 {
     CpuOnlyWarpGuard cpu_only;
@@ -197,7 +205,7 @@ TEST_CASE("reproject warps a raytraced (GCP) source through the smart warper", "
     satdump::image::set_metadata_proj_cfg(img, cfg);
 
     // reprojectImage() fills in the source width/height the raytracer config needs. Calling
-    // reproject() directly on this metadata throws instead (see the note in the report).
+    // reproject() directly on this metadata throws instead (see UNTESTED_ISSUES.md).
     auto out = satdump::projection::reprojectImage(img, globeCfg(0.5));
     REQUIRE(out.width() == 720);
     REQUIRE(out.channels() == 4);
@@ -225,3 +233,4 @@ TEST_CASE("reproject warps a raytraced (GCP) source through the smart warper", "
     CHECK(out.get(3, 10, 10) == 0);
     CHECK(out.get(3, 600, 300) == 0);
 }
+#endif

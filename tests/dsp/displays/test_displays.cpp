@@ -1,10 +1,12 @@
-#include "../ndsp_test_helpers.h"
 #include "dsp/displays/const_disp.h"
 #include "dsp/displays/hist_disp.h"
 #include "dsp/displays/level_helper.h"
 #include "dsp/displays/time_disp.h"
+#include "dsp/ndsp_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
+using Catch::Matchers::WithinAbs;
 using namespace satdump::ndsp;
 
 // Only the non-rendering logic (sample ingestion and configuration) is tested here
@@ -59,10 +61,10 @@ TEST_CASE("ndsp LevelHelperDisplayBlock stores 20 log10(1 + |x|)", "[dsp][displa
     REQUIRE(r.completed);
     REQUIRE(b->time_history.size() == 4);
     // The first sample was shifted out
-    CHECK(std::fabs(b->time_history[0] - 20 * log10(6.0)) < 1e-4);
-    CHECK(std::fabs(b->time_history[1] - 20 * log10(10.0)) < 1e-4);
-    CHECK(std::fabs(b->time_history[2] - 20 * log10(1.5)) < 1e-4);
-    CHECK(std::fabs(b->time_history[3] - 20 * log10(2.0)) < 1e-4);
+    CHECK_THAT(b->time_history[0], WithinAbs(20 * log10(6.0), 1e-4));
+    CHECK_THAT(b->time_history[1], WithinAbs(20 * log10(10.0), 1e-4));
+    CHECK_THAT(b->time_history[2], WithinAbs(20 * log10(1.5), 1e-4));
+    CHECK_THAT(b->time_history[3], WithinAbs(20 * log10(2.0), 1e-4));
 }
 
 TEST_CASE("ndsp LevelHelperDisplayBlock config", "[dsp][displays][level_helper]")

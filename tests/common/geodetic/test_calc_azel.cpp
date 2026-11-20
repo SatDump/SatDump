@@ -1,6 +1,7 @@
 #include "common/geodetic/calc_azel.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <cmath>
 
 using Catch::Matchers::WithinAbs;
 
@@ -63,10 +64,21 @@ TEST_CASE("calc_azel of an object directly below is -90 degrees elevation", "[co
     CHECK_THAT(r.range, WithinAbs(10000, 1e-6));
 }
 
-TEST_CASE("calc_azel of the observer itself is defined as zenith", "[common][geodetic][azel]")
+TEST_CASE("calc_azel of the observer itself has a zero range", "[common][geodetic][azel]")
 {
     geodetic::az_el_coords_t r = geodetic::calc_azel({20, 30, 0}, {20, 30, 0});
-    CHECK(r.range == 0);
+    // Not necessarily exactly 0 in optimized builds (1.4e-10 m seen at -O3 -march=native)
+    CHECK_THAT(r.range, WithinAbs(0, 1e-6));
+}
+
+// Bug: common/geodetic/calc_azel.cpp:54 only treats the observer itself as zenith when the range is exactly 0
+// (`if (range == 0)`). The range comes from subtracting two identical ECR positions and rotating the result,
+// so whether it is exactly 0 depends on floating point rounding: unoptimized it is, but at -O3 -march=native
+// (where the compiler may e.g. contract to FMA) it is about 1.4e-10, and asin(rot_z / range) of the rounding residue gives an
+// arbitrary elevation (-9.74 degrees seen) instead of 90.
+TEST_CASE("calc_azel of the observer itself is defined as zenith", "[common][geodetic][azel][!mayfail]")
+{
+    geodetic::az_el_coords_t r = geodetic::calc_azel({20, 30, 0}, {20, 30, 0});
     CHECK_THAT(r.el, WithinAbs(90, 1e-12));
 }
 
@@ -100,7 +112,7 @@ TEST_CASE("calc_azel elevation is negative for objects below the horizon", "[com
     CHECK(r.el > -90);
 }
 
-// calc_azel.cpp:64 uses atan(-e/s) instead of atan2, which only covers the north half of the
+// Bug: calc_azel.cpp:64 uses atan(-e/s) instead of atan2, which only covers the north half of the
 // compass (and the s == 0 special case always returns 90). Objects to the south or west get
 // azimuths reflected into the wrong quadrant (due south -> 0, due west -> 90, south-east -> 315).
 TEST_CASE("calc_azel reports south and west azimuths", "[common][geodetic][azel][!shouldfail]")
@@ -113,7 +125,7 @@ TEST_CASE("calc_azel reports south and west azimuths", "[common][geodetic][azel]
     CHECK(azDiff(se.az, se_ref.az) < 1.0);
 }
 
-// calc_azel.cpp:36-38 converts the *object* to ECEF with the prime-vertical radius N computed
+// Bug: calc_azel.cpp:36-38 converts the *object* to ECEF with the prime-vertical radius N computed
 // at the *ground* latitude, so any object at a different latitude is misplaced by up to ~21 km.
 TEST_CASE("calc_azel matches a textbook ENU computation for objects at other latitudes", "[common][geodetic][azel][!shouldfail]")
 {

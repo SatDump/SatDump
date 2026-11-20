@@ -14,9 +14,7 @@ namespace
         static const int GBRG[4] = {1, 2, 0, 1};
         static const int GRBG[4] = {1, 0, 2, 1};
         static const int BGGR[4] = {2, 1, 1, 0};
-        const int *p = tile == DC1394_COLOR_FILTER_RGGB ? RGGB : tile == DC1394_COLOR_FILTER_GBRG ? GBRG
-                                                             : tile == DC1394_COLOR_FILTER_GRBG   ? GRBG
-                                                                                                  : BGGR;
+        const int *p = tile == DC1394_COLOR_FILTER_RGGB ? RGGB : tile == DC1394_COLOR_FILTER_GBRG ? GBRG : tile == DC1394_COLOR_FILTER_GRBG ? GRBG : BGGR;
         return p[(y % 2) * 2 + (x % 2)];
     }
 
@@ -50,8 +48,8 @@ namespace
 TEST_CASE("bayer dc1394_bayer_decoding_8bit reconstructs a uniform colour", "[image][bayer]")
 {
     auto tile = GENERATE(DC1394_COLOR_FILTER_RGGB, DC1394_COLOR_FILTER_GBRG, DC1394_COLOR_FILTER_GRBG, DC1394_COLOR_FILTER_BGGR);
-    auto method = GENERATE(DC1394_BAYER_METHOD_NEAREST, DC1394_BAYER_METHOD_SIMPLE, DC1394_BAYER_METHOD_BILINEAR, DC1394_BAYER_METHOD_HQLINEAR, DC1394_BAYER_METHOD_EDGESENSE,
-                           DC1394_BAYER_METHOD_VNG, DC1394_BAYER_METHOD_AHD);
+    auto method = GENERATE(DC1394_BAYER_METHOD_NEAREST, DC1394_BAYER_METHOD_SIMPLE, DC1394_BAYER_METHOD_BILINEAR, DC1394_BAYER_METHOD_HQLINEAR, DC1394_BAYER_METHOD_EDGESENSE, DC1394_BAYER_METHOD_VNG,
+                           DC1394_BAYER_METHOD_AHD);
     INFO("tile " << tileName(tile) << " method " << (int)method);
 
     const int sx = 24, sy = 24;
@@ -75,8 +73,7 @@ TEST_CASE("bayer dc1394_bayer_decoding_8bit reconstructs a uniform colour", "[im
 TEST_CASE("bayer dc1394_bayer_decoding_16bit reconstructs a uniform colour", "[image][bayer]")
 {
     auto tile = GENERATE(DC1394_COLOR_FILTER_RGGB, DC1394_COLOR_FILTER_GBRG, DC1394_COLOR_FILTER_GRBG, DC1394_COLOR_FILTER_BGGR);
-    auto method = GENERATE(DC1394_BAYER_METHOD_NEAREST, DC1394_BAYER_METHOD_SIMPLE, DC1394_BAYER_METHOD_BILINEAR, DC1394_BAYER_METHOD_HQLINEAR, DC1394_BAYER_METHOD_EDGESENSE,
-                           DC1394_BAYER_METHOD_VNG);
+    auto method = GENERATE(DC1394_BAYER_METHOD_NEAREST, DC1394_BAYER_METHOD_SIMPLE, DC1394_BAYER_METHOD_BILINEAR, DC1394_BAYER_METHOD_HQLINEAR, DC1394_BAYER_METHOD_EDGESENSE, DC1394_BAYER_METHOD_VNG);
     INFO("tile " << tileName(tile) << " method " << (int)method);
 
     const int sx = 24, sy = 24;
@@ -105,8 +102,7 @@ TEST_CASE("bayer downsample produces a half resolution image", "[image][bayer]")
         {
             int cell = (y / 2) * (sx / 2) + (x / 2);
             int col = cellColour(tile, x, y);
-            mosaic[y * sx + x] = col == 0 ? 10 + cell : col == 1 ? 100 + 2 * cell
-                                                                 : 200 + cell;
+            mosaic[y * sx + x] = col == 0 ? 10 + cell : col == 1 ? 100 + 2 * cell : 200 + cell;
         }
     std::vector<uint8_t> rgb((sx / 2) * (sy / 2) * 3, 0);
     REQUIRE(dc1394_bayer_decoding_8bit(mosaic.data(), rgb.data(), sx, sy, tile, DC1394_BAYER_METHOD_DOWNSAMPLE) == DC1394_SUCCESS);

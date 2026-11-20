@@ -17,10 +17,7 @@ namespace
         return pkt;
     }
 
-    std::vector<uint8_t> slice(const std::vector<uint8_t> &v, int start, int end)
-    {
-        return std::vector<uint8_t>(v.begin() + start, v.begin() + end);
-    }
+    std::vector<uint8_t> slice(const std::vector<uint8_t> &v, int start, int end) { return std::vector<uint8_t>(v.begin() + start, v.begin() + end); }
 } // namespace
 
 TEST_CASE("mpeg_ts::TSDemux reassembles a section spanning packets", "[common][mpeg_ts][ts_demux]")

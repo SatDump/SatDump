@@ -1,19 +1,16 @@
-#include "proj_test_helpers.h"
+#include "projection/standard/proj_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 using Catch::Matchers::WithinAbs;
-using satdump_test_proj_standard::lonDiff;
-using satdump_test_proj_standard::ScopedProj;
+using proj_test::lonDiff;
+using proj_test::ScopedProj;
 
 namespace
 {
     const double GEO_ALT_M = 35786023.0;
 
-    nlohmann::json geosCfg(double lon0, bool sweep_x = false)
-    {
-        return {{"type", "geos"}, {"altitude", GEO_ALT_M}, {"sweep_x", sweep_x}, {"lon0", lon0}};
-    }
+    nlohmann::json geosCfg(double lon0, bool sweep_x = false) { return {{"type", "geos"}, {"altitude", GEO_ALT_M}, {"sweep_x", sweep_x}, {"lon0", lon0}}; }
 
     // Great-circle angle from (0,0) on a sphere, in degrees
     double centralAngle(double lat, double lon) { return std::acos(std::cos(lat * M_PI / 180) * std::cos(lon * M_PI / 180)) * 180 / M_PI; }
@@ -48,12 +45,8 @@ TEST_CASE("projection_geos forward matches PROJ reference values", "[projection]
         double lon, lat, x, y;
     };
     const Case cases[] = {
-        {0, false, 10, 20, 1027290.667226, 2135974.472853},
-        {0, false, -30, -40, -2305067.069513, -3825174.002907},
-        {0, false, 60, 50, 3165702.297646, 4300750.912042},
-        {0, true, 10, 20, 1025460.803908, 2136852.771909},
-        {0, true, -30, -40, -2291893.253106, -3833062.413400},
-        {-75, false, -70, 20, 516686.102671, 2140651.713622},
+        {0, false, 10, 20, 1027290.667226, 2135974.472853},      {0, false, -30, -40, -2305067.069513, -3825174.002907}, {0, false, 60, 50, 3165702.297646, 4300750.912042},
+        {0, true, 10, 20, 1025460.803908, 2136852.771909},       {0, true, -30, -40, -2291893.253106, -3833062.413400},  {-75, false, -70, 20, 516686.102671, 2140651.713622},
         {-75, false, -80, -10, -545626.664990, -1096095.954098},
     };
 

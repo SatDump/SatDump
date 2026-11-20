@@ -1,5 +1,5 @@
 #include "image/brightness_contrast.h"
-#include "image_test_helpers.h"
+#include "image/image_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
@@ -19,7 +19,7 @@ TEST_CASE("image::brightness_contrast neutral settings keep values within one co
         REQUIRE(std::abs(im.get(i) - orig.get(i)) <= 1);
 }
 
-// brightness_contrast.cpp:11: the working scale is maxval - 1 and the result is
+// Bug: brightness_contrast.cpp:11: the working scale is maxval - 1 and the result is
 // clamped to it, so with neutral settings the maximum value (255 / 65535) is
 // lowered to maxval - 1.
 TEST_CASE("image::brightness_contrast neutral settings keep full white", "[image][brightness_contrast][!shouldfail]")

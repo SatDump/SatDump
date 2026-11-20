@@ -1,4 +1,4 @@
-#include "../image_test_helpers.h"
+#include "image/image_test_helpers.h"
 #include "image/io.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -43,8 +43,8 @@ TEST_CASE("image::save_qoi marks single-channel files with a trailing byte", "[i
     Image gray(8, 2, 2, 1), rgb(8, 2, 2, 3);
     img::save_qoi(gray, dir.file("g.qoi"));
     img::save_qoi(rgb, dir.file("c.qoi"));
-    auto g = image_test::readFile(dir.file("g.qoi"));
-    auto c = image_test::readFile(dir.file("c.qoi"));
+    auto g = image_test::readBytes(dir.file("g.qoi"));
+    auto c = image_test::readBytes(dir.file("c.qoi"));
     REQUIRE(g.size() >= 4);
     CHECK(std::string(g.begin(), g.begin() + 4) == "qoif");
     CHECK(g.back() == 0xAA);

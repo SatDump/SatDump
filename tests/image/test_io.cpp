@@ -1,5 +1,5 @@
+#include "image/image_test_helpers.h"
 #include "image/io.h"
-#include "image_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
@@ -55,7 +55,7 @@ TEST_CASE("image::load_img ignores files with an unknown signature", "[image][io
     image_test::TempDir dir;
     std::string path = dir.file("text.bin");
     std::string text = "just some text, not an image";
-    image_test::writeFile(path, std::vector<uint8_t>(text.begin(), text.end()));
+    image_test::writeBytes(path, std::vector<uint8_t>(text.begin(), text.end()));
     Image out(8, 2, 2, 1);
     out.fill(1);
     img::load_img(out, path);

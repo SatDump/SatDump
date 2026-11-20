@@ -1,7 +1,7 @@
 #include "db/db_handler.h"
 #include "db/iers/iers_handler.h"
-#include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <stdexcept>
 
 // IersDBHandler::init() is not called: it registers a handler capturing `this` on the global

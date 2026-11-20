@@ -18,15 +18,9 @@ TEST_CASE("majority_law_vec votes per bit", "[utils][majority_law]")
         CHECK(majority_law_vec({good, bad, good}) == good);
     }
 
-    SECTION("ties resolve to one")
-    {
-        CHECK(majority_law_vec({{0xF0}, {0x0F}}) == bytes{0xFF});
-    }
+    SECTION("ties resolve to one") { CHECK(majority_law_vec({{0xF0}, {0x0F}}) == bytes{0xFF}); }
 
-    SECTION("empty elements give an empty result")
-    {
-        CHECK(majority_law_vec({{}, {}}).empty());
-    }
+    SECTION("empty elements give an empty result") { CHECK(majority_law_vec({{}, {}}).empty()); }
 }
 
 TEST_CASE("majority_law votes per bit on fixed-size arrays", "[utils][majority_law]")

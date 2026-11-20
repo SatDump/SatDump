@@ -1,5 +1,5 @@
 #include "image/image.h"
-#include "image_test_helpers.h"
+#include "image/image_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -116,7 +116,7 @@ TEST_CASE("image::Image draw_line ignores lines with out of range endpoints", "[
     CHECK(litPixels(img).empty());
 }
 
-// image_draw.cpp:107: the bounds check uses `x0 > width` instead of `>=`, so a
+// Bug: image_draw.cpp:107: the bounds check uses `x0 > width` instead of `>=`, so a
 // line starting at x == width is accepted and writes past the end of the row
 // (here it wraps onto pixel (0, 1)).
 TEST_CASE("image::Image draw_line rejects a start point at x == width", "[image][image_draw][!shouldfail]")
@@ -177,7 +177,7 @@ TEST_CASE("image::Image draw_circle filled covers the centre and stays within th
     CHECK(px.size() < 65);
 }
 
-// image_draw.cpp:250: filled circles are built from draw_line spans, which
+// Bug: image_draw.cpp:250: filled circles are built from draw_line spans, which
 // exclude their end point, so the right-most pixel of every span is missing and
 // the filled disc does not cover its own outline (e.g. (x0 + r, y0)).
 TEST_CASE("image::Image draw_circle filled covers the hollow outline", "[image][image_draw][!shouldfail]")
@@ -380,8 +380,8 @@ TEST_CASE("image::Image draw_image_alpha rejects invalid configurations", "[imag
     Image gray(8, 2, 2, 1);
     Image ga(8, 2, 2, 2);
     Image rgba16(16, 2, 2, 4);
-    CHECK_THROWS(rgb.draw_image_alpha(gray));   // source without alpha
-    CHECK_THROWS(rgb.draw_image_alpha(ga));     // gray+alpha onto RGB
+    CHECK_THROWS(rgb.draw_image_alpha(gray));    // source without alpha
+    CHECK_THROWS(rgb.draw_image_alpha(ga));      // gray+alpha onto RGB
     CHECK_THROWS(gray.draw_image_alpha(rgba16)); // depth mismatch
     Image rgba8(8, 2, 2, 4);
     CHECK_THROWS(gray.draw_image_alpha(rgba8)); // RGBA onto gray

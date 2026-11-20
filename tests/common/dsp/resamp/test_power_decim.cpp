@@ -1,7 +1,8 @@
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/resamp/power_decim.h"
-#include "../dsp_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cmath>
 
 using Catch::Approx;
 
@@ -21,7 +22,7 @@ namespace
         }
         return out;
     }
-}
+} // namespace
 
 TEST_CASE("PowerDecimatorBlock::max_decim is 2^13", "[common][dsp][power_decim]")
 {
@@ -92,6 +93,10 @@ TEST_CASE("PowerDecimatorBlock<float> as a streaming block", "[common][dsp][powe
     auto r = dsp_test::runBlock(dec, input, in, 8000);
     REQUIRE(r.completed);
     REQUIRE(r.output.size() == 10000);
+    size_t mismatches = 0, first = 0;
     for (size_t i = 100; i < r.output.size(); i++)
-        REQUIRE(r.output[i] == Approx(2.0f).margin(0.01));
+        if (!(r.output[i] == Approx(2.0f).margin(0.01)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }

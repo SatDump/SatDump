@@ -105,7 +105,7 @@ TEST_CASE("GenericDiff output is invariant to a constant offset of the input", "
     CHECK(outA == outB);
 }
 
-// BUG: generic.cpp:19 computes (input[i] - input[i - 1]) % modulus with an unsigned modulus,
+// Bug: generic.cpp:19 computes (input[i] - input[i - 1]) % modulus with an unsigned modulus,
 // so a negative difference is converted to a huge unsigned value first. That is only
 // correct when the modulus is a power of two; e.g. (0 - 2) mod 3 gives 2 instead of 1.
 TEST_CASE("GenericDiff handles negative differences for a non power-of-two modulus", "[common][codings][differential][!shouldfail]")

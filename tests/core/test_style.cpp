@@ -1,6 +1,6 @@
 #include "core/style.h"
-#include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <string>
 
 // style::setStyle() and setFonts() need a live ImGui context, so only the theme colour parser

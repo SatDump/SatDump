@@ -1,11 +1,11 @@
 #include "core/exception.h"
 #include "libs/ctpl/ctpl_stl.h"
 #include "pipeline/live_pipeline.h"
-#include "pipeline_test_helpers.h"
+#include "pipeline/pipeline_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <map>
 
-using namespace pipeline_test_helpers;
+using namespace pipeline_test;
 namespace pl = satdump::pipeline;
 
 namespace
@@ -152,8 +152,7 @@ namespace
     template <typename T>
     pl::ModuleEntry liveEntry(const std::string &id, std::shared_ptr<T> *keep = nullptr)
     {
-        return pl::ModuleEntry{id, nlohmann::json::object(),
-                               [id, keep](std::string in, std::string hint, nlohmann::json params) -> std::shared_ptr<pl::ProcessingModule>
+        return pl::ModuleEntry{id, nlohmann::json::object(), [id, keep](std::string in, std::string hint, nlohmann::json params) -> std::shared_ptr<pl::ProcessingModule>
                                {
                                    auto m = std::make_shared<T>(id, in, hint, params);
                                    if (keep)
@@ -176,10 +175,7 @@ namespace
         p.id = "unit_live";
         p.name = "Unit Live";
         p.live = true;
-        p.steps = {{"baseband", "", {}, ""},
-                   {"soft", "unit_live_demod", {{"symbolrate", 1000}, {"shared", "module"}}, ""},
-                   {"mid", "unit_live_inc", {}, ""},
-                   {"frames", "unit_live_sink", {}, ""}};
+        p.steps = {{"baseband", "", {}, ""}, {"soft", "unit_live_demod", {{"symbolrate", 1000}, {"shared", "module"}}, ""}, {"mid", "unit_live_inc", {}, ""}, {"frames", "unit_live_sink", {}, ""}};
         return p;
     }
 
@@ -225,7 +221,7 @@ TEST_CASE("LivePipeline::start wires demod, middle and sink modules through FIFO
         pushSamples(*stream, {5, 6});
         pushSamples(*stream, {100});
 
-        REQUIRE(waitFor([&]() { return sink->count.load() >= 7; }));
+        REQUIRE(test_helpers::waitUntil([&]() { return sink->count.load() >= 7; }, std::chrono::seconds(30)));
 
         auto stats = live.getModulesStats();
         CHECK(stats["unit_live_sink"]["count"] == 7);
@@ -294,7 +290,7 @@ TEST_CASE("LivePipeline::start in server mode appends network_server with the pa
     CHECK(live.modules[1]->getIDM() == "network_server");
 
     pushSamples(*stream, {9, 8});
-    REQUIRE(waitFor([&]() { return server->count.load() >= 2; }));
+    REQUIRE(test_helpers::waitUntil([&]() { return server->count.load() >= 2; }, std::chrono::seconds(30)));
     live.stop();
 
     std::lock_guard<std::mutex> l(liveLog().mtx);
@@ -328,7 +324,7 @@ TEST_CASE("LivePipeline::start_client prepends network_client", "[pipeline][live
     CHECK(live.modules[1]->getIDM() == "unit_live_sink");
     CHECK(live.modules[1]->input_fifo == live.modules[0]->output_fifo);
 
-    REQUIRE(waitFor([&]() { return sink->count.load() >= 4; }));
+    REQUIRE(test_helpers::waitUntil([&]() { return sink->count.load() >= 4; }, std::chrono::seconds(30)));
     live.stop();
 
     CHECK(live.getOutputFile() == env.dir.str() + "/unit_live.live");

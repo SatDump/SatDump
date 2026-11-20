@@ -1,20 +1,12 @@
 #include "common/codings/differential/nrzm.h"
+#include "helpers/random.h"
 #include <catch2/catch_test_macros.hpp>
 #include <cstdint>
 #include <vector>
 
 namespace
 {
-    std::vector<uint8_t> makeBits(int count, uint32_t seed)
-    {
-        std::vector<uint8_t> bits(count);
-        for (auto &b : bits)
-        {
-            seed = seed * 1664525u + 1013904223u;
-            b = seed >> 31;
-        }
-        return bits;
-    }
+    using test_helpers::randomBits;
 
     // NRZ-M: a 1 is sent as a level change, a 0 as no change; starting level 0
     std::vector<uint8_t> nrzmEncodeBits(const std::vector<uint8_t> &data)
@@ -37,7 +29,7 @@ namespace
 
 TEST_CASE("NRZMDiff decode_bits inverts NRZ-M encoding", "[common][codings][differential]")
 {
-    std::vector<uint8_t> data = makeBits(1000, 1);
+    std::vector<uint8_t> data = randomBits(1000, 1);
     std::vector<uint8_t> coded = nrzmEncodeBits(data);
 
     diff::NRZMDiff dec;
@@ -47,7 +39,7 @@ TEST_CASE("NRZMDiff decode_bits inverts NRZ-M encoding", "[common][codings][diff
 
 TEST_CASE("NRZMDiff decode on packed bytes inverts NRZ-M encoding", "[common][codings][differential]")
 {
-    std::vector<uint8_t> data = makeBits(8 * 128, 2);
+    std::vector<uint8_t> data = randomBits(8 * 128, 2);
     std::vector<uint8_t> coded = packBits(nrzmEncodeBits(data));
 
     diff::NRZMDiff dec;
@@ -73,7 +65,7 @@ TEST_CASE("NRZMDiff decode known byte values", "[common][codings][differential]"
 
 TEST_CASE("NRZMDiff keeps state across calls, for bits and bytes", "[common][codings][differential]")
 {
-    std::vector<uint8_t> data = makeBits(8 * 64, 3);
+    std::vector<uint8_t> data = randomBits(8 * 64, 3);
     std::vector<uint8_t> codedBits = nrzmEncodeBits(data);
     std::vector<uint8_t> codedBytes = packBits(codedBits);
 
@@ -96,7 +88,7 @@ TEST_CASE("NRZMDiff keeps state across calls, for bits and bytes", "[common][cod
 
 TEST_CASE("nrzm_decode decodes a single block starting from level 0", "[common][codings][differential]")
 {
-    std::vector<uint8_t> data = makeBits(8 * 32, 4);
+    std::vector<uint8_t> data = randomBits(8 * 32, 4);
     std::vector<uint8_t> coded = packBits(nrzmEncodeBits(data));
     std::vector<uint8_t> copy = coded;
 

@@ -1,4 +1,4 @@
-#include "proj_test_helpers.h"
+#include "projection/standard/proj_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
@@ -12,8 +12,12 @@ TEST_CASE("proj from_json parses every projection type name", "[projection][stan
         proj::projection_type_t type;
     };
     const Case cases[] = {
-        {"equirec", proj::ProjType_Equirectangular}, {"stereo", proj::ProjType_Stereographic}, {"utm", proj::ProjType_UniversalTransverseMercator},
-        {"geos", proj::ProjType_Geos},               {"tpers", proj::ProjType_Tpers},           {"webmerc", proj::ProjType_WebMerc},
+        {"equirec", proj::ProjType_Equirectangular},
+        {"stereo", proj::ProjType_Stereographic},
+        {"utm", proj::ProjType_UniversalTransverseMercator},
+        {"geos", proj::ProjType_Geos},
+        {"tpers", proj::ProjType_Tpers},
+        {"webmerc", proj::ProjType_WebMerc},
         {"not_a_projection", proj::ProjType_Invalid},
     };
     for (const auto &c : cases)
@@ -23,10 +27,7 @@ TEST_CASE("proj from_json parses every projection type name", "[projection][stan
     }
 }
 
-TEST_CASE("proj from_json without a type throws", "[projection][standard][proj_json]")
-{
-    CHECK_THROWS(nlohmann::json{{"lon0", 3.0}}.get<proj::projection_t>());
-}
+TEST_CASE("proj from_json without a type throws", "[projection][standard][proj_json]") { CHECK_THROWS(nlohmann::json{{"lon0", 3.0}}.get<proj::projection_t>()); }
 
 TEST_CASE("proj from_json reads offsets, scalars and the center in degrees", "[projection][standard][proj_json]")
 {
@@ -87,8 +88,7 @@ TEST_CASE("proj to_json/from_json round-trips type-specific parameters", "[proje
 
     SECTION("tpers")
     {
-        proj::projection_t p =
-            nlohmann::json{{"type", "tpers"}, {"altitude", 1e7}, {"tilt", 12.0}, {"azimuth", 34.0}, {"lat0", 45.0}, {"scalar_x", 7.0}}.get<proj::projection_t>();
+        proj::projection_t p = nlohmann::json{{"type", "tpers"}, {"altitude", 1e7}, {"tilt", 12.0}, {"azimuth", 34.0}, {"lat0", 45.0}, {"scalar_x", 7.0}}.get<proj::projection_t>();
         nlohmann::json j = p;
         CHECK(j["type"] == "tpers");
         CHECK(j["altitude"] == 1e7);

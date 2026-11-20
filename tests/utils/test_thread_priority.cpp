@@ -1,13 +1,17 @@
 #include "utils/thread_priority.h"
 #include <catch2/catch_test_macros.hpp>
 #include <future>
+#include <thread>
+
+#ifndef _WIN32
 #include <pthread.h>
 #include <sched.h>
-#include <thread>
+#endif
 
 // These tests only ever change the priority of threads they create, never the test runner's
 // own thread, as lowering a thread to SCHED_IDLE cannot always be undone without privileges.
 
+#ifndef _WIN32
 namespace
 {
     // A thread that idles until released, so its scheduling can be inspected from outside
@@ -34,6 +38,7 @@ namespace
         }
     };
 } // namespace
+#endif
 
 TEST_CASE("thread_priority_t levels are ordered", "[utils][thread_priority]")
 {
@@ -41,7 +46,7 @@ TEST_CASE("thread_priority_t levels are ordered", "[utils][thread_priority]")
     CHECK(satdump::PRIORITY_LOW < satdump::PRIORITY_NORMAL);
     CHECK(satdump::PRIORITY_NORMAL < satdump::PRIORITY_HIGH);
     CHECK(satdump::PRIORITY_HIGH < satdump::PRIORITY_HIGHEST);
-#if !defined(_WIN32)
+#ifndef _WIN32
     // SCHED_RR priorities must be in the range the kernel accepts
     CHECK(satdump::PRIORITY_LOWEST >= sched_get_priority_min(SCHED_RR));
     CHECK(satdump::PRIORITY_HIGHEST <= sched_get_priority_max(SCHED_RR));

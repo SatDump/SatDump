@@ -1,5 +1,5 @@
+#include "common/ccsds/ccsds_stream_helpers.h"
 #include "common/ccsds/ccsds_tm/demuxer.h"
-#include "../ccsds_stream_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <cstring>

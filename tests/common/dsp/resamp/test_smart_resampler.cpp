@@ -1,9 +1,11 @@
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/resamp/smart_resampler.h"
-#include "../dsp_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 using Catch::Approx;
+using Catch::Matchers::WithinAbs;
 
 namespace
 {
@@ -23,7 +25,7 @@ namespace
         }
         return out;
     }
-}
+} // namespace
 
 TEST_CASE("SmartResamplerBlock 1:1 is a passthrough", "[common][dsp][smart_resampler]")
 {
@@ -56,7 +58,7 @@ TEST_CASE("SmartResamplerBlock output rate and tone frequency", "[common][dsp][s
         nin = std::max<size_t>(nin, 20000);
         auto out = processChunked(res, dsp_test::complexTone(nin, dsp::hz_to_rad(tone, fs_in)), 16384, ratio);
 
-        CHECK(fabs((double)out.size() - nin * ratio) <= 4.0);
+        CHECK_THAT((double)out.size(), WithinAbs(nin * ratio, 4.0));
         size_t skip = out.size() / 4;
         REQUIRE(out.size() > skip + 100);
         CHECK(dsp::rad_to_hz(dsp_test::estimateFreq(out, skip, out.size()), fs_out) == Approx(tone).epsilon(1e-3));
@@ -71,7 +73,11 @@ TEST_CASE("SmartResamplerBlock as a streaming block", "[common][dsp][smart_resam
     dsp::SmartResamplerBlock<float> res(input, 1, 10);
     auto r = dsp_test::runBlock(res, input, std::vector<float>(100000, 1.0f), 10000);
     REQUIRE(r.completed);
-    CHECK(fabs((double)r.output.size() - 10000) <= 2.0);
+    CHECK_THAT((double)r.output.size(), WithinAbs(10000, 2.0));
+    size_t mismatches = 0, first = 0;
     for (size_t i = 500; i < r.output.size(); i++)
-        REQUIRE(r.output[i] == Approx(1.0f).margin(0.01));
+        if (!(r.output[i] == Approx(1.0f).margin(0.01)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }

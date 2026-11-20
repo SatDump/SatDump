@@ -1,14 +1,14 @@
 #include "products/dataset.h"
 #include "products/image_product.h"
 #include "products/product.h"
+#include "products/products_test_helpers.h"
 #include "products/punctiform_product.h"
-#include "products_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <fstream>
 
+using products_test::ProductLoadersGuard;
+using products_test::TempDir;
 using satdump::products::Product;
-using satdump_test_products::ProductLoadersGuard;
-using satdump_test_products::TempDir;
 
 TEST_CASE("Product optional metadata accessors", "[products][product]")
 {
@@ -108,8 +108,8 @@ TEST_CASE("loadProduct picks the registered loader by product type", "[products]
 
     SECTION("image products load as ImageProduct")
     {
-        satdump_test_products::ConfigGuard cfg;
-        cfg.setProductFormat("png");
+        products_test::ConfigGuard cfg;
+        products_test::setProductFormat("png");
         satdump::products::ImageProduct p;
         p.instrument_name = "img";
         p.save(dir.str());

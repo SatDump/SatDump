@@ -253,7 +253,7 @@ TEST_CASE("crcCheckCCITT with only the CRC in the payload covers just the header
     CHECK(ccsds::crcCheckCCITT(pkt));
 }
 
-// BUG: ccsds.cpp:132 `return crc ^ 0xFFFFFFFF == crc2;` parses as `crc ^ (0xFFFFFFFF == crc2)`,
+// Bug: ccsds.cpp:132 `return crc ^ 0xFFFFFFFF == crc2;` parses as `crc ^ (0xFFFFFFFF == crc2)`,
 // so the function returns true for essentially any CRC field. (The loop also mixes the
 // reflected polynomial 0xEDB88320 with MSB-first shifting of a 16-bit data word.)
 TEST_CASE("crcCheckHLDC32 cannot accept two different CRC values for the same data", "[common][ccsds][crc][!shouldfail]")

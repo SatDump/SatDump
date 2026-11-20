@@ -1,11 +1,14 @@
-#include "../ndsp_test_helpers.h"
+#include "dsp/ndsp_test_helpers.h"
 #include "dsp/utils/freq_shift.h"
 #include "dsp/utils/hilbert.h"
 #include "dsp/utils/quadrature_demod.h"
 #include "dsp/utils/vco.h"
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <cmath>
 #include <complex>
 
+using Catch::Matchers::WithinAbs;
 using namespace satdump::ndsp;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -21,11 +24,15 @@ TEST_CASE("ndsp FreqShiftBlock shifts by freq_shift / samplerate", "[dsp][utils]
     auto r = ndsp_test::runSimple<complex_t, complex_t>(b, in, 1024);
     REQUIRE(r.completed);
     REQUIRE(r.out().size() == in.size());
+    size_t mismatches = 0, first = 0;
     for (size_t n = 0; n < in.size(); n++)
     {
-        double p = 2.0 * ndsp_test::kPi * (double)(n % 8) / 8.0;
-        REQUIRE(ndsp_test::absDiff(r.out()[n], complex_t(cos(p), sin(p))) < 1e-3);
+        double p = 2.0 * M_PI * (double)(n % 8) / 8.0;
+        if (!(ndsp_test::absDiff(r.out()[n], complex_t(cos(p), sin(p))) < 1e-3) && mismatches++ == 0)
+            first = n;
     }
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("ndsp FreqShiftBlock moves a tone and keeps its amplitude", "[dsp][utils][freq_shift]")
@@ -37,10 +44,14 @@ TEST_CASE("ndsp FreqShiftBlock moves a tone and keeps its amplitude", "[dsp][uti
     auto r = ndsp_test::runSimple<complex_t, complex_t>(b, in, 4096);
     REQUIRE(r.completed);
     REQUIRE(r.out().size() == in.size());
-    double expected = 0.3 + 2.0 * ndsp_test::kPi * shift / fs;
-    CHECK(std::fabs(ndsp_test::estimateFreq(r.out(), 0, r.out().size()) - expected) < 1e-5);
-    for (auto &v : r.out())
-        REQUIRE(std::fabs(std::hypot(v.real, v.imag) - 0.7) < 1e-3);
+    double expected = 0.3 + 2.0 * M_PI * shift / fs;
+    CHECK_THAT(ndsp_test::estimateFreq(r.out(), 0, r.out().size()), WithinAbs(expected, 1e-5));
+    size_t mismatches = 0, first = 0;
+    for (size_t i = 0; i < r.out().size(); i++)
+        if (!(std::fabs(std::hypot(r.out()[i].real, r.out()[i].imag) - 0.7) < 1e-3) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("ndsp FreqShiftBlock with zero shift is the identity", "[dsp][utils][freq_shift]")
@@ -52,7 +63,7 @@ TEST_CASE("ndsp FreqShiftBlock with zero shift is the identity", "[dsp][utils][f
     CHECK(ndsp_test::maxAbsDiff(r.out(), in) < 1e-6);
 }
 
-// Bug : freq_shift.h:50-53, init() in raw_shift mode only sets phase_delta and
+// Bug: freq_shift.h:50-53, init() in raw_shift mode only sets phase_delta and
 // never initializes the rotator phase, which is default constructed to 0+0j
 // (complex_t() is zero). So a fresh block in raw mode outputs zeros (then NaN
 // after VOLK renormalizes 0/|0|) instead of a rotated signal.
@@ -97,7 +108,7 @@ TEST_CASE("ndsp HilbertBlock produces the analytic signal of a cosine", "[dsp][u
     // With 65 taps the output is delayed by 33 samples :
     // real = x[n - 33], imag = (h * x)[n - 1], whose own group delay is 32
     const int delay = 33;
-    for (double w : {ndsp_test::kPi / 2, ndsp_test::kPi / 3, 2.0})
+    for (double w : {M_PI / 2, M_PI / 3, 2.0})
     {
         INFO("w = " << w);
         auto in = ndsp_test::realTone(6000, w);
@@ -116,7 +127,7 @@ TEST_CASE("ndsp HilbertBlock produces the analytic signal of a cosine", "[dsp][u
         CHECK(max_err_re < 1e-5);
         CHECK(max_err_im < 0.02);
         // Positive frequency only
-        CHECK(std::fabs(ndsp_test::estimateFreq(out, 200, out.size()) - w) < 1e-3);
+        CHECK_THAT(ndsp_test::estimateFreq(out, 200, out.size()), WithinAbs(w, 1e-3));
     }
 }
 
@@ -191,8 +202,12 @@ TEST_CASE("ndsp QuadratureDemodBlock outputs the phase difference", "[dsp][utils
         REQUIRE(r.out().size() == in.size());
         // The phase history starts at 0, and the tone starts at phase 0
         CHECK(std::fabs(r.out()[0]) < 1e-6);
+        size_t mismatches = 0, first = 0;
         for (size_t i = 1; i < in.size(); i++)
-            REQUIRE(std::fabs(r.out()[i] - w) < 1e-3);
+            if (!(std::fabs(r.out()[i] - w) < 1e-3) && mismatches++ == 0)
+                first = i;
+        INFO("first mismatch at sample " << first);
+        REQUIRE(mismatches == 0);
     }
 }
 
@@ -206,7 +221,7 @@ TEST_CASE("ndsp QuadratureDemodBlock divides by the configured gain", "[dsp][uti
     auto r = ndsp_test::runSimple<complex_t, float>(b, in, 128);
     REQUIRE(r.completed);
     for (size_t i = 1; i < in.size(); i++)
-        REQUIRE(std::fabs(r.out()[i] - 0.2f) < 1e-3);
+        REQUIRE_THAT(r.out()[i], WithinAbs(0.2f, 1e-3));
 }
 
 TEST_CASE("ndsp QuadratureDemodBlock demodulates FM", "[dsp][utils][quadrature_demod]")
@@ -218,15 +233,19 @@ TEST_CASE("ndsp QuadratureDemodBlock demodulates FM", "[dsp][utils][quadrature_d
     double phase = 0;
     for (size_t i = 0; i < n; i++)
     {
-        f[i] = 0.5 * sin(2 * ndsp_test::kPi * i / 800.0);
+        f[i] = 0.5 * sin(2 * M_PI * i / 800.0);
         phase += f[i];
         in[i] = complex_t(cos(phase), sin(phase));
     }
     auto b = std::make_shared<QuadratureDemodBlock>();
     auto r = ndsp_test::runSimple<complex_t, float>(b, in, 1000);
     REQUIRE(r.completed);
+    size_t mismatches = 0, first = 0;
     for (size_t i = 1; i < n; i++)
-        REQUIRE(std::fabs(r.out()[i] - f[i]) < 1e-3);
+        if (!(std::fabs(r.out()[i] - f[i]) < 1e-3) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("ndsp QuadratureDemodBlock id and config", "[dsp][utils][quadrature_demod]")
@@ -252,11 +271,15 @@ TEST_CASE("ndsp VCOBlock integrates its input into phase", "[dsp][utils][vco]")
     REQUIRE(r.completed);
     REQUIRE(r.out().size() == in.size());
     // out[n] = amp * exp(j * k * sum(in[0..n-1])), the first output being at phase 0
+    size_t mismatches = 0, first = 0;
     for (size_t n = 0; n < in.size(); n++)
     {
         double p = 0.25 * (double)n;
-        REQUIRE(ndsp_test::absDiff(r.out()[n], complex_t(2 * cos(p), 2 * sin(p))) < 2e-3);
+        if (!(ndsp_test::absDiff(r.out()[n], complex_t(2 * cos(p), 2 * sin(p))) < 2e-3) && mismatches++ == 0)
+            first = n;
     }
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("ndsp VCOBlock frequency follows the input sign", "[dsp][utils][vco]")
@@ -267,10 +290,14 @@ TEST_CASE("ndsp VCOBlock frequency follows the input sign", "[dsp][utils][vco]")
         in[i] = i < 1000 ? 0.3f : -1.2f;
     auto r = ndsp_test::runSimple<float, complex_t>(b, in, 700);
     REQUIRE(r.completed);
-    CHECK(std::fabs(ndsp_test::estimateFreq(r.out(), 1, 1000) - 0.3) < 1e-4);
-    CHECK(std::fabs(ndsp_test::estimateFreq(r.out(), 1001, 2000) + 1.2) < 1e-4);
-    for (auto &v : r.out())
-        REQUIRE(std::fabs(std::hypot(v.real, v.imag) - 1.0) < 1e-5);
+    CHECK_THAT(ndsp_test::estimateFreq(r.out(), 1, 1000), WithinAbs(0.3, 1e-4));
+    CHECK_THAT(ndsp_test::estimateFreq(r.out(), 1001, 2000), WithinAbs(-1.2, 1e-4));
+    size_t mismatches = 0, first = 0;
+    for (size_t i = 0; i < r.out().size(); i++)
+        if (!(std::fabs(std::hypot(r.out()[i].real, r.out()[i].imag) - 1.0) < 1e-5) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("ndsp VCOBlock id and config round-trip", "[dsp][utils][vco]")
@@ -305,10 +332,10 @@ TEST_CASE("ndsp VCOBlockDeviation derives k from deviation and samplerate", "[ds
     std::vector<float> in(1000, 1.0f);
     auto r = ndsp_test::runSimple<float, complex_t>(b, in, 256);
     REQUIRE(r.completed);
-    CHECK(std::fabs(ndsp_test::estimateFreq(r.out(), 0, r.out().size()) - 2 * ndsp_test::kPi * 0.1) < 1e-4);
+    CHECK_THAT(ndsp_test::estimateFreq(r.out(), 0, r.out().size()), WithinAbs(2 * M_PI * 0.1, 1e-4));
 }
 
-// Bug : vco.h:64, VCOBlockDeviation reports samplerate = 48 kHz and
+// Bug: vco.h:64, VCOBlockDeviation reports samplerate = 48 kHz and
 // deviation = 2 kHz by default but never derives k from them, so until one of
 // them is set again the VCO runs with the base class k = 1 rad/sample per unit.
 TEST_CASE("ndsp VCOBlockDeviation defaults match its reported config", "[dsp][utils][vco][!shouldfail]")
@@ -317,6 +344,6 @@ TEST_CASE("ndsp VCOBlockDeviation defaults match its reported config", "[dsp][ut
     std::vector<float> in(1000, 1.0f);
     auto r = ndsp_test::runSimple<float, complex_t>(b, in, 256);
     REQUIRE(r.completed);
-    double expected = 2 * ndsp_test::kPi * b->get_cfg("deviation").get<double>() / b->get_cfg("samplerate").get<double>();
-    CHECK(std::fabs(ndsp_test::estimateFreq(r.out(), 0, r.out().size()) - expected) < 1e-4);
+    double expected = 2 * M_PI * b->get_cfg("deviation").get<double>() / b->get_cfg("samplerate").get<double>();
+    CHECK_THAT(ndsp_test::estimateFreq(r.out(), 0, r.out().size()), WithinAbs(expected, 1e-4));
 }

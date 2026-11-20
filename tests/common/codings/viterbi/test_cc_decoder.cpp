@@ -1,5 +1,6 @@
 #include "common/codings/viterbi/cc_decoder.h"
 #include "common/codings/viterbi/cc_encoder.h"
+#include "helpers/random.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <stdexcept>
@@ -7,26 +8,8 @@
 
 namespace
 {
-    struct Lcg
-    {
-        uint32_t state;
-        explicit Lcg(uint32_t seed) : state(seed) {}
-        uint32_t next()
-        {
-            state = state * 1664525u + 1013904223u;
-            return state;
-        }
-        int below(int n) { return (next() >> 8) % n; }
-    };
-
-    std::vector<uint8_t> randomBits(int count, uint32_t seed)
-    {
-        Lcg rng(seed);
-        std::vector<uint8_t> bits(count);
-        for (auto &b : bits)
-            b = rng.next() >> 31;
-        return bits;
-    }
+    using test_helpers::Lcg;
+    using test_helpers::randomBits;
 
     std::vector<uint8_t> encode(const std::vector<uint8_t> &bits)
     {
@@ -53,7 +36,7 @@ namespace
             d += a[i] != b[i];
         return d;
     }
-}
+} // namespace
 
 TEST_CASE("CCDecoder decodes a clean single frame", "[common][codings][viterbi]")
 {

@@ -21,7 +21,7 @@ TEST_CASE("svformat behaves like printf", "[utils][format]")
     CHECK(svformat("%02X%02X", 0xAB, 0x01) == "AB01");
 }
 
-// Known bug: when the output exceeds the initial 1024-byte buffer, svformat resizes
+// Bug: utils/format.h:63-65 when the output exceeds the initial 1024-byte buffer, svformat resizes
 // to the length snprintf reported, which leaves no room for the terminating NUL, so
 // the last character is dropped. [!shouldfail] keeps the suite green until that is
 // fixed, at which point this test starts failing and the tag should be removed.

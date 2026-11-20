@@ -1,6 +1,6 @@
 #include "image/earth_curvature.h"
+#include "image/image_test_helpers.h"
 #include "image/meta.h"
-#include "image_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <cmath>
@@ -19,8 +19,12 @@ TEST_CASE("image::earth_curvature::correct_earth_curvature output size and const
     REQUIRE(out.height() == 3);
     REQUIRE(out.channels() == 2);
     REQUIRE(out.depth() == depth);
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < out.size(); i++)
-        REQUIRE(std::abs(out.get(i) - (depth == 8 ? 77 : 12345)) <= 1);
+        if (!(std::abs(out.get(i) - (depth == 8 ? 77 : 12345)) <= 1) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("image::earth_curvature::correct_earth_curvature lookup tables", "[image][earth_curvature]")

@@ -1,12 +1,12 @@
 #include "common/tracking/tracking.h"
+#include "products/products_test_helpers.h"
 #include "products/punctiform_product.h"
-#include "products_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 using Catch::Matchers::WithinAbs;
+using products_test::TempDir;
 using satdump::products::PunctiformProduct;
-using satdump_test_products::TempDir;
 
 namespace
 {

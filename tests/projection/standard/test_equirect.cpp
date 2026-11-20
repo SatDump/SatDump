@@ -1,17 +1,14 @@
-#include "proj_test_helpers.h"
+#include "projection/standard/proj_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 using Catch::Matchers::WithinAbs;
-using satdump_test_proj_standard::ScopedProj;
+using proj_test::ScopedProj;
 
 namespace
 {
     // Full-globe 360x180 image: pixel (0,0) is the top-left corner at 180W 90N, 1 degree per pixel
-    nlohmann::json globeImageCfg()
-    {
-        return {{"type", "equirec"}, {"offset_x", -180.0}, {"offset_y", 90.0}, {"scalar_x", 1.0}, {"scalar_y", -1.0}};
-    }
+    nlohmann::json globeImageCfg() { return {{"type", "equirec"}, {"offset_x", -180.0}, {"offset_y", 90.0}, {"scalar_x", 1.0}, {"scalar_y", -1.0}}; }
 } // namespace
 
 TEST_CASE("projection_equirect forward without offsets returns plain degrees", "[projection][standard][equirect]")
@@ -45,11 +42,7 @@ TEST_CASE("projection_equirect maps a full-globe image config to pixel coordinat
         double lon, lat, x, y;
     };
     const Case cases[] = {
-        {-180, 90, 0, 0},
-        {0, 0, 180, 90},
-        {180, -90, 360, 180},
-        {-90.5, 45.25, 89.5, 44.75},
-        {120, -30, 300, 120},
+        {-180, 90, 0, 0}, {0, 0, 180, 90}, {180, -90, 360, 180}, {-90.5, 45.25, 89.5, 44.75}, {120, -30, 300, 120},
     };
 
     for (const auto &c : cases)
@@ -63,7 +56,7 @@ TEST_CASE("projection_equirect maps a full-globe image config to pixel coordinat
         REQUIRE_FALSE(proj::projection_perform_inv(&sp.p, c.x, c.y, &lon, &lat));
         CHECK_THAT(lat, WithinAbs(c.lat, 1e-9));
         // +180 is normalised to the same meridian, either sign is fine
-        CHECK_THAT(satdump_test_proj_standard::lonDiff(lon, c.lon), WithinAbs(0, 1e-9));
+        CHECK_THAT(proj_test::lonDiff(lon, c.lon), WithinAbs(0, 1e-9));
     }
 }
 

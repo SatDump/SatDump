@@ -1,8 +1,8 @@
+#include "image/image_test_helpers.h"
 #include "image/jpeg12_utils.h"
-#include "image_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
-#include <cstdio>
 #include <csetjmp>
+#include <cstdio>
 extern "C"
 {
 #include "libs/jpeg12/jpeglib12.h"
@@ -64,7 +64,7 @@ namespace
         jpeg_finish_compress(&cinfo);
         jpeg_destroy_compress(&cinfo);
         fclose(fp);
-        return image_test::readFile(path);
+        return image_test::readBytes(path);
     }
 
     std::vector<short> makeSamples12(int w, int h)

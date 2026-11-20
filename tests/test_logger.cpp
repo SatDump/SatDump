@@ -1,9 +1,9 @@
+#include "common/utils.h" // timegm on MSVC
+#include "helpers/temp_files.h"
 #include "logger.h"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
-#include <fstream>
 #include <mutex>
-#include <random>
 #include <regex>
 #include <string>
 #include <vector>
@@ -51,17 +51,7 @@ namespace
         }
     };
 
-    std::filesystem::path uniqueTempPath(const std::string &name)
-    {
-        std::mt19937 rng(std::random_device{}());
-        return std::filesystem::temp_directory_path() / ("satdump_test_logger_" + std::to_string(rng()) + "_" + name);
-    }
-
-    std::string readFile(const std::filesystem::path &p)
-    {
-        std::ifstream f(p, std::ios::binary);
-        return std::string((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
-    }
+    using test_helpers::readFile;
 
     const std::string TIMESTAMP_RE = "\\[\\d\\d:\\d\\d:\\d\\d - \\d\\d/\\d\\d/\\d{4}\\]";
 } // namespace
@@ -276,7 +266,8 @@ TEST_CASE("LoggerSink format_log keeps the newline of long lines", "[logger][!sh
 
 TEST_CASE("FileSink writes formatted lines and respects its level", "[logger]")
 {
-    auto base = uniqueTempPath("log");
+    test_helpers::TempDir tmp("logger");
+    auto base = tmp.path / "log";
     std::filesystem::path file = base.string() + ".log";
     {
         auto sink = std::make_shared<slog::FileSink>(base.string());
@@ -289,12 +280,12 @@ TEST_CASE("FileSink writes formatted lines and respects its level", "[logger]")
 
     std::string content = readFile(file);
     CHECK(std::regex_match(content, std::regex(TIMESTAMP_RE + " \\(I\\) first line\n" + TIMESTAMP_RE + " \\(E\\) second line\n")));
-    std::filesystem::remove(file);
 }
 
 TEST_CASE("FileSink never overwrites an existing log", "[logger]")
 {
-    auto base = uniqueTempPath("rotate").string();
+    test_helpers::TempDir tmp("logger");
+    auto base = (tmp.path / "rotate").string();
     {
         slog::FileSink a(base);
         slog::FileSink b(base);
@@ -306,13 +297,12 @@ TEST_CASE("FileSink never overwrites an existing log", "[logger]")
     CHECK(readFile(base + ".log").find("from a") != std::string::npos);
     CHECK(readFile(base + "-1.log").find("from b") != std::string::npos);
     CHECK(readFile(base + "-2.log").find("from c") != std::string::npos);
-    for (auto p : {base + ".log", base + "-1.log", base + "-2.log"})
-        std::filesystem::remove(p);
 }
 
 TEST_CASE("FileSink attached to a Logger receives messages", "[logger]")
 {
-    auto base = uniqueTempPath("attached").string();
+    test_helpers::TempDir tmp("logger");
+    auto base = (tmp.path / "attached").string();
     {
         slog::Logger l;
         auto sink = std::make_shared<slog::FileSink>(base);
@@ -325,5 +315,4 @@ TEST_CASE("FileSink attached to a Logger receives messages", "[logger]")
     std::string content = readFile(base + ".log");
     CHECK(content.find("(C) attached 99\n") != std::string::npos);
     CHECK(content.find("below sink level") == std::string::npos);
-    std::filesystem::remove(base + ".log");
 }

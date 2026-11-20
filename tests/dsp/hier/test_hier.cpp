@@ -4,9 +4,10 @@
 #include "dsp/hier/psk_demod.h"
 #include "dsp/hier/psk_demod_fast.h"
 #include "dsp/hier/psk_demod_superfast.h"
-#include "../filter/ndsp_sig_test_helpers.h"
+#include "dsp/ndsp_sig_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cmath>
 
 using Catch::Approx;
 using namespace satdump::ndsp;
@@ -27,7 +28,7 @@ namespace
             up[i * sps] = syms[i];
         auto rrc = dsp::firdes::root_raised_cosine(1.0, kSr, kSymRate, 0.35, kRrcTaps);
         auto s = ndsp_sig_test::filterSame(up, rrc);
-        s = ndsp_sig_test::rotate(s, 2 * ndsp_sig_test::kPi * kOffsetHz / kSr, 0.5);
+        s = ndsp_sig_test::rotate(s, 2 * M_PI * kOffsetHz / kSr, 0.5);
 
         // Same filter on the receive side : symbol SNR = sum(g^2) / (2 sigma^2)
         double eg = 0;
@@ -128,7 +129,7 @@ TEST_CASE("ndsp PSKDemodHierBlock demodulates noisy BPSK and QPSK", "[dsp][hier]
     checkPskDemod<PSKDemodHierBlock>("qpsk", false);
 }
 
-// Bug : psk_demod.h:152 converts the Costas frequency to Hz with the symbol rate, but in
+// Bug: psk_demod.h:152 converts the Costas frequency to Hz with the symbol rate, but in
 // PSKDemodHierBlock the Costas loop runs before the clock recovery, at the sample rate, so the
 // reported pll_freq is off by a factor samplerate / symbolrate (12.5 Hz instead of 50 Hz here).
 TEST_CASE("ndsp PSKDemodHierBlock reports the carrier offset in Hz", "[dsp][hier][!shouldfail]")
@@ -181,8 +182,12 @@ TEST_CASE("ndsp GFSKModHierBlock outputs a constant envelope at +-sensitivity", 
     // Interpolation by 2
     CHECK((double)out.size() == Approx(2.0 * in.size()).margin(100));
 
-    for (auto &v : out)
-        REQUIRE(std::abs(ndsp_sig_test::toStd(v)) == Approx(1.0).margin(1e-4));
+    size_t mismatches = 0, first = 0;
+    for (size_t i = 0; i < out.size(); i++)
+        if (!(std::abs(ndsp_sig_test::toStd(out[i])) == Approx(1.0).margin(1e-4)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 
     // Middle of the runs : instantaneous frequency is +-k
     std::vector<double> inst(out.size(), 0.0);
@@ -197,8 +202,12 @@ TEST_CASE("ndsp GFSKModHierBlock outputs a constant envelope at +-sensitivity", 
             REQUIRE(inst[i] == Approx(sign * 0.5).margin(1e-3));
     }
     // Never deviates more than k
-    for (double f : inst)
-        REQUIRE(std::fabs(f) <= 0.5 + 1e-3);
+    size_t deviations = 0, first_deviation = 0;
+    for (size_t i = 0; i < inst.size(); i++)
+        if (!(std::fabs(inst[i]) <= 0.5 + 1e-3) && deviations++ == 0)
+            first_deviation = i;
+    INFO("first deviation at sample " << first_deviation);
+    REQUIRE(deviations == 0);
 }
 
 TEST_CASE("ndsp GFSKModHierBlock configuration", "[dsp][hier]")
@@ -236,7 +245,7 @@ TEST_CASE("ndsp GFSKModHierBlock interpolation setting changes the output rate",
     }
 }
 
-// Bug : gfsk_mod.h:37 always convolves the gaussian taps with {1, 1}, a 2-samples
+// Bug: gfsk_mod.h:37 always convolves the gaussian taps with {1, 1}, a 2-samples
 // rectangular pulse, instead of one `interpolation` samples long. Each polyphase branch
 // then has a gain of 2 / interpolation, so the frequency deviation is only right for
 // interpolation 2 (it is halved with 4, ...).
@@ -285,15 +294,15 @@ TEST_CASE("ndsp AudioDemodHierBlock demodulates NFM", "[dsp][hier]")
     for (size_t i = 0; i < n; i++)
     {
         in[i] = ndsp_sig_test::fromStd(std::polar(0.3, phase));
-        phase += 2 * ndsp_sig_test::kPi * dev / kAudioIn * std::cos(2 * ndsp_sig_test::kPi * fa * i / kAudioIn);
+        phase += 2 * M_PI * dev / kAudioIn * std::cos(2 * M_PI * fa * i / kAudioIn);
     }
     auto out = runAudio("nfm", in);
-    double w = 2 * ndsp_sig_test::kPi * fa / kAudioOut;
+    double w = 2 * M_PI * fa / kAudioOut;
     size_t s = 2000;
     CHECK(ndsp_sig_test::estimateRealFreq(out, s, out.size()) == Approx(w).epsilon(0.01));
     // Phase difference amplitude, divided by 20 : the quadrature demodulator's
     // "gain" setting is the inverse of the actual gain
-    double expected = 2 * ndsp_sig_test::kPi * dev / kAudioIn / 20.0;
+    double expected = 2 * M_PI * dev / kAudioIn / 20.0;
     CHECK(ndsp_sig_test::toneAmplitude(out, w, s, out.size()) == Approx(expected).epsilon(0.05));
 }
 
@@ -301,15 +310,15 @@ TEST_CASE("ndsp AudioDemodHierBlock demodulates USB and LSB", "[dsp][hier]")
 {
     const size_t n = 48000;
     const double fa = 1200;
-    double w = 2 * ndsp_sig_test::kPi * fa / kAudioOut;
+    double w = 2 * M_PI * fa / kAudioOut;
     size_t s = 3000;
 
     // USB : tone above the carrier, LSB : below. Output level set by the AGC (0.2 reference)
-    auto usb = runAudio("usb", ndsp_sig_test::complexTone(n, 2 * ndsp_sig_test::kPi * fa / kAudioIn, 0.5));
+    auto usb = runAudio("usb", ndsp_sig_test::complexTone(n, 2 * M_PI * fa / kAudioIn, 0.5));
     CHECK(ndsp_sig_test::estimateRealFreq(usb, s, usb.size()) == Approx(w).epsilon(0.01));
     CHECK(ndsp_sig_test::toneAmplitude(usb, w, s, usb.size()) == Approx(0.2).epsilon(0.1));
 
-    auto lsb = runAudio("lsb", ndsp_sig_test::complexTone(n, -2 * ndsp_sig_test::kPi * fa / kAudioIn, 0.5));
+    auto lsb = runAudio("lsb", ndsp_sig_test::complexTone(n, -2 * M_PI * fa / kAudioIn, 0.5));
     CHECK(ndsp_sig_test::estimateRealFreq(lsb, s, lsb.size()) == Approx(w).epsilon(0.01));
     CHECK(ndsp_sig_test::toneAmplitude(lsb, w, s, lsb.size()) == Approx(0.2).epsilon(0.1));
 }
@@ -320,7 +329,7 @@ TEST_CASE("ndsp AudioDemodHierBlock demodulates AM", "[dsp][hier]")
     const double fa = 800;
     std::vector<complex_t> in(n);
     for (size_t i = 0; i < n; i++)
-        in[i] = ndsp_sig_test::fromStd(std::polar(0.5 * (1.0 + 0.5 * std::cos(2 * ndsp_sig_test::kPi * fa * i / kAudioIn)), 0.3));
+        in[i] = ndsp_sig_test::fromStd(std::polar(0.5 * (1.0 + 0.5 * std::cos(2 * M_PI * fa * i / kAudioIn)), 0.3));
     auto out = runAudio("am", in);
     // The fast AGC flattens the envelope partially, but the tone is still the main component
     size_t s = 2000;
@@ -331,7 +340,7 @@ TEST_CASE("ndsp AudioDemodHierBlock demodulates AM", "[dsp][hier]")
     std::vector<float> ac(out.begin() + s, out.end());
     for (auto &v : ac)
         v -= mean;
-    double w = 2 * ndsp_sig_test::kPi * fa / kAudioOut;
+    double w = 2 * M_PI * fa / kAudioOut;
     CHECK(ndsp_sig_test::estimateRealFreq(ac, 0, ac.size()) == Approx(w).epsilon(0.02));
     double a1 = ndsp_sig_test::toneAmplitude(ac, w, 0, ac.size());
     CHECK(a1 > 5 * ndsp_sig_test::toneAmplitude(ac, 2 * w, 0, ac.size()));

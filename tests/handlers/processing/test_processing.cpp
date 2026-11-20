@@ -1,8 +1,8 @@
 #include "handlers/processing/processing.h"
-#include "../../pipeline/pipeline_test_helpers.h"
+#include "pipeline/pipeline_test_helpers.h"
 #include <catch2/catch_test_macros.hpp>
 
-using namespace pipeline_test_helpers;
+using namespace pipeline_test;
 namespace pl = satdump::pipeline;
 using satdump::handlers::OffProcessingHandler;
 
@@ -23,7 +23,7 @@ TEST_CASE("OffProcessingHandler runs the pipeline in the background", "[handlers
 {
     ModuleRegistryGuard reg;
     EventBusGuard bus;
-    MainConfigGuard cfg;
+    ConfigGuard cfg;
     CallsGuard calls;
     TempDir tmp("handlers_offproc");
 
@@ -60,7 +60,7 @@ TEST_CASE("OffProcessingHandler catches pipeline errors", "[handlers][processing
 {
     ModuleRegistryGuard reg;
     EventBusGuard bus;
-    MainConfigGuard cfg;
+    ConfigGuard cfg;
     TempDir tmp("handlers_offproc");
 
     pl::Pipeline p;

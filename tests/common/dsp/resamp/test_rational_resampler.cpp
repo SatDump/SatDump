@@ -1,10 +1,12 @@
+#include "common/dsp/dsp_test_helpers.h"
 #include "common/dsp/resamp/rational_resampler.h"
-#include "../dsp_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <complex>
 
 using Catch::Approx;
+using Catch::Matchers::WithinAbs;
 
 namespace
 {
@@ -37,7 +39,7 @@ namespace
             err += std::norm(std::complex<double>(y[n].real, y[n].imag) - a * std::polar(1.0, freq * n));
         return sqrt(err / (end - start)) / std::abs(a);
     }
-}
+} // namespace
 
 TEST_CASE("RationalResamplerBlock output count follows interp / decim", "[common][dsp][rational_resampler]")
 {
@@ -52,7 +54,7 @@ TEST_CASE("RationalResamplerBlock output count follows interp / decim", "[common
         std::vector<complex_t> in(44000, complex_t(1, 0));
         double ratio = (double)r.interp / r.decim;
         auto out = processChunked(res, in, 4000, ratio);
-        CHECK(fabs((double)out.size() - in.size() * ratio) <= 2.0);
+        CHECK_THAT((double)out.size(), WithinAbs(in.size() * ratio, 2.0));
     }
 }
 
@@ -62,8 +64,12 @@ TEST_CASE("RationalResamplerBlock has unity DC gain", "[common][dsp][rational_re
     std::vector<float> in(30000, 0.5f);
     auto out = processChunked(res, in, 3000, 1.5);
     REQUIRE(out.size() > 1000);
+    size_t mismatches = 0, first = 0;
     for (size_t i = 500; i < out.size(); i++)
-        REQUIRE(out[i] == Approx(0.5f).margin(0.005));
+        if (!(out[i] == Approx(0.5f).margin(0.005)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("RationalResamplerBlock preserves tone frequency in Hz", "[common][dsp][rational_resampler]")
@@ -98,8 +104,12 @@ TEST_CASE("RationalResamplerBlock reduces the ratio by its GCD", "[common][dsp][
     auto oa = processChunked(a, in, 2000, 1.5);
     auto ob = processChunked(b, in, 2000, 1.5);
     REQUIRE(oa.size() == ob.size());
+    size_t mismatches = 0, first = 0;
     for (size_t i = 0; i < oa.size(); i++)
-        REQUIRE(dsp_test::absDiff(oa[i], ob[i]) < 1e-6f);
+        if (!(dsp_test::absDiff(oa[i], ob[i]) < 1e-6f) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("RationalResamplerBlock with custom taps and set_ratio", "[common][dsp][rational_resampler]")
@@ -111,23 +121,28 @@ TEST_CASE("RationalResamplerBlock with custom taps and set_ratio", "[common][dsp
         in[i] = (float)i;
     auto out = processChunked(res, in, 300, 1.0);
     REQUIRE(out.size() == in.size());
+    size_t pass_mismatches = 0, pass_first = 0;
     for (size_t i = 0; i < in.size(); i++)
-        REQUIRE(out[i] == in[i]);
+        if (!(out[i] == in[i]) && pass_mismatches++ == 0)
+            pass_first = i;
+    INFO("first passthrough mismatch at sample " << pass_first);
+    REQUIRE(pass_mismatches == 0);
 
     // Zero-order hold interpolation by 2 with custom taps {1, 1}
     dsp::RationalResamplerBlock<float> zoh(nullptr, 2, 1, {1.0f, 1.0f});
     auto held = processChunked(zoh, in, 300, 2.0);
     REQUIRE(held.size() == 2 * in.size());
+    size_t hold_mismatches = 0, hold_first = 0;
     for (size_t i = 0; i < in.size(); i++)
-    {
-        REQUIRE(held[2 * i] == in[i]);
-        REQUIRE(held[2 * i + 1] == in[i]);
-    }
+        if ((!(held[2 * i] == in[i]) || !(held[2 * i + 1] == in[i])) && hold_mismatches++ == 0)
+            hold_first = i;
+    INFO("first hold mismatch at input sample " << hold_first);
+    REQUIRE(hold_mismatches == 0);
 
     // Changing the ratio on the fly changes the output rate
     res.set_ratio(1, 2);
     auto halved = processChunked(res, std::vector<float>(10000, 1.0f), 1000, 0.5);
-    CHECK(fabs((double)halved.size() - 5000) <= 2.0);
+    CHECK_THAT((double)halved.size(), WithinAbs(5000, 2.0));
 }
 
 TEST_CASE("RationalResamplerBlock as a streaming block", "[common][dsp][rational_resampler]")
@@ -138,7 +153,7 @@ TEST_CASE("RationalResamplerBlock as a streaming block", "[common][dsp][rational
     dsp::RationalResamplerBlock<complex_t> res(input, 5, 2);
     auto r = dsp_test::runBlock(res, input, in, 4000);
     REQUIRE(r.completed);
-    CHECK(fabs((double)r.output.size() - 125000) <= 2.0);
+    CHECK_THAT((double)r.output.size(), WithinAbs(125000, 2.0));
     double f = dsp_test::estimateFreq(r.output, 1000, r.output.size());
     CHECK(dsp::rad_to_hz(f, fs_in * 2.5) == Approx(400).epsilon(1e-4));
 }

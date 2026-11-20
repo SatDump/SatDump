@@ -1,10 +1,10 @@
 #include "pipeline/modules/generic/module_soft2hard.h"
-#include "../../pipeline_test_helpers.h"
+#include "pipeline/pipeline_test_helpers.h"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <random>
 
-using namespace pipeline_test_helpers;
+using namespace pipeline_test;
 namespace pl = satdump::pipeline;
 
 namespace
@@ -96,7 +96,7 @@ TEST_CASE("Soft2HardModule treats a zero soft symbol as a 0 bit", "[pipeline][mo
         CHECK(out[i] == 0x00);
 }
 
-// module_soft2hard.cpp:52-64 : bytes are only written in blocks of 256 and the partial block left
+// Bug: module_soft2hard.cpp:52-64 : bytes are only written in blocks of 256 and the partial block left
 // in byte_buffer is never flushed when the input ends, so up to 255 trailing bytes are lost.
 TEST_CASE("Soft2HardModule writes trailing bytes that do not fill a 256-byte block", "[pipeline][modules][soft2hard][!shouldfail]")
 {
@@ -128,7 +128,7 @@ TEST_CASE("Soft2HardModule converts a streamed input", "[pipeline][modules][soft
     auto soft = softFromBytes(expected, 17);
     m->input_fifo->write(soft.data(), soft.size());
 
-    bool got = waitFor([&]() { return m->output_fifo->getReadable() >= 256; });
+    bool got = test_helpers::waitUntil([&]() { return m->output_fifo->getReadable() >= 256; }, std::chrono::seconds(30));
 
     m->input_active = false;
     m->input_fifo->stopReader();

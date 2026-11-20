@@ -1,8 +1,15 @@
+// These tests need POSIX sockets
 #include "common/net/tcp.h"
 #include <catch2/catch_test_macros.hpp>
-#include <netinet/in.h>
+#include <stdexcept>
 #include <string>
+
+#ifndef _WIN32
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
 #include <sys/time.h>
+#include <unistd.h>
 
 namespace
 {
@@ -93,3 +100,4 @@ TEST_CASE("net::TCPClient throws when nothing listens", "[common][net][tcp]")
     char address[] = "127.0.0.1";
     CHECK_THROWS_AS(net::TCPClient(address, port), std::runtime_error);
 }
+#endif

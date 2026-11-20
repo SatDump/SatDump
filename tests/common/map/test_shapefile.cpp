@@ -203,7 +203,7 @@ TEST_CASE("shapefile::Shapefile splits polyline parts and keeps the header field
     CHECK(r.parts_points[1][0].x == 2);
 }
 
-// shapefile.cpp:120 copies the last part with &points[points.size() - 1] as the end iterator,
+// Bug: shapefile.cpp:120 copies the last part with &points[points.size() - 1] as the end iterator,
 // which drops the final point of every record (the closing vertex of polygons, the last vertex
 // of polylines).
 TEST_CASE("shapefile::Shapefile keeps every point of the last part", "[common][map][shapefile][!shouldfail]")

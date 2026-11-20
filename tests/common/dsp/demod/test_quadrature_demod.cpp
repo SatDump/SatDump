@@ -1,7 +1,8 @@
 #include "common/dsp/demod/quadrature_demod.h"
-#include "../dsp_test_helpers.h"
+#include "common/dsp/dsp_test_helpers.h"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cmath>
 
 using Catch::Approx;
 
@@ -17,8 +18,12 @@ TEST_CASE("QuadratureDemodBlock output is frequency divided by gain", "[common][
             std::vector<float> out(in.size());
             REQUIRE(qd.process(in.data(), in.size(), out.data()) == (int)in.size());
             // First sample measures from an initial phase of 0, which is the tone start phase
+            size_t mismatches = 0, first = 0;
             for (size_t i = 0; i < out.size(); i++)
-                REQUIRE(out[i] == Approx(i == 0 ? 0.0 : w / gain).margin(1e-4));
+                if (!(out[i] == Approx(i == 0 ? 0.0 : w / gain).margin(1e-4)) && mismatches++ == 0)
+                    first = i;
+            INFO("first mismatch at sample " << first);
+            REQUIRE(mismatches == 0);
         }
     }
 }
@@ -33,8 +38,12 @@ TEST_CASE("QuadratureDemodBlock keeps phase state between calls", "[common][dsp]
     qd.process(in.data() + 1000, 1000, out.data());
     // No glitch at the boundary
     CHECK(out[0] == Approx(1.2).margin(1e-4));
-    for (float v : out)
-        REQUIRE(v == Approx(1.2).margin(1e-4));
+    size_t mismatches = 0, first = 0;
+    for (size_t i = 0; i < out.size(); i++)
+        if (!(out[i] == Approx(1.2).margin(1e-4)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }
 
 TEST_CASE("QuadratureDemodBlock set_gain and amplitude independence", "[common][dsp][quadrature_demod]")
@@ -69,6 +78,10 @@ TEST_CASE("QuadratureDemodBlock demodulates an FM signal", "[common][dsp][quadra
     auto r = dsp_test::runBlock(qd, input, in, 4096);
     REQUIRE(r.completed);
     REQUIRE(r.output.size() == n);
+    size_t mismatches = 0, first = 0;
     for (size_t i = 1; i < n; i++)
-        REQUIRE(r.output[i] == Approx(sin(wm * i)).margin(1e-3));
+        if (!(r.output[i] == Approx(sin(wm * i)).margin(1e-3)) && mismatches++ == 0)
+            first = i;
+    INFO("first mismatch at sample " << first);
+    REQUIRE(mismatches == 0);
 }

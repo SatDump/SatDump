@@ -1,6 +1,6 @@
 #include "dsp/benchmark/bench.h"
-#include <catch2/catch_test_macros.hpp>
 #include <algorithm>
+#include <catch2/catch_test_macros.hpp>
 #include <set>
 
 using namespace satdump::ndsp;
