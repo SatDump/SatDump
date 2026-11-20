@@ -1,56 +1,14 @@
 #include "common/tracking/scheduler/passes.h"
 #include "common/tracking/tracking.h"
-#include "db/db_handler.h"
-#include "db/kepler/kepler_handler.h"
-#include "init.h"
+#include "helpers/kepler_db.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
-#include <stdexcept>
 
 using Catch::Matchers::WithinAbs;
 
 namespace
 {
-    // getPassesForSatellite looks TLEs up in the global satdump::db_keplers. This fixture points it
-    // at an in-memory SQLite database holding only the TLEs a test adds, and restores the previous
-    // (normally null) handler afterwards.
-    class KeplerDbFixture
-    {
-    private:
-        std::shared_ptr<satdump::KeplerDBHandler> previous;
-        std::shared_ptr<satdump::DBHandler> db;
-
-    public:
-        KeplerDbFixture()
-        {
-            previous = satdump::db_keplers;
-            db = std::make_shared<satdump::DBHandler>(":memory:");
-            db->init();
-            // Same schema as KeplerDBHandler::init(), which cannot be called here because it
-            // needs the SatDump config and task scheduler
-            if (db->run_sql("CREATE TABLE IF NOT EXISTS kepler("
-                            "id TEXT PRIMARY KEY NOT NULL, satellite_number INT NOT NULL, element_number INT NOT NULL,"
-                            "name TEXT NOT NULL, designator TEXT NOT NULL, epoch REAL NOT NULL, inclination REAL NOT NULL,"
-                            "right_ascension REAL NOT NULL, eccentricity REAL NOT NULL, argument_of_perigee REAL NOT NULL,"
-                            "mean_anomaly REAL NOT NULL, mean_motion REAL NOT NULL, derivative_mean_motion REAL NOT NULL,"
-                            "second_derivative_mean_motion REAL NOT NULL, bstar_drag_term REAL NOT NULL, revolutions_at_epoch INT NOT NULL);"))
-                throw std::runtime_error("Could not create the test Kepler table");
-            satdump::db_keplers = std::make_shared<satdump::KeplerDBHandler>(db);
-        }
-
-        ~KeplerDbFixture() { satdump::db_keplers = previous; }
-
-        void add(satdump::KeplerData kep) { satdump::db_keplers->putKepler(kep); }
-
-        // The TLE getPassesForSatellite will actually use (regenerated from the stored elements)
-        satdump::TLE stored(int norad)
-        {
-            auto tle = satdump::db_keplers->get_from_norad(norad);
-            if (!tle.has_value())
-                throw std::runtime_error("Test TLE missing from the database");
-            return *tle;
-        }
-    };
+    using test_helpers::KeplerDbFixture;
 
     // ISS (ZARYA) 2008-09-20 element set (see test_tle.cpp), as stored Kepler elements
     satdump::KeplerData issKepler()

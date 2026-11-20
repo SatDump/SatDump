@@ -19,12 +19,20 @@ endif()
 
 file(GLOB_RECURSE SatDump_tests_CPPS CONFIGURE_DEPENDS *.cpp)
 
-add_executable(satdump_tests ${SatDump_tests_CPPS})
+# The CLI is an executable, so its sources are compiled into the tests to be
+# reachable from them. Its entry point (src-cli/main.cpp) is left out.
+file(GLOB_RECURSE SatDump_tests_cli_CPPS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src-cli/*.cpp)
+list(REMOVE_ITEM SatDump_tests_cli_CPPS ${CMAKE_SOURCE_DIR}/src-cli/main.cpp)
+
+add_executable(satdump_tests ${SatDump_tests_CPPS} ${SatDump_tests_cli_CPPS})
 target_link_libraries(satdump_tests PRIVATE satdump_core Catch2::Catch2)
 
 # Test helpers are included relative to tests/, like src-core headers are
 # relative to src-core/ (e.g. "helpers/temp_files.h", "dsp/ndsp_test_helpers.h")
 target_include_directories(satdump_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+# src-cli headers are included relative to src-cli/ (e.g. "legacy/webserver.h")
+target_include_directories(satdump_tests PRIVATE ${CMAKE_SOURCE_DIR}/src-cli)
 
 # Lets tests load files shipped in the repository (e.g. resources/)
 target_compile_definitions(satdump_tests PRIVATE SATDUMP_TEST_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
@@ -75,6 +83,7 @@ if(ENABLE_COVERAGE)
             COMMAND ${GCOVR_EXECUTABLE}
                 --root ${CMAKE_SOURCE_DIR}
                 --filter ${CMAKE_SOURCE_DIR}/src-core/
+                --filter ${CMAKE_SOURCE_DIR}/src-cli/
                 # Vendored third-party code
                 --exclude ${CMAKE_SOURCE_DIR}/src-core/libs/
                 --exclude ${CMAKE_SOURCE_DIR}/src-core/imgui/

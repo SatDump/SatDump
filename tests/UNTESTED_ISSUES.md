@@ -1,9 +1,9 @@
 # Crash and undefined-behaviour problems without tests
 
-These problems were found by reading `src-core` while the unit tests were being written. None of them has a test, because exercising them would crash or hang the test executable or rely on undefined behaviour.
+These problems were found by reading `src-core` and `src-cli` while the unit tests were being written. None of them has a test, because exercising them would crash or hang the test executable or rely on undefined behaviour.
 
-- **Status:** reported from code reading, mostly not independently verified. Two were observed crashing (marked "seen"). Treat each entry as a lead to confirm, not a confirmed defect.
-- **Paths** are relative to `src-core/`. Line numbers are as of commit `9fee0793c` and will drift.
+- **Status:** reported from code reading, mostly not independently verified. Four were observed crashing (marked "seen"). Treat each entry as a lead to confirm, not a confirmed defect.
+- **Paths** are relative to `src-core/`, except in the [src-cli](#src-cli) section. Line numbers are as of commit `9fee0793c` (`518b9a068` for `src-cli`) and will drift.
 - **Not listed here:** bugs that do have a test. Those are tagged `[!shouldfail]`; list them with `./satdump_tests --list-tests "[!shouldfail]"`.
 
 When one of these is fixed, add a regular test for it and remove the entry.
@@ -18,6 +18,7 @@ When one of these is fixed, add a regular test for it and remove the entry.
 | `common/audio/audio_sink.cpp` `resample_s16` | Reads `input[c + channels]`, one frame past the end of the input. With more than one channel it writes `outputSize * channels` samples although the returned size is a total sample count. | Out-of-bounds read and write. |
 | `common/map/map_drawer.cpp:148` | The check is `cc.first == -1 \|\| cc.first == -1` (the second should be `cc.second`), so a GeoJSON point projected to y = -1 reaches `draw_pixel`, which has no bounds check. | Out-of-bounds write. |
 | `common/tracking/tracking.cpp` `SatelliteTracker::get_observed_position` | On an ephemeris-based tracker the orbit object is null and is dereferenced. | Null dereference. |
+| `common/tracking/scheduler/scheduler.cpp:49`, `:123` | `processAutotrack` tests `upcoming_satellite_passes_sel[0].los_time` before `upcoming_satellite_passes_sel.size() > 0`. It gets there with an empty list because `autotrack_engaged` is read before the mutex is taken, while `setEngaged(true)` sets it and only clears it again, under the mutex, once it has found no pass. | Read through a null pointer when the scheduler thread runs during `setEngaged` and nothing is trackable in the next 12 hours. Segfault seen: `satdump legacy autotrack` starts the thread right before `setEngaged`, and with no tracked object it crashed in most runs of an unoptimized build. The autotrack tests track a satellite that always has an upcoming pass to stay clear of it. |
 | `common/tracking/interpolator.h:63-77` | `LinearInterpolator` with exactly two points indexes past the end of its table. | Out-of-bounds read. |
 | `common/tracking/rotator/rotcl_handler.cpp:76` | The address is copied with `memcpy` into a 100-byte buffer with no length check. | Buffer overflow for long addresses. |
 | `common/codings/deframing/hdlc_def.cpp:26` | The length check is `pos_in_pkt > d_len_max` and should be `>=`. A frame or noise run reaching `d_len_max` bytes writes one byte past `wip_pkt`. This includes a valid frame of exactly the maximum size. | Heap overflow by one byte. |
@@ -51,6 +52,7 @@ When one of these is fixed, add a regular test for it and remove the entry.
 | `image/simple_mean_filter.cpp:44` | EDGE mode does not clamp, so negative results are converted from float to unsigned. A radius of 0 divides by zero. | Undefined conversion; division by zero. |
 | `image/processing.cpp:57` | `white_balance` on a constant channel divides by zero and casts inf/NaN to `long`. | Undefined conversion. |
 | `image/image_utils.cpp:72-88` | `blend_images` computes 0/0 for pixels that are 0 in every layer. | NaN converted to an integer. |
+| `image/image_draw.cpp:107-113` `draw_line`, `common/widgets/fft_plot.cpp:156` | `draw_line` rejects coordinates `> d_width` / `> d_height` and should use `>=`, so a line at `y == height` is drawn. `FFTPlot::drawImg` starts its scale lines at `y == size_y`, so every call does this. | Heap overflow of one row past the last channel. This is what the `/fft.jpeg` page of `satdump legacy autotrack` does, which its status page requests every second when the FFT is enabled. |
 | `image/image_draw.cpp` `draw_aa_line` | Steep lines read with transposed coordinates. | Out-of-bounds read on non-square images. |
 | `image/text.cpp` | Pixels are mis-addressed when x is negative. | Out-of-bounds write. |
 | `image/image.cpp:30` | Self-assignment (`img = img`) frees the buffer in `init` before copying from it. | Use after free. |
@@ -113,6 +115,19 @@ When one of these is fixed, add a regular test for it and remove the entry.
 | `db/iers/iers_handler.cpp` | `IERSInfo::time` is never set, and `leap_seconds` is left uninitialised when there is no leap-second row. | Uninitialised read. |
 | `logger.cpp` | Logging at `LOG_OFF` indexes past the colour and tag tables. | Out-of-bounds read. |
 
+## src-cli
+
+Paths in this section are relative to `src-cli/`.
+
+| Location | Problem | Effect |
+|---|---|---|
+| `legacy/main.cpp:81` `main_old` | The function returns `int` but has no `return` after logging "Done! Goodbye". Every legacy command that succeeds ends there (`sdr_probe`, and `live`, `record`, `autotrack` or an offline pipeline returning 0), and `LegacyCmdHandler::run` passes the result to `exit()`. | Undefined behaviour. Segfault seen in a Release build: `satdump legacy sdr_probe` lists the devices, logs "Done! Goodbye" and dies with SIGSEGV (exit status 139). The tests only call the paths of `main_old` that return a value. |
+| `legacy/autotrack/autotrack_web.cpp:139` | The `/status` page reads `status["sat_current_range"]` as a double, but `ObjectTracker::getStatus` only sets that key while a satellite is being tracked. The exception is thrown from an nng HTTP callback, with `live_pipeline_mtx` locked. | Requesting `/status` (which the `/` page does every second) while no satellite is tracked throws through C code: `std::terminate`. |
+| `legacy/webserver.cpp:122-123` `start` | The results of `nng_url_parse` and `nng_http_server_hold` are not checked, and `url` is then used and freed. | An address that does not parse (`--http_server` typo) leads to a null or uninitialised pointer being used. A port already in use is not reported either. |
+| `legacy/webserver.cpp:156` `stop` | `is_active` is never set back to false. | A second `stop()` stops and releases a server that was already released: use after free. Each command currently calls it once. |
+| `legacy/record.cpp:129`, `:143` | With both `--decimation` and `--fft_enable`, the resampler and the FFT splitter are both created on `source_ptr->output_stream`, so two blocks read the same stream. The file sink is then fed from the splitter, not from the resampler. | The two readers race for the samples, and the recording is not decimated although its samplerate (WAV / ZIQ header, file name) is divided. |
+| `legacy/record.cpp:166`, `legacy/live.cpp:358` | The `/api` callback reads `fft->output_stream->writeBuf` from the webserver thread while the FFT block writes it. | Data race. |
+
 ## Related problems that are not crashes
 
 These were reported alongside the entries above. They do not crash, but they also have no test.
@@ -147,3 +162,5 @@ These were reported alongside the entries above. They do not crash, but they als
 - `dsp/resampling`: `RationalResamplerBlock::needs_reinit` is set but never read, so changes only apply on `start()`.
 - `core/opencl`: `platform_id` defaults to 0, so `useCL()` returns true when OpenCL was never initialised.
 - `common/tracking/interpolator.h`, `common/dsp/io/wav_writer.h`, `common/codings/ldpc/matrix/general_utils.h`: missing standard includes, so the headers do not compile on their own.
+- `src-cli/legacy.cpp`, `core/cli/cli.cpp:82`: `satdump legacy -h` prints nothing. `CommandHandler::run` does nothing once `-h` or `--help` is on the command line, so the legacy help of `main_old` is only reachable with `satdump legacy help`.
+- `src-cli/legacy/record.cpp:173`: the missing `--baseband_format` is only reported after the output directory was created and the source, resampler and FFT were started.

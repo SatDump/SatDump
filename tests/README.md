@@ -1,6 +1,6 @@
 # Unit tests
 
-Automated unit tests for `satdump_core`, built on [Catch2](https://github.com/catchorg/Catch2) v3 and run through CTest.
+Automated unit tests for `satdump_core` and the `satdump` CLI (`src-cli`), built on [Catch2](https://github.com/catchorg/Catch2) v3 and run through CTest.
 
 Catch2 3.16.1 or newer is required. A system install is used if it is recent enough, otherwise Catch2 is fetched and built at configure time (this needs network access on the first configure).
 
@@ -35,11 +35,11 @@ cmake -B build-coverage -DBUILD_UNIT_TESTS=ON -DENABLE_COVERAGE=ON
 cmake --build build-coverage --target coverage -j$(nproc)
 ```
 
-The `coverage` target runs the tests, prints a summary and writes an HTML report to `build-coverage/coverage/index.html` (and a Cobertura `coverage.xml` next to it). It covers `src-core`, excluding the vendored libraries.
+The `coverage` target runs the tests, prints a summary and writes an HTML report to `build-coverage/coverage/index.html` (and a Cobertura `coverage.xml` next to it). It covers `src-core`, excluding the vendored libraries, and `src-cli`.
 
 ## Adding tests
 
-Any `.cpp` file under this directory is picked up automatically. Tests mirror the layout of `src-core`: tests for `src-core/utils/string.h` live in `tests/utils/test_string.cpp`. Where a source directory holds many small related files (most of `src-core/dsp`), one test file may cover the whole directory, e.g. `tests/dsp/pll/test_pll.cpp`.
+Any `.cpp` file under this directory is picked up automatically. Tests mirror the layout of `src-core`: tests for `src-core/utils/string.h` live in `tests/utils/test_string.cpp`. Tests for `src-cli` live in `tests/cli`, with the same layout: `src-cli/legacy/record.cpp` is tested by `tests/cli/legacy/test_record.cpp`. The sources of `src-cli` are compiled into the test executable, except `src-cli/main.cpp` (the entry point of `satdump`), which has no test. Where a source directory holds many small related files (most of `src-core/dsp`), one test file may cover the whole directory, e.g. `tests/dsp/pll/test_pll.cpp`.
 
 ## Conventions
 
@@ -64,7 +64,7 @@ Code is formatted with the repository's `.clang-format` (clang-format 19 or newe
 
 **Known bugs**
 
-- A test that documents a bug in `src-core` is tagged `[!shouldfail]` and is preceded by a comment starting with `// Bug: <file>:<line>` that explains it. It starts failing (as "passed unexpectedly") once the bug is fixed; remove the tag then.
+- A test that documents a bug in `src-core` or `src-cli` is tagged `[!shouldfail]` and is preceded by a comment starting with `// Bug: <file>:<line>` that explains it. It starts failing (as "passed unexpectedly") once the bug is fixed; remove the tag then.
 - If the bug only shows on some compilers, standard libraries or optimization levels, tag the test `[!mayfail]` instead and say so in the comment.
 - Never exercise undefined behaviour or a crash from a test. Those problems are listed in [UNTESTED_ISSUES.md](UNTESTED_ISSUES.md) instead.
 
