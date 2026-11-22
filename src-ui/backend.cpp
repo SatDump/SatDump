@@ -99,8 +99,10 @@ void funcSetIcon(uint8_t *image, int w, int h)
 //
 
 #include "imgui/portable-file-dialogs.h"
+#include "logger.h"
 #include "nfd/include/nfd.hpp"
 #include "nfd/include/nfd_glfw3.h"
+#include <filesystem>
 
 std::string selectFolderDialog(std::string default_path)
 {
@@ -184,6 +186,20 @@ std::string selectFileDialog(std::vector<std::pair<std::string, std::string>> fi
 #endif
 }
 
+static bool checkSaveDir(const std::string &path)
+{
+    std::filesystem::path dir = std::filesystem::path(path).parent_path();
+    std::error_code ec;
+
+    if (!std::filesystem::is_directory(dir, ec))
+        logger->error(ec ? "The folder contents could not be displayed\n" + dir.string() + ": " + ec.message() : "Cannot create a file under " + dir.string() + " as it is not a folder");
+    else if (access(dir.c_str(), X_OK) != 0)
+        logger->error("You do not have access to the specified folder.\n" + dir.string());
+    else
+        return true;
+    return false;
+}
+
 std::string saveFileDialog(std::vector<std::pair<std::string, std::string>> filters, std::string default_path, std::string default_name)
 {
 #ifdef __APPLE__
@@ -222,7 +238,7 @@ std::string saveFileDialog(std::vector<std::pair<std::string, std::string>> filt
     nfdresult_t result = NFD::SaveDialog(outPath, filt.data(), filt.size(), default_path.c_str(), default_name.c_str(), h);
 
     if (result == NFD_OKAY)
-        return outPath.get();
+        return checkSaveDir(outPath.get()) ? outPath.get() : "";
     else if (result == NFD_CANCEL)
         return ""; //"User pressed cancel.";
     else
