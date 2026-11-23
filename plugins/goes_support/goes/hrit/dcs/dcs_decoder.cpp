@@ -240,9 +240,11 @@ namespace goes
                         // SHEF Codes in this file are mostly wrong - ignore!
 
                         // Finish up
-                        dcp_mtx.lock();
-                        dcp_list[std::stoul(pdt_line.substr(field_offsets[1], 8), nullptr, 16)] = new_dcp;
-                        dcp_mtx.unlock();
+                        // Parse the address before taking the lock: stoul throws on a line that is not a
+                        // PDT record, and an exception thrown with dcp_mtx held would leave it locked forever
+                        uint32_t pdt_address = std::stoul(pdt_line.substr(field_offsets[1], 8), nullptr, 16);
+                        std::lock_guard<std::mutex> dcp_lock(dcp_mtx);
+                        dcp_list[pdt_address] = new_dcp;
                     }
                     catch (std::exception &e)
                     {
@@ -285,27 +287,33 @@ namespace goes
                             hads_tokens.push_back(tmp.substr(first_letter, last_letter - first_letter + 1));
                     }
 
+                    // A HADS record has at least the ten station fields; anything shorter cannot be indexed safely
+                    if (hads_tokens.size() < 10)
+                        continue;
+
                     try
                     {
                         std::shared_ptr<DCP> this_dcp;
                         uint32_t device_address = std::stoul(hads_tokens[0], nullptr, 16);
 
-                        dcp_mtx.lock();
-                        if (dcp_list.count(device_address) > 0)
-                            this_dcp = dcp_list[device_address];
-
-                        // DADDs should have all DCPs... but they do not. Fill in extras HADS has
-                        else
                         {
-                            this_dcp = std::make_shared<DCP>();
-                            this_dcp->agency = hads_tokens[2];
-                            this_dcp->state = hads_tokens[3];
-                            dcp_list[device_address] = this_dcp;
+                            // Scoped, so the lock is released even if stoi throws below
+                            std::lock_guard<std::mutex> dcp_lock(dcp_mtx);
+                            if (dcp_list.count(device_address) > 0)
+                                this_dcp = dcp_list[device_address];
 
-                            // Other info
-                            this_dcp->transmit_interval = std::stoi(hads_tokens[8]);
+                            // DADDs should have all DCPs... but they do not. Fill in extras HADS has
+                            else
+                            {
+                                this_dcp = std::make_shared<DCP>();
+                                this_dcp->agency = hads_tokens[2];
+                                this_dcp->state = hads_tokens[3];
+
+                                // Other info
+                                this_dcp->transmit_interval = std::stoi(hads_tokens[8]);
+                                dcp_list[device_address] = this_dcp;
+                            }
                         }
-                        dcp_mtx.unlock();
 
                         // Latitude
                         std::stringstream degree_stream;
