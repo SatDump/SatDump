@@ -1,6 +1,8 @@
 #include <sstream>
 #include <fstream>
 #include "dcs_decoder.h"
+#include "dcs_tables.h"
+#include <cstdio>
 #include "core/config.h"
 #include "common/utils.h"
 #include "core/plugin.h"
@@ -36,56 +38,76 @@ namespace goes
 
         void GOESLRITDataDecoderModule::updateDCPs(DCPUpdateEvent)
         {
-            bool update_success = true;
-            bool this_success = false;
             std::string file_data;
+            const std::string user_agent = "SatDump DCS table updater";
+
+            // Fetch one table from the first address that returns the real thing, and put it in place.
+            // A redirect page, an error document or an empty body is refused, so a good file on disk
+            // is never replaced by something that is not a table.
+            auto fetch_table = [&](const std::vector<std::string> &urls, const std::string &what, const std::string &save_as,
+                                   size_t (*count_records)(const std::string &)) -> bool
+            {
+                for (const std::string &url : urls)
+                {
+                    std::string why = dcs_tables::download(url, user_agent, file_data);
+                    if (why != "")
+                    {
+                        logger->warn("Could not download %s from %s: %s", what.c_str(), url.c_str(), why.c_str());
+                        continue;
+                    }
+                    size_t records = count_records(file_data);
+                    if (records < dcs_tables::MIN_RECORDS)
+                    {
+                        logger->warn("%s did not return %s (%d bytes, %d records). Keeping the file already here",
+                                     url.c_str(), what.c_str(), (int)file_data.size(), (int)records);
+                        continue;
+                    }
+
+                    std::string final_path = satdump::user_path + "/" + save_as;
+                    std::string temp_path = final_path + ".download";
+                    {
+                        std::ofstream save_file(temp_path, std::ios::binary);
+                        save_file << file_data;
+                        save_file.close();
+                        if (!save_file)
+                        {
+                            logger->warn("Could not write %s", temp_path.c_str());
+                            std::remove(temp_path.c_str());
+                            return false;
+                        }
+                    }
+                    if (std::rename(temp_path.c_str(), final_path.c_str()) != 0)
+                    {
+                        logger->warn("Could not put %s in place", final_path.c_str());
+                        std::remove(temp_path.c_str());
+                        return false;
+                    }
+                    logger->info("Updated %s: %d records", what.c_str(), (int)records);
+                    return true;
+                }
+                return false;
+            };
 
             logger->info("Updating PDTs and HADS data for DCS processing...");
             std::vector<std::string> pdt_urls = satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"]["pdt_urls"];
-            for (std::string& pdt_url : pdt_urls)
-            {
-                if (satdump::perform_http_request(pdt_url, file_data) == 0)
-                {
-                    std::ofstream save_pdts(satdump::user_path + "/PDTS_COMPRESSED.txt");
-                    save_pdts << file_data;
-                    save_pdts.close();
-                    this_success = true;
-                    break;
-                }
-            }
-
-            if (!this_success)
-            {
+            bool pdt_success = fetch_table(pdt_urls, "the PDT", "PDTS_COMPRESSED.txt", dcs_tables::pdt_records);
+            if (!pdt_success)
                 logger->warn("Unable to download PDTs!");
-                update_success = false;
-            }
 
-            this_success = false;
-            file_data = "";
             std::vector<std::string> hads_urls = satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"]["hads_urls"];
-            for (std::string& hads_url : hads_urls)
-            {
-                if (satdump::perform_http_request(hads_url, file_data) == 0)
-                {
-                    std::ofstream save_hads(satdump::user_path + "/all_dcp_defs.txt");
-                    save_hads << file_data;
-                    save_hads.close();
-                    this_success = true;
-                    break;
-                }
-            }
-
-            if (!this_success)
-            {
+            bool hads_success = fetch_table(hads_urls, "the HADS data", "all_dcp_defs.txt", dcs_tables::hads_records);
+            if (!hads_success)
                 logger->warn("Unable to download HADS data!");
-                update_success = false;
-            }
 
-            if (update_success)
+            if (pdt_success && hads_success)
             {
                 satdump::satdump_cfg.main_cfg["plugin_settings"]["goes_support"]["last_pdt_update"] = time(NULL);
                 satdump::satdump_cfg.saveUser();
+            }
 
+            // Reload if anything new arrived
+            if (pdt_success || hads_success)
+            {
                 dcp_mtx.lock();
                 dcp_list.clear();
                 dcp_mtx.unlock();
@@ -119,12 +141,27 @@ namespace goes
                 uint16_t field_offsets[] = { 0, 6, 14, 15, 18, 19, 22, 28, 34, 38, 42, 43, 45, 46,
                     47, 78, 85, 93, 94, 108, 124, 125, 126, 132, 156, 176, 196, 226, 237, 238, 239 };
 
-                std::ifstream read_pdts(satdump::user_path + "/PDTS_COMPRESSED.txt");
+                std::ifstream read_pdts(satdump::user_path + "/PDTS_COMPRESSED.txt", std::ios::binary);
+                std::string pdt_data((std::istreambuf_iterator<char>(read_pdts)), std::istreambuf_iterator<char>());
+                read_pdts.close();
+
+                // A file that is not a PDT (a saved web page, say) is not worth a warning per line
+                if (dcs_tables::pdt_records(pdt_data) < dcs_tables::MIN_RECORDS)
+                {
+                    logger->warn("PDTS_COMPRESSED.txt is not a platform table. Ignoring it");
+                    pdt_data.clear();
+                }
+                bool pdt_decimal = dcs_tables::pdt_is_decimal(pdt_data, field_offsets[15]);
+
+                std::stringstream pdt_stream(pdt_data);
                 std::string pdt_line;
-                while (std::getline(read_pdts, pdt_line))
+                while (std::getline(pdt_stream, pdt_line))
                 {
                     try
                     {
+                        // UTF-8 to one byte per character, so the fixed columns line up
+                        pdt_line = dcs_tables::fixed_columns(pdt_line);
+
                         std::shared_ptr<DCP> new_dcp = std::make_shared<DCP>();
 
                         // Agency
@@ -167,29 +204,9 @@ namespace goes
                         // Often does not report correctly for West or East. These are all upstream errors.
                         if (pdt_line.size() >= field_offsets[16])
                         {
-                            // Correct format
-                            if (pdt_line[field_offsets[16] + 1] == '0' || (pdt_line[field_offsets[16] + 1] == '1' && pdt_line[field_offsets[16] + 2] < '9'))
-                            {
-                                new_dcp->lat = std::stof(pdt_line.substr(field_offsets[15] + 1, 2));
-                                new_dcp->lat += std::stof(pdt_line.substr(field_offsets[15] + 3, 2)) / 60.0f;
-                                new_dcp->lat += std::stof(pdt_line.substr(field_offsets[15] + 5, 2)) / 3600.0f;
-
-                                new_dcp->lon = std::stof(pdt_line.substr(field_offsets[16] + 1, 3));
-                                new_dcp->lon += std::stof(pdt_line.substr(field_offsets[16] + 4, 2)) / 60.0f;
-                                new_dcp->lon += std::stof(pdt_line.substr(field_offsets[16] + 6, 2)) / 3600.0f;
-                            }
-
-                            // Please fix your PDT (but we'll try anyway)
-                            else
-                            {
-                                new_dcp->lat = std::stof(pdt_line.substr(field_offsets[15] + 1, 6)) / 10e3;
-                                new_dcp->lon = std::stof(pdt_line.substr(field_offsets[16] + 1, 7)) / 10e4;
-                            }
-
-                            if (pdt_line[field_offsets[15]] == '-')
-                                new_dcp->lat *= -1;
-                            if (pdt_line[field_offsets[16]] == '-')
-                                new_dcp->lon *= -1;
+                            // Degrees, minutes and seconds in the old PDT; ten-thousandths of a degree
+                            // since it moved to DADDS. Decided once for the whole file.
+                            dcs_tables::pdt_position(pdt_line, field_offsets[15], field_offsets[16], pdt_decimal, new_dcp->lat, new_dcp->lon);
                         }
 
                         // Transmitter Manufacturer

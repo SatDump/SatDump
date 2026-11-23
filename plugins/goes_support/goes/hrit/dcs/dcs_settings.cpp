@@ -15,6 +15,7 @@ namespace goes
 
         static std::vector<std::string> pdt_urls =
         {
+            "https://dadds-dcs-api.data.nesdis.noaa.gov/pdts/PDTS_COMPRESSED.txt", // DADDS, since late 2026
             "https://dcs1.noaa.gov/PDTS_COMPRESSED.txt",
             "https://dcs2.noaa.gov/PDTS_COMPRESSED.txt",
             "https://dcs3.noaa.gov/PDTS_COMPRESSED.txt",
